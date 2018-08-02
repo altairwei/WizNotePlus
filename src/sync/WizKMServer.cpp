@@ -1487,7 +1487,7 @@ bool WizKMDatabaseServer::document_postDataNew(const WIZDOCUMENTDATAEX& dataTemp
         if (!zip.open(data.arrayData))
         {
             m_strLastLocalError = "WizErrorInvalidZip";
-            TOLOG(_T("Can't open document data!"));
+            TOLOG(QString("Can't open document data!"));
             qDebug() << "Can't open document data";
             return false;
         }
@@ -1496,7 +1496,7 @@ bool WizKMDatabaseServer::document_postDataNew(const WIZDOCUMENTDATAEX& dataTemp
         if (!zip.readMainHtmlAndResources(html, allLocalResources))
         {
             m_strLastLocalError = "WizErrorInvalidZip";
-            TOLOG(_T("Can't load html and resources!"));
+            TOLOG(QString("Can't load html and resources!"));
             qDebug() << "Can't load html and resources";
             return false;
         }
@@ -1593,7 +1593,7 @@ bool WizKMDatabaseServer::document_postDataNew(const WIZDOCUMENTDATAEX& dataTemp
                         if (!zip.extractFile("index_files/" + last.name, resData))
                         {
                             m_strLastLocalError = "WizErrorInvalidZip";
-                            TOLOG(_T("Can't extract resource from zip file!"));
+                            TOLOG(QString("Can't extract resource from zip file!"));
                             qDebug() << "Can't extract resource from zip file";
                             return false;
                         }

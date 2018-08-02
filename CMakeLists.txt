@@ -17,6 +17,8 @@ else(APPLE)
 endif(APPLE)
 
 set(CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
+# 解决问题
+set (CMAKE_PREFIX_PATH "set (CMAKE_PREFIX_PATH "D:\\Qt\\Qt5.9.6\\5.9.6\\msvc2017_64")")
 
 # rpath resolve.
 #set(CMAKE_BUILD_WITH_INSTALL_RPATH YES)     // would cause wheelEvent problem on centos/fedora when compiled with qt5

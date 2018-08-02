@@ -2058,7 +2058,7 @@ inline bool WizConvertTextToHTML_ForPaste(QString& strText, int nTabSize)
     {
         strMidTab += "&nbsp;";
     }
-    strMidTab += _T(" ");
+    strMidTab += QString(" ");
     //
     size_t nCount = arrayText.size();
     for (size_t i = 0; i < nCount; i++)
