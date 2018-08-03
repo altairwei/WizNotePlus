@@ -1,11 +1,19 @@
+// polynomi.h - written and placed in the public domain by Wei Dai
+
+//! \file
+//! \headerfile polynomi.h
+//! \brief Classes for polynomial basis and operations
+
+
 #ifndef CRYPTOPP_POLYNOMI_H
 #define CRYPTOPP_POLYNOMI_H
 
 /*! \file */
 
 #include "cryptlib.h"
-#include "misc.h"
+#include "secblock.h"
 #include "algebra.h"
+#include "misc.h"
 
 #include <iosfwd>
 #include <vector>
@@ -20,9 +28,9 @@ public:
 	//! \name ENUMS, EXCEPTIONS, and TYPEDEFS
 	//@{
 		//! division by zero exception
-		class DivideByZero : public Exception 
+		class DivideByZero : public Exception
 		{
-		public: 
+		public:
 			DivideByZero() : Exception(OTHER_ERROR, "PolynomialOver<T>: division by zero") {}
 		};
 

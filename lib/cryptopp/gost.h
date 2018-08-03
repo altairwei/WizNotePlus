@@ -1,23 +1,30 @@
+// gost.h - written and placed in the public domain by Wei Dai
+
+//! \file gost.h
+//! \brief Classes for the GIST block cipher
+
 #ifndef CRYPTOPP_GOST_H
 #define CRYPTOPP_GOST_H
-
-/** \file
-*/
 
 #include "seckey.h"
 #include "secblock.h"
 
 NAMESPACE_BEGIN(CryptoPP)
 
-//! _
+//! \class GOST_Info
+//! \brief GOST block cipher information
 struct GOST_Info : public FixedBlockSize<8>, public FixedKeyLength<32>
 {
-	static const char *StaticAlgorithmName() {return "GOST";}
+	CRYPTOPP_CONSTEXPR static const char *StaticAlgorithmName() {return "GOST";}
 };
 
-/// <a href="http://www.weidai.com/scan-mirror/cs.html#GOST">GOST</a>
+//! \class GOST
+//! \brief GOST block cipher
+//! \sa <a href="http://www.weidai.com/scan-mirror/cs.html#GOST">GOST</a>
 class GOST : public GOST_Info, public BlockCipherDocumentation
 {
+	//! \class Base
+	//! \brief GOST block cipher default operation
 	class CRYPTOPP_NO_VTABLE Base : public BlockCipherImpl<GOST_Info>
 	{
 	public:
@@ -33,12 +40,16 @@ class GOST : public GOST_Info, public BlockCipherDocumentation
 		FixedSizeSecBlock<word32, 8> key;
 	};
 
+	//! \class Enc
+	//! \brief GOST block cipher encryption operation
 	class CRYPTOPP_NO_VTABLE Enc : public Base
 	{
 	public:
 		void ProcessAndXorBlock(const byte *inBlock, const byte *xorBlock, byte *outBlock) const;
 	};
 
+	//! \class Dec
+	//! \brief GOST block cipher decryption operation
 	class CRYPTOPP_NO_VTABLE Dec : public Base
 	{
 	public:

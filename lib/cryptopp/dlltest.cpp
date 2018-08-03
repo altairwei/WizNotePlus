@@ -1,8 +1,10 @@
 #ifndef CRYPTOPP_DLL_ONLY
-#define CRYPTOPP_DEFAULT_NO_DLL
+# define CRYPTOPP_DEFAULT_NO_DLL
 #endif
 
 #include "dll.h"
+#include "cryptlib.h"
+#include "filters.h"
 
 USING_NAMESPACE(CryptoPP)
 USING_NAMESPACE(std)
@@ -78,7 +80,7 @@ void FIPS140_SampleApplication()
 	const byte message[] = {'a', 'b', 'c'};
 	const byte expectedDigest[] = {0xA9,0x99,0x3E,0x36,0x47,0x06,0x81,0x6A,0xBA,0x3E,0x25,0x71,0x78,0x50,0xC2,0x6C,0x9C,0xD0,0xD8,0x9D};
 	byte digest[20];
-	
+
 	SHA1 sha;
 	sha.Update(message, 3);
 	sha.Final(digest);

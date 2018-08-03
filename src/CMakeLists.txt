@@ -529,7 +529,7 @@ if(UNIX)
 		if(APPSTORE_BUILD)
 			target_link_libraries(${PROJECT_NAME}
 				quazip
-				cryptlib
+				cryptopp-static
 				Qt5::WebEngine
 				Qt5::WebEngineWidgets
 				${CMAKE_SOURCE_DIR}/lib/openssl/lib/libcrypto.a
@@ -539,7 +539,7 @@ if(UNIX)
 		else(APPSTORE_BUILD)
 			target_link_libraries(${PROJECT_NAME}
 				quazip
-				cryptlib
+				cryptopp-static
 				Qt5::WebEngine
 				Qt5::WebEngineWidgets
 				${CMAKE_SOURCE_DIR}/lib/openssl/lib/libcrypto.a
@@ -552,7 +552,7 @@ if(UNIX)
                         -lpthread
                         X11
 			quazip
-			cryptlib
+			cryptopp-static
 			Qt5::WebEngine
 			Qt5::WebEngineWidgets
 			${CMAKE_DL_LIBS}
@@ -561,7 +561,7 @@ if(UNIX)
 else(NOT UNIX)
 	target_link_libraries(${PROJECT_NAME}
 		quazip
-		cryptlib
+		cryptopp-static
 		Qt5::WebEngine
 		Qt5::WebEngineWidgets
 		${CMAKE_DL_LIBS}

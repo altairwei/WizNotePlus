@@ -70,8 +70,8 @@ inline void FPERM(word32 &left, word32 &right)
 }
 */
 
-// Wei Dai's modification to Richard Outerbridge's initial permutation 
-// algorithm, this one is faster if you have access to rotate instructions 
+// Wei Dai's modification to Richard Outerbridge's initial permutation
+// algorithm, this one is faster if you have access to rotate instructions
 // (like in MSVC)
 static inline void IPERM(word32 &left, word32 &right)
 {
@@ -273,13 +273,17 @@ static const int bytebit[] = {
 /* Set key (initialize key schedule array) */
 void RawDES::RawSetKey(CipherDir dir, const byte *key)
 {
+#if (_MSC_VER >= 1600) || (__cplusplus >= 201103L)
+# define register /* Define to nothing for C++11 and above */
+#endif
+
 	SecByteBlock buffer(56+56+8);
 	byte *const pc1m=buffer;                 /* place to modify pc1 into */
 	byte *const pcr=pc1m+56;                 /* place to rotate pc1 into */
 	byte *const ks=pcr+56;
 	register int i,j,l;
 	int m;
-	
+
 	for (j=0; j<56; j++) {          /* convert pc1 to bits of key */
 		l=pc1[j]-1;             /* integer bit location  */
 		m = l & 07;             /* find bit              */
@@ -310,7 +314,7 @@ void RawDES::RawSetKey(CipherDir dir, const byte *key)
 			| ((word32)ks[5] << 8)
 			| ((word32)ks[7]);
 	}
-	
+
 	if (dir==DECRYPTION)     // reverse key schedule order
 		for (i=0; i<16; i+=2)
 		{
