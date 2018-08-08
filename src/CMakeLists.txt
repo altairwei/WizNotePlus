@@ -2,6 +2,10 @@ project(WizNote)
 
 add_subdirectory(test)
 
+#============================================================================
+# 准备头文件和源码
+#============================================================================
+
 set(wiznote_SOURCES_MAC
     mac/WizSearchWidget.mm
     mac/WizMacHelper.mm
@@ -395,10 +399,15 @@ set(wiznote_RCS
     ${CMAKE_SOURCE_DIR}/resources/wiznote.qrc
 )
 
+#============================================================================
+# Internal compiler options
+#============================================================================
+
+# 执行QtChooser模块
 include(QtChooser)
-qt_add_ui(wiznote_FORM_HEADERS ${wiznote_FORMS})
-qt_add_resources(wiznote_RC ${wiznote_RCS})
-qt_add_translation(wiznote_QM ${wiznote_TRANSLATIONS})
+qt_add_ui(wiznote_FORM_HEADERS ${wiznote_FORMS}) # 添加ui 设计文件
+qt_add_resources(wiznote_RC ${wiznote_RCS}) # 添加资源文件
+qt_add_translation(wiznote_QM ${wiznote_TRANSLATIONS}) # 添加本地化文件
 
 message("WizNote whill compiling as ${CMAKE_BUILD_TYPE}, use Qt: ${QT_VERSION}")
 
@@ -480,6 +489,7 @@ if(UNIX)
         endforeach()
     endif()
 else()
+    # Windows 端
     add_definitions(-DUNICODE=TRUE)
     add_definitions(-D_UNICODE=TRUE)
     add_executable(WizNote WIN32 ${wiznote_SOURCES} ${wiznote_HEADERS} ${wiznote_FORM_HEADERS} ${wiznote_QM} ${wiznote_RC})
@@ -523,6 +533,10 @@ endif()
 link_directories(
     ${CMAKE_BINARY_DIR}/bin
 )
+
+#============================================================================
+# 第三方依赖
+#============================================================================
 
 if(UNIX)
 	if(APPLE)

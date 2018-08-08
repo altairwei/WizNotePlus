@@ -21,6 +21,10 @@
 cmake_minimum_required (VERSION 2.8)
 project (cryptopp)
 
+#============================================================================
+# Settable options
+#============================================================================
+
 option (CRYPTOPP_FIPS_COMPLIANT "CryptoPP FIPS 140 compliant" OFF)
 option (CRYPTOPP_BUILD_TESTS "Build CryptoPP tests" OFF)
 option (CRYPTOPP_BUILD_SHARED_LIBS "Build shared CryptoPP libraries" OFF)
@@ -35,33 +39,43 @@ if (NOT CRYPTOPP_BUILD_SHARED_LIBS AND CRYPTOPP_BUILD_TESTS)
   set (CRYPTOPP_BUILD_SHARED_LIBS ON CACHE BOOL "" FORCE)
 endif (NOT CRYPTOPP_BUILD_SHARED_LIBS AND CRYPTOPP_BUILD_TESTS)
 
+#============================================================================
+# Sources & headers
+#============================================================================
+
 # CMake 文档不推荐这种做法
 # Note: We do not recommend using GLOB to collect a list of source files from your source tree. 
 file (GLOB PROJECT_CPP *.cpp)
 file (GLOB PROJECT_H *.h)
 file (GLOB PROJECT_PCH pch.h)
 
+# 将文件拷贝到cmake当前正在被处理的二进制目录
 configure_file (adhoc.cpp.proto ${CMAKE_CURRENT_BINARY_DIR}/adhoc.cpp COPYONLY)
-
+# 将adhoc.cpp追加到PROJECT_CPP中
 list (APPEND PROJECT_CPP ${CMAKE_CURRENT_BINARY_DIR}/adhoc.cpp)
-
+# 将当前路径添加到编译器搜索包含文件（.h文件）的路径列表中
 include_directories (${CMAKE_CURRENT_SOURCE_DIR})
 
+# 设置测试文件列表
 set (PROJECT_TEST bench bench2 test validat1 validat2 validat3 adhoc datatest
   regtest fipsalgt fipstest)
 
 if (WIN32)
+  # 添加dlltest文件到测试文件列表
   list (APPEND PROJECT_TEST dlltest)
 endif (WIN32)
 
 set (PROJECT_TEST_CPP)
 
+# 将build文件列表和test文件列表分离
 foreach (_PROJECT_TEST_FILE ${PROJECT_TEST})
   foreach (_PROJECT_FILE ${PROJECT_CPP})
+    # 将所有测试文件从PROJECT_CPP列表中移除
     if (${_PROJECT_FILE} MATCHES ".*${_PROJECT_TEST_FILE}\\.cpp$")
       LIST (REMOVE_ITEM PROJECT_CPP ${_PROJECT_FILE})
     endif (${_PROJECT_FILE} MATCHES ".*${_PROJECT_TEST_FILE}\\.cpp$")
   endforeach (_PROJECT_FILE)
+  # 创建PROJECT_TEST_CPP列表
   list (APPEND PROJECT_TEST_CPP ${_PROJECT_TEST_FILE}.cpp)
 endforeach(_PROJECT_TEST_FILE)
 
@@ -71,11 +85,16 @@ set (PROJECT_CPP_SHARED ${PROJECT_CPP})
 list (APPEND PROJECT_CPP_SHARED ${CMAKE_CURRENT_SOURCE_DIR}/fipstest.cpp)
 list (REMOVE_ITEM PROJECT_CPP_SHARED ${CMAKE_CURRENT_SOURCE_DIR}/ttmac.cpp)
 
+# *dll/目录下的所有cpp文件移除
 foreach (_PROJECT_FILE ${PROJECT_CPP_LIB})
   if (${_PROJECT_FILE} MATCHES ".*dll.+\\.cpp$")
     list (REMOVE_ITEM PROJECT_CPP_LIB ${_PROJECT_FILE})
   endif (${_PROJECT_FILE} MATCHES ".*dll.+\\.cpp$")
 endforeach (_PROJECT_FILE)
+
+#============================================================================
+# Internal compiler options
+#============================================================================
 
 # Intel compiler
 if (CMAKE_CXX_COMPILER MATCHES ic[c|l])
@@ -98,15 +117,22 @@ if (WIN32)
   list (APPEND PROJECT_CPP_SHARED cryptopp.rc)
 endif (WIN32)
 
+#============================================================================
+# Compile targets
+#============================================================================
+
+# 添加动态库 cryptopp
 if (CRYPTOPP_BUILD_SHARED_LIBS)
   add_library (cryptopp SHARED ${PROJECT_CPP_SHARED} ${PROJECT_H}
     ${PROJECT_PCH})
 endif (CRYPTOPP_BUILD_SHARED_LIBS)
 
+# 添加静态库 cryptlib
 if (CRYPTOPP_BUILD_STATIC_LIBS)
   add_library (cryptlib STATIC ${PROJECT_CPP_LIB} ${PROJECT_H} ${PROJECT_PCH})
 endif (CRYPTOPP_BUILD_STATIC_LIBS)
 
+# 添加测试程序
 if (CRYPTOPP_BUILD_TESTS)
   add_executable (crypttest ${PROJECT_TEST_CPP})
 
@@ -121,6 +147,7 @@ endif (CRYPTOPP_BUILD_TESTS)
 
 set (_CRYPTOPP_COMPILE_DEFINITIONS USE_PRECOMPILED_HEADERS)
 
+# FIPS 模式的DLL，不推荐
 if (CRYPTOPP_FIPS_COMPLIANT)
   list (APPEND _CRYPTOPP_COMPILE_DEFINITIONS
     CRYPTOPP_ENABLE_COMPLIANCE_WITH_FIPS_140_2=1)
@@ -129,18 +156,22 @@ else (CRYPTOPP_FIPS_COMPLIANT)
     CRYPTOPP_ENABLE_COMPLIANCE_WITH_FIPS_140_2=0)
 endif (CRYPTOPP_FIPS_COMPLIANT)
 
+# 如果构建目标是静态库的话
 if (TARGET cryptlib)
   list (APPEND _CRYPTOPP_INSTALL_TARGETS cryptlib)
 endif (TARGET cryptlib)
 
+# 如果构建目标是动态库的话
 if (TARGET cryptopp)
   list (APPEND _CRYPTOPP_INSTALL_TARGETS cryptopp)
 endif (TARGET cryptopp)
 
+# MacOS 端禁用ASM
 if (APPLE)
     add_definitions (-DCRYPTOPP_DISABLE_ASM)
 endif (APPLE)
 
+# 如果编译器是Clang的话，设置编译器参数
 if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
     set_target_properties (${_CRYPTOPP_INSTALL_TARGETS} PROPERTIES COMPILE_FLAGS
     "-Wno-tautological-compare -Wno-unused-value -Wno-switch -Wno-string-plus-int")
@@ -213,6 +244,10 @@ IF (WIN32)
   endif (TARGET cryptlib)
 endif (WIN32)
 
+#============================================================================
+# Install
+#============================================================================
+
 if (_CRYPTOPP_INSTALL_TARGETS)
   #set_target_properties (${_CRYPTOPP_INSTALL_TARGETS} PROPERTIES PUBLIC_HEADER
   #  "${PROJECT_H}")
@@ -282,8 +317,11 @@ configure_file (cryptopp-config-build.cmake.in
 configure_file (cryptopp-config-version.cmake.in
   ${CMAKE_CURRENT_BINARY_DIR}/cryptopp-config-version.cmake @ONLY)
 
+# 在当前正在被处理的二进制目录里创建一个名为cryptopp-targets.cmake的文件，
+# 它可以被外部工程包含进去，从而外部工程可以从当前工程的构建树中导入目标。
 export (TARGETS ${_CRYPTOPP_INSTALL_TARGETS} FILE
   ${CMAKE_CURRENT_BINARY_DIR}/cryptopp-targets.cmake)
+# 在CMake的用户包注册表中，为CrytoPP存储当前的构建目录
 export (PACKAGE CryptoPP)
 
 #install (EXPORT cryptopp-targets DESTINATION . COMPONENT Development)
