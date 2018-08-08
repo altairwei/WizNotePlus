@@ -513,12 +513,12 @@ bool WizIndexBase::initDocumentExFields(CWizDocumentDataArray& arrayDocument, co
                 ATLASSERT(strGUID == data.strGUID);
                 if (strGUID == data.strGUID)
                 {
-                    if (strParamName == _T("DOCUMENT_FLAGS"))
+                    if (strParamName == QString("DOCUMENT_FLAGS") )
                     {
                         int nFlags = queryParam.getIntField(2);
                         data.nFlags = nFlags;
                     }
-                    else if (strParamName == _T("RATE"))
+                    else if ( strParamName == QString("RATE") )
                     {
                         int nRate = queryParam.getIntField(2);
                         data.nRate = nRate;

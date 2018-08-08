@@ -35,7 +35,6 @@
 #include "WizConsoleDialog.h"
 #include "WizCategoryView.h"
 #include "WizDocumentListView.h"
-#include "WizCertManager.h"
 #include "WizUserCipherForm.h"
 #include "WizDocumentView.h"
 #include "WizTitleBar.h"
@@ -3447,6 +3446,9 @@ void WizMainWindow::on_options_settingsChanged(WizOptionsType type)
         break;
     case wizoptionsFolders:
         m_category->sortItems(0, Qt::AscendingOrder);
+        break;
+    case wizoptionsSpellCheck:
+        m_doc->web()->editorResetSpellCheck();
         break;
     default:
         break;

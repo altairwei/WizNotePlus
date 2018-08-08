@@ -170,6 +170,7 @@ bool WizTokenPrivate::lastIsNetworkError() const
     return m_bLastIsNetworkError;
 }
 
+// 创建两个对象的指针
 static WizTokenPrivate* d = 0;
 static WizToken* m_instance = 0;
 

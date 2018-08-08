@@ -5,7 +5,9 @@
 	"The XTR public key system" by Arjen K. Lenstra and Eric R. Verheul
 */
 
+#include "cryptlib.h"
 #include "xtr.h"
+#include "integer.h"
 
 NAMESPACE_BEGIN(CryptoPP)
 
@@ -14,7 +16,7 @@ NAMESPACE_BEGIN(CryptoPP)
 class XTR_DH : public SimpleKeyAgreementDomain, public CryptoParameters
 {
 	typedef XTR_DH ThisClass;
-	
+
 public:
 	XTR_DH(const Integer &p, const Integer &q, const GFP2Element &g);
 	XTR_DH(RandomNumberGenerator &rng, unsigned int pbits, unsigned int qbits);

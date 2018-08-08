@@ -5,15 +5,17 @@
 #ifndef CRYPTOPP_IMPORTS
 
 #include "nbtheory.h"
+#include "integer.h"
 #include "modarith.h"
 #include "algparam.h"
+#include "smartptr.h"
+#include "misc.h"
 
 #include <math.h>
 #include <vector>
 
 #ifdef _OPENMP
-// needed in MSVC 2005 to generate correct manifest
-#include <omp.h>
+# include <omp.h>
 #endif
 
 NAMESPACE_BEGIN(CryptoPP)
@@ -26,13 +28,13 @@ struct NewPrimeTable
 	{
 		const unsigned int maxPrimeTableSize = 3511;
 
-		std::auto_ptr<std::vector<word16> > pPrimeTable(new std::vector<word16>);
+		member_ptr<std::vector<word16> > pPrimeTable(new std::vector<word16>);
 		std::vector<word16> &primeTable = *pPrimeTable;
 		primeTable.reserve(maxPrimeTableSize);
 
 		primeTable.push_back(2);
 		unsigned int testEntriesEnd = 1;
-		
+
 		for (unsigned int p=3; p<=s_lastSmallPrime; p+=2)
 		{
 			unsigned int j;
@@ -41,7 +43,7 @@ struct NewPrimeTable
 					break;
 			if (j == testEntriesEnd)
 			{
-				primeTable.push_back(p);
+				primeTable.push_back(word16(p));
 				testEntriesEnd = UnsignedMin(54U, primeTable.size());
 			}
 		}
@@ -173,7 +175,7 @@ bool IsLucasProbablePrime(const Integer &n)
 		++b; ++b;
 	}
 
-	if (j==0) 
+	if (j==0)
 		return false;
 	else
 		return Lucas(n+1, b, n)==2;
@@ -200,7 +202,7 @@ bool IsStrongLucasProbablePrime(const Integer &n)
 		++b; ++b;
 	}
 
-	if (j==0) 
+	if (j==0)
 		return false;
 
 	Integer n1 = n+1;
@@ -308,7 +310,7 @@ PrimeSieve::PrimeSieve(const Integer &first, const Integer &last, const Integer 
 bool PrimeSieve::NextCandidate(Integer &c)
 {
 	bool safe = SafeConvert(std::find(m_sieve.begin()+m_next, m_sieve.end(), false) - m_sieve.begin(), m_next);
-	assert(safe);
+	CRYPTOPP_UNUSED(safe); assert(safe);
 	if (m_next == m_sieve.size())
 	{
 		m_first += long(m_sieve.size())*m_step;
@@ -458,10 +460,10 @@ static bool ProvePrime(const Integer &p, const Integer &q)
 	const word16 * primeTable = GetPrimeTable(primeTableSize);
 
 	assert(primeTableSize >= 50);
-	for (int i=0; i<50; i++) 
+	for (int i=0; i<50; i++)
 	{
 		Integer b = a_exp_b_mod_c(primeTable[i], r, p);
-		if (b != 1) 
+		if (b != 1)
 			return a_exp_b_mod_c(b, q, p) == 1;
 	}
 	return false;
@@ -1074,7 +1076,7 @@ void PrimeAndGenerator::Generate(signed int delta, RandomNumberGenerator &rng, u
 		else
 		{
 			assert(delta == -1);
-			// find g such that g*g-4 is a quadratic non-residue, 
+			// find g such that g*g-4 is a quadratic non-residue,
 			// and such that g has order q
 			for (g=3; ; ++g)
 				if (Jacobi(g*g-4, p)==-1 && Lucas(q, g, p)==2)

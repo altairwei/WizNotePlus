@@ -8,7 +8,7 @@ if(NOT ZLIB_FOUND)
     set(ZLIB_LIBRARY zlib)
 endif(NOT ZLIB_FOUND)
 
-add_subdirectory(cryptopp)
-add_subdirectory(quazip)
+add_subdirectory(cryptopp) #用支持CMake的v5.6.4替代旧版本
+add_subdirectory(quazip) # 依赖zlib
 #add_subdirectory(aggregation)
 #add_subdirectory(extensionsystem)

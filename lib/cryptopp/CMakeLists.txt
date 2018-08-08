@@ -1,290 +1,327 @@
-# Copyright (c) 2010, 2011 Sergiu Dotenco
-#
-# Permission is hereby granted, free of charge, to any person obtaining a copy
-# of this software and associated documentation files (the "Software"), to deal
-# in the Software without restriction, including without limitation the rights
-# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-# copies of the Software, and to permit persons to whom the Software is
-# furnished to do so, subject to the following conditions:
-#
-# The above copyright notice and this permission notice shall be included in all
-# copies or substantial portions of the Software.
-#
-# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-# SOFTWARE.
+# Please ensure your changes or patch meets minimum requirements.
+#   The minimum requirements are below, and they are 2.8.5. Please
+#   do not check in something for 2.8.12. To test your changes,
+#   please set up a Ubuntu 12.04 LTS system. Then, manually install
+#   Cmake 2.8.5 from http://cmake.org/Wiki/CMake_Released_Versions.
 
-cmake_minimum_required (VERSION 2.8)
-project (cryptopp)
+cmake_minimum_required(VERSION 2.8.5 FATAL_ERROR)
 
-option (CRYPTOPP_FIPS_COMPLIANT "CryptoPP FIPS 140 compliant" OFF)
-option (CRYPTOPP_BUILD_TESTS "Build CryptoPP tests" OFF)
-option (CRYPTOPP_BUILD_SHARED_LIBS "Build shared CryptoPP libraries" OFF)
-option (CRYPTOPP_BUILD_STATIC_LIBS "Build static CryptoPP libraries" ON)
+project(cryptopp)
 
-if (NOT CRYPTOPP_BUILD_STATIC_LIBS AND CRYPTOPP_BUILD_TESTS)
-  set (CRYPTOPP_BUILD_STATIC_LIBS ON CACHE BOOL "" FORCE)
-endif (NOT CRYPTOPP_BUILD_STATIC_LIBS AND CRYPTOPP_BUILD_TESTS)
+set(cryptopp_VERSION_MAJOR 5)
+set(cryptopp_VERSION_MINOR 6)
+set(cryptopp_VERSION_PATCH 4)
 
-if (NOT CRYPTOPP_BUILD_SHARED_LIBS AND CRYPTOPP_BUILD_TESTS)
-  set (CRYPTOPP_BUILD_SHARED_LIBS ON CACHE BOOL "" FORCE)
-endif (NOT CRYPTOPP_BUILD_SHARED_LIBS AND CRYPTOPP_BUILD_TESTS)
+include(GNUInstallDirs)
+include(TestBigEndian)
 
-file (GLOB PROJECT_CPP *.cpp)
-file (GLOB PROJECT_H *.h)
-file (GLOB PROJECT_PCH pch.h)
+#============================================================================
+# Settable options
+#============================================================================
 
-configure_file (adhoc.cpp.proto ${CMAKE_CURRENT_BINARY_DIR}/adhoc.cpp COPYONLY)
+option(CRYPTOPP_BUILD_STATIC "Build static library" ON)
+option(CRYPTOPP_BUILD_SHARED "Build shared library" OFF)
+option(CRYPTOPP_BUILD_TESTING "Build library tests" OFF)
+option(CRYPTOPP_BUILD_DOCUMENTATION "Use Doxygen to create the HTML based API documentation" OFF)
 
-list (APPEND PROJECT_CPP ${CMAKE_CURRENT_BINARY_DIR}/adhoc.cpp)
+option(CRYPTOPP_DISABLE_ASM "Disable ASM" OFF)
+option(CRYPTOPP_DISABLE_SSSE3 "Disable SSSE3" OFF)
+option(CRYPTOPP_DISABLE_AESNI "Disable AES-NI" OFF)
+set(CRYPTOPP_DATA_DIR "" CACHE PATH "Crypto++ test data directory")
 
-include_directories (${CMAKE_CURRENT_SOURCE_DIR})
+#============================================================================
+# Internal compiler options 为编译器添加一些选项flags，也可以引入预处理器定义
+#============================================================================
 
-set (PROJECT_TEST bench bench2 test validat1 validat2 validat3 adhoc datatest
-  regtest fipsalgt fipstest)
-
-if (WIN32)
-  list (APPEND PROJECT_TEST dlltest)
-endif (WIN32)
-
-set (PROJECT_TEST_CPP)
-
-foreach (_PROJECT_TEST_FILE ${PROJECT_TEST})
-  foreach (_PROJECT_FILE ${PROJECT_CPP})
-    if (${_PROJECT_FILE} MATCHES ".*${_PROJECT_TEST_FILE}\\.cpp$")
-      LIST (REMOVE_ITEM PROJECT_CPP ${_PROJECT_FILE})
-    endif (${_PROJECT_FILE} MATCHES ".*${_PROJECT_TEST_FILE}\\.cpp$")
-  endforeach (_PROJECT_FILE)
-  list (APPEND PROJECT_TEST_CPP ${_PROJECT_TEST_FILE}.cpp)
-endforeach(_PROJECT_TEST_FILE)
-
-set (PROJECT_CPP_LIB ${PROJECT_CPP})
-set (PROJECT_CPP_SHARED ${PROJECT_CPP})
-
-list (APPEND PROJECT_CPP_SHARED ${CMAKE_CURRENT_SOURCE_DIR}/fipstest.cpp)
-list (REMOVE_ITEM PROJECT_CPP_SHARED ${CMAKE_CURRENT_SOURCE_DIR}/ttmac.cpp)
-
-foreach (_PROJECT_FILE ${PROJECT_CPP_LIB})
-  if (${_PROJECT_FILE} MATCHES ".*dll.+\\.cpp$")
-    list (REMOVE_ITEM PROJECT_CPP_LIB ${_PROJECT_FILE})
-  endif (${_PROJECT_FILE} MATCHES ".*dll.+\\.cpp$")
-endforeach (_PROJECT_FILE)
-
-# Intel compiler
-if (CMAKE_CXX_COMPILER MATCHES ic[c|l])
-  add_definitions (-wd811)
-  # Variable of static storage duration was declared but never referenced
-  add_definitions (-wd2415)
-  # Function was declared but never referenced
-  add_definitions (-wd177)
-endif (CMAKE_CXX_COMPILER MATCHES ic[c|l])
-
-#remove_definitions (-DUNICODE -D_UNICODE)
-
-if (MINGW AND NOT CMAKE_RC_COMPILER_INIT)
-  set (CMAKE_RC_COMPILER_INIT windres)
-  enable_language (RC)
-  set (CMAKE_RC_COMPILE_OBJECT "-O coff -o <OBJECT> <SOURCE>")
-endif (MINGW AND NOT CMAKE_RC_COMPILER_INIT)
-
-if (WIN32)
-  list (APPEND PROJECT_CPP_SHARED cryptopp.rc)
-endif (WIN32)
-
-if (CRYPTOPP_BUILD_SHARED_LIBS)
-  add_library (cryptopp SHARED ${PROJECT_CPP_SHARED} ${PROJECT_H}
-    ${PROJECT_PCH})
-endif (CRYPTOPP_BUILD_SHARED_LIBS)
-
-if (CRYPTOPP_BUILD_STATIC_LIBS)
-  add_library (cryptlib STATIC ${PROJECT_CPP_LIB} ${PROJECT_H} ${PROJECT_PCH})
-endif (CRYPTOPP_BUILD_STATIC_LIBS)
-
-if (CRYPTOPP_BUILD_TESTS)
-  add_executable (crypttest ${PROJECT_TEST_CPP})
-
-  if (CMAKE_COMPILER_IS_GNUCXX)
-    set_target_properties (crypttest PROPERTIES LINK_FLAGS -pthread)
-  endif (CMAKE_COMPILER_IS_GNUCXX)
-
-  if (WIN32)
-    add_executable (dlltest dlltest.cpp)
-  endif (WIN32)
-endif (CRYPTOPP_BUILD_TESTS)
-
-set (_CRYPTOPP_COMPILE_DEFINITIONS USE_PRECOMPILED_HEADERS)
-
-if (CRYPTOPP_FIPS_COMPLIANT)
-  list (APPEND _CRYPTOPP_COMPILE_DEFINITIONS
-    CRYPTOPP_ENABLE_COMPLIANCE_WITH_FIPS_140_2=1)
-else (CRYPTOPP_FIPS_COMPLIANT)
-  list (APPEND _CRYPTOPP_COMPILE_DEFINITIONS
-    CRYPTOPP_ENABLE_COMPLIANCE_WITH_FIPS_140_2=0)
-endif (CRYPTOPP_FIPS_COMPLIANT)
-
-if (TARGET cryptlib)
-  list (APPEND _CRYPTOPP_INSTALL_TARGETS cryptlib)
-endif (TARGET cryptlib)
-
-if (TARGET cryptopp)
-  list (APPEND _CRYPTOPP_INSTALL_TARGETS cryptopp)
-endif (TARGET cryptopp)
-
-if (APPLE)
-    add_definitions (-DCRYPTOPP_DISABLE_ASM)
-endif (APPLE)
-
-if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
-    set_target_properties (${_CRYPTOPP_INSTALL_TARGETS} PROPERTIES COMPILE_FLAGS
-    "-Wno-tautological-compare -Wno-unused-value -Wno-switch -Wno-string-plus-int")
+# Don't use RPATH's. The resulting binary could fail a security audit.
+if (NOT CMAKE_VERSION VERSION_LESS 2.8.12)
+  set(CMAKE_MACOSX_RPATH 0)
 endif()
 
-# Prevent MSVC from issuing the LNK4221 warning
-set_source_files_properties (strciphr.cpp simple.cpp polynomi.cpp algebra.cpp
-  eccrypto.cpp eprecomp.cpp PROPERTIES HEADER_FILE_ONLY TRUE)
+# crytopp版本号564
+set(LIB_VER ${cryptopp_VERSION_MAJOR}${cryptopp_VERSION_MINOR}${cryptopp_VERSION_PATCH})
 
-if (MSVC)
-  set_target_properties (${_CRYPTOPP_INSTALL_TARGETS} PROPERTIES
-    COMPILE_DEFINITIONS "${_CRYPTOPP_COMPILE_DEFINITIONS}")
-  # Setup precompiled headers and use intrinsics; the latter fixes MSVC8 linker
-  # errors
-  #set_target_properties (${_CRYPTOPP_INSTALL_TARGETS} PROPERTIES COMPILE_FLAGS
-  #  "-Yupch.h -Oi")
-  #set_source_files_properties (pch.cpp PROPERTIES COMPILE_FLAGS -Yc)
-  # These files don't use precompiled headers
-  set_source_files_properties (dll.cpp cryptlib_bds.cpp iterhash.cpp
-    PROPERTIES COMPILE_FLAGS -Y-)
-endif (MSVC)
+if(CMAKE_CXX_COMPILER_ID MATCHES "Intel")
+	add_definitions(-wd68 -wd186 -wd279 -wd327 -wd161 -wd3180)
+endif()
 
-if (_CRYPTOPP_INSTALL_TARGETS AND WIN32)
-  set_target_properties (${_CRYPTOPP_INSTALL_TARGETS} PROPERTIES DEFINE_SYMBOL
-    CRYPTOPP_EXPORTS)
-endif (_CRYPTOPP_INSTALL_TARGETS AND WIN32)
+# Endianess
+TEST_BIG_ENDIAN(IS_BIG_ENDIAN)
+if(IS_BIG_ENDIAN)
+	add_definitions(-DIS_BIG_ENDIAN)
+endif()
 
-if (TARGET crypttest)
-  target_link_libraries (crypttest cryptlib cryptopp)
-endif (TARGET crypttest)
+if(CRYPTOPP_DISABLE_ASM)
+	add_definitions(-DCRYPTOPP_DISABLE_ASM)
+endif()
+if(CRYPTOPP_DISABLE_SSSE3)
+	add_definitions(-DCRYPTOPP_DISABLE_SSSE3)
+endif()
+if(CRYPTOPP_DISABLE_AESNI)
+	add_definitions(-DCRYPTOPP_DISABLE_AESNI)
+endif()
+if(NOT CRYPTOPP_DATA_DIR STREQUAL "")
+	add_definitions(-DCRYPTOPP_DATA_DIR="${CRYPTOPP_DATA_DIR}")
+endif()
 
-if (TARGET dlltest)
-  target_link_libraries (dlltest cryptopp)
-endif (TARGET dlltest)
+if(WINDOWS_STORE OR WINDOWS_PHONE)
+	if("${CMAKE_SYSTEM_VERSION}" MATCHES "10\\.0.*")
+		SET( CMAKE_CXX_FLAGS  "${CMAKE_CXX_FLAGS} /D\"_WIN32_WINNT=0x0A00\"" )
+	endif()
+	SET( CMAKE_CXX_FLAGS  "${CMAKE_CXX_FLAGS} /FI\"winapifamily.h\"" )
+endif()
 
-if (WIN32)
-  get_target_property (_TEMP cryptopp COMPILE_DEFINITIONS)
+#============================================================================
+# Sources & headers
+#============================================================================
 
-  if (NOT _TEMP)
-    unset (_TEMP)
-  endif (NOT _TEMP)
+# Library headers
+file(GLOB cryptopp_HEADERS *.h)
 
-  list (APPEND _TEMP _USRDLL)
+# Test sources. You can use the GNUmakefile to generate the list: `make sources`.
+file(GLOB cryptopp_SOURCES_TEST bench1.cpp bench2.cpp test.cpp validat1.cpp validat2.cpp validat3.cpp adhoc.cpp datatest.cpp regtest.cpp fipsalgt.cpp dlltest.cpp fipstest.cpp)
 
-  if (TARGET cryptopp)
-    set_target_properties (cryptopp PROPERTIES COMPILE_DEFINITIONS "${_TEMP}")
-    set_target_properties (cryptopp PROPERTIES DEBUG_POSTFIX d)
-  endif (TARGET cryptopp)
+# Library sources. You can use the GNUmakefile to generate the list: `make sources`.
+file(GLOB cryptopp_SOURCES *.cpp)
+list(REMOVE_ITEM cryptopp_SOURCES
+		${CMAKE_CURRENT_SOURCE_DIR}/cryptlib.cpp
+		${CMAKE_CURRENT_SOURCE_DIR}/cpu.cpp
+		${CMAKE_CURRENT_SOURCE_DIR}/pch.cpp
+		${CMAKE_CURRENT_SOURCE_DIR}/simple.cpp
+		${CMAKE_CURRENT_SOURCE_DIR}/winpipes.cpp
+		${CMAKE_CURRENT_SOURCE_DIR}/cryptlib_bds.cpp
+		${cryptopp_SOURCES_TEST}
+		)
+set(cryptopp_SOURCES
+		${CMAKE_CURRENT_SOURCE_DIR}/cryptlib.cpp
+		${CMAKE_CURRENT_SOURCE_DIR}/cpu.cpp
+		${cryptopp_SOURCES}
+		)
 
-  if (TARGET cryptlib)
-    set_target_properties (cryptlib PROPERTIES DEBUG_POSTFIX d)
-  endif (TARGET cryptlib)
+if(MINGW OR WIN32)
+	list(APPEND cryptopp_SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/winpipes.cpp)
+endif()
 
-  if (CRYPTOPP_BUILD_TESTS)
-    set_target_properties (crypttest PROPERTIES COMPILE_DEFINITIONS _CONSOLE)
+# 解决MSV9 AMD64 no longer support inline assembly 的问题
+if(MSVC AND NOT CRYPTOPP_DISABLE_ASM)
+	if(${CMAKE_GENERATOR} MATCHES ".*ARM")
+		message(STATUS "Disabling ASM because ARM is specified as target platform.")
+	else()
+		if(CMAKE_SIZEOF_VOID_P EQUAL 8)
+			list(APPEND cryptopp_SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/x64dll.asm)
+			list(APPEND cryptopp_SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/x64masm.asm)
+			set_source_files_properties(${CMAKE_CURRENT_SOURCE_DIR}/x64dll.asm PROPERTIES COMPILE_FLAGS "/D_M_X64")
+			set_source_files_properties(${CMAKE_CURRENT_SOURCE_DIR}/x64masm.asm PROPERTIES COMPILE_FLAGS "/D_M_X64")
+			set_source_files_properties(${CMAKE_CURRENT_SOURCE_DIR}/rdrand.asm PROPERTIES COMPILE_FLAGS "/D_M_X64")
+		else()
+			set_source_files_properties(${CMAKE_CURRENT_SOURCE_DIR}/x64dll.asm PROPERTIES COMPILE_FLAGS "/D_M_X86 /safeseh")
+			set_source_files_properties(${CMAKE_CURRENT_SOURCE_DIR}/x64masm.asm PROPERTIES COMPILE_FLAGS "/D_M_X86 /safeseh")
+			set_source_files_properties(${CMAKE_CURRENT_SOURCE_DIR}/rdrand.asm PROPERTIES COMPILE_FLAGS "/D_M_X86 /safeseh")
+		endif()
+		list(APPEND cryptopp_SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/rdrand.asm)
+		enable_language(ASM_MASM)
+	endif()
+endif()
 
-    set (_TEMP CRYPTOPP_DLL_ONLY _CONSOLE)
-    set_target_properties (dlltest PROPERTIES COMPILE_DEFINITIONS
-      "${_TEMP};CRYPTOPP_NO_LIB")
-  endif (CRYPTOPP_BUILD_TESTS)
-endif (WIN32)
+#============================================================================
+# Compile targets
+#============================================================================
 
-IF (WIN32)
-  if (TARGET cryptopp)
-    target_link_libraries (cryptopp Ws2_32)
-  endif (TARGET cryptopp)
+# Set global includes BEFORE adding any targets for legacy CMake versions
+if(CMAKE_VERSION VERSION_LESS 2.8.12)
+	include_directories("${CMAKE_CURRENT_SOURCE_DIR}")
+endif()
 
-  if (TARGET cryptlib)
-    target_link_libraries (cryptlib Ws2_32)
-  endif (TARGET cryptlib)
-endif (WIN32)
+if(NOT CMAKE_VERSION VERSION_LESS 2.8.8)
+	add_library(cryptopp-object OBJECT ${cryptopp_SOURCES})
+endif()
 
-if (_CRYPTOPP_INSTALL_TARGETS)
-  #set_target_properties (${_CRYPTOPP_INSTALL_TARGETS} PROPERTIES PUBLIC_HEADER
-  #  "${PROJECT_H}")
+if (CRYPTOPP_BUILD_STATIC)
+	if(NOT CMAKE_VERSION VERSION_LESS 2.8.8)
+		add_library(cryptopp-static STATIC $<TARGET_OBJECTS:cryptopp-object>)
+	else()
+		add_library(cryptopp-static STATIC ${cryptopp_SOURCES})
+	endif()
 
-  #install (TARGETS ${_CRYPTOPP_INSTALL_TARGETS}
-  #  EXPORT cryptopp-targets
-  #  RUNTIME DESTINATION bin
-  #  LIBRARY DESTINATION lib
-  #  ARCHIVE DESTINATION lib
-  #  PUBLIC_HEADER DESTINATION include/cryptopp)
-endif (_CRYPTOPP_INSTALL_TARGETS)
+	if (NOT CMAKE_VERSION VERSION_LESS 2.8.12)
+		target_include_directories(cryptopp-static PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}> $<INSTALL_INTERFACE:include/cryptopp>)
+	endif()
+endif()
 
-if (TARGET crypttest)
-  enable_testing ()
-  # Run validation tests
-  add_test (NAME cryptopp-validation COMMAND crypttest v WORKING_DIRECTORY
-    ${CMAKE_CURRENT_SOURCE_DIR})
-endif (TARGET crypttest)
+if (CRYPTOPP_BUILD_SHARED)
+	if(NOT CMAKE_VERSION VERSION_LESS 2.8.8)
+		add_library(cryptopp-shared SHARED $<TARGET_OBJECTS:cryptopp-object>)
+	else()
+		add_library(cryptopp-shared SHARED ${cryptopp_SOURCES})
+	endif()
 
-# Intel compiler, Windows
-if (CMAKE_CXX_COMPILER MATCHES icl)
-  set_target_properties (${_CRYPTOPP_INSTALL_TARGETS} PROPERTIES COMPILE_FLAGS
-    /Qopenmp)
-# Intel compiler, non-Windows
-elseif (CMAKE_CXX_COMPILER MATCHES icc)
-  set_target_properties (${_CRYPTOPP_INSTALL_TARGETS} PROPERTIES COMPILE_FLAGS
-    -fopenmp)
-endif (CMAKE_CXX_COMPILER MATCHES icl)
+	if (NOT CMAKE_VERSION VERSION_LESS 2.8.12)
+		target_include_directories(cryptopp-shared PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}> $<INSTALL_INTERFACE:include/cryptopp>)
+	endif()
+endif()
 
-if (TARGET crypttest)
-  get_target_property (crypttest RUNTIME_OUTPUT_DIRECTORY _DATA_DIR)
+# Set PIC
+if(CMAKE_SIZEOF_VOID_P EQUAL 8)
+	# Enables -fPIC on all 64-bit platforms
+	if(NOT CMAKE_VERSION VERSION_LESS 2.8.9)	# POSITION_INDEPENDENT_CODE support
+		set_target_properties(cryptopp-object PROPERTIES POSITION_INDEPENDENT_CODE TRUE)
+	elseif(NOT CMAKE_VERSION VERSION_LESS 2.8.8)	# Object library support
+		get_target_property(flags_old cryptopp-object COMPILE_FLAGS)
+		set_target_properties(cryptopp-object PROPERTIES COMPILE_FLAGS "${flags_old} -fPIC")
+	else()
+		if (CRYPTOPP_BUILD_STATIC)
+			get_target_property(flags_old_static cryptopp-static COMPILE_FLAGS)
+			if(NOT flags_old_static)
+				set(flags_old_static "")
+			endif()
+			set_target_properties(cryptopp-static PROPERTIES COMPILE_FLAGS "${flags_old_static} -fPIC")
+		endif()
+		if (CRYPTOPP_BUILD_SHARED)
+			get_target_property(flags_old_shared cryptopp-shared COMPILE_FLAGS)
+			if(NOT flags_old_shared)
+				set(flags_old_shared "")
+			endif()
+			set_target_properties(cryptopp-shared PROPERTIES COMPILE_FLAGS "${flags_old_shared} -fPIC")
+		endif()
+	endif()
+endif()
 
-  if (NOT _DATA_DIR)
-    set (_DATA_DIR ${CMAKE_RUNTIME_OUTPUT_DIRECTORY})
-  endif (NOT _DATA_DIR)
+# Set filenames for targets to be "cryptopp"
+if(NOT MSVC)
+	set(COMPAT_VERSION ${cryptopp_VERSION_MAJOR}.${cryptopp_VERSION_MINOR})
 
-  set (_DATA_DIR ${_DATA_DIR}/${CMAKE_CFG_INTDIR})
+	if (CRYPTOPP_BUILD_STATIC)
+		set_target_properties(cryptopp-static
+				PROPERTIES
+				OUTPUT_NAME cryptopp)
+	endif()
+	if (CRYPTOPP_BUILD_SHARED)
+		set_target_properties(cryptopp-shared
+				PROPERTIES
+				SOVERSION ${COMPAT_VERSION}
+				OUTPUT_NAME cryptopp)
+	endif()
+endif()
 
-  add_custom_command (TARGET crypttest POST_BUILD
-    COMMAND ${CMAKE_COMMAND} -E copy_directory
-            ${CMAKE_CURRENT_SOURCE_DIR}/TestData ${_DATA_DIR}/TestData
-    COMMAND ${CMAKE_COMMAND} -E copy_directory
-            ${CMAKE_CURRENT_SOURCE_DIR}/TestVectors ${_DATA_DIR}/TestVectors
-    COMMENT "Copying cryptopp test data")
-endif (TARGET crypttest)
+# Targets, compatible with Crypto++ GNUMakefile
+if (CRYPTOPP_BUILD_STATIC)
+	add_custom_target(static)
+	add_dependencies(static cryptopp-static)
+endif()
+if (CRYPTOPP_BUILD_SHARED)
+	add_custom_target(dynamic)
+	add_dependencies(dynamic cryptopp-shared)
+endif()
 
-set (_CRYPTOPP_VERSION_HEADER ${CMAKE_CURRENT_LIST_DIR}/config.h)
+#============================================================================
+# Third-party libraries
+#============================================================================
+if(WIN32)
+	if (CRYPTOPP_BUILD_STATIC)
+		target_link_libraries(cryptopp-static ws2_32)
+	endif()
+	if (CRYPTOPP_BUILD_SHARED)
+		target_link_libraries(cryptopp-shared ws2_32)
+	endif()
+endif()
 
-file (STRINGS ${_CRYPTOPP_VERSION_HEADER} _CRYPTOPP_VERSION_TMP REGEX
-  "^#define CRYPTOPP_VERSION[ \t]+[0-9]+$")
+find_package(Threads)
+if (CRYPTOPP_BUILD_STATIC)
+	target_link_libraries(cryptopp-static ${CMAKE_THREAD_LIBS_INIT})
+endif()
+if (CRYPTOPP_BUILD_SHARED)
+	target_link_libraries(cryptopp-shared ${CMAKE_THREAD_LIBS_INIT})
+endif()
 
-string (REGEX REPLACE
-  "^#define CRYPTOPP_VERSION[ \t]+([0-9]+)" "\\1" _CRYPTOPP_VERSION_TMP
-  ${_CRYPTOPP_VERSION_TMP})
+#============================================================================
+# Tests
+#============================================================================
+enable_testing()
+if(CRYPTOPP_BUILD_TESTING)
+	add_executable(cryptest ${cryptopp_SOURCES_TEST})
+	target_link_libraries(cryptest cryptopp-static)
 
-string (REGEX REPLACE "([0-9]+)[0-9][0-9]" "\\1" CRYPTOPP_VERSION_MAJOR
-  ${_CRYPTOPP_VERSION_TMP})
-string (REGEX REPLACE "[0-9]([0-9])[0-9]" "\\1" CRYPTOPP_VERSION_MINOR
-  ${_CRYPTOPP_VERSION_TMP})
-string (REGEX REPLACE "[0-9][0-9]([0-9])" "\\1" CRYPTOPP_VERSION_PATCH
-  ${_CRYPTOPP_VERSION_TMP})
+	# Setting "cryptest" binary name to "cryptest.exe"
+	if(NOT WIN32)
+		set_target_properties(cryptest PROPERTIES OUTPUT_NAME cryptest.exe)
+	endif()
+	if(NOT TARGET cryptest.exe)
+		add_custom_target(cryptest.exe)
+		add_dependencies(cryptest.exe cryptest)
+	endif()
 
-configure_file (cryptopp-config.cmake.in
-  ${CMAKE_CURRENT_BINARY_DIR}/cryptopp-config.cmake @ONLY)
-configure_file (cryptopp-config-build.cmake.in
-  ${CMAKE_CURRENT_BINARY_DIR}/cryptopp-config-build.cmake @ONLY)
-configure_file (cryptopp-config-version.cmake.in
-  ${CMAKE_CURRENT_BINARY_DIR}/cryptopp-config-version.cmake @ONLY)
+	file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/TestData DESTINATION ${PROJECT_BINARY_DIR})
+	file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/TestVectors DESTINATION ${PROJECT_BINARY_DIR})
 
-export (TARGETS ${_CRYPTOPP_INSTALL_TARGETS} FILE
-  ${CMAKE_CURRENT_BINARY_DIR}/cryptopp-targets.cmake)
-export (PACKAGE CryptoPP)
+	add_test(NAME build_cryptest COMMAND "${CMAKE_COMMAND}" --build ${CMAKE_BINARY_DIR} --target cryptest)
+	add_test(NAME cryptest COMMAND $<TARGET_FILE:cryptest> v)
+	set_tests_properties(cryptest PROPERTIES DEPENDS build_cryptest)
+endif()
 
-#install (EXPORT cryptopp-targets DESTINATION . COMPONENT Development)
-#install (FILES
-#    ${CMAKE_CURRENT_BINARY_DIR}/cryptopp-config.cmake
-#    ${CMAKE_CURRENT_BINARY_DIR}/cryptopp-config-version.cmake
-#    DESTINATION . COMPONENT Development)
+#============================================================================
+# Doxygen documentation
+#============================================================================
+if(CRYPTOPP_BUILD_DOCUMENTATION)
+	find_package(Doxygen REQUIRED)
+
+	set(in_source_DOCS_DIR "${CMAKE_CURRENT_SOURCE_DIR}/html-docs")
+	set(out_source_DOCS_DIR "${PROJECT_BINARY_DIR}/html-docs")
+
+	add_custom_target(docs ALL
+			COMMAND ${DOXYGEN_EXECUTABLE} Doxyfile -d CRYPTOPP_DOXYGEN_PROCESSING
+			WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+			SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/Doxyfile
+			)
+
+	if(NOT ${in_source_DOCS_DIR} STREQUAL ${out_source_DOCS_DIR})
+		add_custom_command(
+				TARGET docs POST_BUILD
+				COMMAND ${CMAKE_COMMAND} -E copy_directory "${in_source_DOCS_DIR}" "${out_source_DOCS_DIR}"
+				COMMAND ${CMAKE_COMMAND} -E remove_directory "${in_source_DOCS_DIR}"
+		)
+	endif()
+endif()
+
+#============================================================================
+# Install
+#============================================================================
+set(export_name "cryptopp-targets")
+
+# Runtime package
+if (CRYPTOPP_BUILD_SHARED)
+	install(
+			TARGETS cryptopp-shared
+			EXPORT ${export_name}
+			DESTINATION ${CMAKE_INSTALL_LIBDIR}
+			RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
+			LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+			ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
+	)
+endif()
+
+# Development package
+if (CRYPTOPP_BUILD_STATIC)
+	install(TARGETS cryptopp-static EXPORT ${export_name} DESTINATION ${CMAKE_INSTALL_LIBDIR})
+endif()
+install(FILES ${cryptopp_HEADERS} DESTINATION include/cryptopp)
+
+# CMake Package
+if(NOT CMAKE_VERSION VERSION_LESS 2.8.8)	# CMakePackageConfigHelpers is supported from 2.8.8
+	include(CMakePackageConfigHelpers)
+	write_basic_package_version_file("${PROJECT_BINARY_DIR}/cryptopp-config-version.cmake" VERSION ${cryptopp_VERSION_MAJOR}.${cryptopp_VERSION_MINOR}.${cryptopp_VERSION_PATCH} COMPATIBILITY SameMajorVersion)
+	install(FILES cryptopp-config.cmake ${PROJECT_BINARY_DIR}/cryptopp-config-version.cmake DESTINATION "lib/cmake/cryptopp")
+	install(EXPORT ${export_name} DESTINATION "lib/cmake/cryptopp")
+endif()
+
+# Tests
+if(CRYPTOPP_BUILD_TESTING)
+	install(TARGETS cryptest DESTINATION ${CMAKE_INSTALL_BINDIR})
+	install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/TestData DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/cryptopp)
+	install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/TestVectors DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/cryptopp)
+endif()
+
+
+# Documentation
+if(CRYPTOPP_BUILD_DOCUMENTATION)
+	install(DIRECTORY "${out_source_DOCS_DIR}" DESTINATION ${CMAKE_INSTALL_DOCDIR})
+endif()

@@ -5,3 +5,5 @@ CMakeLists.txt.user*
 !macos-package/.DS_Store
 *.autosave
 .idea/*
+/.vs
+/.vscode
