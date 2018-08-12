@@ -1,13 +1,12 @@
-# WizNote for Mac/Linux
+# WizNotePlus for Wins/MacOS/Linux
 
+forked from [WizTeam/WizQTClient](https://github.com/WizTeam/WizQTClient)
 
-## cross-platform cloud based note-taking client
+## About WizQTClient
+
 WizNote is an open-sourced project, published under GPLv3 for individual/personal users and custom commercial license for company users.
 
 This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version. This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
-
-
-## Introduction
 
 The project is based on Qt, aimed to provide an excellent PKM(personal knowledge management) desktop environment based on cloud usage. At present, we only have Wiz cloud backend(our company) on the table. but we strong encourage developers to contribute to this project to add more cloud backend for different cloud providers like evernote, youdao, etc...even offline usage.
 
@@ -17,33 +16,25 @@ freedom, means knowledge, means PKM, means this WizNote client.
 
 if you are windows or portable platform users, we have WizNote for windows, ios, android from our [Homepage](http://www.wiznote.com)
 
+## About WizNotePlus
+
+New Wiznote.
 
 ## Compile (Windows, macOS, Linux)
 
-visit: (https://note.wiz.cn/pages/manage/biz/payRead.html?kb=4e2d9734-b669-4b6f-91ad-e056be317cea)
+Coming Soon !
 
+## Feature
 
----
+### 适配高分屏
 
-### Install on Mac macOS
+`WizCategoryViewItemBase.cpp` 中的 `drawItemBody` 会将 `iconSize` 设置成 14，当注释掉设置长宽的行为后，QIcon 的 `addFile` 并不能如文档描述般的根据给定的大小来选择不同的文件。因此，手动判断屏幕的 DPI，并判断是否在图片名称后面添加 `@2x` 后缀以选择 `24x24` 的图标.
 
-[Download](http://www.wiz.cn/wiznote-maclinux.html)
+### 待实现特征
 
-
-### Install on Linux, Windows
-
-Please compile from source.
-
-
-
-*All things done, enjoy!*
-
--------
-
-### 在Windows／macOS／Linux上面编译：
-
-请访问: (https://note.wiz.cn/pages/manage/biz/payRead.html?kb=4e2d9734-b669-4b6f-91ad-e056be317cea)
-
-### 在macOS上面安装：
-
-[Download](http://www.wiz.cn/wiznote-maclinux.html)
+- [ ] 文档页面增加 Devtool
+- [ ] 添加外置编辑器功能，用 QFileSystemWatcher 监控文件变动
+- [ ] Windows 端插件添加 QAxObject 接口
+- [ ] 建立插件系统
+- [ ] 建立其他云服务系统
+- [ ] 跟换内核为 Electron 内核

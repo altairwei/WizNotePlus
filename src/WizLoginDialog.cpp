@@ -1,5 +1,6 @@
 ﻿#include "WizLoginDialog.h"
 #include "ui_WizLoginDialog.h"
+
 #include <QPainter>
 #include <QMouseEvent>
 #include <QMenu>
@@ -578,6 +579,7 @@ void WizLoginDialog::applyElementStyles(const QString &strLocal)
     QString strIconPerson = WizGetSkinResourceFileName(strThemeName, "loginIconPerson" + (isHighPix ? "@2x" : QString()));
     QString strIconKey = WizGetSkinResourceFileName(strThemeName, "loginIconKey" + (isHighPix ? "@2x" : QString()));
     QString strIconServer = WizGetSkinResourceFileName(strThemeName, "loginIconServer" + (isHighPix ? "@2x" : QString()));
+
     ui->wgt_usercontainer->setBackgroundImage(strLoginTopLineEditor, QPoint(8, 8));
     ui->wgt_usercontainer->setLeftIcon(strIconPerson);
     ui->wgt_usercontainer->setRightIcon(WizGetSkinResourceFileName(strThemeName, "loginLineEditorDownArrow" + (isHighPix ? "@2x" : QString())));

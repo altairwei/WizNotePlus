@@ -81,7 +81,6 @@ CWizNoteStyle::CWizNoteStyle(const QString& strSkinName)
     if (!strSkinName.isEmpty())
     {
         QString strSkinPath = ::WizGetSkinResourcePath(strSkinName);
-
         bool bHightPixel = WizIsHighPixel();
         QString strIconName = bHightPixel ? "branch_expanded@2x.png" : "branch_expanded.png";
         m_expandedImage.load(strSkinPath + strIconName);
@@ -485,7 +484,7 @@ void CWizNoteStyle::drawcenterImage(QPainter* p, const QImage& image, const QRec
     bool bHighPixel = WizIsHighPixel();
     int width = bHighPixel ? image.width() / 2 : image.width();
     int height = bHighPixel ? image.height() / 2 : image.height();
-
+    // 定位绘制左上角起点
     int x = rc.left() + (rc.width() - width) / 2;
     int y = rc.top() + (rc.height() - height) / 2;
 

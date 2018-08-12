@@ -1177,6 +1177,7 @@ void WizStyleHelper::drawListViewItemThumb(QPainter* p, const QRect& rc, int nBa
     if (nBadgeType & DocTypeEncrytedInSummary) {
         QIcon badgeIcon(listViewBadge(BadgeEncryptedInSummary));
         QSize sz = badgeIcon.availableSizes().first();
+        //QSize sz = badgeIcon.availableSizes().last();
         QRect rcPix(rcSummary.x() + (rcSummary.width() - sz.width()) / 2, rcSummary.y() + (rcSummary.height() - sz.height()) / 2,
                     sz.width(), sz.height());
         if (bSelected && bFocused) {
