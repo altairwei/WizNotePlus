@@ -257,8 +257,12 @@ WizMainWindow::WizMainWindow(WizDatabaseManager& dbMgr, QWidget *parent)
     initDockMenu();
 #else
     if (m_useSystemBasedStyle) {
+        // 使用系统菜单风格
+        // 在编译时因为定义了Q_OS_WIN系统变量，所以m_useSystemBasedStyle(false)被初始化为否。
         initMenuBar();
     } else {
+        // 不使用系统菜单风格，而使用Wiz自定义菜单风格
+        // 执行此分支对菜单进行初始化，将会导致m_viewTypeActions和m_sortTypeActions为空，产生BUG
         initMenuList();
     }
 #endif
@@ -1024,7 +1028,14 @@ void WizMainWindow::initMenuBar()
     checked = m_category->isSectionVisible(Section_PersonalGroups);
     m_actions->actionFromName(WIZCATEGORY_OPTION_PERSONALGROUPS)->setChecked(checked);
 
-    //
+    initViewTypeActionGroup();
+    initSortTypeActionGroup();
+
+}
+
+void WizMainWindow::initViewTypeActionGroup() {
+    // 笔记列表视图
+    // 从所有Actions中搜寻，并添加到m_viewTypeActions成员中
     m_viewTypeActions = new QActionGroup(m_menuBar);
     QAction* action = m_actions->actionFromName(WIZCATEGORY_OPTION_THUMBNAILVIEW);
     action->setCheckable(true);
@@ -1044,9 +1055,13 @@ void WizMainWindow::initMenuBar()
     m_viewTypeActions->addAction(action);
     int viewType = userSettings().get("VIEW_TYPE").toInt();
     setActionCheckState(m_viewTypeActions->actions(), viewType);
+}
 
+void WizMainWindow::initSortTypeActionGroup() {
+    // 笔记列表排序类型视图
+    // 从所有Actions中搜寻，并添加到m_sortTypeActions成员中
     m_sortTypeActions = new QActionGroup(m_menuBar);
-    action = m_actions->actionFromName(WIZDOCUMENT_SORTBY_CREATEDTIME);
+    QAction* action = m_actions->actionFromName(WIZDOCUMENT_SORTBY_CREATEDTIME);
     action->setData(SortingByCreatedTime);
     m_sortTypeActions->addAction(action);
     action = m_actions->actionFromName(WIZDOCUMENT_SORTBY_UPDATEDTIME);
@@ -1768,6 +1783,8 @@ void WizMainWindow::layoutTitleBar()
 void WizMainWindow::initMenuList()
 {
     m_actions->buildMenu(m_menu, Utils::WizPathResolve::resourcesPath() + "files/mainmenu.ini");
+    initViewTypeActionGroup();
+    initSortTypeActionGroup();
 }
 
 #endif
@@ -2034,11 +2051,11 @@ QWidget* WizMainWindow::createNoteListView()
     noteButtonsContainer->setLayout(layoutButtonContainer);
 
     QHBoxLayout* layoutActions = new QHBoxLayout();
-    layoutActions->setContentsMargins(0, 0, 12, 0);
-    layoutActions->setSpacing(0);
+    layoutActions->setContentsMargins(0, 0, 12, 0); // 设置布局内容右边界为12
+    layoutActions->setSpacing(0); // 设置按钮之间的间隔
 
     WizViewTypePopupButton* viewBtn = new WizViewTypePopupButton(*this, this);
-    viewBtn->setFixedHeight(Utils::WizStyleHelper::listViewSortControlWidgetHeight());
+    viewBtn->setFixedHeight(Utils::WizStyleHelper::listViewSortControlWidgetHeight()); // 设置组件最大高度，不改变宽短
     connect(viewBtn, SIGNAL(viewTypeChanged(int)), SLOT(on_documents_viewTypeChanged(int)));
     connect(this, SIGNAL(documentsViewTypeChanged(int)), viewBtn, SLOT(on_viewTypeChanged(int)));
     layoutActions->addWidget(viewBtn);

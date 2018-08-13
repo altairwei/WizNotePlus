@@ -66,11 +66,12 @@ void WizCategoryViewItemBase::drawItemBody(QPainter *p, const QStyleOptionViewIt
     // 获得Area for a view item's decoration (icon).
     QRect rcIcon = treeWidget()->style()->subElementRect(QStyle::SE_ItemViewItemDecoration, vopt, treeWidget());
     if (!vopt->icon.isNull()) {
-        const int iconSize = 14;
+        //const int iconSize = 14;
+        const int iconSize = WizSmartScaleUI(14);
         rcIcon.adjust(-6, 0, 0, 0);
         rcIcon.setTop(vopt->rect.top() + (vopt->rect.height() - iconSize) / 2);
-        //rcIcon.setWidth(iconSize);
-        //rcIcon.setHeight(iconSize);
+        rcIcon.setWidth(iconSize);
+        rcIcon.setHeight(iconSize);
         Utils::WizStyleHelper::drawTreeViewItemIcon(p, rcIcon, vopt->icon, bSelected);
     }
 

@@ -228,6 +228,8 @@ private:
     void initMenuList();
 #endif
     void initMenuBar();
+    void initViewTypeActionGroup();
+    void initSortTypeActionGroup();
     void initDockMenu();
 
     QWidget* createNoteListView();

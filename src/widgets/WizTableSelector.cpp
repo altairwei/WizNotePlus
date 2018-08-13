@@ -3,6 +3,7 @@
 #include <QMenu>
 #include <QApplication>
 #include "share/WizThreads.h"
+#include "share/WizMisc.h"
 #include <QStyleOption>
 #include <QPainter>
 #include <QStyle>

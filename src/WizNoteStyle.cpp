@@ -4,6 +4,7 @@
 #include <QPainter>
 #include <QScrollBar>
 #include <QApplication>
+#include <QRect>
 
 #include "WizCategoryView.h"
 #include "WizDocumentListView.h"
@@ -390,6 +391,7 @@ void CWizNoteStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption *opt, 
     switch (pe)
     {
     case PE_IndicatorBranch:
+        // 目录树指示箭头绘制
         {
             if (const WizCategoryBaseView *view = dynamic_cast<const WizCategoryBaseView *>(w))
             {
@@ -398,10 +400,18 @@ void CWizNoteStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption *opt, 
 
                 if (opt->state & QStyle::State_Children) {
                     bool bExpanded = (opt->state & QStyle::State_Open) ? true : false;
+                    // 改变图标尺寸和位置
+                    QRect rectIcon = opt->rect;
+                    //rectIcon.setWidth(::WizSmartScaleUI(opt->rect.width()));
+                    //rectIcon.setHeight(::WizSmartScaleUI(opt->rect.height()));
+                    rectIcon.adjust(8/WizSmartScaleUI(1), 0, 0, 0);
+                    //
                     if ((opt->state & QStyle::State_Selected)) {        //(opt->state & State_HasFocus)
-                        drawcenterImage(p, bExpanded ? m_expandedImageSelected : m_collapsedImageSelected, opt->rect.adjusted(8, 0, 0, 0));
+                        //drawcenterImage(p, bExpanded ? m_expandedImageSelected : m_collapsedImageSelected, opt->rect.adjusted(8, 0, 0, 0));
+                        drawcenterImage(p, bExpanded ? m_expandedImageSelected : m_collapsedImageSelected, rectIcon);
                     } else {
-                        drawcenterImage(p, bExpanded ? m_expandedImage : m_collapsedImage, opt->rect.adjusted(8, 0, 0, 0));
+                        //drawcenterImage(p, bExpanded ? m_expandedImage : m_collapsedImage, opt->rect.adjusted(8, 0, 0, 0));
+                        drawcenterImage(p, bExpanded ? m_expandedImage : m_collapsedImage, rectIcon);
                     }
                 }
                 return;
@@ -449,6 +459,7 @@ void CWizNoteStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption *opt, 
                 }
 
                 if (opt->state & State_Selected) {
+                    // 选区背景
                     QRect rc(vopt->rect);
                     rc.setWidth(p->window().width());
                     int nMargin = (opt->rect.height() - WizSmartScaleUI(20)) / 2;
@@ -484,7 +495,7 @@ void CWizNoteStyle::drawcenterImage(QPainter* p, const QImage& image, const QRec
     bool bHighPixel = WizIsHighPixel();
     int width = bHighPixel ? image.width() / 2 : image.width();
     int height = bHighPixel ? image.height() / 2 : image.height();
-    // 定位绘制左上角起点
+
     int x = rc.left() + (rc.width() - width) / 2;
     int y = rc.top() + (rc.height() - height) / 2;
 

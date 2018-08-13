@@ -1137,7 +1137,8 @@ void WizStyleHelper::drawListViewItemThumb(QPainter* p, const QRect& rc, int nBa
     nFontHeight = Utils::WizStyleHelper::fontThumb(fontThumb);
     QPixmap pixGreyPoint(Utils::WizStyleHelper::skinResourceFileName("document_grey_point", true));
     QRect rcLead = rcd;   //排序类型或标签等
-    int nLeadHeight;
+    //int nLeadHeight;
+    int nLeadHeight = 0;
     if (!lead.isEmpty()) {
         for (int i = 0; i < lead.count(); i++) {
             QString strInfo(lead.at(i));
