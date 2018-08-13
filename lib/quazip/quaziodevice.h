@@ -1,6 +1,30 @@
 #ifndef QUAZIP_QUAZIODEVICE_H
 #define QUAZIP_QUAZIODEVICE_H
 
+/*
+Copyright (C) 2005-2014 Sergey A. Tachenov
+
+This file is part of QuaZIP.
+
+QuaZIP is free software: you can redistribute it and/or modify
+it under the terms of the GNU Lesser General Public License as published by
+the Free Software Foundation, either version 2.1 of the License, or
+(at your option) any later version.
+
+QuaZIP is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU Lesser General Public License for more details.
+
+You should have received a copy of the GNU Lesser General Public License
+along with QuaZIP.  If not, see <http://www.gnu.org/licenses/>.
+
+See COPYING file for the full LGPL text.
+
+Original ZIP package is copyrighted by Gilles Vollant and contributors,
+see quazip/(un)zip.h files for details. Basically it's the zlib license.
+*/
+
 #include <QIODevice>
 #include "quazip_global.h"
 
@@ -63,6 +87,10 @@ public:
   QIODevice *getIoDevice() const;
   /// Returns true.
   virtual bool isSequential() const;
+  /// Returns true iff the end of the compressed stream is reached.
+  virtual bool atEnd() const;
+  /// Returns the number of the bytes buffered.
+  virtual qint64 bytesAvailable() const;
 protected:
   /// Implementation of QIODevice::readData().
   virtual qint64 readData(char *data, qint64 maxSize);

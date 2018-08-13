@@ -1,3 +1,27 @@
+/*
+Copyright (C) 2005-2014 Sergey A. Tachenov
+
+This file is part of QuaZIP.
+
+QuaZIP is free software: you can redistribute it and/or modify
+it under the terms of the GNU Lesser General Public License as published by
+the Free Software Foundation, either version 2.1 of the License, or
+(at your option) any later version.
+
+QuaZIP is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU Lesser General Public License for more details.
+
+You should have received a copy of the GNU Lesser General Public License
+along with QuaZIP.  If not, see <http://www.gnu.org/licenses/>.
+
+See COPYING file for the full LGPL text.
+
+Original ZIP package is copyrighted by Gilles Vollant and contributors,
+see quazip/(un)zip.h files for details. Basically it's the zlib license.
+*/
+
 #include "quaziodevice.h"
 
 #define QUAZIO_INBUFSIZE 4096
@@ -18,6 +42,7 @@ class QuaZIODevicePrivate {
     int outBufPos;
     int outBufSize;
     bool zBufError;
+    bool atEnd;
     int doFlush(QString &error);
 };
 
@@ -29,7 +54,8 @@ QuaZIODevicePrivate::QuaZIODevicePrivate(QIODevice *io):
   outBuf(NULL),
   outBufPos(0),
   outBufSize(0),
-  zBufError(false)
+  zBufError(false),
+  atEnd(false)
 {
   zins.zalloc = (alloc_func) NULL;
   zins.zfree = (free_func) NULL;
@@ -187,6 +213,7 @@ qint64 QuaZIODevice::readData(char *data, qint64 maxSize)
       case Z_STREAM_END:
         read = (char *) d->zins.next_out - data;
         d->inBufPos = (char *) d->zins.next_in - d->inBuf;
+        d->atEnd = true;
         return read;
       case Z_BUF_ERROR: // this should never happen, but just in case
         if (!d->zBufError) {
@@ -292,5 +319,21 @@ bool QuaZIODevice::flush()
 
 bool QuaZIODevice::isSequential() const
 {
-  return true;
+    return true;
+}
+
+bool QuaZIODevice::atEnd() const
+{
+    // Here we MUST check QIODevice::bytesAvailable() because WE
+    // might have reached the end, but QIODevice didn't--
+    // it could have simply pre-buffered all remaining data.
+    return (openMode() == NotOpen) || (QIODevice::bytesAvailable() == 0 && d->atEnd);
+}
+
+qint64 QuaZIODevice::bytesAvailable() const
+{
+    // If we haven't recevied Z_STREAM_END, it means that
+    // we have at least one more input byte available.
+    // Plus whatever QIODevice has buffered.
+    return (d->atEnd ? 0 : 1) + QIODevice::bytesAvailable();
 }

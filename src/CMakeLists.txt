@@ -542,7 +542,7 @@ if(UNIX)
 	if(APPLE)
 		if(APPSTORE_BUILD)
 			target_link_libraries(${PROJECT_NAME}
-				quazip
+                quazip_static
 				cryptopp-static
 				Qt5::WebEngine
 				Qt5::WebEngineWidgets
@@ -552,7 +552,7 @@ if(UNIX)
 			)
 		else(APPSTORE_BUILD)
 			target_link_libraries(${PROJECT_NAME}
-				quazip
+                quazip_static
 				cryptopp-static
 				Qt5::WebEngine
 				Qt5::WebEngineWidgets
@@ -565,7 +565,7 @@ if(UNIX)
 		target_link_libraries(${PROJECT_NAME}
                         -lpthread
                         X11
-			quazip
+            quazip_static   
 			cryptopp-static
 			Qt5::WebEngine
 			Qt5::WebEngineWidgets
@@ -574,7 +574,7 @@ if(UNIX)
 	endif(APPLE)
 else(NOT UNIX)
 	target_link_libraries(${PROJECT_NAME}
-		quazip
+        quazip_static
 		cryptopp-static
 		Qt5::WebEngine
 		Qt5::WebEngineWidgets
