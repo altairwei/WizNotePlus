@@ -476,6 +476,7 @@ bool WizAvatarHost::customSizeAvatar(const QString& strUserID, int width, int he
 
 QPixmap WizAvatarHost::corpImage(const QPixmap& org)
 {
+    // 将头像裁剪成正方形
     if (org.isNull())
         return org;
     //

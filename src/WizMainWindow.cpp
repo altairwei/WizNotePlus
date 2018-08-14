@@ -1728,7 +1728,7 @@ void WizMainWindow::layoutTitleBar()
     //
     QLayout* layoutTitle = new QHBoxLayout();
     layoutTitle->setContentsMargins(0, 0, 0, 0);
-    //
+    // 标题栏里组件区域大小，通过 margin 来控制
     QLayout* layoutTitleBar = new QHBoxLayout();
     int margin = WizSmartScaleUI(m_useSystemBasedStyle ? 4 : 10);
     layoutTitleBar->setContentsMargins(margin, margin, margin, margin);
@@ -1871,7 +1871,7 @@ void WizMainWindow::initToolBar()
 
 #else
     layoutTitleBar();
-    //
+    // main button size
     QSize iconSize = QSize(WizSmartScaleUI(24), WizSmartScaleUI(24));
     m_toolBar->setIconSize(iconSize);
     m_toolBar->setContextMenuPolicy(Qt::PreventContextMenu);
@@ -1881,18 +1881,12 @@ void WizMainWindow::initToolBar()
     // align with categoryview's root item.
     m_toolBar->addWidget(new WizFixedSpacer(QSize(3, 1), m_toolBar));
 
-    WizButton* buttonBack = new WizButton(m_toolBar);
-    buttonBack->setIconSize(iconSize);
-    buttonBack->setAction(m_actions->actionFromName(WIZACTION_GLOBAL_GOBACK));
-    m_toolBar->addWidget(buttonBack);
-
-    WizButton* buttonForward = new WizButton(m_toolBar);
-    buttonForward->setIconSize(iconSize);
-    buttonForward->setAction(m_actions->actionFromName(WIZACTION_GLOBAL_GOFORWARD));
-    m_toolBar->addWidget(buttonForward);
+    // 用户信息
+    WizUserInfoWidget* info = new WizUserInfoWidget(*this, m_toolBar);
+    m_toolBar->addWidget(info);
 
     m_toolBar->addWidget(new WizFixedSpacer(QSize(20, 1), m_toolBar));
-
+    // 同步按钮
     WizButton* buttonSync = new WizButton(m_toolBar);
     buttonSync->setIconSize(iconSize);
     buttonSync->setAction(m_actions->actionFromName(WIZACTION_GLOBAL_SYNC));
@@ -1901,13 +1895,25 @@ void WizMainWindow::initToolBar()
 
     m_spacerForToolButtonAdjust = new WizFixedSpacer(QSize(20, 1), m_toolBar);
     m_toolBar->addWidget(m_spacerForToolButtonAdjust);
-
+    // 搜索栏，值得注意搜索栏的长度随着笔记列表宽度而变化
     m_searchWidget = new WizSearchView(this);
 
     m_toolBar->addWidget(m_searchWidget);
 
     m_toolBar->addWidget(new WizFixedSpacer(QSize(20, 1), m_toolBar));
 
+    // 前一篇文档
+    WizButton* buttonBack = new WizButton(m_toolBar);
+    buttonBack->setIconSize(iconSize);
+    buttonBack->setAction(m_actions->actionFromName(WIZACTION_GLOBAL_GOBACK));
+    m_toolBar->addWidget(buttonBack);
+    // 后一篇文档
+    WizButton* buttonForward = new WizButton(m_toolBar);
+    buttonForward->setIconSize(iconSize);
+    buttonForward->setAction(m_actions->actionFromName(WIZACTION_GLOBAL_GOFORWARD));
+    m_toolBar->addWidget(buttonForward);
+
+    // 新建笔记[+]菜单
     prepareNewNoteMenu();
     //
     QAction* newNoteAction = m_actions->actionFromName(WIZACTION_GLOBAL_NEW_DOCUMENT);
@@ -1918,11 +1924,9 @@ void WizMainWindow::initToolBar()
     buttonNew->setPopupMode(QToolButton::MenuButtonPopup);
     //buttonNew->setAction(newNoteAction);
     m_toolBar->addWidget(buttonNew);
+
     //
     m_toolBar->addWidget(new WizSpacer(m_toolBar));
-
-    WizUserInfoWidget* info = new WizUserInfoWidget(*this, m_toolBar);
-    m_toolBar->addWidget(info);
 
     updateHistoryButtonStatus();
 

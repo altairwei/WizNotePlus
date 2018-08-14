@@ -234,7 +234,7 @@ QSize WizSortingPopupButton::sizeHint () const
 //    return QSize(fontMetrics().width(text()) + 45, fontMetrics().height() + 12);
 //#endif
     // 推荐按钮尺寸
-    return QSize(::WizSmartScaleUI(32) + 10, fontMetrics().height() + 10);
+    return QSize(32 + 10, fontMetrics().height() + 10);
 }
 
 void WizSortingPopupButton::on_action_triggered()

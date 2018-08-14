@@ -9,6 +9,7 @@
 #include <QPainter>
 #include <QMouseEvent>
 #include "utils/WizStyleHelper.h"
+#include "share/WizMisc.h"
 #ifdef Q_OS_MAC
 #include "mac/WizMacHelper.h"
 #endif
@@ -24,9 +25,9 @@ void WizUserInfoWidgetBase::paintEvent(QPaintEvent *event)
 {
     Q_UNUSED(event);
 
-    int nAvatarWidth = 32;
-    int nArrawWidth = 10;
-    int nMargin = 4;
+    int nAvatarWidth = WizSmartScaleUI(32);
+    int nArrawWidth = WizSmartScaleUI(10);
+    int nMargin = WizSmartScaleUI(4);
 
     QStyleOptionToolButton opt;
     initStyleOption(&opt);
@@ -36,6 +37,7 @@ void WizUserInfoWidgetBase::paintEvent(QPaintEvent *event)
 
     // draw user avatar
     QRect rectIcon = opt.rect;
+    //rectIcon.setHeight(WizSmartScaleUI(rectIcon.height())); // scale height
     rectIcon.setLeft(rectIcon.left());
     rectIcon.setRight(rectIcon.left() + nAvatarWidth);
     rectIcon.setTop(rectIcon.top() + (rectIcon.height() - nAvatarWidth) / 2);

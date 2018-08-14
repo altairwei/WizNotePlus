@@ -66,8 +66,8 @@ void WizCategoryViewItemBase::drawItemBody(QPainter *p, const QStyleOptionViewIt
     // 获得Area for a view item's decoration (icon).
     QRect rcIcon = treeWidget()->style()->subElementRect(QStyle::SE_ItemViewItemDecoration, vopt, treeWidget());
     if (!vopt->icon.isNull()) {
-        //const int iconSize = 14;
-        const int iconSize = WizSmartScaleUI(14);
+        const int iconSize = 14;
+        //const int iconSize = WizSmartScaleUI(14);
         rcIcon.adjust(-6, 0, 0, 0);
         rcIcon.setTop(vopt->rect.top() + (vopt->rect.height() - iconSize) / 2);
         rcIcon.setWidth(iconSize);
@@ -396,10 +396,9 @@ WizCategoryViewMessageItem::WizCategoryViewMessageItem(WizExplorerApp& app,
     , m_nUnread(0)    
 {
     QIcon icon;
-    bool isHighPix = ::WizIsHighPixel();
-    icon.addFile(WizGetSkinResourceFileName(app.userSettings().skin(), "category_messages_normal" + (isHighPix ? "@2x" : QString())),
+    icon.addFile(WizGetSkinResourceFileName(app.userSettings().skin(), "category_messages_normal"),
                  Utils::WizStyleHelper::treeViewItemIconSize(), QIcon::Normal);
-    icon.addFile(WizGetSkinResourceFileName(app.userSettings().skin(), "messages_selected" + (isHighPix ? "@2x" : QString())),
+    icon.addFile(WizGetSkinResourceFileName(app.userSettings().skin(), "messages_selected"),
                  Utils::WizStyleHelper::treeViewItemIconSize(), QIcon::Selected);
     setIcon(0, icon);
     setText(0, strName);
@@ -614,10 +613,9 @@ WizCategoryViewShortcutRootItem::WizCategoryViewShortcutRootItem(WizExplorerApp&
     : WizCategoryViewItemBase(app, strName, "", Category_ShortcutRootItem)
 {
     QIcon icon;
-    bool isHighPix = ::WizIsHighPixel();
-    icon.addFile(WizGetSkinResourceFileName(app.userSettings().skin(), "category_shortcut_normal" + (isHighPix ? "@2x" : QString())),
+    icon.addFile(WizGetSkinResourceFileName(app.userSettings().skin(), "category_shortcut_normal"),
                  Utils::WizStyleHelper::treeViewItemIconSize(), QIcon::Normal);
-    icon.addFile(WizGetSkinResourceFileName(app.userSettings().skin(), "category_shortcut_selected" + (isHighPix ? "@2x" : QString())),
+    icon.addFile(WizGetSkinResourceFileName(app.userSettings().skin(), "category_shortcut_selected"),
                  Utils::WizStyleHelper::treeViewItemIconSize(), QIcon::Selected);
 
     setIcon(0, icon);
@@ -831,10 +829,9 @@ WizCategoryViewSearchRootItem::WizCategoryViewSearchRootItem(WizExplorerApp& app
     : WizCategoryViewItemBase(app, strName, "", Category_QuickSearchRootItem)
 {
     QIcon icon;
-    bool isHighPix = ::WizIsHighPixel();
-    icon.addFile(WizGetSkinResourceFileName(app.userSettings().skin(), "category_search_normal" + (isHighPix ? "@2x" : QString())),
+    icon.addFile(WizGetSkinResourceFileName(app.userSettings().skin(), "category_search_normal"),
                  Utils::WizStyleHelper::treeViewItemIconSize(), QIcon::Normal);
-    icon.addFile(WizGetSkinResourceFileName(app.userSettings().skin(), "category_search_selected" + (isHighPix ? "@2x" : QString())),
+    icon.addFile(WizGetSkinResourceFileName(app.userSettings().skin(), "category_search_selected"),
                  Utils::WizStyleHelper::treeViewItemIconSize(), QIcon::Selected);
     setIcon(0, icon);
     setText(0, strName);
@@ -861,10 +858,9 @@ WizCategoryViewAllFoldersItem::WizCategoryViewAllFoldersItem(WizExplorerApp& app
     : WizCategoryViewItemBase(app, strName, strKbGUID, Category_AllFoldersItem)
 {
     QIcon icon;
-    bool isHighPix = ::WizIsHighPixel();
-    icon.addFile(WizGetSkinResourceFileName(app.userSettings().skin(), "category_folders_normal" + (isHighPix ? "@2x" : QString())),
+    icon.addFile(WizGetSkinResourceFileName(app.userSettings().skin(), "category_folders_normal"),
                  Utils::WizStyleHelper::treeViewItemIconSize(), QIcon::Normal);
-    icon.addFile(WizGetSkinResourceFileName(app.userSettings().skin(), "category_folders_selected" + (isHighPix ? "@2x" : QString())),
+    icon.addFile(WizGetSkinResourceFileName(app.userSettings().skin(), "category_folders_selected"),
                  Utils::WizStyleHelper::treeViewItemIconSize(), QIcon::Selected);
     setIcon(0, icon);
     setText(0, strName);
@@ -914,16 +910,15 @@ WizCategoryViewFolderItem::WizCategoryViewFolderItem(WizExplorerApp& app,
     : WizCategoryViewItemBase(app, strLocation, strKbGUID, Category_FolderItem)
 {
     QIcon icon;
-    bool isHighPix = ::WizIsHighPixel();
     if (::WizIsPredefinedLocation(strLocation) && strLocation == "/My Journals/") {
-        icon.addFile(WizGetSkinResourceFileName(app.userSettings().skin(), "category_folder_diary_normal" + (isHighPix ? "@2x" : QString())),
+        icon.addFile(WizGetSkinResourceFileName(app.userSettings().skin(), "category_folder_diary_normal"),
                      Utils::WizStyleHelper::treeViewItemIconSize(), QIcon::Normal);
-        icon.addFile(WizGetSkinResourceFileName(app.userSettings().skin(), "category_folder_diary_selected" + (isHighPix ? "@2x" : QString())),
+        icon.addFile(WizGetSkinResourceFileName(app.userSettings().skin(), "category_folder_diary_selected"),
                      Utils::WizStyleHelper::treeViewItemIconSize(), QIcon::Selected);
     } else {
-        icon.addFile(WizGetSkinResourceFileName(app.userSettings().skin(), "category_folder_normal" + (isHighPix ? "@2x" : QString())),
+        icon.addFile(WizGetSkinResourceFileName(app.userSettings().skin(), "category_folder_normal"),
                      Utils::WizStyleHelper::treeViewItemIconSize(), QIcon::Normal);
-        icon.addFile(WizGetSkinResourceFileName(app.userSettings().skin(), "category_folder_selected" + (isHighPix ? "@2x" : QString())),
+        icon.addFile(WizGetSkinResourceFileName(app.userSettings().skin(), "category_folder_selected"),
                      Utils::WizStyleHelper::treeViewItemIconSize(), QIcon::Selected);
     }
     setIcon(0, icon);
@@ -1074,10 +1069,9 @@ WizCategoryViewAllTagsItem::WizCategoryViewAllTagsItem(WizExplorerApp& app,
     : WizCategoryViewItemBase(app, strName, strKbGUID, Category_AllTagsItem)
 {
     QIcon icon;
-    bool isHighPix = ::WizIsHighPixel();
-    icon.addFile(WizGetSkinResourceFileName(app.userSettings().skin(), "category_tags_normal" + (isHighPix ? "@2x" : QString())),
+    icon.addFile(WizGetSkinResourceFileName(app.userSettings().skin(), "category_tags_normal"),
                  Utils::WizStyleHelper::treeViewItemIconSize(), QIcon::Normal);
-    icon.addFile(WizGetSkinResourceFileName(app.userSettings().skin(), "category_tags_selected" + (isHighPix ? "@2x" : QString())),
+    icon.addFile(WizGetSkinResourceFileName(app.userSettings().skin(), "category_tags_selected"),
                  Utils::WizStyleHelper::treeViewItemIconSize(), QIcon::Selected);
     setIcon(0, icon);
     setText(0, strName);
@@ -1128,10 +1122,9 @@ WizCategoryViewTagItem::WizCategoryViewTagItem(WizExplorerApp& app,
     , m_tag(tag)
 {
     QIcon icon;
-    bool isHighPix = ::WizIsHighPixel();
-    icon.addFile(WizGetSkinResourceFileName(app.userSettings().skin(), "category_tagItem_normal" + (isHighPix ? "@2x" : QString())),
+    icon.addFile(WizGetSkinResourceFileName(app.userSettings().skin(), "category_tagItem_normal"),
                  Utils::WizStyleHelper::treeViewItemIconSize(), QIcon::Normal);
-    icon.addFile(WizGetSkinResourceFileName(app.userSettings().skin(), "category_tagItem_selected" + (isHighPix ? "@2x" : QString())),
+    icon.addFile(WizGetSkinResourceFileName(app.userSettings().skin(), "category_tagItem_selected"),
                  Utils::WizStyleHelper::treeViewItemIconSize(), QIcon::Selected);
     setIcon(0, icon);
     setText(0, WizDatabase::tagNameToDisplayName(tag.strName));
@@ -1230,10 +1223,9 @@ WizCategoryViewStyleRootItem::WizCategoryViewStyleRootItem(WizExplorerApp& app,
     : WizCategoryViewItemBase(app, strName)
 {
     QIcon icon;
-    bool isHighPix = ::WizIsHighPixel();
-    icon.addFile(WizGetSkinResourceFileName(app.userSettings().skin(), "style_normal" + (isHighPix ? "@2x" : QString())),
+    icon.addFile(WizGetSkinResourceFileName(app.userSettings().skin(), "style_normal"),
                  Utils::WizStyleHelper::treeViewItemIconSize(), QIcon::Normal);
-    icon.addFile(WizGetSkinResourceFileName(app.userSettings().skin(), "style_selected" + (isHighPix ? "@2x" : QString())),
+    icon.addFile(WizGetSkinResourceFileName(app.userSettings().skin(), "style_selected"),
                  Utils::WizStyleHelper::treeViewItemIconSize(), QIcon::Selected);
     setIcon(0, icon);
     setText(0, strName);
@@ -1250,10 +1242,9 @@ WizCategoryViewGroupsRootItem::WizCategoryViewGroupsRootItem(WizExplorerApp& app
     : WizCategoryViewItemBase(app, strName, "", Category_GroupsRootItem)
 {
     QIcon icon;
-    bool isHighPix = ::WizIsHighPixel();
-    icon.addFile(WizGetSkinResourceFileName(app.userSettings().skin(), "category_group_normal" + (isHighPix ? "@2x" : QString())),
+    icon.addFile(WizGetSkinResourceFileName(app.userSettings().skin(), "category_group_normal"),
                  Utils::WizStyleHelper::treeViewItemIconSize(), QIcon::Normal);
-    icon.addFile(WizGetSkinResourceFileName(app.userSettings().skin(), "category_group_selected" + (isHighPix ? "@2x" : QString())),
+    icon.addFile(WizGetSkinResourceFileName(app.userSettings().skin(), "category_group_selected"),
                  Utils::WizStyleHelper::treeViewItemIconSize(), QIcon::Selected);
     setIcon(0, icon);
     setText(0, strName);
@@ -1324,10 +1315,9 @@ WizCategoryViewBizGroupRootItem::WizCategoryViewBizGroupRootItem(WizExplorerApp&
     , m_unReadCount(0)
 {
     QIcon icon;
-    bool isHighPix = ::WizIsHighPixel();
-    icon.addFile(WizGetSkinResourceFileName(app.userSettings().skin(), "category_biz_normal" + (isHighPix ? "@2x" : QString())),
+    icon.addFile(WizGetSkinResourceFileName(app.userSettings().skin(), "category_biz_normal"),
                  Utils::WizStyleHelper::treeViewItemIconSize(), QIcon::Normal);
-    icon.addFile(WizGetSkinResourceFileName(app.userSettings().skin(), "category_biz_selected" + (isHighPix ? "@2x" : QString())),
+    icon.addFile(WizGetSkinResourceFileName(app.userSettings().skin(), "category_biz_selected"),
                  Utils::WizStyleHelper::treeViewItemIconSize(), QIcon::Selected);
     setIcon(0, icon);
 }
@@ -1537,10 +1527,9 @@ WizCategoryViewOwnGroupRootItem::WizCategoryViewOwnGroupRootItem(WizExplorerApp&
     : WizCategoryViewGroupsRootItem(app, CATEGORY_OWN_GROUPS)
 {
     QIcon icon;
-    bool isHighPix = ::WizIsHighPixel();
-    icon.addFile(WizGetSkinResourceFileName(app.userSettings().skin(), "category_group_normal" + (isHighPix ? "@2x" : QString())),
+    icon.addFile(WizGetSkinResourceFileName(app.userSettings().skin(), "category_group_normal"),
                  Utils::WizStyleHelper::treeViewItemIconSize(), QIcon::Normal);
-    icon.addFile(WizGetSkinResourceFileName(app.userSettings().skin(), "category_group_selected" + (isHighPix ? "@2x" : QString())),
+    icon.addFile(WizGetSkinResourceFileName(app.userSettings().skin(), "category_group_selected"),
                  Utils::WizStyleHelper::treeViewItemIconSize(), QIcon::Selected);
     setIcon(0, icon);
 }
@@ -1559,10 +1548,9 @@ WizCategoryViewJionedGroupRootItem::WizCategoryViewJionedGroupRootItem(WizExplor
     : WizCategoryViewGroupsRootItem(app, CATEGORY_OTHER_GROUPS)
 {
     QIcon icon;
-    bool isHighPix = ::WizIsHighPixel();
-    icon.addFile(WizGetSkinResourceFileName(app.userSettings().skin(), "category_group_normal" + (isHighPix ? "@2x" : QString())),
+    icon.addFile(WizGetSkinResourceFileName(app.userSettings().skin(), "category_group_normal"),
                  Utils::WizStyleHelper::treeViewItemIconSize(), QIcon::Normal);
-    icon.addFile(WizGetSkinResourceFileName(app.userSettings().skin(), "category_group_selected" + (isHighPix ? "@2x" : QString())),
+    icon.addFile(WizGetSkinResourceFileName(app.userSettings().skin(), "category_group_selected"),
                  Utils::WizStyleHelper::treeViewItemIconSize(), QIcon::Selected);
     setIcon(0, icon);
 }
@@ -1582,19 +1570,18 @@ WizCategoryViewGroupRootItem::WizCategoryViewGroupRootItem(WizExplorerApp& app,
     , m_nUnread(0)
 {
     QIcon icon;
-    bool isHighPix = ::WizIsHighPixel();
     if (group.bEncryptData)
     {
-        icon.addFile(WizGetSkinResourceFileName(app.userSettings().skin(), "category_group_normal_enc" + (isHighPix ? "@2x" : QString())),
+        icon.addFile(WizGetSkinResourceFileName(app.userSettings().skin(), "category_group_normal_enc"),
                      Utils::WizStyleHelper::treeViewItemIconSize(), QIcon::Normal);
-        icon.addFile(WizGetSkinResourceFileName(app.userSettings().skin(), "category_group_selected_enc" + (isHighPix ? "@2x" : QString())),
+        icon.addFile(WizGetSkinResourceFileName(app.userSettings().skin(), "category_group_selected_enc"),
                      Utils::WizStyleHelper::treeViewItemIconSize(), QIcon::Selected);
     }
     else
     {
-        icon.addFile(WizGetSkinResourceFileName(app.userSettings().skin(), "category_group_normal" + (isHighPix ? "@2x" : QString())),
+        icon.addFile(WizGetSkinResourceFileName(app.userSettings().skin(), "category_group_normal"),
                      Utils::WizStyleHelper::treeViewItemIconSize(), QIcon::Normal);
-        icon.addFile(WizGetSkinResourceFileName(app.userSettings().skin(), "category_group_selected" + (isHighPix ? "@2x" : QString())),
+        icon.addFile(WizGetSkinResourceFileName(app.userSettings().skin(), "category_group_selected"),
                      Utils::WizStyleHelper::treeViewItemIconSize(), QIcon::Selected);
     }
     setIcon(0, icon);
@@ -1881,10 +1868,9 @@ WizCategoryViewGroupNoTagItem::WizCategoryViewGroupNoTagItem(WizExplorerApp& app
     : WizCategoryViewItemBase(app, PREDEFINED_UNCLASSIFIED, strKbGUID, Category_GroupNoTagItem)
 {
     QIcon icon;
-    bool isHighPix = ::WizIsHighPixel();
-    icon.addFile(WizGetSkinResourceFileName(app.userSettings().skin(), "category_unclassified_normal" + (isHighPix ? "@2x" : QString())),
+    icon.addFile(WizGetSkinResourceFileName(app.userSettings().skin(), "category_unclassified_normal"),
                  Utils::WizStyleHelper::treeViewItemIconSize(), QIcon::Normal);
-    icon.addFile(WizGetSkinResourceFileName(app.userSettings().skin(), "category_unclassified_selected" + (isHighPix ? "@2x" : QString())),
+    icon.addFile(WizGetSkinResourceFileName(app.userSettings().skin(), "category_unclassified_selected"),
                  Utils::WizStyleHelper::treeViewItemIconSize(), QIcon::Selected);
     setIcon(0, icon);
     setText(0, PREDEFINED_UNCLASSIFIED);
@@ -1921,10 +1907,9 @@ WizCategoryViewGroupItem::WizCategoryViewGroupItem(WizExplorerApp& app,
     , m_tag(tag)
 {
     QIcon icon;
-    bool isHighPix = ::WizIsHighPixel();
-    icon.addFile(WizGetSkinResourceFileName(app.userSettings().skin(), "category_folder_normal" + (isHighPix ? "@2x" : QString())),
+    icon.addFile(WizGetSkinResourceFileName(app.userSettings().skin(), "category_folder_normal"),
                  Utils::WizStyleHelper::treeViewItemIconSize(), QIcon::Normal);
-    icon.addFile(WizGetSkinResourceFileName(app.userSettings().skin(), "category_folder_selected" + (isHighPix ? "@2x" : QString())),
+    icon.addFile(WizGetSkinResourceFileName(app.userSettings().skin(), "category_folder_selected"),
                  Utils::WizStyleHelper::treeViewItemIconSize(), QIcon::Selected);
     setIcon(0, icon);
     setText(0, WizDatabase::tagNameToDisplayName(tag.strName));
@@ -2053,10 +2038,9 @@ WizCategoryViewTrashItem::WizCategoryViewTrashItem(WizExplorerApp& app,
     : WizCategoryViewFolderItem(app, "/Deleted Items/", strKbGUID)
 {
     QIcon icon;
-    bool isHighPix = ::WizIsHighPixel();
-    icon.addFile(WizGetSkinResourceFileName(app.userSettings().skin(), "trash_normal" + (isHighPix ? "@2x" : QString())),
+    icon.addFile(WizGetSkinResourceFileName(app.userSettings().skin(), "trash_normal"),
                  Utils::WizStyleHelper::treeViewItemIconSize(), QIcon::Normal);
-    icon.addFile(WizGetSkinResourceFileName(app.userSettings().skin(), "trash_selected" + (isHighPix ? "@2x" : QString())),
+    icon.addFile(WizGetSkinResourceFileName(app.userSettings().skin(), "trash_selected"),
                  Utils::WizStyleHelper::treeViewItemIconSize(), QIcon::Selected);
     setIcon(0, icon);
     setText(0, PREDEFINED_TRASH);
@@ -2155,22 +2139,21 @@ WizCategoryViewShortcutItem::WizCategoryViewShortcutItem(WizExplorerApp& app,
     , m_location(location)
 {
     QIcon icon;
-    bool isHighPix = ::WizIsHighPixel();
     switch (type) {
     case Document:
     {
         if (bEncrypted)
         {
-            icon.addFile(WizGetSkinResourceFileName(app.userSettings().skin(), "document_badge_encrypted" + (isHighPix ? "@2x" : QString())),
+            icon.addFile(WizGetSkinResourceFileName(app.userSettings().skin(), "document_badge_encrypted"),
                          Utils::WizStyleHelper::treeViewItemIconSize(), QIcon::Normal);
-            icon.addFile(WizGetSkinResourceFileName(app.userSettings().skin(), "document_badge_encrypted_selected" + (isHighPix ? "@2x" : QString())),
+            icon.addFile(WizGetSkinResourceFileName(app.userSettings().skin(), "document_badge_encrypted_selected"),
                          Utils::WizStyleHelper::treeViewItemIconSize(), QIcon::Selected);
         }
         else
         {
-            icon.addFile(WizGetSkinResourceFileName(app.userSettings().skin(), "document_badge" + (isHighPix ? "@2x" : QString())),
+            icon.addFile(WizGetSkinResourceFileName(app.userSettings().skin(), "document_badge"),
                          Utils::WizStyleHelper::treeViewItemIconSize(), QIcon::Normal);
-            icon.addFile(WizGetSkinResourceFileName(app.userSettings().skin(), "document_badge_selected" + (isHighPix ? "@2x" : QString())),
+            icon.addFile(WizGetSkinResourceFileName(app.userSettings().skin(), "document_badge_selected"),
                          Utils::WizStyleHelper::treeViewItemIconSize(), QIcon::Selected);
         }
     }
@@ -2178,17 +2161,17 @@ WizCategoryViewShortcutItem::WizCategoryViewShortcutItem(WizExplorerApp& app,
     case PersonalFolder:
     case GroupTag:
     {
-        icon.addFile(WizGetSkinResourceFileName(app.userSettings().skin(), "category_folder_normal" + (isHighPix ? "@2x" : QString())),
+        icon.addFile(WizGetSkinResourceFileName(app.userSettings().skin(), "category_folder_normal"),
                      Utils::WizStyleHelper::treeViewItemIconSize(), QIcon::Normal);
-        icon.addFile(WizGetSkinResourceFileName(app.userSettings().skin(), "category_folder_selected" + (isHighPix ? "@2x" : QString())),
+        icon.addFile(WizGetSkinResourceFileName(app.userSettings().skin(), "category_folder_selected"),
                      Utils::WizStyleHelper::treeViewItemIconSize(), QIcon::Selected);
     }
         break;
     case PersonalTag:
     {
-        icon.addFile(WizGetSkinResourceFileName(app.userSettings().skin(), "category_tag_normal" + (isHighPix ? "@2x" : QString())),
+        icon.addFile(WizGetSkinResourceFileName(app.userSettings().skin(), "category_tag_normal"),
                      Utils::WizStyleHelper::treeViewItemIconSize(), QIcon::Normal);
-        icon.addFile(WizGetSkinResourceFileName(app.userSettings().skin(), "category_tag_selected" + (isHighPix ? "@2x" : QString())),
+        icon.addFile(WizGetSkinResourceFileName(app.userSettings().skin(), "category_tag_selected"),
                      Utils::WizStyleHelper::treeViewItemIconSize(), QIcon::Selected);
     }
         break;
@@ -2307,10 +2290,9 @@ WizCategoryViewSearchItem::WizCategoryViewSearchItem(WizExplorerApp& app,
     : WizCategoryViewItemBase(app, strName, "", type)
 {
     QIcon icon;
-    bool isHighPix = ::WizIsHighPixel();
-    icon.addFile(WizGetSkinResourceFileName(app.userSettings().skin(), "category_searchItem_normal" + (isHighPix ? "@2x" : QString())),
+    icon.addFile(WizGetSkinResourceFileName(app.userSettings().skin(), "category_searchItem_normal"),
                  Utils::WizStyleHelper::treeViewItemIconSize(), QIcon::Normal);
-    icon.addFile(WizGetSkinResourceFileName(app.userSettings().skin(), "category_searchItem_selected" + (isHighPix ? "@2x" : QString())),
+    icon.addFile(WizGetSkinResourceFileName(app.userSettings().skin(), "category_searchItem_selected"),
                  Utils::WizStyleHelper::treeViewItemIconSize(), QIcon::Selected);
     setIcon(0, icon);
     setText(0, strName);    

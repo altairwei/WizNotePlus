@@ -1,4 +1,4 @@
-#include <QtGlobal>
+﻿#include <QtGlobal>
 #include <QApplication>
 #include <QTreeWidget>
 #include <QMessageBox>
@@ -129,6 +129,11 @@ void installOnLinux()
 int mainCore(int argc, char *argv[])
 {
 
+#if (defined Q_OS_LINUX) || (defined Q_OS_MAC)
+    // 适配Linux和Mac端高分屏，Windows端需要另外设置
+    QApplication::setAttribute(Qt::AA_EnableHighDpiScaling);
+#endif
+
     // 初始化主进程和QtWebEngine
     //-------------------------------------------------------------------
 
@@ -136,7 +141,7 @@ int mainCore(int argc, char *argv[])
     // create single application for linux
     WizSingleApplication app(argc, argv, "Special-Message-for-WizNote-SingleApplication");
     if (app.isRunning())
-    {
+    {   // 非正常退出似乎会导致无法再进去
         app.sendMessage(WIZ_SINGLE_APPLICATION);
         return 0;
     }

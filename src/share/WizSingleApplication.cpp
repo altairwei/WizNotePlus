@@ -167,7 +167,9 @@ void CWizSingleApplication::activateWindow()
 #include <QLocalSocket>
 #include <QDebug>
 
-WizSingleApplication::WizSingleApplication(int &argc, char *argv[], const QString uniqueKey) : QApplication(argc, argv), _uniqueKey(uniqueKey)
+WizSingleApplication::WizSingleApplication(int &argc, char *argv[], const QString uniqueKey)
+    : QApplication(argc, argv)
+    , _uniqueKey(uniqueKey)
 {
     sharedMemory.setKey(_uniqueKey);
     if (sharedMemory.attach())

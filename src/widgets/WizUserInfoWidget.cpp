@@ -37,7 +37,7 @@ WizUserInfoWidget::WizUserInfoWidget(WizExplorerApp& app, QWidget *parent)
 
     // load builtin arraw
     bool isHighPix = ::WizIsHighPixel();
-    QString strIconPath = ::WizGetSkinResourcePath(app.userSettings().skin()) + "arrow.png"  + (isHighPix ? "@2x" : QString());
+    QString strIconPath = ::WizGetSkinResourcePath(app.userSettings().skin()) + "arrow"  + (isHighPix ? "@2x" : QString()) + ".png";
     m_iconArraw.addFile(strIconPath);
 
     // setup menu
@@ -104,14 +104,14 @@ void WizUserInfoWidget::resetUserInfo()
     QString iconName;
     bool isHighPix = ::WizIsHighPixel();
     if (info.strUserType == "vip") {
-        iconName = "vip1.png" + (isHighPix ? "@2x" : QString());
+        iconName = "vip1" + (isHighPix ? "@2x" : QString()) + ".png";
     } else if (info.strUserType == "vip2") {
-        iconName = "vip2.png" + (isHighPix ? "@2x" : QString());
+        iconName = "vip2" + (isHighPix ? "@2x" : QString()) + ".png";
     } else if (info.strUserType == "vip3") {
-        // 此版本没有2x图片
+        // 此图片没有2x图片
         iconName = "vip3.png";
     } else {
-        iconName = "vip0.png" + (isHighPix ? "@2x" : QString());
+        iconName = "vip0" + (isHighPix ? "@2x" : QString()) + ".png";
     }
 
     QString strIconPath = ::WizGetSkinResourcePath(m_app.userSettings().skin()) + iconName;
