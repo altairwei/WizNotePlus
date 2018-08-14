@@ -65,6 +65,8 @@ WizWebEnginePage::WizWebEnginePage(QObject* parent)
     : QWebEnginePage(parent)
     , m_continueNavigate(true)
 {
+    // Qt 5.11 才引入这个特性
+    //QWebEnginePage::setInspectedPage();
 }
 
 void WizWebEnginePage::javaScriptConsoleMessage(JavaScriptConsoleMessageLevel level, const QString& message, int lineNumber, const QString& sourceID)

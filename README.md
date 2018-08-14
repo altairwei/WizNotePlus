@@ -30,9 +30,15 @@ Coming Soon !
 
 `WizCategoryViewItemBase.cpp` 中的 `drawItemBody` 会将 `iconSize` 设置成 14，当注释掉设置长宽的行为后，QIcon 的 `addFile` 并不能如文档描述般的根据给定的大小来选择不同的文件。因此，手动判断屏幕的 DPI，并判断是否在图片名称后面添加 `@2x` 后缀以选择 `24x24` 的图标.
 
+- [x] 笔记列表顶部工具栏两个按钮；
+- [x] 目录树列表图标；
+- [ ] 目录树指示三角；
+- [ ] 账户信息相关图标；
+
 ### 待实现特征
 
 - [ ] 文档页面增加 Devtool
+- [ ] 多标签页功能：使用定义好的QTabWidget，再将Wiz自己实现的Qt::FramelessWindowHint窗口嵌入到该组件中；
 - [ ] 添加外置编辑器功能，用 QFileSystemWatcher 监控文件变动
 - [ ] Windows 端插件添加 QAxObject 接口
 - [ ] 建立插件系统

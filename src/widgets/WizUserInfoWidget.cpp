@@ -8,6 +8,7 @@
 #include "share/WizSettings.h"
 #include "share/WizDatabaseManager.h"
 #include "share/WizThreads.h"
+#include "share/WizMisc.h"
 #include "sync/WizApiEntry.h"
 #include "sync/WizKMServer.h"
 #include "sync/WizAvatarUploader.h"
@@ -35,7 +36,8 @@ WizUserInfoWidget::WizUserInfoWidget(WizExplorerApp& app, QWidget *parent)
     connect(&m_db, SIGNAL(userInfoChanged()), SLOT(on_userInfo_changed()));
 
     // load builtin arraw
-    QString strIconPath = ::WizGetSkinResourcePath(app.userSettings().skin()) + "arrow.png";
+    bool isHighPix = ::WizIsHighPixel();
+    QString strIconPath = ::WizGetSkinResourcePath(app.userSettings().skin()) + "arrow.png"  + (isHighPix ? "@2x" : QString());
     m_iconArraw.addFile(strIconPath);
 
     // setup menu
@@ -100,14 +102,16 @@ void WizUserInfoWidget::resetUserInfo()
     //m_textWidth = fontMetrics().width(text());
 
     QString iconName;
+    bool isHighPix = ::WizIsHighPixel();
     if (info.strUserType == "vip") {
-        iconName = "vip1.png";
+        iconName = "vip1.png" + (isHighPix ? "@2x" : QString());
     } else if (info.strUserType == "vip2") {
-        iconName = "vip2.png";
+        iconName = "vip2.png" + (isHighPix ? "@2x" : QString());
     } else if (info.strUserType == "vip3") {
+        // 此版本没有2x图片
         iconName = "vip3.png";
     } else {
-        iconName = "vip0.png";
+        iconName = "vip0.png" + (isHighPix ? "@2x" : QString());
     }
 
     QString strIconPath = ::WizGetSkinResourcePath(m_app.userSettings().skin()) + iconName;
@@ -276,6 +280,7 @@ QIcon WizUserInfoWidget::getVipIcon()
 QSize WizUserInfoWidget::sizeHint() const
 {
     // FIXME: builtin avatar size (36, 36), margin = 4 * 2, arraw width = 10
+    // 用户信息组件大小
     int vipIconWidth = 35;
     return QSize(36+ textWidth() + 8 + vipIconWidth, 36);
 }
