@@ -156,7 +156,7 @@ WIZACTION* WizActions::actionsData()
 WizShortcutAction *WizActions::addAction(WIZACTION& action, bool bUseExtraShortcut)
 {   
     QString strText = action.strText;
-    QString strIconName = action.strName;
+    QString strIconName = action.strName ;
     QKeySequence strShortcut = action.strShortcut;
     QString strSlot = "1on_" + action.strName + "_triggered()";
 

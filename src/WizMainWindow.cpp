@@ -1877,31 +1877,30 @@ void WizMainWindow::initToolBar()
     m_toolBar->setContextMenuPolicy(Qt::PreventContextMenu);
     m_toolBar->setMovable(false);
     m_toolBar->setToolButtonStyle(Qt::ToolButtonIconOnly);
-
     // align with categoryview's root item.
     m_toolBar->addWidget(new WizFixedSpacer(QSize(3, 1), m_toolBar));
-
+    //
     // 用户信息
     WizUserInfoWidget* info = new WizUserInfoWidget(*this, m_toolBar);
     m_toolBar->addWidget(info);
-
-    m_toolBar->addWidget(new WizFixedSpacer(QSize(20, 1), m_toolBar));
+    //
+    m_toolBar->addWidget(new WizFixedSpacer(QSize(5, 1), m_toolBar));
     // 同步按钮
     WizButton* buttonSync = new WizButton(m_toolBar);
     buttonSync->setIconSize(iconSize);
     buttonSync->setAction(m_actions->actionFromName(WIZACTION_GLOBAL_SYNC));
     m_toolBar->addWidget(buttonSync);
-
-
+    //
     m_spacerForToolButtonAdjust = new WizFixedSpacer(QSize(20, 1), m_toolBar);
     m_toolBar->addWidget(m_spacerForToolButtonAdjust);
+    //
     // 搜索栏，值得注意搜索栏的长度随着笔记列表宽度而变化
     m_searchWidget = new WizSearchView(this);
-
+    m_searchWidget->setFixedWidth(200);
     m_toolBar->addWidget(m_searchWidget);
-
+    //
     m_toolBar->addWidget(new WizFixedSpacer(QSize(20, 1), m_toolBar));
-
+    //
     // 前一篇文档
     WizButton* buttonBack = new WizButton(m_toolBar);
     buttonBack->setIconSize(iconSize);
@@ -1912,7 +1911,9 @@ void WizMainWindow::initToolBar()
     buttonForward->setIconSize(iconSize);
     buttonForward->setAction(m_actions->actionFromName(WIZACTION_GLOBAL_GOFORWARD));
     m_toolBar->addWidget(buttonForward);
-
+    //
+    m_toolBar->addWidget(new WizFixedSpacer(QSize(20, 1), m_toolBar));
+    //
     // 新建笔记[+]菜单
     prepareNewNoteMenu();
     //
@@ -1924,7 +1925,6 @@ void WizMainWindow::initToolBar()
     buttonNew->setPopupMode(QToolButton::MenuButtonPopup);
     //buttonNew->setAction(newNoteAction);
     m_toolBar->addWidget(buttonNew);
-
     //
     m_toolBar->addWidget(new WizSpacer(m_toolBar));
 
@@ -3684,7 +3684,7 @@ void WizMainWindow:: adjustToolBarLayout()
     int searchWidth = list->size().width();
     if (spacerWidth > 0)
     {
-        m_spacerForToolButtonAdjust->adjustWidth(spacerWidth);
+        //m_spacerForToolButtonAdjust->adjustWidth(spacerWidth);
     }
     else
     {
@@ -3693,7 +3693,8 @@ void WizMainWindow:: adjustToolBarLayout()
     //
     if (searchWidth > 100)
     {
-        m_searchWidget->setFixedWidth(searchWidth);
+        // 禁用宽度调整
+        //m_searchWidget->setFixedWidth(searchWidth);
     }
 #endif
 }

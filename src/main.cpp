@@ -40,11 +40,14 @@
 #include "WizDocumentWebEngine.h"
 #include "WizLoginDialog.h"
 
-
 #ifdef Q_OS_MAC
 #  define SHARE_PATH "/../Resources"
 #else
 #  define SHARE_PATH "/../share/wiznote"
+#endif
+
+#ifdef Q_OS_WIN
+#include <Windows.h>
 #endif
 
 //-------------------------------------------------------------------
@@ -128,10 +131,20 @@ void installOnLinux()
  */
 int mainCore(int argc, char *argv[])
 {
+    // 设置高分屏支持
+    //-------------------------------------------------------------------
 
-#if (defined Q_OS_LINUX) || (defined Q_OS_MAC)
-    // 适配Linux和Mac端高分屏，Windows端需要另外设置
+#ifdef Q_OS_LINUX
     QApplication::setAttribute(Qt::AA_EnableHighDpiScaling);
+#endif
+
+#ifdef Q_OS_WIN
+    SetProcessDPIAware(); // call before the main event loop
+#if QT_VERSION >= QT_VERSION_CHECK(5,6,0)
+    QApplication::setAttribute(Qt::AA_DisableHighDpiScaling);
+#else
+    qputenv("QT_DEVICE_PIXEL_RATIO", QByteArray("1"));
+#endif // QT_VERSION
 #endif
 
     // 初始化主进程和QtWebEngine
@@ -141,7 +154,7 @@ int mainCore(int argc, char *argv[])
     // create single application for linux
     WizSingleApplication app(argc, argv, "Special-Message-for-WizNote-SingleApplication");
     if (app.isRunning())
-    {   // 非正常退出似乎会导致无法再进去
+    {
         app.sendMessage(WIZ_SINGLE_APPLICATION);
         return 0;
     }
@@ -149,7 +162,6 @@ int mainCore(int argc, char *argv[])
     QtWebEngine::initialize();
 #else
     // 创建Win和Mac端 Qt主进程
-    //QApplication::setAttribute(Qt::AA_EnableHighDpiScaling); // 高分屏支持
     QApplication app(argc, argv);
     //
 #ifdef BUILD4APPSTORE

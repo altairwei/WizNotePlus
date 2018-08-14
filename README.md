@@ -26,14 +26,19 @@ Coming Soon !
 
 ## Feature
 
-### 适配高分屏
+### 适配 Windows 端高分屏
 
-`WizCategoryViewItemBase.cpp` 中的 `drawItemBody` 会将 `iconSize` 设置成 14，当注释掉设置长宽的行为后，QIcon 的 `addFile` 并不能如文档描述般的根据给定的大小来选择不同的文件。因此，手动判断屏幕的 DPI，并判断是否在图片名称后面添加 `@2x` 后缀以选择 `24x24` 的图标.
+OSX 端能提供系统本地对高分屏的支持，除了替换高分辨率图标外，不需要额外设置。linux 端对高分屏的支持很简单，只要在主进程之前设置 `QApplication::setAttribute(Qt::AA_EnableHighDpiScaling);` ，就能完成对高分屏的支持。
+相比之下，window端的高分屏适配就要复杂很多。
+
+检查share/WizMisc.cpp中的 `WizLoadPixmapIcon` 函数，确保图标正确放大。
 
 - [x] 笔记列表顶部工具栏两个按钮；
 - [x] 目录树列表图标；
-- [ ] 目录树指示三角；
-- [ ] 账户信息相关图标；
+- [x] 目录树指示三角；通过Qt对高分屏的支持来解决
+- [ ] 调整标题栏按钮布局，讲搜索组件变成固定宽度；
+- [ ] 调整Windows设置来支持高分屏；
+- [ ] 账户头像分辨率太低；
 
 ### 待实现特征
 
@@ -48,3 +53,4 @@ Coming Soon !
 ### 已知BUG
 
 - [x] 非系统标题栏样式下切换笔记视图会导致软件崩溃
+- [ ] 同步操作完成前无法正常退出
