@@ -16,13 +16,12 @@
 #include "share/WizWebEngineView.h"
 
 
-WizDevToolsDialog::WizDevToolsDialog(QSize sz, QWidget *parent)
+WizDevToolsDialog::WizDevToolsDialog(QWidget *parent)
     : WizWebEngineViewContainerDialog(parent)
     , m_web(new WizWebEngineView(this))
 {
     // 设置长宽和边界
     setContentsMargins(0, 0, 0, 0);
-    setFixedSize(sz);
 
     QPalette pal = palette();
     pal.setBrush(backgroundRole(), QBrush("#FFFFFF"));
@@ -39,4 +38,8 @@ WizDevToolsDialog::WizDevToolsDialog(QSize sz, QWidget *parent)
 
 WizWebEngineView* WizDevToolsDialog::getWeb() {
     return m_web;
+}
+
+QSize WizDevToolsDialog::sizeHint() const {
+    return QSize(600, 500);
 }

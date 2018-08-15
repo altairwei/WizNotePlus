@@ -3330,13 +3330,21 @@ void WizMainWindow::on_actionGoForward_triggered()
     m_doc->setFocus();
 }
 
+/** 打开当前页面开发者工具
+ *
+ *  可以考虑把DevTools窗口绑定在m_doc上，这样重启DevTools窗口可以
+ *  重现上一次的状态。
+ */
 void WizMainWindow::on_actionOpenDevTools_triggered() {
-    WizDevToolsDialog* devToolsWindow = new WizDevToolsDialog(QSize(800, 600));
+    WizDevToolsDialog* devToolsWindow = new WizDevToolsDialog();
+    devToolsWindow->setAttribute(Qt::WA_DeleteOnClose); // 由于没有制定parent所以设置该属性以防止内存泄露
+    if (!m_doc->noteLoaded()) return;
     // 设置外观
     devToolsWindow->setWindowTitle("DevTools - " + m_doc->note().strTitle);
     //
     WizWebEnginePage* devToolsWebPage = devToolsWindow->getWeb()->getPage();
     WizDocumentWebViewPage* docWebPage = m_doc->web()->getPage();
+    docWebPage->setDevToolsPage(devToolsWebPage);
     //
     devToolsWindow->show();
 }

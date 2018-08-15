@@ -17,8 +17,9 @@ class WizDevToolsDialog : public WizWebEngineViewContainerDialog
     Q_OBJECT
 private:
     WizWebEngineView* m_web;
+    virtual QSize sizeHint() const;
 public:
-    WizDevToolsDialog(QSize sz, QWidget *parent = 0);
+    WizDevToolsDialog(QWidget *parent = 0);
     WizWebEngineView* getWeb();
 
 
