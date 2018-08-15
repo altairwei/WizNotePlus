@@ -145,29 +145,37 @@ WIZACTION* WizActions::actionsData()
         {WIZACTION_FORMAT_INSERT_IMAGE,             QObject::tr("Insert Image"),            "",           QKeySequence("Shift+Ctrl+I")},
         {WIZACTION_FORMAT_REMOVE_FORMAT,        QObject::tr("Remove Format"),       "",           QKeySequence()},
         {WIZACTION_FORMAT_SCREEN_SHOT,             QObject::tr("Screen Shot..."),           "",           QKeySequence()},
+        {"actionOpenDevTools", QObject::tr("Open DevTools"), QObject::tr("Inspect Current Web Page."), QKeySequence("F1")},
 
-
+        // 用于结束循环
         {"", "", "", QKeySequence()}
     };
 
     return arrayActions;
 }
 
+/** 添加动作的同时，链接信号到父组件的槽函数
+ *
+ *  @param action 待添加的动作，是一个聚合类
+ *  @param bUseExtraShortcut 指向描述测试信息的字符串
+ *  @return 带有快捷键的动作
+ */
 WizShortcutAction *WizActions::addAction(WIZACTION& action, bool bUseExtraShortcut)
 {   
     QString strText = action.strText;
     QString strIconName = action.strName ;
     QKeySequence strShortcut = action.strShortcut;
+    // 组合槽函数的名称
     QString strSlot = "1on_" + action.strName + "_triggered()";
 
     WizShortcutAction* pAction = new WizShortcutAction(strText, m_parent);
-
+    // 设置图标
     if (!strIconName.isEmpty()) {
         pAction->setIcon(::WizLoadSkinIcon(m_app.userSettings().skin(), strIconName));
     }
-
+    // 设置快捷键
     pAction->setShortcut(strShortcut);
-
+    // 设置特殊动作的角色，主要用于macOS
     if (action.strName == "actionAbout")
         pAction->setMenuRole(QAction::AboutRole);
     else if (action.strName == "actionPreference")
@@ -187,7 +195,7 @@ WizShortcutAction *WizActions::addAction(WIZACTION& action, bool bUseExtraShortc
         QObject::connect(shortcut, SIGNAL(activated()), m_parent, strSlot.toUtf8());
         pAction->setShortcut(shortcut);
     }
-
+    // 以字符串的形式链接槽函数
     QObject::connect(pAction, "2triggered()", m_parent, strSlot.toUtf8());
 
     return pAction;

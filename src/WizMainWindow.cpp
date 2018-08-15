@@ -102,6 +102,8 @@
 
 #include "share/jsoncpp/json/json.h"
 
+#include "WizDevToolsDialog.h"
+
 #define MAINWINDOW  "MainWindow"
 
 
@@ -261,7 +263,7 @@ WizMainWindow::WizMainWindow(WizDatabaseManager& dbMgr, QWidget *parent)
         // 在编译时因为定义了Q_OS_WIN系统变量，所以m_useSystemBasedStyle(false)被初始化为否。
         initMenuBar();
     } else {
-        // 不使用系统菜单风格，而使用Wiz自定义菜单风格
+        // Wiz自定义菜单风格
         // 执行此分支对菜单进行初始化，将会导致m_viewTypeActions和m_sortTypeActions为空，产生BUG
         initMenuList();
     }
@@ -3328,6 +3330,17 @@ void WizMainWindow::on_actionGoForward_triggered()
     m_doc->setFocus();
 }
 
+void WizMainWindow::on_actionOpenDevTools_triggered() {
+    WizDevToolsDialog* devToolsWindow = new WizDevToolsDialog(QSize(800, 600));
+    // 设置外观
+    devToolsWindow->setWindowTitle("DevTools - " + m_doc->note().strTitle);
+    //
+    WizWebEnginePage* devToolsWebPage = devToolsWindow->getWeb()->getPage();
+    WizDocumentWebViewPage* docWebPage = m_doc->web()->getPage();
+    //
+    devToolsWindow->show();
+}
+
 void WizMainWindow::on_category_itemSelectionChanged()
 {
     WizCategoryBaseView* category = qobject_cast<WizCategoryBaseView *>(sender());
@@ -3419,6 +3432,7 @@ void WizMainWindow::on_documents_itemSelectionChanged()
 
     if (arrayDocument.size() == 1)
     {
+        // 如果选中单个文档则浏览该文档
         if (!m_bUpdatingSelection)
         {
             viewDocument(arrayDocument[0], true);

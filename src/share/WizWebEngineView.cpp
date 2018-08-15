@@ -128,13 +128,19 @@ void WizWebEnginePage::triggerAction(WizWebEnginePage::WebAction action, bool ch
     }
 }
 
+/** WizWebEngineView 构造函数
+ *
+ *  创建WizWebEnginePage
+ */
 WizWebEngineView::WizWebEngineView(QWidget* parent)
     : QWebEngineView(parent)
     , m_server(NULL)
     , m_clientWrapper(NULL)
     , m_channel(NULL)
+    , m_page(new WizWebEnginePage(this))
 {
-    WizWebEnginePage* p = new WizWebEnginePage(this);
+    // 创建Page设置为到该View
+    WizWebEnginePage* p = m_page;
     setPage(p);
     //
     connect(p, SIGNAL(openLinkInNewWindow(QUrl)), this, SLOT(openLinkInDefaultBrowser(QUrl)));
@@ -250,6 +256,14 @@ void WizWebEngineView::innerLoadFinished(bool ret)
 void WizWebEngineView::openLinkInDefaultBrowser(QUrl url)
 {
     QDesktopServices::openUrl(url);
+}
+
+/** 下面是一个含有两个参数的函数的注释说明（简述）
+ *
+ *   @return 获得指向WebPage的指针
+ */
+WizWebEnginePage* WizWebEngineView::getPage() {
+    return m_page;
 }
 
 

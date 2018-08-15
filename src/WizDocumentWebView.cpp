@@ -133,8 +133,9 @@ WizDocumentWebView::WizDocumentWebView(WizExplorerApp& app, QWidget* parent)
     , m_nWindowID(nWindowIDCounter ++)
     , m_searchReplaceWidget(nullptr)
     , m_ignoreActiveWindowEvent(false)
+    , m_page(new WizDocumentWebViewPage(this))
 {
-    WizDocumentWebViewPage* page = new WizDocumentWebViewPage(this);
+    WizDocumentWebViewPage* page = m_page;
     setPage(page);
 
     connect(page, SIGNAL(actionTriggered(QWebEnginePage::WebAction)), SLOT(onActionTriggered(QWebEnginePage::WebAction)));
@@ -193,6 +194,9 @@ void WizDocumentWebView::waitForDone()
     }
 }
 
+WizDocumentWebViewPage* WizDocumentWebView::getPage() {
+    return m_page;
+}
 
 bool WizDocumentWebView::onPasteCommand()
 {

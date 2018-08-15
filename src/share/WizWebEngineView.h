@@ -39,6 +39,7 @@ public:
     WizWebEngineView(QWidget* parent);
     virtual ~WizWebEngineView();
 public:
+    WizWebEnginePage* getPage();
     void addToJavaScriptWindowObject(QString name, QObject* obj);
     void closeAll();
 public Q_SLOTS:
@@ -51,6 +52,7 @@ private:
     WebSocketClientWrapper* m_clientWrapper;
     QWebChannel* m_channel;
     QString m_objectNames;
+    WizWebEnginePage* m_page;
 protected:
     void wheelEvent(QWheelEvent *event);
 };

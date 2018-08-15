@@ -367,6 +367,8 @@ public Q_SLOTS:
     void on_actionGoBack_triggered();
     void on_actionGoForward_triggered();
 
+    void on_actionOpenDevTools_triggered();
+
     void on_category_itemSelectionChanged();
     void on_documents_itemSelectionChanged();
     void on_documents_itemDoubleClicked(QListWidgetItem * item);

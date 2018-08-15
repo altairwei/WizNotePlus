@@ -137,6 +137,7 @@ set(wiznote_SOURCES
 
     WizCategoryView.cpp
     WizCategoryViewItem.cpp
+    WizDevToolsDialog.cpp
     WizDocumentListView.cpp
     WizDocumentListViewItem.cpp
     WizDocumentView.cpp
@@ -264,6 +265,7 @@ set(wiznote_HEADERS
     WizNoteStyle.h
     WizCategoryView.h
     WizCategoryViewItem.h
+    WizDevToolsDialog.h
     WizDocumentListView.h
     WizDocumentListViewItem.h
     WizDocumentView.h
