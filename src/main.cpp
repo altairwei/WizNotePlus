@@ -12,6 +12,7 @@
 #include <QSslConfiguration>
 #include <QNetworkProxy>
 #include <QtWebEngine>
+#include <QStyleFactory>
 
 #include <sys/stat.h>
 
@@ -139,12 +140,9 @@ int mainCore(int argc, char *argv[])
 #endif
 
 #ifdef Q_OS_WIN
-    SetProcessDPIAware(); // call before the main event loop
-#if QT_VERSION >= QT_VERSION_CHECK(5,6,0)
-    QApplication::setAttribute(Qt::AA_DisableHighDpiScaling);
-#else
-    qputenv("QT_DEVICE_PIXEL_RATIO", QByteArray("1"));
-#endif // QT_VERSION
+    // 暂时先采用UI缩放+字体缩小的方案来适配Windows高分屏
+    QApplication::setAttribute(Qt::AA_EnableHighDpiScaling);
+    QApplication::setAttribute(Qt::AA_Use96Dpi);
 #endif
 
     // 初始化主进程和QtWebEngine
@@ -184,6 +182,8 @@ int mainCore(int argc, char *argv[])
 
 #ifdef Q_OS_WIN
     QFont appFont = WizCreateWindowsUIFont(app, WizGetWindowsFontName());
+    appFont.setPixelSize(14); // Windows 端自动缩放UI后缩小字体大小
+    //appFont.setPointSize(12);
     QApplication::setFont(appFont);
 #endif
     // Debug 输出
