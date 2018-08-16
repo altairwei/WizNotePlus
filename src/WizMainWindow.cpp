@@ -158,7 +158,7 @@ WizMainWindow::WizMainWindow(WizDatabaseManager& dbMgr, QWidget *parent)
     , m_noteListWidget(nullptr)
     , m_msgList(new WizMessageListView(dbMgr, this))
     , m_documentSelection(new WizDocumentSelectionView(*this, this))
-    , m_doc(new WizDocumentView(*this, this))
+    , m_doc(new WizDocumentView(*this, this)) // 初始化文档视图，就把这个成员当成活动文档视图
     , m_history(new WizDocumentViewHistory())
     , m_animateSync(new WizAnimateAction(this))
     , m_singleViewDelegate(new WizSingleDocumentViewDelegate(*this, this))
@@ -331,7 +331,9 @@ WizMainWindow::WizMainWindow(WizDatabaseManager& dbMgr, QWidget *parent)
     }
 }
 
-/** QApplication事件过滤器，用于解决主程序退出问题的无奈之举 */
+/**
+ * @brief 用于QApplication的事件过滤器，用于解决主程序退出问题的无奈之举
+ */
 bool WizMainWindow::eventFilter(QObject* watched, QEvent* event)
 {
     // Qt issue: issue? User quit for mac dock send close event to qApp?
@@ -409,7 +411,9 @@ void WizMainWindow::on_application_aboutToQuit()
     cleanOnQuit();
 }
 
-/** 退出前的同步工作*/
+/**
+ * @brief 退出前的同步工作
+ */
 void WizMainWindow::cleanOnQuit()
 {
     m_quiting = true;
@@ -462,6 +466,10 @@ WizDocumentView* WizMainWindow::docView()
     return m_doc;
 }
 
+/**
+ * @brief 检查笔记是否载入，尝试保持当前文档
+ * @param callback 保存后的回调函数
+ */
 void WizMainWindow::trySaveCurrentNote(std::function<void(const QVariant &)> callback)
 {
     if (m_doc->noteLoaded()) {
@@ -712,6 +720,10 @@ void WizMainWindow::on_quickSync_request(const QString& strKbGUID)
     m_syncQuick->addQuickSyncKb(strKbGUID);
 }
 
+/**
+ * @brief 设置系统托盘图标是否课件
+ * @param bVisible
+ */
 void WizMainWindow::setSystemTrayIconVisible(bool bVisible)
 {
 //        //
@@ -725,6 +737,11 @@ void WizMainWindow::setSystemTrayIconVisible(bool bVisible)
     m_tray->setVisible(bVisible);
 }
 
+/**
+ * @brief 从系统托盘处弹出通知
+ * @param strTitle 通知标题
+ * @param strInfo 通知信息
+ */
 void WizMainWindow::showBubbleNotification(const QString& strTitle, const QString& strInfo)
 {
     if (m_tray && m_tray->isVisible())
@@ -733,6 +750,9 @@ void WizMainWindow::showBubbleNotification(const QString& strTitle, const QStrin
     }
 }
 
+/**
+ * @brief 显示托盘图标菜单
+ */
 void WizMainWindow::showTrayIconMenu()
 {
     if (m_trayMenu)
@@ -957,6 +977,9 @@ WizMainWindow::~WizMainWindow()
     delete m_history;
 }
 
+/**
+ * @brief 保存主窗口布局信息
+ */
 void WizMainWindow::saveStatus()
 {
     QSettings* settings = WizGlobal::globalSettings();
@@ -964,6 +987,9 @@ void WizMainWindow::saveStatus()
     settings->setValue("Window/Splitter", m_splitter->saveState());
 }
 
+/**
+ * @brief 恢复主窗口布局信息
+ */
 void WizMainWindow::restoreStatus()
 {
     QSettings* settings = WizGlobal::globalSettings();
@@ -990,6 +1016,9 @@ void WizMainWindow::restoreStatus()
     m_splitter->restoreState(splitterState);
 }
 
+/**
+ * @brief 初始化所有动作
+ */
 void WizMainWindow::initActions()
 {
 #ifdef Q_OS_LINUX
@@ -1018,6 +1047,9 @@ void setActionCheckState(const QList<QAction*>& actionList, int type)
     }
 }
 
+/**
+ * @brief 初始化“系统菜单风格”菜单条
+ */
 void WizMainWindow::initMenuBar()
 {
     m_menuBar = new QMenuBar(this);
@@ -1058,6 +1090,9 @@ void WizMainWindow::initMenuBar()
 
 }
 
+/**
+ * @brief 初始化笔记列表视图动作组
+ */
 void WizMainWindow::initViewTypeActionGroup() {
     // 笔记列表视图
     // 从所有Actions中搜寻，并添加到m_viewTypeActions成员中
@@ -1082,6 +1117,9 @@ void WizMainWindow::initViewTypeActionGroup() {
     setActionCheckState(m_viewTypeActions->actions(), viewType);
 }
 
+/**
+ * @brief 初始化笔记列表筛选排序动作组
+ */
 void WizMainWindow::initSortTypeActionGroup() {
     // 笔记列表排序类型视图
     // 从所有Actions中搜寻，并添加到m_sortTypeActions成员中
@@ -1156,6 +1194,11 @@ void WizMainWindow::createNoteByTemplate(const TemplateData& tmplData)
         });
     }
 }
+
+/**
+ * @brief 从模板创建笔记
+ * @param tmplData 模板数据
+ */
 void WizMainWindow::createNoteByTemplateCore(const TemplateData& tmplData)
 {
     QFileInfo info(tmplData.strFileName);
@@ -1239,6 +1282,10 @@ void WizMainWindow::createNoteByTemplateCore(const TemplateData& tmplData)
     quickSyncKb(kbGUID);
 }
 
+/**
+ * @brief 处理移动端文件接收
+ * @param strFile 文件名
+ */
 void WizMainWindow::on_mobileFileRecived(const QString& strFile)
 {
     if (m_doc->web()->isEditing())
@@ -1333,6 +1380,10 @@ void WizMainWindow::openVipPageInWebBrowser()
     }
 }
 
+/**
+ * @brief 通过用户GUID载入消息
+ * @param guid 用户标识
+ */
 void WizMainWindow::loadMessageByUserGuid(const QString& guid)
 {
     CWizMessageDataArray arrayMsg;
@@ -1362,7 +1413,12 @@ void WizMainWindow::loadMessageByUserGuid(const QString& guid)
     m_msgList->setMessages(arrayMsg);
 }
 
-
+/**
+ * @brief 通过GUID获得动作
+ * @param actionList 要检索的动作指针列表
+ * @param guid 目标动作GUID
+ * @return
+ */
 QAction* actionByGuid(const QList<QAction*>& actionList, const QString guid)
 {
     for (QAction* action : actionList)
@@ -1607,17 +1663,17 @@ void WizMainWindow::windowActived()
     WizGetAnalyzer().logAction("bizUserQuickDownloadMessage");
 }
 
-/** web页面调用该方法，打开URL
-  * @brief MainWindow::OpenURLInDefaultBrowser
- * @param strUrl
+/**
+ * @brief 用系统默认浏览器打开链接
+ * @param strUrl 目标链接
  */
 void WizMainWindow::OpenURLInDefaultBrowser(const QString& strUrl)
 {
     QDesktopServices::openUrl(strUrl);
 }
 
-/** web页面调用该方法，token失效时重新获取token
- * @brief MainWindow::GetToken
+/**
+ * @brief web页面调用该方法，token失效时重新获取token
  * @param strFunctionName
  */
 void WizMainWindow::GetToken(const QString& strFunctionName)
@@ -1638,8 +1694,8 @@ void WizMainWindow::GetToken(const QString& strFunctionName)
     });
 }
 
-/**   web页面调用该方法，将页面的结果返回
- * @brief MainWindow::SetDialogResult
+/**
+ * @brief web页面调用该方法，将页面的结果返回
  * @param result  web页面返回结果，如需更新笔记数据，会返回1
  */
 void WizMainWindow::SetDialogResult(int nResult)
@@ -1741,6 +1797,10 @@ void WizMainWindow::onClickedImage(const QString& src, const QString& list)
 }
 
 #ifndef Q_OS_MAC
+
+/**
+ * @brief 布局标题栏
+ */
 void WizMainWindow::layoutTitleBar()
 {
     WizWindowTitleBar* title = titleBar();
@@ -1805,6 +1865,9 @@ void WizMainWindow::layoutTitleBar()
     title->setLayout(layout);
 }
 
+/**
+ * @brief 使用Wiz自定义风格初始化菜单
+ */
 void WizMainWindow::initMenuList()
 {
     m_actions->buildMenu(m_menu, Utils::WizPathResolve::resourcesPath() + "files/mainmenu.ini");
@@ -1814,7 +1877,9 @@ void WizMainWindow::initMenuList()
 
 #endif
 
-
+/**
+ * @brief 初始化顶部主工具条
+ */
 void WizMainWindow::initToolBar()
 {
 #ifdef Q_OS_MAC
@@ -1961,6 +2026,9 @@ void WizMainWindow::initToolBar()
     connect(m_searchWidget, SIGNAL(doSearch(const QString&)), SLOT(on_search_doSearch(const QString&)));
 }
 
+/**
+ * @brief 初始化客户端主体区域<目录树, 笔记列表, 文档页面>
+ */
 void WizMainWindow::initClient()
 {
 #ifdef Q_OS_MAC
@@ -3459,6 +3527,9 @@ void WizMainWindow::on_category_itemSelectionChanged()
     m_searchWidget->setCurrentKb(kbGuid);
 }
 
+/**
+ * @brief 处理文档列表选区变化信号，如果单选则浏览该文档
+ */
 void WizMainWindow::on_documents_itemSelectionChanged()
 {
     CWizDocumentDataArray arrayDocument;
@@ -3589,25 +3660,33 @@ void WizMainWindow::resetPermission(const QString& strKbGUID, const QString& str
     }
 }
 
+/**
+ * @brief 载入文档数据，在文档视图中浏览文档
+ * @param data 文档数据
+ * @param addToHistory 是否添加到历史记录
+ */
 void WizMainWindow::viewDocument(const WIZDOCUMENTDATAEX& data, bool addToHistory)
 {
     Q_ASSERT(!data.strGUID.isEmpty());
 
+    // 如果目标文档GUID等于当前文档GUID
     if (data.strGUID == m_doc->note().strGUID)
     {
+        //
         m_doc->reviewCurrentNote();
         return;
     }
 
+    // 重置许可
     resetPermission(data.strKbGUID, data.strOwner);
-    //
+    // 如果文档正好是要编辑的
     bool forceEditing = false;
     if (data.strGUID == m_documentForEditing.strGUID)
     {
         forceEditing = true;
         m_documentForEditing = WIZDOCUMENTDATA();
     }
-
+    // 释放浏览笔记请求信号
     WizGlobal::emitViewNoteRequested(m_doc, data, forceEditing);
 
     if (addToHistory) {
