@@ -175,22 +175,28 @@ WizMainWindow::WizMainWindow(WizDatabaseManager& dbMgr, QWidget *parent)
     int ret = WizToolsSmartCompare("H", "d");
     qDebug() << ret;
 #endif
-
+    // 为什么不新建一个APP类把WizMainWindow的功能拆分呢？
     WizGlobal::setMainWindow(this);
     WizKMSyncThread::setQuickThread(m_syncQuick);
     //
     qRegisterMetaType<WIZGROUPDATA>("WIZGROUPDATA");
     //
 #ifndef Q_OS_MAC
+    // 将标题工具栏添加到布局
     clientLayout()->addWidget(m_toolBar);
 #ifdef Q_OS_LINUX
+    // 根据是否使用系统标题栏样式来选择窗口样式
     setWindowStyleForLinux(m_useSystemBasedStyle);
 #endif
+    // 当最后一个窗口关闭时，触发QApplication的退出
     connect(qApp, SIGNAL(lastWindowClosed()), qApp, SLOT(quit())); // Qt bug: Qt5 bug
 #endif
+    // 设置主窗口实例
     windowInstance = this;
-    //
+    // 当QApplication将要退出时，触发清理工作
     connect(qApp, SIGNAL(aboutToQuit()), SLOT(on_application_aboutToQuit()));
+    // 在QApplication上安装事件过滤器this->eventFilter()创建的事件过滤器
+    // 这种行为会严重降低整个应用程序的事件分发效率
     qApp->installEventFilter(this);
 #ifdef Q_OS_MAC
     installEventFilter(this);
@@ -203,10 +209,15 @@ WizMainWindow::WizMainWindow(WizDatabaseManager& dbMgr, QWidget *parent)
 
 #endif
 
+    // 多线程设置
+    //-------------------------------------------------------------------
+
     // search and full text search
+    // 开启搜索线程
     m_searcher->start(QThread::HighPriority);
 
-    // syncing thread
+    // 同步线程
+    // 设置同步间隔时间
     m_syncFull->setFullSyncInterval(userSettings().syncInterval());
     connect(m_syncFull, SIGNAL(processLog(const QString&)), SLOT(on_syncProcessLog(const QString&)));
     connect(m_syncFull, SIGNAL(promptMessageRequest(int, const QString&, const QString&)),
@@ -252,8 +263,13 @@ WizMainWindow::WizMainWindow(WizDatabaseManager& dbMgr, QWidget *parent)
     });
 #endif
 
-    // GUI
+    // 初始化GUI
+    //-------------------------------------------------------------------
+
+    // 根据列表来初始化所有动作
     initActions();
+
+    // 初始化菜单
 #ifdef Q_OS_MAC
     initMenuBar();
     initDockMenu();
@@ -268,12 +284,16 @@ WizMainWindow::WizMainWindow(WizDatabaseManager& dbMgr, QWidget *parent)
         initMenuList();
     }
 #endif
-    initToolBar();
-    initClient();
+
+    initToolBar(); // 主菜单工具栏上的组件<用户信息, 搜索栏...>
+    initClient(); // 主界面容器组件<文件夹树, 笔记列表...>
 
     setWindowTitle(tr("WizNote"));
 
-    restoreStatus();
+    restoreStatus(); // 恢复上一次窗口设置
+
+    // 检查更新、同步
+    //-------------------------------------------------------------------
 
     // upgrade check
 #ifndef BUILD4APPSTORE
@@ -287,19 +307,21 @@ WizMainWindow::WizMainWindow(WizDatabaseManager& dbMgr, QWidget *parent)
     setupFullScreenMode(this);
 #endif
 
+    // 开启同步进程
     m_syncFull->start(QThread::IdlePriority);
     m_syncQuick->start(QThread::IdlePriority);
-    //
+    // 设置系统托盘图标
     setSystemTrayIconVisible(userSettings().showSystemTrayIcon());
-
+    // 设置接收手机文件传输
     setMobileFileReceiverEnable(userSettings().receiveMobileFile());
-
+    // 开始新特征指南
     if (needShowNewFeatureGuide())
     {
         m_settings->setNewFeatureGuideVersion(WIZ_NEW_FEATURE_GUIDE_VERSION);
         QTimer::singleShot(3000, this, SLOT(showNewFeatureGuide()));
     }
-    //
+
+    // 检查提醒消息
     if (dbMgr.db().hasBiz())
     {
         QTimer* syncMessageTimer = new QTimer(this);
@@ -309,6 +331,7 @@ WizMainWindow::WizMainWindow(WizDatabaseManager& dbMgr, QWidget *parent)
     }
 }
 
+/** QApplication事件过滤器，用于解决主程序退出问题的无奈之举 */
 bool WizMainWindow::eventFilter(QObject* watched, QEvent* event)
 {
     // Qt issue: issue? User quit for mac dock send close event to qApp?
@@ -386,7 +409,7 @@ void WizMainWindow::on_application_aboutToQuit()
     cleanOnQuit();
 }
 
-
+/** 退出前的同步工作*/
 void WizMainWindow::cleanOnQuit()
 {
     m_quiting = true;
@@ -418,17 +441,17 @@ void WizMainWindow::cleanOnQuit()
     WizQueuedThreadsShutdown();
 }
 
-WizSearcher*WizMainWindow::searcher()
+WizSearcher* WizMainWindow::searcher()
 {
     return m_searcher;
 }
 
-WizMainWindow*WizMainWindow::instance()
+WizMainWindow* WizMainWindow::instance()
 {
     return windowInstance;
 }
 
-QNetworkDiskCache*WizMainWindow::webViewNetworkCache()
+QNetworkDiskCache* WizMainWindow::webViewNetworkCache()
 {
     return 0;
     //    return m_doc->web()->networkCache();
@@ -1981,26 +2004,29 @@ void WizMainWindow::initClient()
     m_splitter = std::make_shared<WizSplitter>();
     layout->addWidget(m_splitter.get());
 
+    // 绘制文件夹树
     pal.setColor(QPalette::Window, Utils::WizStyleHelper::treeViewBackground());
     m_category->setPalette(pal);
     m_category->setAutoFillBackground(true);
 
+    // 绘制笔记浏览页面
     pal.setColor(QPalette::Window, QColor(Qt::white));
     pal.setColor(QPalette::Base, QColor(Qt::white));
-    QWidget* documentPanel = new QWidget(this);
+    QWidget* documentPanel = new QWidget(this); // 整个文档浏览界面板
     documentPanel->setPalette(pal);
     documentPanel->setAutoFillBackground(true);
     QVBoxLayout* layoutDocument = new QVBoxLayout();
     layoutDocument->setContentsMargins(0, 0, 0, 0);
     layoutDocument->setSpacing(0);
     documentPanel->setLayout(layoutDocument);
-    layoutDocument->addWidget(m_doc);
+    layoutDocument->addWidget(m_doc); // 将WizDocumentView添加到文档板的布局上
     layoutDocument->addWidget(m_documentSelection);
-    m_documentSelection->hide();
+    m_documentSelection->hide(); // 这个是什么东西？
     // append after client
 
     m_splitter->addWidget(m_category);
 
+    // 创建文件列表容器
     m_docListContainer = new QWidget(this);
     m_docListContainer->setPalette(pal);
     m_docListContainer->setAutoFillBackground(true);

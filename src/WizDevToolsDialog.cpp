@@ -13,6 +13,7 @@
 #include <QApplication>
 #include <QNetworkReply>
 #include <QWebEngineView>
+#include <QRect>
 #include "share/WizWebEngineView.h"
 
 

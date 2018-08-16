@@ -266,7 +266,6 @@ WizWebEnginePage* WizWebEngineView::getPage() {
     return m_page;
 }
 
-
 static QWebEngineView* getActiveWeb()
 {
     QWidget* focusWidget = qApp->focusWidget();
