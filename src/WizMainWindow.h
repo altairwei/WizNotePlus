@@ -61,6 +61,7 @@ class WizDocumentWebView;
 class WizTrayIcon;
 class WizMobileFileReceiver;
 class ICore;
+class WizMainTabWidget;
 
 class WizMessageListView;
 class WizMessageSelector;
@@ -192,7 +193,7 @@ private:
 
     WizDocumentSelectionView* m_documentSelection;
     WizDocumentView* m_doc; /**< 用于储存当前活动文档视图 */
-    QList<WizDocumentView*> m_docViews; /**< 用于储存所有打开的文档视图 */
+    WizMainTabWidget* m_mainTab; /**< 主标签部件，文档视图储存在内部 */
     std::shared_ptr<WizSplitter> m_splitter;
     QWidget* m_docListContainer;
     WizSingleDocumentViewDelegate* m_singleViewDelegate;
@@ -259,6 +260,7 @@ public:
 
     void resetPermission(const QString& strKbGUID, const QString& strDocumentOwner);
     void viewDocument(const WIZDOCUMENTDATAEX& data, bool addToHistory);
+    void viewDocument(const WIZDOCUMENTDATAEX& data);
     //
     void checkWizUpdate();
     void setSystemTrayIconVisible(bool bVisible);

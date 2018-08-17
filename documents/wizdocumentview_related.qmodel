@@ -52,6 +52,7 @@
                          <name>WizDocumentView</name>
                          <pos>x:440;y:240</pos>
                          <rect>x:-105;y:-65;w:210;h:130</rect>
+                         <auto-sized>false</auto-sized>
                          <visual-role>6</visual-role>
                         </DObject>
                        </base-DObject>
@@ -428,9 +429,56 @@
                       </DInheritance>
                      </instance>
                     </item>
+                    <item>
+                     <instance type="DClass">
+                      <DClass>
+                       <base-DObject>
+                        <DObject>
+                         <base-DElement>
+                          <DElement>
+                           <uid>{992788f9-3c38-42b7-bd2f-4c003814569c}</uid>
+                          </DElement>
+                         </base-DElement>
+                         <object>{fb710d6f-3c18-4cd5-ab37-c895821090f8}</object>
+                         <context>Src</context>
+                         <name>WizMainWindow</name>
+                         <pos>x:845;y:240</pos>
+                         <rect>x:-130;y:-60;w:260;h:120</rect>
+                         <visual-role>0</visual-role>
+                        </DObject>
+                       </base-DObject>
+                       <show-all-members>true</show-all-members>
+                      </DClass>
+                     </instance>
+                    </item>
+                    <item>
+                     <instance type="DAssociation">
+                      <DAssociation>
+                       <base-DRelation>
+                        <DRelation>
+                         <base-DElement>
+                          <DElement>
+                           <uid>{eeab0e3c-5034-4964-b4d5-6e7223c04b25}</uid>
+                          </DElement>
+                         </base-DElement>
+                         <object>{8e31aae2-e72a-4fab-9b02-6e41c737ed33}</object>
+                         <a>{992788f9-3c38-42b7-bd2f-4c003814569c}</a>
+                         <b>{4ea83f11-4016-47a1-91ff-9ff4f098444f}</b>
+                        </DRelation>
+                       </base-DRelation>
+                       <a>
+                        <DAssociationEnd>
+                         <cradinality>1</cradinality>
+                         <navigable>true</navigable>
+                         <kind>2</kind>
+                        </DAssociationEnd>
+                       </a>
+                      </DAssociation>
+                     </instance>
+                    </item>
                    </qlist>
                   </elements>
-                  <last-modified>1534410217239</last-modified>
+                  <last-modified>1534468337674</last-modified>
                   <toolbarid>General</toolbarid>
                  </MDiagram>
                 </base-MDiagram>
@@ -538,7 +586,7 @@
                             <qlist>
                              <item>
                               <MClassMember>
-                               <uid>{4b4f1cec-d781-4309-8a04-21b114513a23}</uid>
+                               <uid>{6c952457-5be0-4d18-a63d-6f1730a4e99f}</uid>
                                <visibility>2</visibility>
                                <type>1</type>
                                <declaration>WizDocumentWebView* m_web</declaration>
@@ -546,7 +594,7 @@
                              </item>
                              <item>
                               <MClassMember>
-                               <uid>{1e38521a-7c3d-4fec-9141-593e8d3806a9}</uid>
+                               <uid>{2b795288-ceda-42c7-bdd6-a9c24d019faa}</uid>
                                <visibility>2</visibility>
                                <type>1</type>
                                <declaration>WizWebEngineView* m_comments</declaration>
@@ -554,7 +602,7 @@
                              </item>
                              <item>
                               <MClassMember>
-                               <uid>{e3b5e6d7-0b7f-4db6-932f-4cc0cce68736}</uid>
+                               <uid>{c845ff2f-e75a-4a27-8003-9689beee18c7}</uid>
                                <visibility>2</visibility>
                                <type>1</type>
                                <declaration>WizTitleBar* m_title</declaration>
@@ -562,7 +610,7 @@
                              </item>
                              <item>
                               <MClassMember>
-                               <uid>{4ab7d195-b537-46ee-9397-cc9a0da61cf2}</uid>
+                               <uid>{a146094a-3c93-4b7c-a59f-3833dd6ee76b}</uid>
                                <visibility>1</visibility>
                                <type>2</type>
                                <declaration>WizDocumentWebView* web()</declaration>
@@ -655,7 +703,7 @@
                             <qlist>
                              <item>
                               <MClassMember>
-                               <uid>{9a815a02-41ac-4d2b-97ab-38b724f23cc2}</uid>
+                               <uid>{8ec600be-c93a-42e2-bc07-aeb618d1d480}</uid>
                                <visibility>3</visibility>
                                <type>1</type>
                                <declaration>WizDocumentWebViewPage* m_page</declaration>
@@ -663,7 +711,7 @@
                              </item>
                              <item>
                               <MClassMember>
-                               <uid>{7f2ee4ca-9e84-4873-946c-c18d1005177d}</uid>
+                               <uid>{1a428d81-3e22-4218-a44d-156e6b8dcd18}</uid>
                                <visibility>1</visibility>
                                <type>2</type>
                                <declaration>WizDocumentWebViewPage* getPage()</declaration>
@@ -862,6 +910,115 @@
                         </target>
                        </handle>
                       </item>
+                      <item>
+                       <handle>
+                        <uid>{458bc4fe-4994-4788-ace3-c7f4043b3e69}</uid>
+                        <target>
+                         <instance type="MComponent">
+                          <MComponent>
+                           <base-MObject>
+                            <MObject>
+                             <base-MElement>
+                              <MElement>
+                               <uid>{458bc4fe-4994-4788-ace3-c7f4043b3e69}</uid>
+                               <flags>1</flags>
+                              </MElement>
+                             </base-MElement>
+                             <name>WizMainWindow</name>
+                            </MObject>
+                           </base-MObject>
+                          </MComponent>
+                         </instance>
+                        </target>
+                       </handle>
+                      </item>
+                      <item>
+                       <handle>
+                        <uid>{fb710d6f-3c18-4cd5-ab37-c895821090f8}</uid>
+                        <target>
+                         <instance type="MClass">
+                          <MClass>
+                           <base-MObject>
+                            <MObject>
+                             <base-MElement>
+                              <MElement>
+                               <uid>{fb710d6f-3c18-4cd5-ab37-c895821090f8}</uid>
+                               <flags>1</flags>
+                              </MElement>
+                             </base-MElement>
+                             <name>WizMainWindow</name>
+                             <relations>
+                              <handles>
+                               <handles>
+                                <qlist>
+                                 <item>
+                                  <handle>
+                                   <uid>{8e31aae2-e72a-4fab-9b02-6e41c737ed33}</uid>
+                                   <target>
+                                    <instance type="MAssociation">
+                                     <MAssociation>
+                                      <base-MRelation>
+                                       <MRelation>
+                                        <base-MElement>
+                                         <MElement>
+                                          <uid>{8e31aae2-e72a-4fab-9b02-6e41c737ed33}</uid>
+                                         </MElement>
+                                        </base-MElement>
+                                        <a>{fb710d6f-3c18-4cd5-ab37-c895821090f8}</a>
+                                        <b>{57f0896e-ff50-40ab-8ada-07c383bec4a6}</b>
+                                       </MRelation>
+                                      </base-MRelation>
+                                      <a>
+                                       <MAssociationEnd>
+                                        <cardinality>1</cardinality>
+                                        <navigable>true</navigable>
+                                        <kind>2</kind>
+                                       </MAssociationEnd>
+                                      </a>
+                                     </MAssociation>
+                                    </instance>
+                                   </target>
+                                  </handle>
+                                 </item>
+                                </qlist>
+                               </handles>
+                              </handles>
+                             </relations>
+                            </MObject>
+                           </base-MObject>
+                           <members>
+                            <qlist>
+                             <item>
+                              <MClassMember>
+                               <uid>{fcd0d35b-84b3-4ffd-b6b8-eb7a3faf6f80}</uid>
+                               <visibility>3</visibility>
+                               <type>1</type>
+                               <declaration>WizDocumentView* m_doc</declaration>
+                              </MClassMember>
+                             </item>
+                             <item>
+                              <MClassMember>
+                               <uid>{57d7842f-3f90-4dbd-9ef1-83e8a57c206e}</uid>
+                               <visibility>7</visibility>
+                               <type>2</type>
+                               <declaration>void on_documents_itemSelectionChanged()</declaration>
+                              </MClassMember>
+                             </item>
+                             <item>
+                              <MClassMember>
+                               <uid>{19b40baf-efa3-4c0a-9578-c232e3b0a174}</uid>
+                               <visibility>1</visibility>
+                               <type>2</type>
+                               <declaration>void viewDocument(...)</declaration>
+                              </MClassMember>
+                             </item>
+                            </qlist>
+                           </members>
+                          </MClass>
+                         </instance>
+                        </target>
+                       </handle>
+                      </item>
                      </qlist>
                     </handles>
                    </handles>
@@ -1036,15 +1193,15 @@
                  <qlist>
                   <item>
                    <MClassMember>
-                    <uid>{89d3c68f-e820-42c1-b0a7-fcc4e1d992e6}</uid>
+                    <uid>{7456e18a-90c4-48f3-a6c0-5f80bb8cc641}</uid>
                     <visibility>1</visibility>
                     <type>2</type>
-                    <declaration>void viewDocument(docView)</declaration>
+                    <declaration>void viewDocument(...)</declaration>
                    </MClassMember>
                   </item>
                   <item>
                    <MClassMember>
-                    <uid>{d836ee0e-9ce2-4b2a-8a1d-2109650091a9}</uid>
+                    <uid>{fa57c0b2-343e-45ae-9956-42939008b5b6}</uid>
                     <visibility>1</visibility>
                     <type>2</type>
                     <declaration>void viewHtml(QUrl path)</declaration>
@@ -1052,7 +1209,7 @@
                   </item>
                   <item>
                    <MClassMember>
-                    <uid>{9f0caa9d-bd55-4fd8-b806-a2fae4052133}</uid>
+                    <uid>{3439b324-1b9a-43b9-a0ea-31acb49be856}</uid>
                     <visibility>5</visibility>
                     <type>2</type>
                     <declaration>void handleCurrentChanged(int index)</declaration>

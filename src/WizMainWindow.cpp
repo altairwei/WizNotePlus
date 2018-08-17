@@ -1,5 +1,5 @@
 ﻿#include "WizMainWindow.h"
-
+#include <typeinfo>
 #include <QToolBar>
 #include <QMenuBar>
 #include <QApplication>
@@ -38,6 +38,7 @@
 #include "WizUserCipherForm.h"
 #include "WizDocumentView.h"
 #include "WizTitleBar.h"
+#include "WizMainTabWidget.h"
 
 #include "WizDocumentWebEngine.h"
 #include "WizDocumentWebView.h"
@@ -158,7 +159,8 @@ WizMainWindow::WizMainWindow(WizDatabaseManager& dbMgr, QWidget *parent)
     , m_noteListWidget(nullptr)
     , m_msgList(new WizMessageListView(dbMgr, this))
     , m_documentSelection(new WizDocumentSelectionView(*this, this))
-    , m_doc(new WizDocumentView(*this, this)) // 初始化文档视图，就把这个成员当成活动文档视图
+    , m_doc(new WizDocumentView(*this)) // 初始化文档视图，就把这个成员当成活动文档视图，QTabWidget说不要指定parent
+    , m_mainTab(new WizMainTabWidget(this)) // 初始化主标签栏
     , m_history(new WizDocumentViewHistory())
     , m_animateSync(new WizAnimateAction(this))
     , m_singleViewDelegate(new WizSingleDocumentViewDelegate(*this, this))
@@ -244,6 +246,8 @@ WizMainWindow::WizMainWindow(WizDatabaseManager& dbMgr, QWidget *parent)
 
     connect(m_documents, SIGNAL(addDocumentToShortcutsRequest(WIZDOCUMENTDATA)),
             m_category, SLOT(addDocumentToShortcuts(WIZDOCUMENTDATA)));
+
+    //FIXME: m_doc已经不在是唯一的文档视图，不应该在此处初始化
     connect(m_doc->web(), SIGNAL(shareDocumentByLinkRequest(QString,QString)),
             SLOT(on_shareDocumentByLink_request(QString,QString)));
     connect(&m_dbMgr, SIGNAL(favoritesChanged(QString)), m_category,
@@ -433,7 +437,7 @@ void WizMainWindow::cleanOnQuit()
     quick->waitForDone();
     //
     m_searcher->waitForDone();
-    //
+    //FIXEME: 此处会引起退出程序崩溃
     m_doc->waitForDone();
     //
 
@@ -461,6 +465,10 @@ QNetworkDiskCache* WizMainWindow::webViewNetworkCache()
     //    return m_doc->web()->networkCache();
 }
 
+/**
+ * @brief 返回当前文档视图
+ * @return
+ */
 WizDocumentView* WizMainWindow::docView()
 {
     return m_doc;
@@ -472,6 +480,7 @@ WizDocumentView* WizMainWindow::docView()
  */
 void WizMainWindow::trySaveCurrentNote(std::function<void(const QVariant &)> callback)
 {
+    //FIXME: 因为在新标签打开，所以有些情形下不需要次步骤
     if (m_doc->noteLoaded()) {
         m_doc->web()->trySaveDocument(m_doc->note(), false, callback);
         return;
@@ -813,6 +822,7 @@ void WizMainWindow::on_viewMessage_request(const WIZMESSAGEDATA& msg)
             && !m_dbMgr.db(msg.kbGUID).documentFromGuid(msg.documentGUID, doc)
             )
     {
+        //FIXME
         m_doc->promptMessage(tr("Can't find note %1 , may be it has been deleted.").arg(msg.title));
         return;
     }
@@ -1030,7 +1040,7 @@ void WizMainWindow::initActions()
     m_animateSync->setSingleIcons("sync");
     //
     connect(m_actions, SIGNAL(insertTableSelected(int,int)), SLOT(on_actionMenuFormatInsertTable(int,int)));
-
+    //FIXME: 已经不是唯一文档视图，不应该在初始化阶段绑定
     connect(m_doc->web(), SIGNAL(statusChanged(const QString&)), SLOT(on_editor_statusChanged(const QString&)));
 }
 
@@ -1283,7 +1293,7 @@ void WizMainWindow::createNoteByTemplateCore(const TemplateData& tmplData)
 }
 
 /**
- * @brief 处理移动端文件接收
+ * @brief 接收移动端发送的图片等文件
  * @param strFile 文件名
  */
 void WizMainWindow::on_mobileFileRecived(const QString& strFile)
@@ -2087,7 +2097,9 @@ void WizMainWindow::initClient()
     layoutDocument->setContentsMargins(0, 0, 0, 0);
     layoutDocument->setSpacing(0);
     documentPanel->setLayout(layoutDocument);
-    layoutDocument->addWidget(m_doc); // 将WizDocumentView添加到文档板的布局上
+    //layoutDocument->addWidget(m_doc); // 将WizDocumentView添加到文档板的布局上
+    layoutDocument->addWidget(m_mainTab); // 将主标签栏放在文档板布局上
+    //m_mainTab->createTab(m_doc); // 暂时在把当前文档视图放入主标签栏
     layoutDocument->addWidget(m_documentSelection);
     m_documentSelection->hide(); // 这个是什么东西？
     // append after client
@@ -2115,6 +2127,7 @@ void WizMainWindow::initClient()
     setMinimumWidth(isHighPix ? 785 : 985);
     m_category->setMinimumWidth(isHighPix ? 76 : 165);
     m_docListContainer->setMinimumWidth(isHighPix ? 113 : 244);
+    //FIXME: 不应该在此处进行初始化，因为不是唯一文档视图
     m_doc->web()->setInSeperateWindow(false);
     m_doc->commentWidget()->setMinimumWidth(isHighPix ? 170 : 195);
     m_doc->web()->setMinimumWidth(576);
@@ -2314,6 +2327,7 @@ WizIAPDialog*WizMainWindow::iapDialog()
 
 void WizMainWindow::on_documents_lastDocumentDeleted()
 {
+    //FIXME
     WizGlobal::instance()->emitCloseNoteRequested(m_doc);
 }
 
@@ -3540,7 +3554,9 @@ void WizMainWindow::on_documents_itemSelectionChanged()
         // 如果选中单个文档则浏览该文档
         if (!m_bUpdatingSelection)
         {
-            viewDocument(arrayDocument[0], true);
+            // 增加一个判断，根据用户设置选择在当前标签还是新标签浏览笔记
+            //viewDocument(arrayDocument[0], true);
+            viewDocument(arrayDocument[0]);
             resortDocListAfterViewDocument(arrayDocument[0]);
         }
     }
@@ -3686,7 +3702,7 @@ void WizMainWindow::viewDocument(const WIZDOCUMENTDATAEX& data, bool addToHistor
         forceEditing = true;
         m_documentForEditing = WIZDOCUMENTDATA();
     }
-    // 释放浏览笔记请求信号
+    // 指定为当前笔记视图，并发送浏览笔记请求信号
     WizGlobal::emitViewNoteRequested(m_doc, data, forceEditing);
 
     if (addToHistory) {
@@ -3697,11 +3713,54 @@ void WizMainWindow::viewDocument(const WIZDOCUMENTDATAEX& data, bool addToHistor
     //
 }
 
+/**
+ * @brief 载入文档数据，在文档视图中浏览文档
+ * @param data 文档数据
+ * @param addToHistory 是否添加到历史记录
+ */
+void WizMainWindow::viewDocument(const WIZDOCUMENTDATAEX& data) {
+    Q_ASSERT(!data.strGUID.isEmpty());
+    // 遍历tab，查找已经打开的标签中是否有该文档
+    for (int i = 0; i < m_mainTab->count(); ++i) {
+        // 注意，此处没有考虑标签页是非WizDocumentView的情况
+        WizDocumentView* docView = qobject_cast<WizDocumentView*>(m_mainTab->widget(i));
+        if ( docView == nullptr ) {
+            // 非WizDocumentView则跳过
+            continue;
+        } else {
+            if ( data.strGUID == docView->note().strGUID ) {
+                // 激活当前文档标签
+                m_mainTab->setCurrentWidget(docView);
+                return;
+            }
+        }
+
+    }
+    // 重置许可
+    resetPermission(data.strKbGUID, data.strOwner);
+    // 如果文档正好是要编辑的
+    bool forceEditing = false;
+    if (data.strGUID == m_documentForEditing.strGUID)
+    {
+        forceEditing = true;
+        m_documentForEditing = WIZDOCUMENTDATA();
+    }
+    // 创建一个新的文档视图，然后用这个指针发送信号
+    WizDocumentView* newDocView = new WizDocumentView(*this);
+    //newDocView->web()->setUrl(QUrl("www.wiz.cn"));
+    m_mainTab->createTab(newDocView);
+    WizGlobal::emitViewNoteRequested(newDocView, data, forceEditing);
+    // 再将m_doc指向新的文档视图
+    m_doc = newDocView;
+    //
+    m_actions->actionFromName(WIZACTION_GLOBAL_SAVE_AS_MARKDOWN)->setEnabled(WizIsMarkdownNote(data));
+    return;
+}
+
 void WizMainWindow::titleChanged()
 {
     m_actions->actionFromName(WIZACTION_GLOBAL_SAVE_AS_MARKDOWN)->setEnabled(WizIsMarkdownNote(m_doc->note()));
 }
-
 
 void WizMainWindow::locateDocument(const WIZDOCUMENTDATA& data)
 {

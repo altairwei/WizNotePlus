@@ -165,6 +165,7 @@ WizDocumentView::WizDocumentView(WizExplorerApp& app, QWidget* parent)
     connect(&m_dbMgr, SIGNAL(documentUploaded(QString,QString)), \
             m_editStatusSyncThread, SLOT(documentUploaded(QString,QString)));
 
+    // 连接浏览笔记请求信号
     connect(WizGlobal::instance(), SIGNAL(viewNoteRequested(WizDocumentView*,const WIZDOCUMENTDATAEX&,bool)),
             SLOT(onViewNoteRequested(WizDocumentView*,const WIZDOCUMENTDATAEX&,bool)));
 
@@ -276,16 +277,24 @@ void WizDocumentView::resizeEvent(QResizeEvent* ev)
     m_title->editorToolBar()->adjustButtonPosition();
 }
 
+/**
+ * @brief 处理“浏览笔记请求”信号，
+ * @param view 文档视图
+ * @param doc 文档数据
+ * @param forceEditing 是否强制编辑
+ */
 void WizDocumentView::onViewNoteRequested(WizDocumentView* view, const WIZDOCUMENTDATAEX& doc, bool forceEditing)
 {
+    // 只处理指定为本视图的信号
     if (view != this)
         return;
 
     if (doc.tCreated.secsTo(QDateTime::currentDateTime()) <= 1) {
-        //new note
+        // 新建笔记
         viewNote(doc, forceEditing);
         m_title->clearAndSetPlaceHolderText(doc.strTitle);
     } else {
+        // 已有笔记
         m_title->clearPlaceHolderText();
         viewNote(doc, forceEditing);
     }
@@ -357,6 +366,11 @@ void WizDocumentView::initStat(const WIZDOCUMENTDATA& data, bool forceEdit)
     }
 }
 
+/**
+ * @brief 在当前视图中浏览笔记
+ * @param wizDoc 笔记数据
+ * @param forceEdit 是否强制编辑
+ */
 void WizDocumentView::viewNote(const WIZDOCUMENTDATAEX& wizDoc, bool forceEdit)
 {
     WIZDOCUMENTDATAEX dataTemp = wizDoc;
