@@ -5,6 +5,7 @@
 #include <QMainWindow>
 #include <QPushButton>
 #include <QSystemTrayIcon>
+#include <QList>
 #include <memory>
 
 #include "WizDef.h"
@@ -190,7 +191,8 @@ private:
     WizMessageListTitleBar* m_msgListTitleBar;
 
     WizDocumentSelectionView* m_documentSelection;
-    WizDocumentView* m_doc;
+    WizDocumentView* m_doc; /**< 用于储存当前活动文档视图 */
+    QList<WizDocumentView*> m_docViews; /**< 用于储存所有打开的文档视图 */
     std::shared_ptr<WizSplitter> m_splitter;
     QWidget* m_docListContainer;
     WizSingleDocumentViewDelegate* m_singleViewDelegate;

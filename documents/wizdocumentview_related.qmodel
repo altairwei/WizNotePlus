@@ -51,7 +51,7 @@
                          <context>Src</context>
                          <name>WizDocumentView</name>
                          <pos>x:440;y:240</pos>
-                         <rect>x:-95;y:-65;w:190;h:130</rect>
+                         <rect>x:-105;y:-65;w:210;h:130</rect>
                          <visual-role>6</visual-role>
                         </DObject>
                        </base-DObject>
@@ -111,7 +111,7 @@
                          <context>Src</context>
                          <name>WizDocumentWebView</name>
                          <pos>x:440;y:415</pos>
-                         <rect>x:-105;y:-50;w:210;h:100</rect>
+                         <rect>x:-115;y:-55;w:230;h:110</rect>
                          <visual-role>7</visual-role>
                         </DObject>
                        </base-DObject>
@@ -158,7 +158,7 @@
                          <context>Src</context>
                          <name>WizDocumentWebViewPage</name>
                          <pos>x:440;y:550</pos>
-                         <rect>x:-70;y:-30;w:140;h:60</rect>
+                         <rect>x:-80;y:-30;w:160;h:60</rect>
                          <visual-role>8</visual-role>
                         </DObject>
                        </base-DObject>
@@ -204,7 +204,7 @@
                          <context>Share</context>
                          <name>WizWebEngineView</name>
                          <pos>x:240;y:415</pos>
-                         <rect>x:-55;y:-30;w:110;h:60</rect>
+                         <rect>x:-60;y:-30;w:120;h:60</rect>
                          <visual-role>7</visual-role>
                         </DObject>
                        </base-DObject>
@@ -242,7 +242,7 @@
                          <object>{75ab9a78-35ee-4239-ac38-4abfae5d9692}</object>
                          <name>QWebEngineView</name>
                          <pos>x:95;y:415</pos>
-                         <rect>x:-50;y:-30;w:100;h:60</rect>
+                         <rect>x:-55;y:-30;w:110;h:60</rect>
                          <visual-role>7</visual-role>
                         </DObject>
                        </base-DObject>
@@ -281,7 +281,7 @@
                          <context>Share</context>
                          <name>WizWebEnginePage</name>
                          <pos>x:270;y:550</pos>
-                         <rect>x:-55;y:-30;w:110;h:60</rect>
+                         <rect>x:-60;y:-30;w:120;h:60</rect>
                          <visual-role>8</visual-role>
                         </DObject>
                        </base-DObject>
@@ -319,7 +319,7 @@
                          <object>{5cd7da3e-967d-4e1f-98ad-3d676251e4b5}</object>
                          <name>QWebEnginePage</name>
                          <pos>x:120;y:550</pos>
-                         <rect>x:-50;y:-30;w:100;h:60</rect>
+                         <rect>x:-55;y:-30;w:110;h:60</rect>
                          <visual-role>8</visual-role>
                         </DObject>
                        </base-DObject>
@@ -357,7 +357,7 @@
                          <object>{f1f85f60-cda2-465e-9ab9-7907679b9588}</object>
                          <name>WizTabWidget</name>
                          <pos>x:440;y:100</pos>
-                         <rect>x:-120;y:-50;w:240;h:100</rect>
+                         <rect>x:-110;y:-50;w:220;h:100</rect>
                          <visual-role>0</visual-role>
                         </DObject>
                        </base-DObject>
@@ -538,7 +538,7 @@
                             <qlist>
                              <item>
                               <MClassMember>
-                               <uid>{9362e5b9-0ae3-4349-aae0-25919929f564}</uid>
+                               <uid>{4b4f1cec-d781-4309-8a04-21b114513a23}</uid>
                                <visibility>2</visibility>
                                <type>1</type>
                                <declaration>WizDocumentWebView* m_web</declaration>
@@ -546,7 +546,7 @@
                              </item>
                              <item>
                               <MClassMember>
-                               <uid>{851c3bc6-fe9f-405a-a9f9-a6f741efcd6c}</uid>
+                               <uid>{1e38521a-7c3d-4fec-9141-593e8d3806a9}</uid>
                                <visibility>2</visibility>
                                <type>1</type>
                                <declaration>WizWebEngineView* m_comments</declaration>
@@ -554,7 +554,7 @@
                              </item>
                              <item>
                               <MClassMember>
-                               <uid>{be6aacbd-b10b-4c3d-8fa4-809fa8ac4c43}</uid>
+                               <uid>{e3b5e6d7-0b7f-4db6-932f-4cc0cce68736}</uid>
                                <visibility>2</visibility>
                                <type>1</type>
                                <declaration>WizTitleBar* m_title</declaration>
@@ -562,7 +562,7 @@
                              </item>
                              <item>
                               <MClassMember>
-                               <uid>{cf205999-4acf-42c3-98a7-99a17498bd80}</uid>
+                               <uid>{4ab7d195-b537-46ee-9397-cc9a0da61cf2}</uid>
                                <visibility>1</visibility>
                                <type>2</type>
                                <declaration>WizDocumentWebView* web()</declaration>
@@ -655,7 +655,7 @@
                             <qlist>
                              <item>
                               <MClassMember>
-                               <uid>{13a2aa41-1dfa-4aa4-a0c6-3a3e02924a28}</uid>
+                               <uid>{9a815a02-41ac-4d2b-97ab-38b724f23cc2}</uid>
                                <visibility>3</visibility>
                                <type>1</type>
                                <declaration>WizDocumentWebViewPage* m_page</declaration>
@@ -663,7 +663,7 @@
                              </item>
                              <item>
                               <MClassMember>
-                               <uid>{860352dc-2e21-4a46-b711-09bc1d0a95bc}</uid>
+                               <uid>{7f2ee4ca-9e84-4873-946c-c18d1005177d}</uid>
                                <visibility>1</visibility>
                                <type>2</type>
                                <declaration>WizDocumentWebViewPage* getPage()</declaration>
