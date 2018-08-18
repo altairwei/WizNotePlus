@@ -15,6 +15,7 @@
 #include <QWebEngineView>
 #include <QRect>
 #include "share/WizWebEngineView.h"
+#include "share/WizMisc.h"
 
 
 WizDevToolsDialog::WizDevToolsDialog(QWidget *parent)
@@ -42,5 +43,5 @@ WizWebEngineView* WizDevToolsDialog::getWeb() {
 }
 
 QSize WizDevToolsDialog::sizeHint() const {
-    return QSize(600, 500);
+    return QSize(WizSmartScaleUI(800), WizSmartScaleUI(500));
 }

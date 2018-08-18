@@ -2389,6 +2389,7 @@ void WizMainWindow::init()
             SLOT(viewNoteInSeparateWindow(WIZDOCUMENTDATA)));
     connect(m_documents, SIGNAL(documentsSelectionChanged()), SLOT(on_documents_itemSelectionChanged()));
     connect(m_documents, SIGNAL(itemDoubleClicked(QListWidgetItem*)), SLOT(on_documents_itemDoubleClicked(QListWidgetItem*)));
+    //FIXME: 应该监听目录树列表|文档列表的文档删除信号，以便关闭已打开的标签
     connect(m_documents, SIGNAL(lastDocumentDeleted()), SLOT(on_documents_lastDocumentDeleted()));
     connect(m_documents, SIGNAL(shareDocumentByLinkRequest(QString,QString)),
             SLOT(on_shareDocumentByLink_request(QString,QString)));
@@ -3443,14 +3444,15 @@ void WizMainWindow::on_actionGoForward_triggered()
  *  重现上一次的状态。
  */
 void WizMainWindow::on_actionOpenDevTools_triggered() {
+    WizDocumentView* docView =  qobject_cast<WizDocumentView*>(m_mainTab->currentWidget());
     WizDevToolsDialog* devToolsWindow = new WizDevToolsDialog();
     devToolsWindow->setAttribute(Qt::WA_DeleteOnClose); // 由于没有制定parent所以设置该属性以防止内存泄露
-    if (!m_doc->noteLoaded()) return;
+    if (!docView || !docView->noteLoaded()) return;
     // 设置外观
-    devToolsWindow->setWindowTitle("DevTools - " + m_doc->note().strTitle);
+    devToolsWindow->setWindowTitle("DevTools - " + docView->note().strTitle);
     //
     WizWebEnginePage* devToolsWebPage = devToolsWindow->getWeb()->getPage();
-    WizDocumentWebViewPage* docWebPage = m_doc->web()->getPage();
+    WizDocumentWebViewPage* docWebPage = docView->web()->getPage();
     docWebPage->setDevToolsPage(devToolsWebPage);
     //
     devToolsWindow->show();
@@ -3588,7 +3590,10 @@ void WizMainWindow::on_options_settingsChanged(WizOptionsType type)
     switch (type) {
     case wizoptionsNoteView:
         //FIXME: 应该处理所有文档视图
-        m_doc->settingsChanged();
+        processAllDocumentViews([=](WizDocumentView* docView){
+            docView->settingsChanged();
+        });
+        //m_doc->settingsChanged();
         break;
     case wizoptionsSync:
         m_syncFull->setFullSyncInterval(userSettings().syncInterval());
@@ -3596,7 +3601,10 @@ void WizMainWindow::on_options_settingsChanged(WizOptionsType type)
     case wizoptionsFont:
     {
         //FIXME: 应该处理所有文档视图
-        m_doc->web()->editorResetFont();
+        processAllDocumentViews([=](WizDocumentView* docView){
+            docView->web()->editorResetFont();
+        });
+        //m_doc->web()->editorResetFont();
         QMap<QString, WizSingleDocumentViewer*>& viewerMap = m_singleViewDelegate->getDocumentViewerMap();
         QList<WizSingleDocumentViewer*> singleViewrList = viewerMap.values();
         for (WizSingleDocumentViewer* viewer : singleViewrList)
@@ -3610,7 +3618,10 @@ void WizMainWindow::on_options_settingsChanged(WizOptionsType type)
         break;
     case wizoptionsSpellCheck:
         //FIXME: 应该处理所有文档视图
-        m_doc->web()->editorResetSpellCheck();
+        processAllDocumentViews([=](WizDocumentView* docView){
+            docView->web()->editorResetSpellCheck();
+        });
+        //m_doc->web()->editorResetSpellCheck();
         break;
     default:
         break;
