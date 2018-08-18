@@ -273,6 +273,7 @@ public:
     void createNoteWithText(const QString& strText);
 
     void createNoteByTemplateCore(const TemplateData& tmplData);
+
 signals:
     void documentsViewTypeChanged(int);
     void documentsSortTypeChanged(int);
@@ -524,6 +525,10 @@ private:
 
     //
     WizDocumentWebView* getActiveEditor();
+    WizDocumentView* createDocumentView();
+    void setCurrentDocumentView(WizDocumentView* newDocView);
+    void waitForAllDocumentViewDone();
+    void processAllDocumentViews(std::function<void(WizDocumentView*)> callback);
     //
     void showDocumentList();
     void showDocumentList(WizCategoryBaseView* category);

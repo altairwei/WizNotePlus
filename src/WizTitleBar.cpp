@@ -795,3 +795,8 @@ void WizTitleBar::hideMessageTips(bool useAnimation)
 {
     m_notifyBar->hideMessageTips(useAnimation);
 }
+
+WizTitleEdit* WizTitleBar::getTitleEdit()
+{
+    return m_editTitle;
+}

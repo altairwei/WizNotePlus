@@ -571,6 +571,7 @@ void WizDocumentWebView::onTimerAutoSaveTimout()
 
 void WizDocumentWebView::onTitleEdited(QString strTitle)
 {
+    emit titleEdited(view(), strTitle);
     WizMainWindow* mainWindow = qobject_cast<WizMainWindow*>(m_app.mainWindow());
     mainWindow->titleChanged();
     //

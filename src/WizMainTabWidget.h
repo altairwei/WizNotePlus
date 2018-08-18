@@ -35,7 +35,9 @@ public slots:
     void createTab(const QUrl &url);
     void closeTab(int index);
     void onViewNoteRequested(WizDocumentView* view, const WIZDOCUMENTDATAEX& doc, bool forceEditing);
-
+    void setTabTextToDocumentTitle(WizDocumentView* view, const WIZDOCUMENTDATAEX& doc, bool forceEditing);
+    void setTabTextToDocumentTitle(QString strGUID, WizDocumentView* view);
+    void setTabTextToDocumentTitle(WizDocumentView*, QString newTitle);
 private:
     void setupView(WizWebEngineView *webView);
 };

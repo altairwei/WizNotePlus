@@ -3,10 +3,12 @@
 #include <QLabel>
 #include <QMenu>
 #include <QTabBar>
+#include <QLayout>
 
 #include "share/WizWebEngineView.h"
 #include "WizDocumentView.h"
 #include "share/WizGlobal.h"
+#include "WizTitleBar.h"
 
 WizMainTabWidget::WizMainTabWidget(QWidget *parent)
     : QTabWidget(parent)
@@ -32,6 +34,7 @@ void WizMainTabWidget::handleCurrentChanged(int index)
 {
     // index 是新的当前标签
     // 发送各种信号
+    // WizMainWindow 的m_doc需要更新
 }
 
 /**
@@ -46,6 +49,46 @@ void WizMainTabWidget::onViewNoteRequested(WizDocumentView* view, const WIZDOCUM
 }
 
 /**
+ * @brief 处理viewNoteRequested信号，设置标签文本为笔记标题
+ * @param view
+ * @param doc
+ * @param forceEditing
+ */
+void WizMainTabWidget::setTabTextToDocumentTitle(WizDocumentView* view, const WIZDOCUMENTDATAEX& doc, bool forceEditing)
+{
+    int index = indexOf(view);
+    if (index != -1) {
+        setTabText(index, doc.strTitle);
+    }
+}
+
+/**
+ * @brief 处理documentSaved信号，设置标签文本为笔记标题
+ * @param strGUID
+ * @param view
+ */
+void WizMainTabWidget::setTabTextToDocumentTitle(QString strGUID, WizDocumentView* view)
+{
+    int index = indexOf(view);
+    auto doc = view->note();
+    if (index != -1) {
+        setTabText(index, doc.strTitle);
+    }
+}
+
+/**
+ * @brief 处理titleEdited信号，设置标签文本为笔记标题
+ * @param newTitle 新的标题
+ */
+void WizMainTabWidget::setTabTextToDocumentTitle(WizDocumentView* view, QString newTitle)
+{
+    int index = indexOf(view);
+    if (index != -1) {
+        setTabText(index, newTitle);
+    }
+}
+
+/**
  * @brief 浏览笔记文档
  * @param docView 已经构建好的文档视图
  */
@@ -55,13 +98,11 @@ void WizMainTabWidget::createTab(WizDocumentView *docView)
     addTab(docView, docView->note().strTitle);
     docView->resize(currentWidget()->size()); // Workaround for QTBUG-61770
     // 设置标签标题，此处应该检测文档视图标题变化
-    //setTabText(index, docView->note().strTitle); // 此时笔记还没加载
-    connect(WizGlobal::instance(), &WizGlobal::viewNoteRequested, [this](WizDocumentView* view, const WIZDOCUMENTDATAEX& doc, bool forceEditing) {
-        int index = indexOf(view);
-        if (index != -1) {
-            setTabText(index, doc.strTitle);
-        }
-    });
+    connect(WizGlobal::instance(), SIGNAL(viewNoteRequested(WizDocumentView*, const WIZDOCUMENTDATAEX&, bool)),
+            SLOT(setTabTextToDocumentTitle(WizDocumentView*, const WIZDOCUMENTDATAEX&, bool)));
+    connect(docView, SIGNAL(documentSaved(QString, WizDocumentView*)),
+            SLOT(setTabTextToDocumentTitle(QString, WizDocumentView*)));
+    connect(docView->web(), SIGNAL(titleEdited(WizDocumentView*, QString)), SLOT(setTabTextToDocumentTitle(WizDocumentView*, QString)));
     // 设置成当前部件
     setCurrentWidget(docView);
 }

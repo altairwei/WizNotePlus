@@ -33,30 +33,37 @@ QRegion creteRoundMask(const QRectF& rect)
     return QRegion(polygon);
 }
 
+/**
+ * @brief 单窗口文档浏览器构造函数
+ * @param app WizMainWindow 对象
+ * @param guid 文档GUID
+ * @param parent
+ */
 WizSingleDocumentViewer::WizSingleDocumentViewer(WizExplorerApp& app, const QString& guid, QWidget* parent) :
     QWidget(parent)
   , m_guid(guid)
   , m_docView(nullptr)
   , m_containerWgt(nullptr)
 {
+    // 创建本部件布局
     setAttribute(Qt::WA_DeleteOnClose);
     setContentsMargins(0, 0, 0, 0);
     QHBoxLayout* layout = new QHBoxLayout(this);
     layout->setContentsMargins(0, 0, 0, 0);
 
     applyWidgetBackground(false);
-
+    // 创建容器部件
     m_containerWgt = new QWidget(this);
     m_containerWgt->setStyleSheet(".QWidget{background-color:#F5F5F5;}");
-
+    // 布局设置
     layout->addStretch(0);
     layout->addWidget(m_containerWgt);
     layout->addStretch(0);
-
+    // 容器布局
     QHBoxLayout* containerLayout = new QHBoxLayout(m_containerWgt);
     containerLayout->setContentsMargins(0, 0, 0, 0);
     m_containerWgt->setLayout(containerLayout);
-
+    // 创建文档视图
     m_docView = new WizDocumentView(app, m_containerWgt);
     m_docView->setStyleSheet(QString("QLineEdit{border:1px solid #DDDDDD; border-radius:2px;}"
                                      "QToolButton {border:0px; padding:0px; border-radius:0px;background-color:#F5F5F5;}"));
@@ -207,10 +214,15 @@ QMap<QString, WizSingleDocumentViewer*>& WizSingleDocumentViewDelegate::getDocum
     return m_viewerMap;
 }
 
+/**
+ * @brief 分配浏览文档的任务，创建单窗口浏览器
+ * @param doc 文档数据
+ */
 void WizSingleDocumentViewDelegate::viewDocument(const WIZDOCUMENTDATA& doc)
 {
     if (m_viewerMap.find(doc.strGUID) != m_viewerMap.end())
     {
+        // 如果是已经打开的文档，则显示该窗口
         bringWidgetToFront(m_viewerMap.value(doc.strGUID));
         return;
     }
