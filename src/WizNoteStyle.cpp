@@ -4,6 +4,7 @@
 #include <QPainter>
 #include <QScrollBar>
 #include <QApplication>
+#include <QRect>
 
 #include "WizCategoryView.h"
 #include "WizDocumentListView.h"
@@ -81,7 +82,6 @@ CWizNoteStyle::CWizNoteStyle(const QString& strSkinName)
     if (!strSkinName.isEmpty())
     {
         QString strSkinPath = ::WizGetSkinResourcePath(strSkinName);
-
         bool bHightPixel = WizIsHighPixel();
         QString strIconName = bHightPixel ? "branch_expanded@2x.png" : "branch_expanded.png";
         m_expandedImage.load(strSkinPath + strIconName);
@@ -391,6 +391,7 @@ void CWizNoteStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption *opt, 
     switch (pe)
     {
     case PE_IndicatorBranch:
+        // 目录树指示箭头绘制
         {
             if (const WizCategoryBaseView *view = dynamic_cast<const WizCategoryBaseView *>(w))
             {
@@ -399,10 +400,17 @@ void CWizNoteStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption *opt, 
 
                 if (opt->state & QStyle::State_Children) {
                     bool bExpanded = (opt->state & QStyle::State_Open) ? true : false;
+                    // 改变图标尺寸和位置
+                    QRect rectIcon = opt->rect;
+                    // 调整 brach 图标偏移量
+                    rectIcon.adjust(8, 0, 0, 0);
+                    //
                     if ((opt->state & QStyle::State_Selected)) {        //(opt->state & State_HasFocus)
-                        drawcenterImage(p, bExpanded ? m_expandedImageSelected : m_collapsedImageSelected, opt->rect.adjusted(8, 0, 0, 0));
+                        //drawcenterImage(p, bExpanded ? m_expandedImageSelected : m_collapsedImageSelected, opt->rect.adjusted(8, 0, 0, 0));
+                        drawcenterImage(p, bExpanded ? m_expandedImageSelected : m_collapsedImageSelected, rectIcon);
                     } else {
-                        drawcenterImage(p, bExpanded ? m_expandedImage : m_collapsedImage, opt->rect.adjusted(8, 0, 0, 0));
+                        //drawcenterImage(p, bExpanded ? m_expandedImage : m_collapsedImage, opt->rect.adjusted(8, 0, 0, 0));
+                        drawcenterImage(p, bExpanded ? m_expandedImage : m_collapsedImage, rectIcon);
                     }
                 }
                 return;
@@ -450,6 +458,7 @@ void CWizNoteStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption *opt, 
                 }
 
                 if (opt->state & State_Selected) {
+                    // 选区背景
                     QRect rc(vopt->rect);
                     rc.setWidth(p->window().width());
                     int nMargin = (opt->rect.height() - WizSmartScaleUI(20)) / 2;

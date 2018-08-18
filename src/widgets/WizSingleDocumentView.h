@@ -44,7 +44,9 @@ private:
 };
 
 
-
+/**
+ * @brief 单窗口文档浏览分派器
+ */
 class WizSingleDocumentViewDelegate : public QObject
 {
     Q_OBJECT

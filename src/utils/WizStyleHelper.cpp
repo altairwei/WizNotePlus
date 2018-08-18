@@ -16,6 +16,7 @@
 #include "../share/WizSettings.h"
 #include "../share/WizGlobal.h"
 
+#include "utils/WizLogger.h"
 
 #ifdef Q_OS_MAC
 #include "mac/WizMacHelper.h"
@@ -813,15 +814,16 @@ QRect WizStyleHelper::drawThumbnailPixmap(QPainter* p, const QRect& rc, const QP
 
     QRect rcd(rc.x() + rc.right() - WizSmartScaleUI(66), rc.y() + rc.height() - WizSmartScaleUI(60), WizSmartScaleUI(50), WizSmartScaleUI(50));
 
+    int nScaledThumbnailMaxWidth = WizSmartScaleUI(nThumbnailPixmapMaxWidth);
     int nWidth = 0, nHeight = 0;
-    if (pm.width() > nThumbnailPixmapMaxWidth || pm.height() > nThumbnailPixmapMaxWidth) {
-        double fRate = qMin<double>(double(nThumbnailPixmapMaxWidth) / pm.width(), double(nThumbnailPixmapMaxWidth) / pm.height());
+//    if (pm.width() > nScaledThumbnailMaxWidth || pm.height() > nScaledThumbnailMaxWidth) {
+        double fRate = qMin<double>(double(nScaledThumbnailMaxWidth) / pm.width(), double(nScaledThumbnailMaxWidth) / pm.height());
         nWidth = int(pm.width() * fRate);
         nHeight = int(pm.height() * fRate);
-    } else {
-        nWidth = pm.width();
-        nHeight = pm.height();
-    }
+//    } else {
+//        nWidth = pm.width();
+//        nHeight = pm.height();
+//    }
 
     int adjustX = (rcd.width() - nWidth) / 2;
     int adjustY = (rcd.height() - nHeight) / 2;
@@ -988,7 +990,7 @@ int WizStyleHelper::fontExtend(QFont& f)
     }
 
     f.setFamily(strFont);
-    f.setPixelSize(9);
+    f.setPixelSize(WizSmartScaleUI(9));
 
     return QFontMetrics(f).height();
 }
@@ -1011,7 +1013,7 @@ int WizStyleHelper::fontSection(QFont& f)
 
 int WizStyleHelper::editorButtonHeight()
 {
-    return 28;
+    return WizSmartScaleUI(26);
 }
 
 QMargins WizStyleHelper::editorBarMargins()
@@ -1024,14 +1026,24 @@ int WizStyleHelper::titleEditorHeight()
     return WizSmartScaleUI(30);
 }
 
+int WizStyleHelper::titleIconHeight()
+{
+    return WizSmartScaleUI(12);
+}
+
 int WizStyleHelper::editToolBarHeight()
 {
-    return 30;
+    return WizSmartScaleUI(30);
 }
 
 int WizStyleHelper::infoBarHeight()
 {
-    return 34;
+    return WizSmartScaleUI(34);
+}
+
+int WizStyleHelper::editIconHeight()
+{
+    return WizSmartScaleUI(12);
 }
 
 int WizStyleHelper::tagBarHeight()
@@ -1042,6 +1054,11 @@ int WizStyleHelper::tagBarHeight()
 int WizStyleHelper::notifyBarHeight()
 {
     return WizSmartScaleUI(32);
+}
+
+int WizStyleHelper::editComboFontSize()
+{
+    return WizSmartScaleUI(11);
 }
 
 QVariant WizStyleHelper::getValue(const QString& key, const QVariant& defaultValue)
@@ -1120,7 +1137,8 @@ void WizStyleHelper::drawListViewItemThumb(QPainter* p, const QRect& rc, int nBa
     nFontHeight = Utils::WizStyleHelper::fontThumb(fontThumb);
     QPixmap pixGreyPoint(Utils::WizStyleHelper::skinResourceFileName("document_grey_point", true));
     QRect rcLead = rcd;   //排序类型或标签等
-    int nLeadHeight;
+    //int nLeadHeight;
+    int nLeadHeight = 0;
     if (!lead.isEmpty()) {
         for (int i = 0; i < lead.count(); i++) {
             QString strInfo(lead.at(i));
@@ -1160,6 +1178,7 @@ void WizStyleHelper::drawListViewItemThumb(QPainter* p, const QRect& rc, int nBa
     if (nBadgeType & DocTypeEncrytedInSummary) {
         QIcon badgeIcon(listViewBadge(BadgeEncryptedInSummary));
         QSize sz = badgeIcon.availableSizes().first();
+        //QSize sz = badgeIcon.availableSizes().last();
         QRect rcPix(rcSummary.x() + (rcSummary.width() - sz.width()) / 2, rcSummary.y() + (rcSummary.height() - sz.height()) / 2,
                     sz.width(), sz.height());
         if (bSelected && bFocused) {

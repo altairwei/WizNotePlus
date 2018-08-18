@@ -60,6 +60,8 @@ public:
 
     void applyButtonStateForSeparateWindow(bool inSeparateWindow);
 
+    WizTitleEdit* getTitleEdit();
+
 public Q_SLOTS:
     void onEditButtonClicked();
     void onSeparateButtonClicked();

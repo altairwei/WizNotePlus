@@ -1,5 +1,6 @@
 ﻿#include "WizLoginDialog.h"
 #include "ui_WizLoginDialog.h"
+
 #include <QPainter>
 #include <QMouseEvent>
 #include <QMenu>
@@ -83,7 +84,7 @@ private:
     QList<QWidget*> m_widgetList;
 };
 
-
+// 登录窗口构造函数
 WizLoginDialog::WizLoginDialog(const QString &strLocale, const QList<WizLocalUser>& localUsers, QWidget *parent)
 #ifdef Q_OS_MAC
     : QDialog(parent)
@@ -156,6 +157,7 @@ WizLoginDialog::WizLoginDialog(const QString &strLocale, const QList<WizLocalUse
     //
     connect(&m_wizBoxSearchingTimer, SIGNAL(timeout()), SLOT(onWizBoxSearchingTimeOut()));
 #ifndef Q_OS_MAC
+    // 登录按钮信号槽
     connect(m_buttonLogin, SIGNAL(clicked()), SLOT(on_btn_login_clicked()));
     connect(ui->btn_changeToLogin, SIGNAL(clicked()), SLOT(on_btn_changeToLogin_clicked()));
     connect(ui->btn_changeToSignin, SIGNAL(clicked()), SLOT(on_btn_changeToSignin_clicked()));
@@ -350,11 +352,11 @@ void WizLoginDialog::setUser(const QString &strUserGuid)
 }
 
 void WizLoginDialog::doAccountVerify()
-{
+{   // 在线验证账号密码
     QString strUserGUID;
     QString strAccountFolder;
     for (WizLocalUser user : m_userList)
-    {
+    {   // 遍历本地账号，如果有则不在线验证
         if (user.strUserId == userId())
         {
             strAccountFolder = user.strDataFolderName;
@@ -364,8 +366,8 @@ void WizLoginDialog::doAccountVerify()
     }
 
     if (strAccountFolder.isEmpty())
-    {
-        emit accountCheckStart();
+    {   // 如果不是本地账号，则在线验证
+        emit accountCheckStart(); // 发送账号检查信号
         doOnlineVerify();
         return;
     }
@@ -577,6 +579,7 @@ void WizLoginDialog::applyElementStyles(const QString &strLocal)
     QString strIconPerson = WizGetSkinResourceFileName(strThemeName, "loginIconPerson" + (isHighPix ? "@2x" : QString()));
     QString strIconKey = WizGetSkinResourceFileName(strThemeName, "loginIconKey" + (isHighPix ? "@2x" : QString()));
     QString strIconServer = WizGetSkinResourceFileName(strThemeName, "loginIconServer" + (isHighPix ? "@2x" : QString()));
+
     ui->wgt_usercontainer->setBackgroundImage(strLoginTopLineEditor, QPoint(8, 8));
     ui->wgt_usercontainer->setLeftIcon(strIconPerson);
     ui->wgt_usercontainer->setRightIcon(WizGetSkinResourceFileName(strThemeName, "loginLineEditorDownArrow" + (isHighPix ? "@2x" : QString())));
@@ -1054,7 +1057,7 @@ void WizLoginDialog::on_btn_fogetpass_clicked()
 }
 
 void WizLoginDialog::on_btn_login_clicked()
-{
+{   // 处理登录信号
     if (m_lineEditUserName->text().isEmpty()) {
         ui->label_passwordError->setText(tr("Please enter user id"));
         return;
@@ -1066,7 +1069,7 @@ void WizLoginDialog::on_btn_login_clicked()
     }
 
     if (EnterpriseServer == m_serverType)
-    {
+    {   // 企业 WizBox
         if (m_lineEditServer->text().isEmpty())
         {
             ui->label_passwordError->setText(tr("Please enter server address"));
@@ -1821,13 +1824,19 @@ void WizOEMDownloader::checkServerLicence(const QString& licence)
     QString settings = _downloadOEMSettings();
     if (settings.isEmpty())
     {
+        emit errorMessage(tr("Licence not found : %1").arg(settings.left(100)));
+        qDebug() << "Can not find licence from oem settings";
         return;
     }
     //
     Json::Value d;
     Json::Reader reader;
     if (!reader.parse(settings.toUtf8().constData(), d))
+    {
+        emit errorMessage(tr("Licence not found : %1").arg(settings.left(100)));
+        qDebug() << "Can not find licence from oem settings";
         return;
+    }
 
     if (d.isMember("licence"))
     {

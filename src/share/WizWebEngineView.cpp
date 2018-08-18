@@ -65,6 +65,9 @@ WizWebEnginePage::WizWebEnginePage(QObject* parent)
     : QWebEnginePage(parent)
     , m_continueNavigate(true)
 {
+    // Qt 5.11 才引入这个特性
+    //QWebEnginePage::setInspectedPage(this);
+    //QWebEnginePage::setDevToolsPage(this);
 }
 
 void WizWebEnginePage::javaScriptConsoleMessage(JavaScriptConsoleMessageLevel level, const QString& message, int lineNumber, const QString& sourceID)
@@ -125,13 +128,19 @@ void WizWebEnginePage::triggerAction(WizWebEnginePage::WebAction action, bool ch
     }
 }
 
+/** WizWebEngineView 构造函数
+ *
+ *  创建WizWebEnginePage
+ */
 WizWebEngineView::WizWebEngineView(QWidget* parent)
     : QWebEngineView(parent)
     , m_server(NULL)
     , m_clientWrapper(NULL)
     , m_channel(NULL)
+    , m_page(new WizWebEnginePage(this))
 {
-    WizWebEnginePage* p = new WizWebEnginePage(this);
+    // 创建Page设置为到该View
+    WizWebEnginePage* p = m_page;
     setPage(p);
     //
     connect(p, SIGNAL(openLinkInNewWindow(QUrl)), this, SLOT(openLinkInDefaultBrowser(QUrl)));
@@ -202,6 +211,11 @@ void WizWebEngineView::innerLoadFinished(bool ret)
     //
     if (ret)
     {
+        // 页面加载时设置合适的缩放比例
+        qreal zFactor = (1.0*WizSmartScaleUI(100)) / 100;
+        setZoomFactor(zFactor);
+        //
+
         if (m_server && m_server->isListening()
                 && m_clientWrapper
                 && m_channel)
@@ -244,6 +258,13 @@ void WizWebEngineView::openLinkInDefaultBrowser(QUrl url)
     QDesktopServices::openUrl(url);
 }
 
+/** 下面是一个含有两个参数的函数的注释说明（简述）
+ *
+ *   @return 获得指向WebPage的指针
+ */
+WizWebEnginePage* WizWebEngineView::getPage() {
+    return m_page;
+}
 
 static QWebEngineView* getActiveWeb()
 {
@@ -295,6 +316,24 @@ bool WizWebEngineViewProgressKeyEvents(QKeyEvent* ev)
                 web->page()->triggerAction(QWebEnginePage::SelectAll);
                 return true;
             }
+            else if (ev->modifiers()&Qt::KeyboardModifier::ControlModifier && ev->key() == Qt::Key_Up)
+            {
+                //放大
+                qreal factor = web->zoomFactor();
+                factor += 0.1;
+                factor = (factor > 5.0) ? 5.0 : factor;
+                web->setZoomFactor(factor);
+                return true;
+            }
+            else if (ev->modifiers()&Qt::KeyboardModifier::ControlModifier && ev->key() == Qt::Key_Down)
+            {
+                //缩小
+                qreal factor = web->zoomFactor();
+                factor -= 0.1;
+                factor = (factor < 0.5) ? 0.5 : factor;
+                web->setZoomFactor(factor);
+                return true;
+            }
         }
     }
     return false;
@@ -329,7 +368,7 @@ void WizWebEngineView::wheelEvent(QWheelEvent *event)
             factor -= 0.1;
             factor = (factor < 0.5)?0.5:factor;
         }
-        setZoomFactor(factor);
+        //setZoomFactor(factor);
     } else {
         event->ignore();
     }

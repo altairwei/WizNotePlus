@@ -1,8 +1,11 @@
 ﻿#include "WizPopupButton.h"
 
 #include <QMenu>
+#include <QRect>
 
 #include "WizDef.h"
+#include "share/WizMisc.h"
+#include "share/WizQtHelper.h"
 #include "share/WizSettings.h"
 #include "WizDocumentListView.h"
 #include <QApplication>
@@ -10,7 +13,7 @@
 WizPopupButton::WizPopupButton(WizExplorerApp& app, QWidget *parent)
     : QToolButton(parent)
     , m_app(app)
-    , m_iconSize(23, 14)
+    , m_iconSize(::WizSmartScaleUI(23), ::WizSmartScaleUI(14))
 {
     setPopupMode(QToolButton::InstantPopup);
 
@@ -108,7 +111,8 @@ WizViewTypePopupButton::WizViewTypePopupButton(WizExplorerApp& app, QWidget* par
 //    m_iconOneLine.addFile(strSkinPath + "view_one_line.png");
 //    m_iconTwoLine.addFile(strSkinPath + "view_two_line.png");
 //    m_iconThumbnail.addFile(strSkinPath + "view_thumbnail.png");
-    QIcon icon = ::WizLoadSkinIcon(app.userSettings().skin(), "documents_view_type");
+    bool isHighPix = ::WizIsHighPixel();
+    QIcon icon = ::WizLoadSkinIcon(app.userSettings().skin(), "documents_view_type" + (isHighPix ? "@2x" : QString()));
     setIcon(icon);
 
     int type = m_app.userSettings().get("VIEW_TYPE").toInt();
@@ -118,7 +122,9 @@ WizViewTypePopupButton::WizViewTypePopupButton(WizExplorerApp& app, QWidget* par
 
 QSize WizViewTypePopupButton::sizeHint() const
 {
-    return QSize(32 + 10, fontMetrics().height() + 10);
+    //return QSize(32 + 10, fontMetrics().height() + 10);
+    // 推荐按钮尺寸
+    return QSize(::WizSmartScaleUI(32) + 10, fontMetrics().height() + 10);
 }
 
 void WizViewTypePopupButton::on_action_triggered()
@@ -209,8 +215,8 @@ WizSortingPopupButton::WizSortingPopupButton(WizExplorerApp& app, QWidget *paren
         setActionChecked(menu, type);
         m_app.userSettings().set("SORT_TYPE", QString::number(type));
     }
-
-    QIcon icon = ::WizLoadSkinIcon(app.userSettings().skin(), "documents_sort_type");
+    bool isHighPix = ::WizIsHighPixel();
+    QIcon icon = ::WizLoadSkinIcon(app.userSettings().skin(), "documents_sort_type" + (isHighPix ? "@2x" : QString()));
     setIcon(icon);
 }
 
@@ -227,7 +233,7 @@ QSize WizSortingPopupButton::sizeHint () const
 //#else
 //    return QSize(fontMetrics().width(text()) + 45, fontMetrics().height() + 12);
 //#endif
-
+    // 推荐按钮尺寸
     return QSize(32 + 10, fontMetrics().height() + 10);
 }
 

@@ -170,6 +170,8 @@ public:
     void setInSeperateWindow(bool inSeperateWindow);
     bool isInSeperateWindow() const;
 
+    WizDocumentWebViewPage* getPage();
+
     // initialize editor style before render, only invoke once.
     void replaceDefaultCss(QString& strHtml);
 
@@ -178,6 +180,8 @@ public:
     void editorFocus();
     void enableEditor(bool enalbe);
     QString noteResourcesPath();
+    //
+    void editorResetSpellCheck();
 
     void setIgnoreActiveWindowEvent(bool igoreEvent);
 
@@ -296,6 +300,7 @@ private:
     QPointer<WizEditorInsertLinkForm> m_editorInsertLinkForm;
 
     WizSearchReplaceWidget* m_searchReplaceWidget;
+    WizDocumentWebViewPage* m_page;
 
 public:
     Q_INVOKABLE void onNoteLoadFinished(); // editor callback
@@ -386,6 +391,8 @@ Q_SIGNALS:
     void clickingTodoCallBack(bool cancel, bool needCallAgain);
     //
     void currentHtmlChanged();
+    //
+    void titleEdited(WizDocumentView*, QString strTitle);
 
 private slots:
     void on_insertCommentToNote_request(const QString& docGUID, const QString& comment);

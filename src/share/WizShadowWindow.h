@@ -13,6 +13,10 @@
 #include "WizWindowTitleBar.h"
 #include "WizShadowEffect.h"
 
+//-------------------------------------------------------------------
+// 给Window制造阴影的模板，Base应该为具有Qt::Window的QWidget
+//-------------------------------------------------------------------
+
 template <class Base>
 class WizShadowWindow
         : public Base
@@ -25,21 +29,21 @@ public:
         , m_clientLayout(NULL)
     {
         Base* pT = this;
-        //
+        // 设置传入的QWidget的属性
         pT->setAttribute(Qt::WA_TranslucentBackground); //enable MainWindow to be transparent
-        pT->setWindowFlags(Qt::FramelessWindowHint);
+        pT->setWindowFlags(Qt::FramelessWindowHint); //不带标题栏
         pT->setContentsMargins(0, 0, 0, 0);
-        //
+        // 设置窗体布局
         QLayout* windowLayout = new QBoxLayout(QBoxLayout::TopToBottom);
         pT->setLayout(windowLayout);
         windowLayout->setContentsMargins(0, 0, 0, 0);
         windowLayout->setSpacing(0);
-        //
-        int shadowSize = WizSmartScaleUI(20);
+        // 设置阴影
+        int shadowSize = WizSmartScaleUI(20); // 根据屏幕DPI设置阴影尺寸
         m_shadowWidget = new WizShadowWidget(this, shadowSize, canResize);
         m_shadowWidget->setContentsMargins(shadowSize, shadowSize, shadowSize, shadowSize);
         windowLayout->addWidget(m_shadowWidget);
-        //
+        // 设置阴影布局
         QLayout* rootLayout = new QBoxLayout(QBoxLayout::TopToBottom);
         m_shadowWidget->setLayout(rootLayout);
         rootLayout->setContentsMargins(0, 0, 0, 0);

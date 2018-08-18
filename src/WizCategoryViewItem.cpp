@@ -63,10 +63,11 @@ WizCategoryViewItemBase::WizCategoryViewItemBase(WizExplorerApp& app,
 void WizCategoryViewItemBase::drawItemBody(QPainter *p, const QStyleOptionViewItem *vopt) const
 {
     bool bSelected = vopt->state.testFlag(QStyle::State_Selected);
-
+    // 获得Area for a view item's decoration (icon).
     QRect rcIcon = treeWidget()->style()->subElementRect(QStyle::SE_ItemViewItemDecoration, vopt, treeWidget());
     if (!vopt->icon.isNull()) {
         const int iconSize = 14;
+        //const int iconSize = WizSmartScaleUI(14);
         rcIcon.adjust(-6, 0, 0, 0);
         rcIcon.setTop(vopt->rect.top() + (vopt->rect.height() - iconSize) / 2);
         rcIcon.setWidth(iconSize);
@@ -80,8 +81,9 @@ void WizCategoryViewItemBase::drawItemBody(QPainter *p, const QStyleOptionViewIt
     QFont fontCount;
     Utils::WizStyleHelper::fontExtend(fontCount);
 
+    //获得Area for a view item's text.
     //通过subElementRect获取范围会产生不同的结果。此处通过icon进行计算
-//    QRect rcText = subElementRect(SE_ItemViewItemText, vopt, view);
+    //QRect rcText = subElementRect(SE_ItemViewItemText, vopt, view);
     QRect rcText(rcIcon.right() + 8, vopt->rect.top(), vopt->rect.right() - rcIcon.right() - 20,
                  vopt->rect.height());
     QString strCount = countString();
@@ -615,6 +617,7 @@ WizCategoryViewShortcutRootItem::WizCategoryViewShortcutRootItem(WizExplorerApp&
                  Utils::WizStyleHelper::treeViewItemIconSize(), QIcon::Normal);
     icon.addFile(WizGetSkinResourceFileName(app.userSettings().skin(), "category_shortcut_selected"),
                  Utils::WizStyleHelper::treeViewItemIconSize(), QIcon::Selected);
+
     setIcon(0, icon);
     setText(0, strName);
 }

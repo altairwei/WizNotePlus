@@ -1,8 +1,10 @@
+// modes.h - written and placed in the public domain by Wei Dai
+
+//! \file modes.h
+//! \brief Class file for modes of operation.
+
 #ifndef CRYPTOPP_MODES_H
 #define CRYPTOPP_MODES_H
-
-/*! \file
-*/
 
 #include "cryptlib.h"
 #include "secblock.h"
@@ -13,21 +15,24 @@
 
 NAMESPACE_BEGIN(CryptoPP)
 
-//! Cipher modes documentation. See NIST SP 800-38A for definitions of these modes. See AuthenticatedSymmetricCipherDocumentation for authenticated encryption modes.
-
-/*! Each class derived from this one defines two types, Encryption and Decryption, 
-	both of which implement the SymmetricCipher interface.
-	For each mode there are two classes, one of which is a template class,
-	and the other one has a name that ends in "_ExternalCipher".
-	The "external cipher" mode objects hold a reference to the underlying block cipher,
-	instead of holding an instance of it. The reference must be passed in to the constructor.
-	For the "cipher holder" classes, the CIPHER template parameter should be a class
-	derived from BlockCipherDocumentation, for example DES or AES.
-*/
+//! \class CipherModeDocumentation
+//! \brief Block cipher mode of operation information
+//! \details Each class derived from this one defines two types, Encryption and Decryption,
+//!   both of which implement the SymmetricCipher interface.
+//!   For each mode there are two classes, one of which is a template class,
+//!   and the other one has a name that ends in "_ExternalCipher".
+//!   The "external cipher" mode objects hold a reference to the underlying block cipher,
+//!   instead of holding an instance of it. The reference must be passed in to the constructor.
+//!   For the "cipher holder" classes, the CIPHER template parameter should be a class
+//!   derived from BlockCipherDocumentation, for example DES or AES.
+//! \details See NIST SP 800-38A for definitions of these modes. See
+//!   AuthenticatedSymmetricCipherDocumentation for authenticated encryption modes.
 struct CipherModeDocumentation : public SymmetricCipherDocumentation
 {
 };
 
+//! \class CipherModeBase
+//! \brief Block cipher mode of operation information
 class CRYPTOPP_DLL CRYPTOPP_NO_VTABLE CipherModeBase : public SymmetricCipher
 {
 public:
@@ -67,15 +72,24 @@ protected:
 		if (!(feedbackSize == 0 || feedbackSize == BlockSize()))
 			throw InvalidArgument("CipherModeBase: feedback size cannot be specified for this cipher mode");
 	}
+
+// Thanks to Zireael, http://github.com/weidai11/cryptopp/pull/46
+#ifndef CRYPTOPP_MAINTAIN_BACKWARDS_COMPATIBILITY_562
+	virtual void ResizeBuffers();
+#else
 	virtual void ResizeBuffers()
 	{
 		m_register.New(m_cipher->BlockSize());
 	}
+#endif
 
 	BlockCipher *m_cipher;
 	AlignedSecByteBlock m_register;
 };
 
+//! \class ModePolicyCommonTemplate
+//! \brief Block cipher mode of operation common operations
+//! \tparam POLICY_INTERFACE common operations
 template <class POLICY_INTERFACE>
 class CRYPTOPP_NO_VTABLE ModePolicyCommonTemplate : public CipherModeBase, public POLICY_INTERFACE
 {
@@ -92,11 +106,13 @@ void ModePolicyCommonTemplate<POLICY_INTERFACE>::CipherSetKey(const NameValuePai
 	SetFeedbackSize(feedbackSize);
 }
 
+//! \class CFB_ModePolicy
+//! \brief CFB block cipher mode of operation
 class CRYPTOPP_DLL CRYPTOPP_NO_VTABLE CFB_ModePolicy : public ModePolicyCommonTemplate<CFB_CipherAbstractPolicy>
 {
 public:
 	IV_Requirement IVRequirement() const {return RANDOM_IV;}
-	static const char * CRYPTOPP_API StaticAlgorithmName() {return "CFB";}
+	CRYPTOPP_CONSTEXPR static const char * CRYPTOPP_API StaticAlgorithmName() {return "CFB";}
 
 protected:
 	unsigned int GetBytesPerIteration() const {return m_feedbackSize;}
@@ -120,12 +136,14 @@ inline void CopyOrZero(void *dest, const void *src, size_t s)
 		memset(dest, 0, s);
 }
 
+//! \class OFB_ModePolicy
+//! \brief OFB block cipher mode of operation
 class CRYPTOPP_DLL CRYPTOPP_NO_VTABLE OFB_ModePolicy : public ModePolicyCommonTemplate<AdditiveCipherAbstractPolicy>
 {
 public:
 	bool CipherIsRandomAccess() const {return false;}
 	IV_Requirement IVRequirement() const {return UNIQUE_IV;}
-	static const char * CRYPTOPP_API StaticAlgorithmName() {return "OFB";}
+	CRYPTOPP_CONSTEXPR static const char * CRYPTOPP_API StaticAlgorithmName() {return "OFB";}
 
 private:
 	unsigned int GetBytesPerIteration() const {return BlockSize();}
@@ -134,12 +152,14 @@ private:
 	void CipherResynchronize(byte *keystreamBuffer, const byte *iv, size_t length);
 };
 
+//! \class CTR_ModePolicy
+//! \brief CTR block cipher mode of operation
 class CRYPTOPP_DLL CRYPTOPP_NO_VTABLE CTR_ModePolicy : public ModePolicyCommonTemplate<AdditiveCipherAbstractPolicy>
 {
 public:
 	bool CipherIsRandomAccess() const {return true;}
 	IV_Requirement IVRequirement() const {return RANDOM_IV;}
-	static const char * CRYPTOPP_API StaticAlgorithmName() {return "CTR";}
+	CRYPTOPP_CONSTEXPR static const char * CRYPTOPP_API StaticAlgorithmName() {return "CTR";}
 
 protected:
 	virtual void IncrementCounterBy256();
@@ -157,6 +177,8 @@ protected:
 	AlignedSecByteBlock m_counterArray;
 };
 
+//! \class BlockOrientedCipherModeBase
+//! \brief Block cipher mode of operation default implementation
 class CRYPTOPP_DLL CRYPTOPP_NO_VTABLE BlockOrientedCipherModeBase : public CipherModeBase
 {
 public:
@@ -169,15 +191,23 @@ public:
 
 protected:
 	bool RequireAlignedInput() const {return true;}
+
+	// Thanks to Zireael, http://github.com/weidai11/cryptopp/pull/46
+#ifndef CRYPTOPP_MAINTAIN_BACKWARDS_COMPATIBILITY_562
+	void ResizeBuffers();
+#else
 	void ResizeBuffers()
 	{
 		CipherModeBase::ResizeBuffers();
 		m_buffer.New(BlockSize());
 	}
+#endif
 
 	SecByteBlock m_buffer;
 };
 
+//! \class ECB_OneWay
+//! \brief ECB block cipher mode of operation default implementation
 class CRYPTOPP_DLL CRYPTOPP_NO_VTABLE ECB_OneWay : public BlockOrientedCipherModeBase
 {
 public:
@@ -186,31 +216,37 @@ public:
 	IV_Requirement IVRequirement() const {return NOT_RESYNCHRONIZABLE;}
 	unsigned int OptimalBlockSize() const {return BlockSize() * m_cipher->OptimalNumberOfParallelBlocks();}
 	void ProcessData(byte *outString, const byte *inString, size_t length);
-	static const char * CRYPTOPP_API StaticAlgorithmName() {return "ECB";}
+	CRYPTOPP_CONSTEXPR static const char * CRYPTOPP_API StaticAlgorithmName() {return "ECB";}
 };
 
+//! \class CBC_ModeBase
+//! \brief CBC block cipher mode of operation default implementation
 class CRYPTOPP_DLL CRYPTOPP_NO_VTABLE CBC_ModeBase : public BlockOrientedCipherModeBase
 {
 public:
 	IV_Requirement IVRequirement() const {return UNPREDICTABLE_RANDOM_IV;}
 	bool RequireAlignedInput() const {return false;}
 	unsigned int MinLastBlockSize() const {return 0;}
-	static const char * CRYPTOPP_API StaticAlgorithmName() {return "CBC";}
+	CRYPTOPP_CONSTEXPR static const char * CRYPTOPP_API StaticAlgorithmName() {return "CBC";}
 };
 
+//! \class CBC_Encryption
+//! \brief CBC block cipher mode of operation encryption operation
 class CRYPTOPP_DLL CRYPTOPP_NO_VTABLE CBC_Encryption : public CBC_ModeBase
 {
 public:
 	void ProcessData(byte *outString, const byte *inString, size_t length);
 };
 
+//! \class CBC_CTS_Encryption
+//! \brief CBC-CTS block cipher mode of operation encryption operation
 class CRYPTOPP_DLL CRYPTOPP_NO_VTABLE CBC_CTS_Encryption : public CBC_Encryption
 {
 public:
 	void SetStolenIV(byte *iv) {m_stolenIV = iv;}
 	unsigned int MinLastBlockSize() const {return BlockSize()+1;}
 	void ProcessLastBlock(byte *outString, const byte *inString, size_t length);
-	static const char * CRYPTOPP_API StaticAlgorithmName() {return "CBC/CTS";}
+	CRYPTOPP_CONSTEXPR static const char * CRYPTOPP_API StaticAlgorithmName() {return "CBC/CTS";}
 
 protected:
 	void UncheckedSetKey(const byte *key, unsigned int length, const NameValuePairs &params)
@@ -222,20 +258,31 @@ protected:
 	byte *m_stolenIV;
 };
 
+//! \class CBC_Decryption
+//! \brief CBC block cipher mode of operation decryption operation
 class CRYPTOPP_DLL CRYPTOPP_NO_VTABLE CBC_Decryption : public CBC_ModeBase
 {
 public:
 	void ProcessData(byte *outString, const byte *inString, size_t length);
-	
+
 protected:
+
+	// Thanks to Zireael, http://github.com/weidai11/cryptopp/pull/46
+#ifndef CRYPTOPP_MAINTAIN_BACKWARDS_COMPATIBILITY_562
+	void ResizeBuffers();
+#else
 	void ResizeBuffers()
 	{
 		BlockOrientedCipherModeBase::ResizeBuffers();
 		m_temp.New(BlockSize());
 	}
+#endif
+
 	AlignedSecByteBlock m_temp;
 };
 
+//! \class CBC_CTS_Decryption
+//! \brief CBC-CTS block cipher mode of operation decryption operation
 class CRYPTOPP_DLL CRYPTOPP_NO_VTABLE CBC_CTS_Decryption : public CBC_Decryption
 {
 public:
@@ -243,7 +290,8 @@ public:
 	void ProcessLastBlock(byte *outString, const byte *inString, size_t length);
 };
 
-//! _
+//! \class CipherModeFinalTemplate_CipherHolder
+//! \brief Block cipher mode of operation aggregate
 template <class CIPHER, class BASE>
 class CipherModeFinalTemplate_CipherHolder : protected ObjectHolder<CIPHER>, public AlgorithmImpl<BASE, CipherModeFinalTemplate_CipherHolder<CIPHER, BASE> >
 {
@@ -273,7 +321,9 @@ public:
 		{return CIPHER::StaticAlgorithmName() + "/" + BASE::StaticAlgorithmName();}
 };
 
-//! _
+//! \class CipherModeFinalTemplate_ExternalCipher
+//! \tparam BASE CipherModeFinalTemplate_CipherHolder base class
+//! \details
 template <class BASE>
 class CipherModeFinalTemplate_ExternalCipher : public BASE
 {
@@ -292,7 +342,8 @@ CRYPTOPP_DLL_TEMPLATE_CLASS CFB_CipherTemplate<AbstractPolicyHolder<CFB_CipherAb
 CRYPTOPP_DLL_TEMPLATE_CLASS CFB_EncryptionTemplate<AbstractPolicyHolder<CFB_CipherAbstractPolicy, CFB_ModePolicy> >;
 CRYPTOPP_DLL_TEMPLATE_CLASS CFB_DecryptionTemplate<AbstractPolicyHolder<CFB_CipherAbstractPolicy, CFB_ModePolicy> >;
 
-//! CFB mode
+//! \class CFB_Mode
+//! \brief CFB block cipher mode of operation.
 template <class CIPHER>
 struct CFB_Mode : public CipherModeDocumentation
 {
@@ -300,14 +351,17 @@ struct CFB_Mode : public CipherModeDocumentation
 	typedef CipherModeFinalTemplate_CipherHolder<CPP_TYPENAME CIPHER::Encryption, ConcretePolicyHolder<Empty, CFB_DecryptionTemplate<AbstractPolicyHolder<CFB_CipherAbstractPolicy, CFB_ModePolicy> > > > Decryption;
 };
 
-//! CFB mode, external cipher
+//! \class CFB_Mode_ExternalCipher
+//! \brief CFB mode, external cipher.
 struct CFB_Mode_ExternalCipher : public CipherModeDocumentation
 {
 	typedef CipherModeFinalTemplate_ExternalCipher<ConcretePolicyHolder<Empty, CFB_EncryptionTemplate<AbstractPolicyHolder<CFB_CipherAbstractPolicy, CFB_ModePolicy> > > > Encryption;
 	typedef CipherModeFinalTemplate_ExternalCipher<ConcretePolicyHolder<Empty, CFB_DecryptionTemplate<AbstractPolicyHolder<CFB_CipherAbstractPolicy, CFB_ModePolicy> > > > Decryption;
 };
 
-//! CFB mode FIPS variant, requiring full block plaintext according to FIPS 800-38A
+//! \class CFB_FIPS_Mode
+//! \brief CFB block cipher mode of operation providing FIPS validated cryptography.
+//! \details Requires full block plaintext according to FIPS 800-38A
 template <class CIPHER>
 struct CFB_FIPS_Mode : public CipherModeDocumentation
 {
@@ -315,7 +369,9 @@ struct CFB_FIPS_Mode : public CipherModeDocumentation
 	typedef CipherModeFinalTemplate_CipherHolder<CPP_TYPENAME CIPHER::Encryption, ConcretePolicyHolder<Empty, CFB_RequireFullDataBlocks<CFB_DecryptionTemplate<AbstractPolicyHolder<CFB_CipherAbstractPolicy, CFB_ModePolicy> > > > > Decryption;
 };
 
-//! CFB mode FIPS variant, requiring full block plaintext according to FIPS 800-38A, external cipher
+//! \class CFB_FIPS_Mode_ExternalCipher
+//! \brief CFB mode, external cipher, providing FIPS validated cryptography.
+//! \details Requires full block plaintext according to FIPS 800-38A
 struct CFB_FIPS_Mode_ExternalCipher : public CipherModeDocumentation
 {
 	typedef CipherModeFinalTemplate_ExternalCipher<ConcretePolicyHolder<Empty, CFB_RequireFullDataBlocks<CFB_EncryptionTemplate<AbstractPolicyHolder<CFB_CipherAbstractPolicy, CFB_ModePolicy> > > > > Encryption;
@@ -324,7 +380,8 @@ struct CFB_FIPS_Mode_ExternalCipher : public CipherModeDocumentation
 
 CRYPTOPP_DLL_TEMPLATE_CLASS AdditiveCipherTemplate<AbstractPolicyHolder<AdditiveCipherAbstractPolicy, OFB_ModePolicy> >;
 
-//! OFB mode
+//! \class OFB_Mode
+//! \brief OFB block cipher mode of operation.
 template <class CIPHER>
 struct OFB_Mode : public CipherModeDocumentation
 {
@@ -332,7 +389,8 @@ struct OFB_Mode : public CipherModeDocumentation
 	typedef Encryption Decryption;
 };
 
-//! OFB mode, external cipher
+//! \class OFB_Mode_ExternalCipher
+//! \brief OFB mode, external cipher.
 struct OFB_Mode_ExternalCipher : public CipherModeDocumentation
 {
 	typedef CipherModeFinalTemplate_ExternalCipher<ConcretePolicyHolder<Empty, AdditiveCipherTemplate<AbstractPolicyHolder<AdditiveCipherAbstractPolicy, OFB_ModePolicy> > > > Encryption;
@@ -342,7 +400,8 @@ struct OFB_Mode_ExternalCipher : public CipherModeDocumentation
 CRYPTOPP_DLL_TEMPLATE_CLASS AdditiveCipherTemplate<AbstractPolicyHolder<AdditiveCipherAbstractPolicy, CTR_ModePolicy> >;
 CRYPTOPP_DLL_TEMPLATE_CLASS CipherModeFinalTemplate_ExternalCipher<ConcretePolicyHolder<Empty, AdditiveCipherTemplate<AbstractPolicyHolder<AdditiveCipherAbstractPolicy, CTR_ModePolicy> > > >;
 
-//! CTR mode
+//! \class CTR_Mode
+//! \brief CTR block cipher mode of operation.
 template <class CIPHER>
 struct CTR_Mode : public CipherModeDocumentation
 {
@@ -350,14 +409,16 @@ struct CTR_Mode : public CipherModeDocumentation
 	typedef Encryption Decryption;
 };
 
-//! CTR mode, external cipher
+//! \class CTR_Mode_ExternalCipher
+//! \brief CTR mode, external cipher.
 struct CTR_Mode_ExternalCipher : public CipherModeDocumentation
 {
 	typedef CipherModeFinalTemplate_ExternalCipher<ConcretePolicyHolder<Empty, AdditiveCipherTemplate<AbstractPolicyHolder<AdditiveCipherAbstractPolicy, CTR_ModePolicy> > > > Encryption;
 	typedef Encryption Decryption;
 };
 
-//! ECB mode
+//! \class ECB_Mode
+//! \brief ECB block cipher mode of operation.
 template <class CIPHER>
 struct ECB_Mode : public CipherModeDocumentation
 {
@@ -367,7 +428,8 @@ struct ECB_Mode : public CipherModeDocumentation
 
 CRYPTOPP_DLL_TEMPLATE_CLASS CipherModeFinalTemplate_ExternalCipher<ECB_OneWay>;
 
-//! ECB mode, external cipher
+//! \class ECB_Mode_ExternalCipher
+//! \brief ECB mode, external cipher.
 struct ECB_Mode_ExternalCipher : public CipherModeDocumentation
 {
 	typedef CipherModeFinalTemplate_ExternalCipher<ECB_OneWay> Encryption;
@@ -403,7 +465,8 @@ struct CBC_CTS_Mode : public CipherModeDocumentation
 CRYPTOPP_DLL_TEMPLATE_CLASS CipherModeFinalTemplate_ExternalCipher<CBC_CTS_Encryption>;
 CRYPTOPP_DLL_TEMPLATE_CLASS CipherModeFinalTemplate_ExternalCipher<CBC_CTS_Decryption>;
 
-//! CBC mode with ciphertext stealing, external cipher
+//! \class CBC_CTS_Mode_ExternalCipher
+//! \brief CBC mode with ciphertext stealing, external cipher
 struct CBC_CTS_Mode_ExternalCipher : public CipherModeDocumentation
 {
 	typedef CipherModeFinalTemplate_ExternalCipher<CBC_CTS_Encryption> Encryption;

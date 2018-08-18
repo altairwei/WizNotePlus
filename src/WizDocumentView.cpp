@@ -69,18 +69,19 @@ WizDocumentView::WizDocumentView(WizExplorerApp& app, QWidget* parent)
     , m_sizeHint(QSize(200, 1))
     , m_comments(NULL)
 {
+    // 创建布局
     QVBoxLayout* layoutDoc = new QVBoxLayout();
     layoutDoc->setContentsMargins(0, 0, 0, 0);
     layoutDoc->setSpacing(0);
-
+    // 创建文档视图部件
     m_docView = new QWidget(this);
     m_docView->setLayout(layoutDoc);
-
+    // 创建堆叠部件
     m_tab = new QStackedWidget(this);
-    //
+    // 设置密码视图
     m_passwordView->setGeometry(this->geometry());
     connect(m_passwordView, SIGNAL(cipherCheckRequest()), SLOT(onCipherCheckRequest()));
-    //
+    // 创建消息部件
     m_msgWidget = new QWidget(this);
     QVBoxLayout* layoutMsg = new QVBoxLayout();
     m_msgWidget->setLayout(layoutMsg);
@@ -88,9 +89,9 @@ WizDocumentView::WizDocumentView(WizExplorerApp& app, QWidget* parent)
     m_msgLabel->setAlignment(Qt::AlignCenter);
     m_msgLabel->setWordWrap(true);
     layoutMsg->addWidget(m_msgLabel);
-    //
+    // 创建空白视图
     m_blankView = new QWidget(this);
-    //
+    // 添加不同视图到堆叠部件
     m_tab->addWidget(m_docView);
     m_tab->addWidget(m_passwordView);
     m_tab->addWidget(m_msgWidget);
@@ -98,7 +99,7 @@ WizDocumentView::WizDocumentView(WizExplorerApp& app, QWidget* parent)
     m_tab->addWidget(m_blankView);
     m_tab->setCurrentWidget(m_blankView);
     m_tab->setBackgroundRole(QPalette::HighlightedText);
-
+    // 设置评论部件
     m_comments = m_commentWidget->web();
     //m_comments->history()->setMaximumItemCount(0);
     m_comments->settings()->setAttribute(QWebEngineSettings::LocalStorageEnabled, true);
@@ -111,13 +112,13 @@ WizDocumentView::WizDocumentView(WizExplorerApp& app, QWidget* parent)
     connect(m_commentWidget, SIGNAL(widgetStatusChanged()), SLOT(on_commentWidget_statusChanged()));
 
     m_commentWidget->hide();
-
+    // 创建编辑器组件
     QWidget* wgtEditor = new QWidget(m_docView);
-    //
+    // 创建文档页面视图
     m_web = new WizDocumentWebView(app, wgtEditor);
     //m_web->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
     m_title->setEditor(m_web);
-    //
+    // 创建评论文档页面
     QWebEnginePage* commentsPage = m_comments->page();
     connect(commentsPage, SIGNAL(linkClicked(QUrl, QWebEnginePage::NavigationType, bool, WizWebEnginePage*)), m_web, SLOT(onEditorLinkClicked(QUrl, QWebEnginePage::NavigationType, bool, WizWebEnginePage*)));
 
@@ -143,7 +144,7 @@ WizDocumentView::WizDocumentView(WizExplorerApp& app, QWidget* parent)
     layoutMain->setContentsMargins(0, 0, 0, 0);
     setLayout(layoutMain);
     layoutMain->addWidget(m_tab);
-
+    // 设置下载器
     WizMainWindow* mainWindow = qobject_cast<WizMainWindow *>(m_app.mainWindow());
     m_downloaderHost = mainWindow->downloaderHost();
     connect(m_downloaderHost, SIGNAL(downloadDone(const WIZOBJECTDATA&, bool)),
@@ -164,6 +165,7 @@ WizDocumentView::WizDocumentView(WizExplorerApp& app, QWidget* parent)
     connect(&m_dbMgr, SIGNAL(documentUploaded(QString,QString)), \
             m_editStatusSyncThread, SLOT(documentUploaded(QString,QString)));
 
+    // 连接浏览笔记请求信号
     connect(WizGlobal::instance(), SIGNAL(viewNoteRequested(WizDocumentView*,const WIZDOCUMENTDATAEX&,bool)),
             SLOT(onViewNoteRequested(WizDocumentView*,const WIZDOCUMENTDATAEX&,bool)));
 
@@ -178,7 +180,7 @@ WizDocumentView::WizDocumentView(WizExplorerApp& app, QWidget* parent)
     connect(m_title, SIGNAL(notifyBar_link_clicked(QString)), SLOT(on_notifyBar_link_clicked(QString)));
     connect(m_title, SIGNAL(loadComment_request(QString)), SLOT(on_loadComment_request(QString)), Qt::QueuedConnection);
 
-    //
+    // 编辑状态同步线程
     m_editStatusSyncThread->start(QThread::IdlePriority);
 
     m_editStatusChecker = new WizDocumentStatusChecker();
@@ -270,20 +272,29 @@ void WizDocumentView::showEvent(QShowEvent *event)
 void WizDocumentView::resizeEvent(QResizeEvent* ev)
 {
     QWidget::resizeEvent(ev);
+    qDebug() << "oldSize: " << ev->oldSize() << ", newSize: " << ev->size();
 
     m_title->editorToolBar()->adjustButtonPosition();
 }
 
+/**
+ * @brief 处理“浏览笔记请求”信号，
+ * @param view 文档视图
+ * @param doc 文档数据
+ * @param forceEditing 是否强制编辑
+ */
 void WizDocumentView::onViewNoteRequested(WizDocumentView* view, const WIZDOCUMENTDATAEX& doc, bool forceEditing)
 {
+    // 只处理指定为本视图的信号
     if (view != this)
         return;
 
     if (doc.tCreated.secsTo(QDateTime::currentDateTime()) <= 1) {
-        //new note
+        // 新建笔记
         viewNote(doc, forceEditing);
         m_title->clearAndSetPlaceHolderText(doc.strTitle);
     } else {
+        // 已有笔记
         m_title->clearPlaceHolderText();
         viewNote(doc, forceEditing);
     }
@@ -355,6 +366,11 @@ void WizDocumentView::initStat(const WIZDOCUMENTDATA& data, bool forceEdit)
     }
 }
 
+/**
+ * @brief 在当前视图中浏览笔记
+ * @param wizDoc 笔记数据
+ * @param forceEdit 是否强制编辑
+ */
 void WizDocumentView::viewNote(const WIZDOCUMENTDATAEX& wizDoc, bool forceEdit)
 {
     WIZDOCUMENTDATAEX dataTemp = wizDoc;

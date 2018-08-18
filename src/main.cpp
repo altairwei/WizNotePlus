@@ -12,6 +12,7 @@
 #include <QSslConfiguration>
 #include <QNetworkProxy>
 #include <QtWebEngine>
+#include <QStyleFactory>
 
 #include <sys/stat.h>
 
@@ -40,13 +41,19 @@
 #include "WizDocumentWebEngine.h"
 #include "WizLoginDialog.h"
 
-
 #ifdef Q_OS_MAC
 #  define SHARE_PATH "/../Resources"
 #else
 #  define SHARE_PATH "/../share/wiznote"
 #endif
 
+#ifdef Q_OS_WIN
+#include <Windows.h>
+#endif
+
+//-------------------------------------------------------------------
+// 程序初始化安装
+//-------------------------------------------------------------------
 
 const char* g_lpszDesktopFileName = "\
 [Desktop Entry]\n\
@@ -63,8 +70,14 @@ GenericName[en_US.UTF-8]=WizNote\n\
 
 
 #ifdef Q_OS_LINUX
+
+/**
+ * @brief Linux特定的安装过程
+ * 
+ */
 void installOnLinux()
 {
+    // 准备.desktop文件内容
     QString appPath = Utils::WizPathResolve::appPath();
     QString strText = WizFormatString3(g_lpszDesktopFileName,
                                        appPath,
@@ -76,7 +89,7 @@ void installOnLinux()
     //
     QString iconsBasePath = QDir::homePath() + "/.local/share/icons/hicolor/";
     ::WizEnsurePathExists(iconsBasePath);
-    //
+    // 导出不同尺寸图标文件
     CWizStdStringArray arrayIconSize;
     arrayIconSize.push_back("16");
     arrayIconSize.push_back("32");
@@ -92,7 +105,7 @@ void installOnLinux()
         QString iconPathName = iconSize + "x" + iconSize;
         QString iconFullPath = iconsBasePath + iconPathName + "/apps/";
         WizEnsurePathExists(iconFullPath);
-        //
+        // 将内部logo图片导出到文件夹
         QString resourceName = ":/logo_" + iconSize + ".png";
         QPixmap pixmap(resourceName);
         if (pixmap.isNull())
@@ -100,7 +113,7 @@ void installOnLinux()
         //
         pixmap.save(iconFullPath + "wiznote.png");
     }
-
+    // 创建桌面文件
     QString desktopFileName = applicationsPath + "wiznote.desktop";
     ::WizSaveUnicodeTextToUtf8File(desktopFileName, strText, false);
     //
@@ -108,29 +121,54 @@ void installOnLinux()
 }
 #endif
 
+//-------------------------------------------------------------------
+// 登录与启动
+//-------------------------------------------------------------------
+
+/** 
+ * @brief 初始化内核
+ * @param argc 命令行参数数量
+ * @param argv 命令行参数数组
+ */
 int mainCore(int argc, char *argv[])
 {
+    // 设置高分屏支持
+    //-------------------------------------------------------------------
+
+#ifdef Q_OS_LINUX
+    QApplication::setAttribute(Qt::AA_EnableHighDpiScaling);
+#endif
+
+#ifdef Q_OS_WIN
+    // 暂时先采用UI缩放+字体缩小的方案来适配Windows高分屏
+    QApplication::setAttribute(Qt::AA_EnableHighDpiScaling);
+    QApplication::setAttribute(Qt::AA_Use96Dpi);
+#endif
+
+    // 初始化主进程和QtWebEngine
+    //-------------------------------------------------------------------
 
 #ifdef Q_OS_LINUX
     // create single application for linux
-    WizSingleApplication a(argc, argv, "Special-Message-for-WizNote-SingleApplication");
-    if (a.isRunning())
+    WizSingleApplication app(argc, argv, "Special-Message-for-WizNote-SingleApplication");
+    if (app.isRunning())
     {
-        a.sendMessage(WIZ_SINGLE_APPLICATION);
+        app.sendMessage(WIZ_SINGLE_APPLICATION);
         return 0;
     }
-    //
+    // 初始化Chrome内核
     QtWebEngine::initialize();
 #else
-    QApplication a(argc, argv);
+    // 创建Win和Mac端 Qt主进程
+    QApplication app(argc, argv);
     //
 #ifdef BUILD4APPSTORE
-    QDir dir(QApplication::applicationDirPath());
+    QDir dir(QApplication::applicationDirPath()); //进入exe文件所在的绝对路径
     dir.cdUp();
     dir.cd("PlugIns");
-    QApplication::setLibraryPaths(QStringList(dir.absolutePath()));
+    QApplication::setLibraryPaths(QStringList(dir.absolutePath())); //设置库路径
 #endif
-    //
+    // 初始化Win和Mac端Chrome内核
     QtWebEngine::initialize();
 
 #ifdef BUILD4APPSTORE
@@ -139,14 +177,21 @@ int mainCore(int argc, char *argv[])
 #endif
 #endif
 
+    // 配置QtApp和Debug
+    //-------------------------------------------------------------------
+
 #ifdef Q_OS_WIN
-    QFont appFont = WizCreateWindowsUIFont(a, WizGetWindowsFontName());
+    QFont appFont = WizCreateWindowsUIFont(app, WizGetWindowsFontName());
+    appFont.setPixelSize(14); // Windows 端自动缩放UI后缩小字体大小
+    //appFont.setPointSize(12);
     QApplication::setFont(appFont);
 #endif
-
-   qInstallMessageHandler(Utils::WizLogger::messageHandler);
-   QApplication::setAttribute(Qt::AA_UseHighDpiPixmaps);
-
+    // Debug 输出
+    //qInstallMessageHandler(Utils::WizLogger::messageHandler); // 输出到 Wiznote 消息控制台
+    qInstallMessageHandler(0); // 输出到 Qt Debug console
+    // 设置高分屏图标
+    QApplication::setAttribute(Qt::AA_UseHighDpiPixmaps);
+    // 设置应用名和组织名用于QSetting
     QApplication::setApplicationName(QObject::tr("WizNote"));
     QApplication::setOrganizationName(QObject::tr("cn.wiz.wiznoteformac"));
 
@@ -168,11 +213,11 @@ int mainCore(int argc, char *argv[])
     QTranslator translatorSys;
     QString sysLocalFile = Utils::WizPathResolve::localeFileName(sysLocal);
     translatorSys.load(sysLocalFile);
-    a.installTranslator(&translatorSys);
+    app.installTranslator(&translatorSys);
 
     initCrashReporter();
 
-    a.removeTranslator(&translatorSys);
+    app.removeTranslator(&translatorSys);
 
     WizQueuedThreadsInit();
 
@@ -182,16 +227,22 @@ int mainCore(int argc, char *argv[])
     QSslConfiguration::setDefaultConfiguration(conf);
 #endif
 
-    a.setStyleSheet("QToolTip { \
+    // tooltip 样式
+    app.setStyleSheet("QToolTip { \
                     font: 12px; \
                     color:#000000; \
                     padding:0px 1px; \
                     background-color: #F8F8F8; \
                     border:0px;}");
 
+    // 初始化用户设置
+    //-------------------------------------------------------------------
+
     // setup settings
-    QSettings::setDefaultFormat(QSettings::IniFormat);
-    //
+    QSettings::setDefaultFormat(QSettings::IniFormat); //用ini文件来储存设置
+
+    /// 全局设置
+    /** 设置文件在～/.wiznote/wiznote.ini或者%HOMEPATH%/Wiznote/wiznote.ini里面. */
     QSettings* globalSettings = new QSettings(Utils::WizPathResolve::globalSettingsFile(), QSettings::IniFormat);
     WizGlobal::setGlobalSettings(globalSettings);
     //
@@ -207,10 +258,13 @@ int mainCore(int argc, char *argv[])
 
     QString strPassword;
     WizUserSettings userSettings(strAccountFolderName);
-
+    // 获取用户设置
     QSettings* settings = new QSettings(Utils::WizPathResolve::userSettingsFile(strAccountFolderName), QSettings::IniFormat);
     WizGlobal::setSettings(settings);
-    //
+
+    // 语言本地化
+    //-------------------------------------------------------------------
+
     // setup locale for welcome dialog
     QString strLocale = userSettings.locale();
     QLocale::setDefault(strLocale);
@@ -218,20 +272,24 @@ int mainCore(int argc, char *argv[])
     QTranslator translatorWizNote;
     QString strLocaleFile = Utils::WizPathResolve::localeFileName(strLocale);
     translatorWizNote.load(strLocaleFile);
-    a.installTranslator(&translatorWizNote);
+    app.installTranslator(&translatorWizNote);
 
     QTranslator translatorQt;
     strLocaleFile = Utils::WizPathResolve::qtLocaleFileName(strLocale);
     translatorQt.load(strLocaleFile);
-    a.installTranslator(&translatorQt);
+    app.installTranslator(&translatorQt);
 
 #ifdef Q_OS_LINUX
+    // 判断Linux端是否已经安装过Wiznode
     if (globalSettings->value("Common/Installed", 0).toInt() == 0)
     {
         globalSettings->setValue("Common/Installed", 1);
         installOnLinux();
     }
 #endif
+
+    // 登录程序
+    //-------------------------------------------------------------------
 
     // figure out auto login or manually login
     bool bFallback = true;
@@ -241,9 +299,10 @@ int mainCore(int argc, char *argv[])
 
 
     bool bAutoLogin = userSettings.autoLogin();
-    strPassword = userSettings.password();
+    strPassword = userSettings.password(); // 竟然用base64加密解密 (╬￣皿￣)
 
     if (bAutoLogin && !strPassword.isEmpty()) {
+        // 当勾选自动登录且密码不为空时，自动登录
         bFallback = false;
     }    
 
@@ -264,31 +323,36 @@ int mainCore(int argc, char *argv[])
     //
     QString strUserId = WizGetLocalUserId(localUsers, strUserGuid);
     bool isNewRegisterAccount = false;
-    // manually login
+    // manually login 手动登录
     if (bFallback)
     {
+        // 创建登录窗口，并启动事件循环
         WizLoginDialog loginDialog(strLocale, localUsers);
         if (QDialog::Accepted != loginDialog.exec())
             return 0;
 
-//        qDebug() << "deafult user id : " << strUserGuid << " login dailog user id : " << loginDialog.loginUserGuid();
+        qDebug() << "deafult user id : " << strUserGuid << " login dailog user id : " << loginDialog.loginUserGuid();
+
+        // 如果默认UserId为空，或者登录ID不等于默认UserId
         if (strUserId.isEmpty() || loginDialog.loginUserGuid() != strUserGuid)
-        {
+        {   // 重新获取用户文件夹
             strAccountFolderName = WizGetLocalFolderName(localUsers, loginDialog.loginUserGuid());
             if (strAccountFolderName.isEmpty())
             {
                 strAccountFolderName = loginDialog.userId();
             }
             qDebug() << "login user id : " << loginDialog.userId();
+            // 写入新用户设置
             settings = new QSettings(Utils::WizPathResolve::userSettingsFile(strAccountFolderName), QSettings::IniFormat);
             WizGlobal::setSettings(settings);
         }
+        // 获取用户输入账号密码
         strPassword = loginDialog.password();
         strUserId = loginDialog.userId();
         isNewRegisterAccount = loginDialog.isNewRegisterAccount();
     }
     else
-    {
+    { // WizBox企业登录设置
         if (userSettings.serverType() == EnterpriseServer)
         {
             WizCommonApiEntry::setEnterpriseServerIP(userSettings.enterpriseServerIP());
@@ -302,29 +366,29 @@ int mainCore(int argc, char *argv[])
 
     //
     //
-    // reset locale for current user.
+    // reset locale for current user. 将设置重置到当前用户
     userSettings.setAccountFolderName(strAccountFolderName);
     userSettings.setUserId(strUserId);
     strLocale = userSettings.locale();
 
-    a.removeTranslator(&translatorWizNote);
+    app.removeTranslator(&translatorWizNote);
     strLocaleFile = Utils::WizPathResolve::localeFileName(strLocale);
     translatorWizNote.load(strLocaleFile);
-    a.installTranslator(&translatorWizNote);
+    app.installTranslator(&translatorWizNote);
 
-    a.removeTranslator(&translatorQt);
+    app.removeTranslator(&translatorQt);
     strLocaleFile = Utils::WizPathResolve::qtLocaleFileName(strLocale);
     translatorQt.load(strLocaleFile);
-    a.installTranslator(&translatorQt);
-
+    app.installTranslator(&translatorQt);
+    // 设置用户语言
     WizCommonApiEntry::setLanguage(strLocale);
 
+    // 登录数据库管理
     WizDatabaseManager dbMgr(strAccountFolderName);
     if (!dbMgr.openAll()) {
         QMessageBox::critical(NULL, "", QObject::tr("Can not open database"));
         return 0;
     }
-
 
     qDebug() << "set user id for token ; " << strUserId;
     WizToken::setUserId(strUserId);
@@ -338,17 +402,18 @@ int mainCore(int argc, char *argv[])
 
     // FIXME: move to core plugin initialize
     WizThumbCache cache;
-
-    WizMainWindow w(dbMgr);
+    // 启动Wiz主窗口
+    WizMainWindow window(dbMgr);
 #ifdef Q_OS_LINUX
-    QObject::connect(&a, SIGNAL(messageAvailable(QString)), &w,
+    // 绑定消息通知
+    QObject::connect(&app, SIGNAL(messageAvailable(QString)), &window,
                      SLOT(on_application_messageAvailable(QString)));
 #endif
 
     //settings->setValue("Users/DefaultUser", strUserId);
 
-    w.show();
-    w.init();
+    window.show();
+    window.init();
 
 #ifdef Q_OS_MAC
     //start and set safari extension
@@ -369,8 +434,9 @@ int mainCore(int argc, char *argv[])
         noteManager.createIntroductionNoteForNewRegisterAccount();
     }
 
-    int ret = a.exec();
-    if (w.isLogout()) {
+    int ret = app.exec();
+    if (window.isLogout()) {
+        // 清理密码？
         userSettings.setPassword("");
 #ifndef BUILD4APPSTORE
         QProcess::startDetached(argv[0], QStringList());
@@ -391,7 +457,7 @@ int main(int argc, char *argv[])
     int ret = mainCore(argc, argv);
 
     //WizQueuedThreadsShutdown();
-    // clean up
+    // clean up 清理临时文件
     QString strTempPath = Utils::WizPathResolve::tempPath();
     ::WizDeleteAllFilesInFolder(strTempPath);
 

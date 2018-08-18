@@ -7,7 +7,11 @@
 #ifndef CRYPTOPP_IMPORTS
 #define CRYPTOPP_DEFAULT_NO_DLL
 #endif
+
 #include "dll.h"
+#include "cryptlib.h"
+#include "smartptr.h"
+#include "filters.h"
 #include "oids.h"
 
 USING_NAMESPACE(CryptoPP)
@@ -23,7 +27,7 @@ public:
 	{
 		if (!blocking)
 			throw BlockingInputOnly("LineBreakParser");
-		
+
 		unsigned int i, last = 0;
 		for (i=0; i<length; i++)
 		{
@@ -452,7 +456,7 @@ protected:
 				{
 					Integer p, q, h, g;
 					int counter;
-					
+
 					SecByteBlock seed(SHA::DIGESTSIZE);
 					do
 					{

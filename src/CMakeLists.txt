@@ -2,6 +2,10 @@ project(WizNote)
 
 add_subdirectory(test)
 
+#============================================================================
+# 准备头文件和源码
+#============================================================================
+
 set(wiznote_SOURCES_MAC
     mac/WizSearchWidget.mm
     mac/WizMacHelper.mm
@@ -52,13 +56,9 @@ set(wiznote_SOURCES
     share/cppsqlite3.cpp
     share/WizObject.cpp
     share/WizKMCore.cpp
-    share/WizXml.cpp
-    share/WizXmlRpc.cpp
     share/WizGlobal.cpp
-    sync/WizXmlRpcServer.cpp
     share/WizDatabase.cpp
     share/WizDatabaseManager.cpp
-    #share/WizVerifyAccount.cpp
     share/WizSettings.cpp
     share/WizUI.cpp
     share/WizMd5.cpp
@@ -66,7 +66,6 @@ set(wiznote_SOURCES
     share/WizWin32Helper.cpp
     share/WizDrawTextHelper.cpp
     share/WizUIHelper.cpp
-    #share/WizCreateAccount.cpp
     share/WizCommonUI.cpp
     share/WizAnimateAction.cpp
     share/WizPopupWidget.cpp
@@ -138,6 +137,7 @@ set(wiznote_SOURCES
 
     WizCategoryView.cpp
     WizCategoryViewItem.cpp
+    WizDevToolsDialog.cpp
     WizDocumentListView.cpp
     WizDocumentListViewItem.cpp
     WizDocumentView.cpp
@@ -147,6 +147,7 @@ set(wiznote_SOURCES
     WizLineInputDialog.cpp
     WizDocumentHistory.cpp
     WizAttachmentListWidget.cpp
+    WizMainTabWidget.cpp
     WizTagListWidget.cpp
     WizConsoleDialog.cpp
     WizPreferenceDialog.cpp
@@ -209,9 +210,6 @@ set(wiznote_HEADERS
     share/cppsqlite3.h
     share/WizObject.h
     share/WizKMCore.h
-    share/WizXml.h
-    share/WizXmlRpc.h
-    sync/WizXmlRpcServer.h
     share/WizDatabase.h
     share/WizDatabaseManager.h
     share/WizSettings.h
@@ -268,12 +266,14 @@ set(wiznote_HEADERS
     WizNoteStyle.h
     WizCategoryView.h
     WizCategoryViewItem.h
+    WizDevToolsDialog.h
     WizDocumentListView.h
     WizDocumentListViewItem.h
     WizDocumentView.h
     WizDocumentWebView.h
     WizDocumentHistory.h
     WizAttachmentListWidget.h
+    WizMainTabWidget.h
     WizTagListWidget.h
     WizConsoleDialog.h
     WizPreferenceDialog.h
@@ -397,16 +397,19 @@ set(wiznote_TRANSLATIONS
     ${CMAKE_SOURCE_DIR}/i18n/wiznote_zh_TW.ts
 )
 
-
-
 set(wiznote_RCS
     ${CMAKE_SOURCE_DIR}/resources/wiznote.qrc
 )
 
+#============================================================================
+# Internal compiler options
+#============================================================================
+
+# 执行QtChooser模块
 include(QtChooser)
-qt_add_ui(wiznote_FORM_HEADERS ${wiznote_FORMS})
-qt_add_resources(wiznote_RC ${wiznote_RCS})
-qt_add_translation(wiznote_QM ${wiznote_TRANSLATIONS})
+qt_add_ui(wiznote_FORM_HEADERS ${wiznote_FORMS}) # 添加ui 设计文件
+qt_add_resources(wiznote_RC ${wiznote_RCS}) # 添加资源文件
+qt_add_translation(wiznote_QM ${wiznote_TRANSLATIONS}) # 添加本地化文件
 
 message("WizNote whill compiling as ${CMAKE_BUILD_TYPE}, use Qt: ${QT_VERSION}")
 
@@ -488,6 +491,7 @@ if(UNIX)
         endforeach()
     endif()
 else()
+    # Windows 端
     add_definitions(-DUNICODE=TRUE)
     add_definitions(-D_UNICODE=TRUE)
     add_executable(WizNote WIN32 ${wiznote_SOURCES} ${wiznote_HEADERS} ${wiznote_FORM_HEADERS} ${wiznote_QM} ${wiznote_RC})
@@ -532,12 +536,16 @@ link_directories(
     ${CMAKE_BINARY_DIR}/bin
 )
 
+#============================================================================
+# 第三方依赖
+#============================================================================
+
 if(UNIX)
 	if(APPLE)
 		if(APPSTORE_BUILD)
 			target_link_libraries(${PROJECT_NAME}
-				quazip
-				cryptlib
+                quazip_static
+				cryptopp-static
 				Qt5::WebEngine
 				Qt5::WebEngineWidgets
 				${CMAKE_SOURCE_DIR}/lib/openssl/lib/libcrypto.a
@@ -546,8 +554,8 @@ if(UNIX)
 			)
 		else(APPSTORE_BUILD)
 			target_link_libraries(${PROJECT_NAME}
-				quazip
-				cryptlib
+                quazip_static
+				cryptopp-static
 				Qt5::WebEngine
 				Qt5::WebEngineWidgets
 				${CMAKE_SOURCE_DIR}/lib/openssl/lib/libcrypto.a
@@ -559,8 +567,8 @@ if(UNIX)
 		target_link_libraries(${PROJECT_NAME}
                         -lpthread
                         X11
-			quazip
-			cryptlib
+            quazip_static   
+			cryptopp-static
 			Qt5::WebEngine
 			Qt5::WebEngineWidgets
 			${CMAKE_DL_LIBS}
@@ -568,8 +576,8 @@ if(UNIX)
 	endif(APPLE)
 else(NOT UNIX)
 	target_link_libraries(${PROJECT_NAME}
-		quazip
-		cryptlib
+        quazip_static
+		cryptopp-static
 		Qt5::WebEngine
 		Qt5::WebEngineWidgets
 		${CMAKE_DL_LIBS}

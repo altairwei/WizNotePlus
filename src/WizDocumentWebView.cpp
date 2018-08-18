@@ -20,6 +20,7 @@
 #include <QUndoStack>
 #include <QDesktopServices>
 #include <QNetworkDiskCache>
+#include <QWebEngineProfile>
 
 #ifdef Q_OS_MAC
 #include <QMacPasteboardMime>
@@ -132,8 +133,9 @@ WizDocumentWebView::WizDocumentWebView(WizExplorerApp& app, QWidget* parent)
     , m_nWindowID(nWindowIDCounter ++)
     , m_searchReplaceWidget(nullptr)
     , m_ignoreActiveWindowEvent(false)
+    , m_page(new WizDocumentWebViewPage(this))
 {
-    WizDocumentWebViewPage* page = new WizDocumentWebViewPage(this);
+    WizDocumentWebViewPage* page = m_page;
     setPage(page);
 
     connect(page, SIGNAL(actionTriggered(QWebEnginePage::WebAction)), SLOT(onActionTriggered(QWebEnginePage::WebAction)));
@@ -167,8 +169,14 @@ WizDocumentWebView::WizDocumentWebView(WizExplorerApp& app, QWidget* parent)
     addToJavaScriptWindowObject("WizExplorerApp", m_app.object());
     addToJavaScriptWindowObject("WizQtEditor", this);
 
-
     connect(this, SIGNAL(loadFinishedEx(bool)), SLOT(onEditorLoadFinished(bool)));
+    //
+    //
+    if (m_app.userSettings().isEnableSpellCheck()) {
+        QWebEngineProfile *profile = page->profile();
+        profile->setSpellCheckEnabled(true);
+        profile->setSpellCheckLanguages({"en-US"});
+    }
 }
 
 WizDocumentWebView::~WizDocumentWebView()
@@ -186,6 +194,9 @@ void WizDocumentWebView::waitForDone()
     }
 }
 
+WizDocumentWebViewPage* WizDocumentWebView::getPage() {
+    return m_page;
+}
 
 bool WizDocumentWebView::onPasteCommand()
 {
@@ -560,6 +571,7 @@ void WizDocumentWebView::onTimerAutoSaveTimout()
 
 void WizDocumentWebView::onTitleEdited(QString strTitle)
 {
+    emit titleEdited(view(), strTitle);
     WizMainWindow* mainWindow = qobject_cast<WizMainWindow*>(m_app.mainWindow());
     mainWindow->titleChanged();
     //
@@ -668,7 +680,7 @@ void WizDocumentWebView::replaceDefaultCss(QString& strHtml)
     QString strFont = m_app.userSettings().defaultFontFamily();
     int nSize = m_app.userSettings().defaultFontSize();
 
-    strCss.replace("/*default-font-family*/", QString("font-family:%1;").arg(strFont));
+    strCss.replace("/*default-font-family*/", QString("font-family:'%1';").arg(strFont));
     strCss.replace("/*default-font-size*/", QString("font-size:%1px;").arg(nSize));
     QString backgroundColor = m_app.userSettings().editorBackgroundColor();
     if (backgroundColor.isEmpty())
@@ -691,6 +703,18 @@ void WizDocumentWebView::editorResetFont()
         reloadNoteData(data);
     });
 }
+
+void WizDocumentWebView::editorResetSpellCheck()
+{
+    QWebEngineProfile *profile = page()->profile();
+    if (m_app.userSettings().isEnableSpellCheck()) {
+        profile->setSpellCheckEnabled(true);
+        profile->setSpellCheckLanguages({"en-US"});
+    } else {
+        profile->setSpellCheckEnabled(false);
+    }
+}
+
 
 void WizDocumentWebView::editorFocus()
 {
@@ -1133,6 +1157,7 @@ void WizDocumentWebView::saveEditingViewDocument(const WIZDOCUMENTDATA &data, bo
         //
         QString strScript = "WizEditor.getContentHtml()";
         //
+        TOLOG("saving note...");
         page()->runJavaScript(strScript, [=](const QVariant& ret){
             //
             bool succeeded = false;
@@ -1145,11 +1170,20 @@ void WizDocumentWebView::saveEditingViewDocument(const WIZDOCUMENTDATA &data, bo
                     m_currentNoteHtml = html;
                     emit currentHtmlChanged();
                     //
-                    qDebug() << m_currentNoteHtml;
+                    //qDebug() << m_currentNoteHtml;
                     //
                     m_docSaverThread->save(doc, html, strFileName, 0);
+                    TOLOG("save note done...");
                 }
             }
+            //
+            if (!succeeded)
+            {
+                TOLOG("save note failed, html is empty");
+                QString message = tr("Failed to save note.");
+                WizMessageBox::warning(this, tr("Error"), message);
+            }
+            //
             callback(QVariant(succeeded));
         });
         //
@@ -1352,9 +1386,6 @@ void WizDocumentWebView::loadDocumentInWeb(WizEditorMode editorMode)
     //
     m_strNoteHtmlFileName = strFileName;
     load(QUrl::fromLocalFile(strFileName));
-
-    //Waiting for the editor initialization complete if it's the first time to load a document.
-    QTimer::singleShot(100, this, SLOT(applySearchKeywordHighlight()));
 
     onNoteLoadFinished();
 }
@@ -1983,7 +2014,7 @@ void WizDocumentWebView::saveAsPDF()
     CString strTitle = view()->note().strTitle;
     WizMakeValidFileNameNoPath(strTitle);
     static QString strInitPath = QDir::homePath();
-    QString strInitFileName = Utils::WizMisc::addBackslash2(strInitPath) + strTitle;
+    QString strInitFileName = Utils::WizMisc::addBackslash2(strInitPath) + Utils::WizMisc::extractFileTitle(strTitle);
     //
     QString strFileName = QFileDialog::getSaveFileName(this, QString(),
                                                        strInitFileName,
@@ -2018,7 +2049,7 @@ void WizDocumentWebView::saveAsHtml()
     strTitle = Utils::WizMisc::extractFileTitle(strTitle);
     //
     static QString strInitPath = QDir::homePath();
-    QString strInitFileName = Utils::WizMisc::addBackslash2(strInitPath) + strTitle;
+    QString strInitFileName = Utils::WizMisc::addBackslash2(strInitPath) + Utils::WizMisc::extractFileTitle(strTitle);
     //
     QString strIndexFileName = QFileDialog::getSaveFileName(this, QString(),
                                                        strInitFileName,
