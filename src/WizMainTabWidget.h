@@ -9,19 +9,24 @@ QT_BEGIN_NAMESPACE
 class QUrl;
 QT_END_NAMESPACE
 
+class WizExplorerApp;
 class WizDocumentView;
 class WizDocumentWebView;
+class WizWebsiteView;
 
 class WizMainTabWidget : public QTabWidget
 {
     Q_OBJECT
 
 public:
-    WizMainTabWidget(QWidget *parent = nullptr);
+    WizMainTabWidget(WizExplorerApp& app, QWidget *parent = nullptr);
 
     //WizDocumentView* currentDocView();
     WizWebEngineView* currentWebView() const;
     WizWebEngineView* getWebView(int index) const;
+
+private:
+    WizExplorerApp& m_app;
 
 signals:
     void titleChanged(const QString &title);
@@ -39,7 +44,7 @@ public slots:
     void setTabTextToDocumentTitle(QString strGUID, WizDocumentView* view);
     void setTabTextToDocumentTitle(WizDocumentView*, QString newTitle);
 private:
-    void setupView(WizWebEngineView *webView);
+    void setupView(WizWebsiteView *websiteView);
 };
 
 #endif // WIZTABWIDGET_H

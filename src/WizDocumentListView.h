@@ -50,7 +50,7 @@ public:
     };
 
 public:
-    explicit WizDocumentListView(WizExplorerApp& app, QWidget *parent = 0);
+    explicit WizDocumentListView(WizExplorerApp& app, QWidget *parent = nullptr);
     virtual ~WizDocumentListView();
 
     void resetItemsViewType(int type);
@@ -66,7 +66,7 @@ public:
 
     //CWizThumbIndexCache* thumbCache() const { return m_thumbCache; }
 
-    void setItemsNeedUpdate(const QString& strKbGUID = 0, const QString& strGUID = 0);
+    void setItemsNeedUpdate(const QString& strKbGUID = nullptr, const QString& strGUID = nullptr);
     void drawItem(QPainter*p, const QStyleOptionViewItem* vopt) const;
     void reloadItem(const QString& strKbGUID, const QString& strGUID);
 

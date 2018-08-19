@@ -15,7 +15,7 @@ class WizWebEnginePage: public QWebEnginePage
 {
     Q_OBJECT
 public:
-    explicit WizWebEnginePage(QObject* parent = 0);
+    explicit WizWebEnginePage(QObject* parent = nullptr);
     //
     void stopCurrentNavigation() { m_continueNavigate = false; }
 protected:
@@ -52,7 +52,7 @@ private:
     WebSocketClientWrapper* m_clientWrapper;
     QWebChannel* m_channel;
     QString m_objectNames;
-    WizWebEnginePage* m_page;
+    //WizWebEnginePage* m_page;
 protected:
     void wheelEvent(QWheelEvent *event);
 };

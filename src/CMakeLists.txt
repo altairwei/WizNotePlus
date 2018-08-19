@@ -176,6 +176,7 @@ set(wiznote_SOURCES
     WizDocumentSelectionView.cpp
     WizDocumentTransitionView.cpp
     WizPopupButton.cpp
+    WizWebsiteView.cpp
     WizWebSettingsDialog.cpp
     WizUserVerifyDialog.cpp
     WizMessageListView.cpp
@@ -296,6 +297,7 @@ set(wiznote_HEADERS
     WizEditorInsertLinkForm.h
     WizUpgrade.h
     WizEditorToolBar.h
+    WizWebsiteView.h
     WizWebSettingsDialog.h
     WizPopupButton.h
     WizDocumentTransitionView.h
