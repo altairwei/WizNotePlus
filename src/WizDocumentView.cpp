@@ -67,7 +67,7 @@ WizDocumentView::WizDocumentView(WizExplorerApp& app, QWidget* parent)
     , m_editStatusSyncThread(new WizDocumentEditStatusSyncThread(this))
     , m_editStatus(0)
     , m_sizeHint(QSize(200, 1))
-    , m_comments(NULL)
+    , m_comments(nullptr)
 {
     // 创建布局
     QVBoxLayout* layoutDoc = new QVBoxLayout();
@@ -240,6 +240,10 @@ void WizDocumentView::waitForDone()
     }
 }
 
+/**
+ * @brief 返回文档视图的主要用户端 - 堆叠部件
+ * @return
+ */
 QWidget* WizDocumentView::client() const
 {
     return m_tab;

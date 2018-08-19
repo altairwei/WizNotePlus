@@ -133,9 +133,8 @@ WizDocumentWebView::WizDocumentWebView(WizExplorerApp& app, QWidget* parent)
     , m_nWindowID(nWindowIDCounter ++)
     , m_searchReplaceWidget(nullptr)
     , m_ignoreActiveWindowEvent(false)
-    , m_page(new WizDocumentWebViewPage(this))
 {
-    WizDocumentWebViewPage* page = m_page;
+    WizDocumentWebViewPage* page = new WizDocumentWebViewPage(this);
     setPage(page);
 
     connect(page, SIGNAL(actionTriggered(QWebEnginePage::WebAction)), SLOT(onActionTriggered(QWebEnginePage::WebAction)));
@@ -165,7 +164,7 @@ WizDocumentWebView::WizDocumentWebView(WizExplorerApp& app, QWidget* parent)
     m_timerAutoSave.setInterval(1*60*1000); // 1 minutes
     connect(&m_timerAutoSave, SIGNAL(timeout()), SLOT(onTimerAutoSaveTimout()));
     //
-    //
+    // 向页面JS脚本空间注册对象
     addToJavaScriptWindowObject("WizExplorerApp", m_app.object());
     addToJavaScriptWindowObject("WizQtEditor", this);
 
@@ -195,7 +194,7 @@ void WizDocumentWebView::waitForDone()
 }
 
 WizDocumentWebViewPage* WizDocumentWebView::getPage() {
-    return m_page;
+    return qobject_cast<WizDocumentWebViewPage*>(page());
 }
 
 bool WizDocumentWebView::onPasteCommand()

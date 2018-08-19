@@ -19,7 +19,7 @@
 
 
 WizDevToolsDialog::WizDevToolsDialog(QWidget *parent)
-    : WizWebEngineViewContainerDialog(parent)
+    : QWidget(parent)
     , m_web(new WizWebEngineView(this))
 {
     // 设置长宽和边界

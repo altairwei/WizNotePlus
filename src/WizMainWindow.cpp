@@ -160,7 +160,7 @@ WizMainWindow::WizMainWindow(WizDatabaseManager& dbMgr, QWidget *parent)
     , m_msgList(new WizMessageListView(dbMgr, this))
     , m_documentSelection(new WizDocumentSelectionView(*this, this))
     //, m_doc(new WizDocumentView(*this)) // 初始化文档视图，就把这个成员当成活动文档视图，QTabWidget说不要指定parent
-    , m_mainTab(new WizMainTabWidget(this)) // 初始化主标签栏
+    , m_mainTab(new WizMainTabWidget(*this, this)) // 初始化主标签栏
     , m_history(new WizDocumentViewHistory())
     , m_animateSync(new WizAnimateAction(this))
     , m_singleViewDelegate(new WizSingleDocumentViewDelegate(*this, this))
@@ -425,17 +425,17 @@ void WizMainWindow::cleanOnQuit()
     m_quiting = true;
     //
     WizObjectDownloaderHost::instance()->waitForDone();
-    WizKMSyncThread::setQuickThread(NULL);
+    WizKMSyncThread::setQuickThread(nullptr);
     //
     m_category->saveExpandState();
     saveStatus();
     //
     auto full = m_syncFull;
-    m_syncFull = NULL;
+    m_syncFull = nullptr;
     full->waitForDone();
     //
     auto quick = m_syncQuick;
-    m_syncQuick = NULL;
+    m_syncQuick = nullptr;
     quick->waitForDone();
     //
     m_searcher->waitForDone();
@@ -2087,9 +2087,8 @@ void WizMainWindow::initClient()
     layoutDocument->setContentsMargins(0, 0, 0, 0);
     layoutDocument->setSpacing(0);
     documentPanel->setLayout(layoutDocument);
-    //layoutDocument->addWidget(m_doc); // 将WizDocumentView添加到文档板的布局上
     layoutDocument->addWidget(m_mainTab); // 将主标签栏放在文档板布局上
-    //m_mainTab->createTab(m_doc); // 暂时在把当前文档视图放入主标签栏
+    m_mainTab->createTab(QUrl::fromUserInput("www.wiz.cn")); // 默认打开Wiz主页
     layoutDocument->addWidget(m_documentSelection);
     m_documentSelection->hide(); // 这个是什么东西？
     // append after client
@@ -3445,15 +3444,17 @@ void WizMainWindow::on_actionGoForward_triggered()
  */
 void WizMainWindow::on_actionOpenDevTools_triggered() {
     WizDocumentView* docView =  qobject_cast<WizDocumentView*>(m_mainTab->currentWidget());
+    WizWebEngineView* webView = m_mainTab->currentWebView();
+    if (!webView) return;
     WizDevToolsDialog* devToolsWindow = new WizDevToolsDialog();
     devToolsWindow->setAttribute(Qt::WA_DeleteOnClose); // 由于没有制定parent所以设置该属性以防止内存泄露
-    if (!docView || !docView->noteLoaded()) return;
     // 设置外观
-    devToolsWindow->setWindowTitle("DevTools - " + docView->note().strTitle);
+    QString title = docView ? docView->note().strTitle : webView->title();
+    devToolsWindow->setWindowTitle("DevTools - " + title);
     //
     WizWebEnginePage* devToolsWebPage = devToolsWindow->getWeb()->getPage();
-    WizDocumentWebViewPage* docWebPage = docView->web()->getPage();
-    docWebPage->setDevToolsPage(devToolsWebPage);
+    WizWebEnginePage* webPage = webView->getPage();
+    webPage->setDevToolsPage(devToolsWebPage);
     //
     devToolsWindow->show();
 }

@@ -9,9 +9,11 @@
 #include "WizDocumentView.h"
 #include "share/WizGlobal.h"
 #include "WizTitleBar.h"
+#include "WizWebsiteView.h"
 
-WizMainTabWidget::WizMainTabWidget(QWidget *parent)
+WizMainTabWidget::WizMainTabWidget(WizExplorerApp& app, QWidget *parent)
     : QTabWidget(parent)
+    , m_app(app)
 {
     // 标签栏设置
     QTabBar *tabBar = this->tabBar();
@@ -19,6 +21,8 @@ WizMainTabWidget::WizMainTabWidget(QWidget *parent)
     tabBar->setSelectionBehaviorOnRemove(QTabBar::SelectPreviousTab);
     tabBar->setMovable(true);
     tabBar->setContextMenuPolicy(Qt::CustomContextMenu);
+    // 设置样式
+    setStyleSheet("QTabBar::tab { max-width: 300px; }");
     //
     //connect(tabBar, &QTabBar::customContextMenuRequested,
                     //this, &TabWidget::handleContextMenuRequested); // 右键菜单栏设置
@@ -35,6 +39,7 @@ void WizMainTabWidget::handleCurrentChanged(int index)
     // index 是新的当前标签
     // 发送各种信号
     // WizMainWindow 的m_doc需要更新
+    Q_UNUSED(index);
 }
 
 /**
@@ -45,6 +50,9 @@ void WizMainTabWidget::handleCurrentChanged(int index)
  */
 void WizMainTabWidget::onViewNoteRequested(WizDocumentView* view, const WIZDOCUMENTDATAEX& doc, bool forceEditing)
 {
+    Q_UNUSED(forceEditing);
+    Q_UNUSED(view);
+    Q_UNUSED(doc);
 
 }
 
@@ -56,6 +64,7 @@ void WizMainTabWidget::onViewNoteRequested(WizDocumentView* view, const WIZDOCUM
  */
 void WizMainTabWidget::setTabTextToDocumentTitle(WizDocumentView* view, const WIZDOCUMENTDATAEX& doc, bool forceEditing)
 {
+    Q_UNUSED(forceEditing);
     int index = indexOf(view);
     if (index != -1) {
         setTabText(index, doc.strTitle);
@@ -69,6 +78,7 @@ void WizMainTabWidget::setTabTextToDocumentTitle(WizDocumentView* view, const WI
  */
 void WizMainTabWidget::setTabTextToDocumentTitle(QString strGUID, WizDocumentView* view)
 {
+    Q_UNUSED(strGUID);
     int index = indexOf(view);
     auto doc = view->note();
     if (index != -1) {
@@ -113,20 +123,17 @@ void WizMainTabWidget::createTab(WizDocumentView *docView)
  */
 void WizMainTabWidget::createTab(const QUrl &url)
 {
-    // 创建web页面
-    WizWebEngineView* webView = new WizWebEngineView(nullptr); // 注意是否有内存泄漏
-    WizWebEnginePage* webPage = new WizWebEnginePage(webView);
-    webView->setPage(webPage);
-    setupView(webView);
+    // 创建网页视图组件
+    WizWebsiteView* websiteView = new WizWebsiteView(m_app);
+    setupView(websiteView);
     // 创建标签页
-    addTab(webView, tr("Untitled"));
-    webView->resize(currentWidget()->size()); // Workaround for QTBUG-61770
+    addTab(websiteView, tr("Untitled"));
+    websiteView->getWebView()->resize(currentWidget()->size()); // Workaround for QTBUG-61770
     // 设置地址并浏览
-    webView->setUrl(url);
-    webView->setFocus();
+    websiteView->viewHtml(url);
+    websiteView->getWebView()->setFocus();
     // 设置成当前部件
-    webView->show();
-    setCurrentWidget(webView);
+    setCurrentWidget(websiteView);
 }
 
 /**
@@ -135,8 +142,13 @@ void WizMainTabWidget::createTab(const QUrl &url)
  */
 void WizMainTabWidget::closeTab(int index)
 {
+    // 每个文档视图关闭时都要执行waitForDone();
+    WizDocumentView* docView = qobject_cast<WizDocumentView*>(widget(index));
+    if (docView) docView->waitForDone();
+    //
     removeTab(index);
     /*
+    // 关闭最后一个网页后自动打开一个页面
     if (WizWebEngineView *view = getWebView(index))
     {
         bool hasFocus = view->hasFocus();
@@ -159,14 +171,17 @@ WizWebEngineView* WizMainTabWidget::getWebView(int index) const
 {
     // 判断是文档视图还是页面视图
     WizDocumentView* docView = qobject_cast<WizDocumentView*>(widget(index));
-    WizWebEngineView* webView = qobject_cast<WizWebEngineView*>(widget(index));
-    if ( webView != nullptr )
-        return webView;
-    if (docView != nullptr )
+    WizWebsiteView* websiteView = qobject_cast<WizWebsiteView*>(widget(index));
+    if ( websiteView != nullptr && docView == nullptr )
     {
-        WizWebEngineView* webView;
-        webView = docView->web();
-        return webView;
+        return websiteView->getWebView();
+
+    } else if (websiteView == nullptr && docView != nullptr )
+    {
+        return docView->web();
+
+    } else {
+        return nullptr;
     }
 }
 
@@ -183,12 +198,13 @@ WizWebEngineView* WizMainTabWidget::currentWebView() const
  * @brief 初始化页面视图，绑定或激发信号
  * @param webView 要初始化的页面视图;
  */
-void WizMainTabWidget::setupView(WizWebEngineView *webView)
+void WizMainTabWidget::setupView(WizWebsiteView *websiteView)
 {
+    WizWebEngineView *webView = websiteView->getWebView();
     WizWebEnginePage *webPage = webView->getPage();
 
-    connect(webView, &WizWebEngineView::titleChanged, [this, webView](const QString &title) {
-        int index = indexOf(webView);
+    connect(webView, &WizWebEngineView::titleChanged, [this, websiteView](const QString &title) {
+        int index = indexOf(websiteView);
         if (index != -1) {
             setTabText(index, title);
             setTabToolTip(index, title);
@@ -196,19 +212,19 @@ void WizMainTabWidget::setupView(WizWebEngineView *webView)
         if (currentIndex() == index)
             emit titleChanged(title);
     });
-    connect(webView, &WizWebEngineView::urlChanged, [this, webView](const QUrl &url) {
-        int index = indexOf(webView);
+    connect(webView, &WizWebEngineView::urlChanged, [this, websiteView](const QUrl &url) {
+        int index = indexOf(websiteView);
         if (index != -1)
             tabBar()->setTabData(index, url);
         if (currentIndex() == index)
             emit urlChanged(url);
     });
-    connect(webView, &WizWebEngineView::loadProgress, [this, webView](int progress) {
-        if (currentIndex() == indexOf(webView))
+    connect(webView, &WizWebEngineView::loadProgress, [this, websiteView](int progress) {
+        if (currentIndex() == indexOf(websiteView))
             emit loadProgress(progress);
     });
-    connect(webPage, &WizWebEnginePage::linkHovered, [this, webView](const QString &url) {
-        if (currentIndex() == indexOf(webView))
+    connect(webPage, &WizWebEnginePage::linkHovered, [this, websiteView](const QString &url) {
+        if (currentIndex() == indexOf(websiteView))
             emit linkHovered(url);
     });
     /*

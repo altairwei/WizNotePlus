@@ -44,10 +44,17 @@ macOS 端能提供系统本地对高分屏的支持，除了替换高分辨率�
 
 增加F1快捷键打开开发者工具，用以调整笔记格式以及未来用作JavaScript插件的调试器。
 
+### 多标签浏览文档和网页
+
+通过QTabWidget部件实现多标签浏览文档和网页的功能。
+
+![tabViewer](documents/images/tabViewer.png?raw=true)
+
 ## Project Plan
 
-- [x] 文档页面增加 Devtool
-- [x] 多标签页功能：使用定义好的QTabWidget，再将Wiz自己实现的Qt::FramelessWindowHint窗口嵌入到该组件中；
+- [x] 文档页面增加 Devtools
+- [x] 多标签页功能：使用QTabWidget实现多标签，将WizDocumentView部件嵌入WizMainTab的Page中
+- [x] 浏览网页功能：新建WizWebsiteView类，包裹WizWebEngineView部件并嵌入WizMainTab
 - [ ] 添加外置编辑器功能，用 QFileSystemWatcher 监控文件变动
 - [ ] Windows 端插件添加 QAxObject 接口
 - [ ] 建立插件系统

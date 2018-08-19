@@ -300,7 +300,6 @@ private:
     QPointer<WizEditorInsertLinkForm> m_editorInsertLinkForm;
 
     WizSearchReplaceWidget* m_searchReplaceWidget;
-    WizDocumentWebViewPage* m_page;
 
 public:
     Q_INVOKABLE void onNoteLoadFinished(); // editor callback

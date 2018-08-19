@@ -12,14 +12,14 @@ class QPushButton;
 class QNetworkReply;
 class WizLocalProgressWebView;
 
-class WizDevToolsDialog : public WizWebEngineViewContainerDialog
+class WizDevToolsDialog : public QWidget
 {
     Q_OBJECT
 private:
     WizWebEngineView* m_web;
     virtual QSize sizeHint() const;
 public:
-    WizDevToolsDialog(QWidget *parent = 0);
+    WizDevToolsDialog(QWidget *parent = nullptr);
     WizWebEngineView* getWeb();
 
 

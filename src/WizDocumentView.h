@@ -39,7 +39,7 @@ class WizDocumentView : public QWidget
     Q_OBJECT
 
 public:
-    WizDocumentView(WizExplorerApp& app, QWidget* parent = 0);
+    WizDocumentView(WizExplorerApp& app, QWidget* parent = nullptr);
     ~WizDocumentView();
     virtual QSize sizeHint() const;
     void setSizeHint(QSize size);
@@ -164,7 +164,7 @@ private:
     void stopCheckDocumentEditStatus();
     bool checkDocumentEditable(bool checklist);
     //
-    void stopCheckDocumentAnimations();    
+    void stopCheckDocumentAnimations();
 };
 
 

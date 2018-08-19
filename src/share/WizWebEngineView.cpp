@@ -134,13 +134,13 @@ void WizWebEnginePage::triggerAction(WizWebEnginePage::WebAction action, bool ch
  */
 WizWebEngineView::WizWebEngineView(QWidget* parent)
     : QWebEngineView(parent)
-    , m_server(NULL)
-    , m_clientWrapper(NULL)
-    , m_channel(NULL)
-    , m_page(new WizWebEnginePage(this))
+    , m_server(nullptr)
+    , m_clientWrapper(nullptr)
+    , m_channel(nullptr)
+    //, m_page(new WizWebEnginePage(this))
 {
     // 创建Page设置为到该View
-    WizWebEnginePage* p = m_page;
+    WizWebEnginePage* p = new WizWebEnginePage(this);
     setPage(p);
     //
     connect(p, SIGNAL(openLinkInNewWindow(QUrl)), this, SLOT(openLinkInDefaultBrowser(QUrl)));
@@ -263,8 +263,19 @@ void WizWebEngineView::openLinkInDefaultBrowser(QUrl url)
  *   @return 获得指向WebPage的指针
  */
 WizWebEnginePage* WizWebEngineView::getPage() {
-    return m_page;
+    return qobject_cast<WizWebEnginePage*>(page());
 }
+
+/**
+ * @brief 重写基类setPage函数，重设m_page
+ * @param page
+
+void WizWebEngineView::setPage(WizWebEnginePage* page)
+{
+    m_page = page;
+    QWebEngineView::setPage(page);
+}
+ */
 
 static QWebEngineView* getActiveWeb()
 {
