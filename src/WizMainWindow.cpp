@@ -2088,7 +2088,7 @@ void WizMainWindow::initClient()
     layoutDocument->setSpacing(0);
     documentPanel->setLayout(layoutDocument);
     layoutDocument->addWidget(m_mainTab); // 将主标签栏放在文档板布局上
-    m_mainTab->createTab(QUrl("http://www.wiz.cn/")); // 默认打开Wiz主页
+    m_mainTab->createTab(QUrl::fromUserInput("www.wiz.cn")); // 默认打开Wiz主页
     layoutDocument->addWidget(m_documentSelection);
     m_documentSelection->hide(); // 这个是什么东西？
     // append after client

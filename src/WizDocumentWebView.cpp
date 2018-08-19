@@ -164,7 +164,7 @@ WizDocumentWebView::WizDocumentWebView(WizExplorerApp& app, QWidget* parent)
     m_timerAutoSave.setInterval(1*60*1000); // 1 minutes
     connect(&m_timerAutoSave, SIGNAL(timeout()), SLOT(onTimerAutoSaveTimout()));
     //
-    //
+    // 向页面JS脚本空间注册对象
     addToJavaScriptWindowObject("WizExplorerApp", m_app.object());
     addToJavaScriptWindowObject("WizQtEditor", this);
 

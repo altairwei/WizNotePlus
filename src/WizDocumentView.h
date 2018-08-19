@@ -164,7 +164,7 @@ private:
     void stopCheckDocumentEditStatus();
     bool checkDocumentEditable(bool checklist);
     //
-    void stopCheckDocumentAnimations();    
+    void stopCheckDocumentAnimations();
 };
 
 

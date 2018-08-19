@@ -32,9 +32,6 @@ protected:
     WizDatabaseManager& m_dbMgr;
     WizUserSettings& m_userSettings;
     WizObjectDownloaderHost* m_downloaderHost;
-
-private:
-     void setupView(WizWebEngineView *webView);
 };
 
 #endif // WIZWEBSITEVIEW_H

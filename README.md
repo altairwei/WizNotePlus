@@ -48,6 +48,8 @@ macOS 端能提供系统本地对高分屏的支持，除了替换高分辨率�
 
 通过QTabWidget部件实现多标签浏览文档和网页的功能。
 
+![tabViewer](documents/images/tabViewer.png)
+
 ## Project Plan
 
 - [x] 文档页面增加 Devtools
