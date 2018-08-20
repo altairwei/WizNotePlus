@@ -1972,7 +1972,7 @@ void WizMainWindow::initToolBar()
     m_toolBar->setIconSize(iconSize);
     m_toolBar->setContextMenuPolicy(Qt::PreventContextMenu);
     m_toolBar->setMovable(false);
-    m_toolBar->setToolButtonStyle(Qt::ToolButtonIconOnly);
+    //m_toolBar->setToolButtonStyle(Qt::ToolButtonIconOnly); // 通过addWidget添加的QToolButton会忽视这个设置
     // align with categoryview's root item.
     m_toolBar->addWidget(new WizFixedSpacer(QSize(3, 1), m_toolBar));
     //
@@ -2019,6 +2019,8 @@ void WizMainWindow::initToolBar()
     buttonNew->setMenu(m_newNoteExtraMenu);//选择模板的菜单
     buttonNew->setDefaultAction(newNoteAction);//m_newNoteExtraMenu->actionAt(QPoint(0 ,0)));
     buttonNew->setPopupMode(QToolButton::MenuButtonPopup);
+    buttonNew->setToolButtonStyle(Qt::ToolButtonTextOnly);
+    buttonNew->setAutoRaise(true);
     //buttonNew->setAction(newNoteAction);
     m_toolBar->addWidget(buttonNew);
     //

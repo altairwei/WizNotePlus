@@ -98,12 +98,12 @@ WizTitleBar::WizTitleBar(WizExplorerApp& app, QWidget *parent)
     /*
     QToolButton* extEditorButton = new QToolButton(this);
     QMenu* extEditorMenu = new QMenu(this);
-    extEditorMenu->addAction("Test Action");
+    extEditorMenu->addAction("Typora");
     extEditorButton->setMenu(extEditorMenu);
     extEditorButton->setArrowType(Qt::DownArrow);
+    extEditorButton->setToolButtonStyle(Qt::ToolButtonIconOnly);
     extEditorButton->setPopupMode(QToolButton::MenuButtonPopup);
     */
-
     // 分离窗口浏览笔记
     m_separateBtn = new WizCellButton(WizCellButton::ImageOnly, this);
     m_separateBtn->setFixedHeight(nTitleHeight);
@@ -182,7 +182,7 @@ WizTitleBar::WizTitleBar(WizExplorerApp& app, QWidget *parent)
     layoutInfo2->setSpacing(0);
     layoutInfo2->addWidget(m_editTitle);
     layoutInfo2->addWidget(m_editBtn);
-    layoutInfo2->addWidget(extEditorButton); // 外置编辑器
+    //layoutInfo2->addWidget(extEditorButton); // 外置编辑器按钮
     layoutInfo2->addSpacing(::WizSmartScaleUI(7));
     layoutInfo2->addWidget(m_separateBtn);
     layoutInfo2->addWidget(m_tagBtn);
