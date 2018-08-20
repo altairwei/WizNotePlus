@@ -185,11 +185,11 @@ void WizDocumentWebView::waitForDone()
 {
     if (m_docLoadThread) {
         m_docLoadThread->waitForDone();
-        m_docLoadThread = NULL;
+        m_docLoadThread = nullptr;
     }
     if (m_docSaverThread) {
         m_docSaverThread->waitForDone();
-        m_docSaverThread = NULL;
+        m_docSaverThread = nullptr;
     }
 }
 
@@ -1126,6 +1126,12 @@ void getHtmlBodyStyle(const QString& strHtml, QString& strBodyStyle)
     }
 }
 
+/**
+ * @brief 保存编辑中的笔记
+ * @param data 笔记数据
+ * @param force 是否强制编辑
+ * @param callback 保存后的回调函数，传入是否保存成功
+ */
 void WizDocumentWebView::saveEditingViewDocument(const WIZDOCUMENTDATA &data, bool force, std::function<void(const QVariant &)> callback)
 {
     //FIXME: remove me, just for find a image losses bug.
@@ -1145,11 +1151,12 @@ void WizDocumentWebView::saveEditingViewDocument(const WIZDOCUMENTDATA &data, bo
         {
             if (!modified)
             {
+                // 不强制保存且没有发生变化时返回成功
                 callback(QVariant(true));
                 return;
             }
         }
-        //
+        // 重置保存标记？
         setModified(false);
         //
         QString strFileName = m_mapFile.value(data.strGUID);
@@ -1190,24 +1197,31 @@ void WizDocumentWebView::saveEditingViewDocument(const WIZDOCUMENTDATA &data, bo
 
 }
 
+/**
+ * @brief 保存阅读模式下的笔记
+ * @param data 笔记数据
+ * @param force 是否强制保存
+ * @param callback 失败或成功后的回调
+ */
 void WizDocumentWebView::saveReadingViewDocument(const WIZDOCUMENTDATA &data, bool force, std::function<void(const QVariant &)> callback)
 {
     Q_UNUSED(force);
-    //
+    // 拷贝笔记信息
     const WIZDOCUMENTDATA doc = data;
 
     QString strScript = QString("WizReader.closeDocument();");
     page()->runJavaScript(strScript, [=](const QVariant& vRet) {
-        //
+        // 获得返回的笔记内容
         QString strHtml = vRet.toString();
-        //
+        // 判断是否有修改内容？
         if (!strHtml.isEmpty())
         {
             if (!doc.strGUID.isEmpty())
-            {
+            {   // 获得储存的文件名
                 QString strFileName = m_mapFile.value(doc.strGUID);
                 if (!strFileName.isEmpty())
                 {
+                    // 调用保存器线程
                     m_docSaverThread->save(doc, strHtml, strFileName, 0);
                 }
             }
@@ -1434,20 +1448,29 @@ void WizDocumentWebView::setEditorMode(WizEditorMode editorMode)
     }
 }
 
+/**
+ * @brief 保存笔记
+ * @param data 笔记数据
+ * @param force 是否强制保存
+ * @param callback 失败后的回调函数
+ */
 void WizDocumentWebView::trySaveDocument(const WIZDOCUMENTDATA& data, bool force, std::function<void(const QVariant &)> callback)
 {
     if (!view()->noteLoaded())  //encrypting note & has been loaded
     {
+        // 失败后的回调
         callback(QVariant(false));
         return;
     }
 
     if (m_currentEditorMode == modeEditor)
     {
+        // 保存编辑模式下的笔记
         saveEditingViewDocument(data, force, callback);
     }
     else
     {
+        // 保存阅读模式下的笔记
         saveReadingViewDocument(data, force, callback);
     }
 }
@@ -2130,6 +2153,10 @@ void WizDocumentWebView::saveAsMarkdown()
     });
 }
 
+/**
+ * @brief 判断笔记内容是否修改
+ * @param callback 获取是否保存成功信息的回调函数
+ */
 void WizDocumentWebView::isModified(std::function<void(bool modified)> callback)
 {
     if (m_bContentsChanged)
@@ -2137,6 +2164,7 @@ void WizDocumentWebView::isModified(std::function<void(bool modified)> callback)
         callback(true);
         return;
     }
+    // 通过JS原生编辑器函数判断文档是否改变
     page()->runJavaScript(QString("WizEditor.isModified();"), [=](const QVariant& vModified){
         //
         callback(vModified.toBool());
@@ -2144,6 +2172,10 @@ void WizDocumentWebView::isModified(std::function<void(bool modified)> callback)
     });
 }
 
+/**
+ * @brief 设置该笔记内容发生改变
+ * @param b 是否发生改变
+ */
 void WizDocumentWebView::setModified(bool b)
 {
     m_bContentsChanged = b;

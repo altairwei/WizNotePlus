@@ -1616,6 +1616,9 @@ void WizMainWindow::showTemplateIAPDlg(const TemplateData& tmpl)
 #endif
 }
 
+/**
+ * @brief 准备新建笔记菜单栏
+ */
 void WizMainWindow::prepareNewNoteMenu()
 {
     if (!m_newNoteExtraMenu)
@@ -1652,6 +1655,9 @@ void WizMainWindow::on_newNoteButton_extraMenuRequest()
 }
 #endif
 
+/**
+ * @brief 根据新建笔记菜单的选项来从模板创建笔记
+ */
 void WizMainWindow::on_newNoteByExtraMenu_request()
 {
     if (QAction* action = qobject_cast<QAction*>(sender()))
@@ -2010,7 +2016,7 @@ void WizMainWindow::initToolBar()
     QAction* newNoteAction = m_actions->actionFromName(WIZACTION_GLOBAL_NEW_DOCUMENT);
     //
     QToolButton* buttonNew = new QToolButton(m_toolBar);
-    buttonNew->setMenu(m_newNoteExtraMenu);
+    buttonNew->setMenu(m_newNoteExtraMenu);//选择模板的菜单
     buttonNew->setDefaultAction(newNoteAction);//m_newNoteExtraMenu->actionAt(QPoint(0 ,0)));
     buttonNew->setPopupMode(QToolButton::MenuButtonPopup);
     //buttonNew->setAction(newNoteAction);

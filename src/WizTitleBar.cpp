@@ -63,11 +63,11 @@ WizTitleBar::WizTitleBar(WizExplorerApp& app, QWidget *parent)
     , m_infoBar(new WizInfoBar(app, this))
     , m_notifyBar(new WizNotifyBar(this))
     , m_editorBar(new WizEditorToolBar(app, this))
-    , m_editor(NULL)
-    , m_tags(NULL)
-    , m_info(NULL)
-    , m_attachments(NULL)
-    , m_editButtonAnimation(0)
+    , m_editor(nullptr)
+    , m_tags(nullptr)
+    , m_info(nullptr)
+    , m_attachments(nullptr)
+    , m_editButtonAnimation(nullptr)
     , m_commentManager(new WizCommentManager(this))
 {
     m_editTitle->setCompleter(new WizMessageCompleter(m_editTitle));
@@ -85,7 +85,7 @@ WizTitleBar::WizTitleBar(WizExplorerApp& app, QWidget *parent)
     layout->setContentsMargins(0, 0, 0, 6);
     layout->setSpacing(0);
     setLayout(layout);
-
+    // 编辑按钮
     QSize iconSize = QSize(Utils::WizStyleHelper::titleIconHeight(), Utils::WizStyleHelper::titleIconHeight());
     m_editBtn = new WizRoundCellButton(this);
     QString shortcut = ::WizGetShortcut("EditNote", "Alt+1");
@@ -93,8 +93,18 @@ WizTitleBar::WizTitleBar(WizExplorerApp& app, QWidget *parent)
     m_editBtn->setNormalIcon(::WizLoadSkinIcon(strTheme, "document_lock", iconSize), tr("Edit"), tr("Switch to Editing View  %1%2").arg(getOptionKey()).arg(1));
     m_editBtn->setCheckedIcon(::WizLoadSkinIcon(strTheme, "document_unlock", iconSize), tr("Read") , tr("Switch to Reading View  %1%2").arg(getOptionKey()).arg(1));
     m_editBtn->setBadgeIcon(::WizLoadSkinIcon(strTheme, "document_unlock", iconSize), tr("Save & Read"), tr("Save and switch to Reading View  %1%2").arg(getOptionKey()).arg(1));
-    connect(m_editBtn, SIGNAL(clicked()), SLOT(onEditButtonClicked()));    
+    connect(m_editBtn, SIGNAL(clicked()), SLOT(onEditButtonClicked()));
+    // 准备外置编辑器菜单
+    /*
+    QToolButton* extEditorButton = new QToolButton(this);
+    QMenu* extEditorMenu = new QMenu(this);
+    extEditorMenu->addAction("Test Action");
+    extEditorButton->setMenu(extEditorMenu);
+    extEditorButton->setArrowType(Qt::DownArrow);
+    extEditorButton->setPopupMode(QToolButton::MenuButtonPopup);
+    */
 
+    // 分离窗口浏览笔记
     m_separateBtn = new WizCellButton(WizCellButton::ImageOnly, this);
     m_separateBtn->setFixedHeight(nTitleHeight);
     QString separateShortcut = ::WizGetShortcut("EditNoteSeparate", "Alt+2");
@@ -172,6 +182,7 @@ WizTitleBar::WizTitleBar(WizExplorerApp& app, QWidget *parent)
     layoutInfo2->setSpacing(0);
     layoutInfo2->addWidget(m_editTitle);
     layoutInfo2->addWidget(m_editBtn);
+    layoutInfo2->addWidget(extEditorButton); // 外置编辑器
     layoutInfo2->addSpacing(::WizSmartScaleUI(7));
     layoutInfo2->addWidget(m_separateBtn);
     layoutInfo2->addWidget(m_tagBtn);
