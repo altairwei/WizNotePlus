@@ -8,6 +8,9 @@
 #include <QSplitter>
 #include <QList>
 #include <QLabel>
+#include <QAction>
+#include <QVariant>
+#include <QMap>
 #include "share/jsoncpp/json/json.h"
 
 #include "widgets/WizTagBar.h"
@@ -34,6 +37,7 @@
 #include "utils/WizPathResolve.h"
 #include "widgets/WizLocalProgressWebView.h"
 #include "widgets/WizTipsWidget.h"
+#include "widgets/WizExternalEditorSettingDialog.h"
 
 #include "WizMessageCompleter.h"
 #include "WizOEMSettings.h"
@@ -63,11 +67,11 @@ WizTitleBar::WizTitleBar(WizExplorerApp& app, QWidget *parent)
     , m_infoBar(new WizInfoBar(app, this))
     , m_notifyBar(new WizNotifyBar(this))
     , m_editorBar(new WizEditorToolBar(app, this))
-    , m_editor(NULL)
-    , m_tags(NULL)
-    , m_info(NULL)
-    , m_attachments(NULL)
-    , m_editButtonAnimation(0)
+    , m_editor(nullptr)
+    , m_tags(nullptr)
+    , m_info(nullptr)
+    , m_attachments(nullptr)
+    , m_editButtonAnimation(nullptr)
     , m_commentManager(new WizCommentManager(this))
 {
     m_editTitle->setCompleter(new WizMessageCompleter(m_editTitle));
@@ -85,7 +89,7 @@ WizTitleBar::WizTitleBar(WizExplorerApp& app, QWidget *parent)
     layout->setContentsMargins(0, 0, 0, 6);
     layout->setSpacing(0);
     setLayout(layout);
-
+    // 编辑按钮
     QSize iconSize = QSize(Utils::WizStyleHelper::titleIconHeight(), Utils::WizStyleHelper::titleIconHeight());
     m_editBtn = new WizRoundCellButton(this);
     QString shortcut = ::WizGetShortcut("EditNote", "Alt+1");
@@ -93,8 +97,13 @@ WizTitleBar::WizTitleBar(WizExplorerApp& app, QWidget *parent)
     m_editBtn->setNormalIcon(::WizLoadSkinIcon(strTheme, "document_lock", iconSize), tr("Edit"), tr("Switch to Editing View  %1%2").arg(getOptionKey()).arg(1));
     m_editBtn->setCheckedIcon(::WizLoadSkinIcon(strTheme, "document_unlock", iconSize), tr("Read") , tr("Switch to Reading View  %1%2").arg(getOptionKey()).arg(1));
     m_editBtn->setBadgeIcon(::WizLoadSkinIcon(strTheme, "document_unlock", iconSize), tr("Save & Read"), tr("Save and switch to Reading View  %1%2").arg(getOptionKey()).arg(1));
-    connect(m_editBtn, SIGNAL(clicked()), SLOT(onEditButtonClicked()));    
+    // 准备外置编辑器菜单
+    QMenu* extEditorMenu = createEditorMenu();
+    m_editBtn->setMenu(extEditorMenu);
+    m_editBtn->setPopupMode(QToolButton::MenuButtonPopup);
+    connect(m_editBtn, SIGNAL(clicked()), SLOT(onEditButtonClicked()));
 
+    // 分离窗口浏览笔记
     m_separateBtn = new WizCellButton(WizCellButton::ImageOnly, this);
     m_separateBtn->setFixedHeight(nTitleHeight);
     QString separateShortcut = ::WizGetShortcut("EditNoteSeparate", "Alt+2");
@@ -172,6 +181,7 @@ WizTitleBar::WizTitleBar(WizExplorerApp& app, QWidget *parent)
     layoutInfo2->setSpacing(0);
     layoutInfo2->addWidget(m_editTitle);
     layoutInfo2->addWidget(m_editBtn);
+    //layoutInfo2->addWidget(extEditorButton); // 外置编辑器按钮
     layoutInfo2->addSpacing(::WizSmartScaleUI(7));
     layoutInfo2->addWidget(m_separateBtn);
     layoutInfo2->addWidget(m_tagBtn);
@@ -206,6 +216,12 @@ WizTitleBar::WizTitleBar(WizExplorerApp& app, QWidget *parent)
             SLOT(on_commentCountAcquired(QString,int)));
 }
 
+/**
+ * @brief 从部件父组件中搜寻并返回文档视图
+ *
+ * TODO: 这种获取方式太粗暴了，不值得提倡
+ * @return
+ */
 WizDocumentView* WizTitleBar::noteView()
 {
     QWidget* pParent = parentWidget();
@@ -261,6 +277,36 @@ void WizTitleBar::setLocked(bool bReadOnly, int nReason, bool bIsGroup)
             }
         }
     }
+}
+
+QMenu* WizTitleBar::createEditorMenu()
+{
+    QMenu* editorMenu = new QMenu(this);
+    // 添加编辑器选项
+    editorMenu->addAction(tr("Editor Options"), this, SLOT(onEditorOptionSelected()));
+    editorMenu->addSeparator();
+    // 读取设置
+    QSettings* extEditorSettings = new QSettings(
+                Utils::WizPathResolve::dataStorePath() + "externalEditor.ini", QSettings::IniFormat);
+    QStringList groups = extEditorSettings->childGroups();
+    for (QString& editorIndex : groups) {
+        extEditorSettings->beginGroup(editorIndex);
+        // 准备数据
+        QMap<QString, QVariant> data;
+        data["Name"] = extEditorSettings->value("Name");
+        data["ProgramFile"] = extEditorSettings->value("ProgramFile");
+        data["Arguments"] = extEditorSettings->value("Arguments", "%1");
+        data["TextEditor"] = extEditorSettings->value("TextEditor", 0);
+        data["UTF8Encoding"] = extEditorSettings->value("UTF8Encoding", 0);
+        // 准备动作
+        QAction* editorAction = editorMenu->addAction(data.value("Name").toString(), this, SLOT(onExternalEditorMenuSelected()));
+        QVariant var(data);
+        editorAction->setData(var);
+        //
+        extEditorSettings->endGroup();
+    }
+    //
+    return editorMenu;
 }
 
 void WizTitleBar::setEditor(WizDocumentWebView* editor)
@@ -504,6 +550,11 @@ void WizTitleBar::applyButtonStateForSeparateWindow(bool inSeparateWindow)
     m_separateBtn->setVisible(!inSeparateWindow);
 }
 
+/**
+ * @brief 点击编辑按钮后切换编辑模式
+ *
+ * FIXME: 为什么不使用信号槽而采用这么难看的调用方式？
+ */
 void WizTitleBar::onEditButtonClicked()
 {
     noteView()->setEditorMode(noteView()->editorMode() == modeEditor ? modeReader: modeEditor);
@@ -517,6 +568,34 @@ void WizTitleBar::onEditButtonClicked()
     {
         analyzer.logAction("viewNote");
     }
+}
+
+/**
+ * @brief 弹出编辑器选项对话框
+ */
+void WizTitleBar::onEditorOptionSelected()
+{
+    WizExternalEditorSettingDialog* editorSetting = new WizExternalEditorSettingDialog(this);
+    editorSetting->setAttribute(Qt::WA_DeleteOnClose);
+    editorSetting->show();
+}
+
+/**
+ * @brief 发送外置编辑器请求信号
+ */
+void WizTitleBar::onExternalEditorMenuSelected()
+{
+    QAction* action = qobject_cast<QAction*>(sender());
+    QMap<QString, QVariant> data;
+    data = action->data().toMap();
+    QString Name = data.value("Name").toString();
+    QString ProgramFile = data.value("ProgramFile").toString();
+    QString Arguments = data.value("Arguments").toString();
+    int TextEditor = data.value("TextEditor").toInt();
+    int UTF8Encoding = data.value("UTF8Encoding").toInt();
+
+    emit viewNoteInExternalEditor_request(Name, ProgramFile, Arguments, TextEditor, UTF8Encoding);
+
 }
 
 void WizTitleBar::onSeparateButtonClicked()

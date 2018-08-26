@@ -529,6 +529,7 @@ private:
     WizDocumentWebView* getActiveEditor();
     WizDocumentView* createDocumentView();
     void setCurrentDocumentView(WizDocumentView* newDocView);
+    WizDocumentView* currentDocumentView();
     void waitForAllDocumentViewDone();
     void processAllDocumentViews(std::function<void(WizDocumentView*)> callback);
     //

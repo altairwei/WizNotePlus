@@ -179,6 +179,7 @@ WizDocumentView::WizDocumentView(WizExplorerApp& app, QWidget* parent)
 
     connect(m_title, SIGNAL(notifyBar_link_clicked(QString)), SLOT(on_notifyBar_link_clicked(QString)));
     connect(m_title, SIGNAL(loadComment_request(QString)), SLOT(on_loadComment_request(QString)), Qt::QueuedConnection);
+    connect(m_title, SIGNAL(viewNoteInExternalEditor_request(QString&,QString&,QString&,int,int)), SLOT(on_viewNoteInExternalEditor_request(QString&,QString&,QString&,int,int)));
 
     // 编辑状态同步线程
     m_editStatusSyncThread->start(QThread::IdlePriority);
@@ -483,6 +484,10 @@ void WizDocumentView::reviewCurrentNote()
     }
 }
 
+/**
+ * @brief 设置编辑模式
+ * @param editorMode
+ */
 void WizDocumentView::setEditorMode(WizEditorMode editorMode)
 {
     if (m_bLocked)
@@ -493,8 +498,8 @@ void WizDocumentView::setEditorMode(WizEditorMode editorMode)
     //
     bool edit = editorMode == modeEditor;
     bool read = !edit;
-
-    bool isGroupNote =m_dbMgr.db(m_note.strKbGUID).isGroup();
+    // 检查文档的团队编辑状态
+    bool isGroupNote = m_dbMgr.db(m_note.strKbGUID).isGroup();
     if (edit && isGroupNote)
     {
         // don not use message tips when check document editable
@@ -507,7 +512,7 @@ void WizDocumentView::setEditorMode(WizEditorMode editorMode)
         // stop check document edit status while enter editing mode
         stopCheckDocumentEditStatus();
     }
-    //
+    // 设置文档视图编辑器状态
     m_editorMode = editorMode;
 
     if (read)
@@ -519,8 +524,9 @@ void WizDocumentView::setEditorMode(WizEditorMode editorMode)
         m_title->hideMessageTips(false);
     }
     m_title->setEditorMode(editorMode);
+    //
     m_web->setEditorMode(editorMode);
-
+    // 发送团队文档编辑状态
     if (isGroupNote)
     {
         if (m_editorMode == modeEditor)
@@ -979,6 +985,12 @@ void WizDocumentView::on_notifyBar_link_clicked(const QString& link)
 
         downloadNoteFromServer(m_note);
     }
+}
+
+void WizDocumentView::on_viewNoteInExternalEditor_request(QString& Name, QString& ProgramFile,
+                                                          QString& Arguments, int TextEditor, int UTF8Encoding)
+{
+    web()->viewDocumentInExternalEditor(Name, ProgramFile, Arguments, TextEditor, UTF8Encoding);
 }
 
 

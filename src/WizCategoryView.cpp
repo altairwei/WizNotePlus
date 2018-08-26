@@ -1990,10 +1990,8 @@ void WizCategoryView::on_action_loadDocument()
 void WizCategoryView::on_action_importFile()
 {
     ::WizGetAnalyzer().logAction("categoryMenuImportFile");
-    QStringList files = QFileDialog::getOpenFileNames(
-    this,
-    tr("Select one or more files to open"),
-    QDir::homePath(),
+    QStringList files = QFileDialog::getOpenFileNames(this,
+        tr("Select one or more files to open"), QDir::homePath(),
 #ifdef Q_OS_LINUX
     "All files(*.*);;Text files(*.txt *.md *.html *.htm *.cpp *.h *.c *.hpp *.cpp);;Images (*.png *.xpm *.jpg *.jpeg *.svg)");
 #else
