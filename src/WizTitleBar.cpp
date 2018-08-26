@@ -8,6 +8,9 @@
 #include <QSplitter>
 #include <QList>
 #include <QLabel>
+#include <QAction>
+#include <QVariant>
+#include <QMap>
 #include "share/jsoncpp/json/json.h"
 
 #include "widgets/WizTagBar.h"
@@ -93,17 +96,12 @@ WizTitleBar::WizTitleBar(WizExplorerApp& app, QWidget *parent)
     m_editBtn->setNormalIcon(::WizLoadSkinIcon(strTheme, "document_lock", iconSize), tr("Edit"), tr("Switch to Editing View  %1%2").arg(getOptionKey()).arg(1));
     m_editBtn->setCheckedIcon(::WizLoadSkinIcon(strTheme, "document_unlock", iconSize), tr("Read") , tr("Switch to Reading View  %1%2").arg(getOptionKey()).arg(1));
     m_editBtn->setBadgeIcon(::WizLoadSkinIcon(strTheme, "document_unlock", iconSize), tr("Save & Read"), tr("Save and switch to Reading View  %1%2").arg(getOptionKey()).arg(1));
-    connect(m_editBtn, SIGNAL(clicked()), SLOT(onEditButtonClicked()));
     // 准备外置编辑器菜单
-    /*
-    QToolButton* extEditorButton = new QToolButton(this);
-    QMenu* extEditorMenu = new QMenu(this);
-    extEditorMenu->addAction("Typora");
-    extEditorButton->setMenu(extEditorMenu);
-    extEditorButton->setArrowType(Qt::DownArrow);
-    extEditorButton->setToolButtonStyle(Qt::ToolButtonIconOnly);
-    extEditorButton->setPopupMode(QToolButton::MenuButtonPopup);
-    */
+    QMenu* extEditorMenu = createEditorMenu();
+    m_editBtn->setMenu(extEditorMenu);
+    m_editBtn->setPopupMode(QToolButton::MenuButtonPopup);
+    connect(m_editBtn, SIGNAL(clicked()), SLOT(onEditButtonClicked()));
+
     // 分离窗口浏览笔记
     m_separateBtn = new WizCellButton(WizCellButton::ImageOnly, this);
     m_separateBtn->setFixedHeight(nTitleHeight);
@@ -217,6 +215,12 @@ WizTitleBar::WizTitleBar(WizExplorerApp& app, QWidget *parent)
             SLOT(on_commentCountAcquired(QString,int)));
 }
 
+/**
+ * @brief 从部件父组件中搜寻并返回文档视图
+ *
+ * TODO: 这种获取方式太粗暴了，不值得提倡
+ * @return
+ */
 WizDocumentView* WizTitleBar::noteView()
 {
     QWidget* pParent = parentWidget();
@@ -272,6 +276,33 @@ void WizTitleBar::setLocked(bool bReadOnly, int nReason, bool bIsGroup)
             }
         }
     }
+}
+
+QMenu* WizTitleBar::createEditorMenu()
+{
+    QMenu* editorMenu = new QMenu(this);
+    // 读取设置
+    QSettings* extEditorSettings = new QSettings(
+                Utils::WizPathResolve::dataStorePath() + "externalEditor.ini", QSettings::IniFormat);
+    QStringList groups = extEditorSettings->childGroups();
+    for (QString& editorIndex : groups) {
+        extEditorSettings->beginGroup(editorIndex);
+        // 准备数据
+        QMap<QString, QVariant> data;
+        data["Name"] = extEditorSettings->value("Name");
+        data["ProgramFile"] = extEditorSettings->value("ProgramFile");
+        data["Arguments"] = extEditorSettings->value("Arguments", "%1");
+        data["TextEditor"] = extEditorSettings->value("TextEditor", 0);
+        data["UTF8Encoding"] = extEditorSettings->value("UTF8Encoding", 0);
+        // 准备动作
+        QAction* editorAction = editorMenu->addAction(data.value("Name").toString(), this, SLOT(onExternalEditorMenuSelected()));
+        QVariant var(data);
+        editorAction->setData(var);
+        //
+        extEditorSettings->endGroup();
+    }
+    //
+    return editorMenu;
 }
 
 void WizTitleBar::setEditor(WizDocumentWebView* editor)
@@ -515,6 +546,11 @@ void WizTitleBar::applyButtonStateForSeparateWindow(bool inSeparateWindow)
     m_separateBtn->setVisible(!inSeparateWindow);
 }
 
+/**
+ * @brief 点击编辑按钮后切换编辑模式
+ *
+ * FIXME: 为什么不使用信号槽而采用这么难看的调用方式？
+ */
 void WizTitleBar::onEditButtonClicked()
 {
     noteView()->setEditorMode(noteView()->editorMode() == modeEditor ? modeReader: modeEditor);
@@ -528,6 +564,24 @@ void WizTitleBar::onEditButtonClicked()
     {
         analyzer.logAction("viewNote");
     }
+}
+
+/**
+ * @brief 发送外置编辑器请求信号
+ */
+void WizTitleBar::onExternalEditorMenuSelected()
+{
+    QAction* action = qobject_cast<QAction*>(sender());
+    QMap<QString, QVariant> data;
+    data = action->data().toMap();
+    QString Name = data.value("Name").toString();
+    QString ProgramFile = data.value("ProgramFile").toString();
+    QString Arguments = data.value("Arguments").toString();
+    int TextEditor = data.value("TextEditor").toInt();
+    int UTF8Encoding = data.value("UTF8Encoding").toInt();
+
+    emit viewNoteInExternalEditor_request(Name, ProgramFile, Arguments, TextEditor, UTF8Encoding);
+
 }
 
 void WizTitleBar::onSeparateButtonClicked()

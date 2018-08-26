@@ -4308,8 +4308,13 @@ bool WizDatabase::exportToHtmlFile(const WIZDOCUMENTDATA& document, const QStrin
 
     QString strPath = Utils::WizMisc::extractFilePath(strIndexFileName);
     bool bCoverIfExists = true;
-    if (!WizCopyFolder(strTempPath + "index_files/", strPath + strResFolder, bCoverIfExists))
-        return false;
+    // 判定是否真的有index_files
+    if (QDir(strTempPath + "index_files/").exists())
+    {
+        if (!WizCopyFolder(strTempPath + "index_files/", strPath + strResFolder, bCoverIfExists))
+            return false;
+    }
+
     //
     return true;
 }

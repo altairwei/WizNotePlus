@@ -155,6 +155,9 @@ public Q_SLOTS:
 
     void on_commentWidget_statusChanged();
 
+    void on_viewNoteInExternalEditor_request(QString& Name, QString& ProgramFile,
+                                                QString& Arguments, int TextEditor, int UTF8Encoding);
+
 private:
     void loadNote(const WIZDOCUMENTDATAEX &doc);
     void downloadNoteFromServer(const WIZDOCUMENTDATA& note);

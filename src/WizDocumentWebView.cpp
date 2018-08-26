@@ -5,6 +5,8 @@
 #include <QMimeData>
 #include <QUrl>
 #include <QDir>
+#include <QFile>
+#include <QFileInfo>
 #include <QString>
 #include <QRegExp>
 #include <QAction>
@@ -15,6 +17,8 @@
 #include <QPrintDialog>
 #include <QPrinterInfo>
 #include <QMessageBox>
+#include <QProcess>
+#include <QFileSystemWatcher>
 
 #include <QApplication>
 #include <QUndoStack>
@@ -59,6 +63,7 @@
 #include "WizDocumentTransitionView.h"
 #include "WizDocumentView.h"
 #include "WizSearchReplaceWidget.h"
+#include "WizFileImporter.h"
 
 #include "html/WizHtmlReader.h"
 
@@ -663,6 +668,60 @@ bool WizDocumentWebView::isInSeperateWindow() const
     return m_bInSeperateWindow;
 }
 
+/**
+ * @brief 在外置编辑器中浏览和编辑文档
+ */
+void WizDocumentWebView::viewDocumentInExternalEditor(QString &Name, QString &ProgramFile,
+                                                        QString &Arguments, int TextEditor, int UTF8Encoding)
+{
+    // 准备笔记数据
+    WIZDOCUMENTDATA docData;
+    WizDatabase& db = m_dbMgr.db(view()->note().strKbGUID);
+    if (!db.documentFromGuid(view()->note().strGUID, docData))
+        return;
+
+    trySaveDocument(docData, false, [=](const QVariant&){
+        //
+        //
+    });
+    // 准备进程参数
+    QString strFileName = m_mapFile.value(docData.strGUID);
+    QString program = ProgramFile;
+    QStringList args = Arguments.arg(strFileName).split(" ");
+    // 创建并开启进程
+    qDebug() << "Use external editor: " + Name
+             << ProgramFile << args << TextEditor << UTF8Encoding;
+    QProcess *extEditorProcess = new QProcess(this);
+    extEditorProcess->start(program, args);
+    // 设置文件监控器
+    QFileSystemWatcher* extFileWatcher = new QFileSystemWatcher(this);
+    extFileWatcher->addPath(strFileName);
+    //TODO: 添加一个m_mapWatchedFile用于记录文档和GUID
+    //TODO: 兴许可以通过文件路径直接获取GUID
+    //
+    connect(extFileWatcher, SIGNAL(fileChanged(const QString&)), SLOT(onWatchedFileChanged(const QString&)));
+
+}
+
+void WizDocumentWebView::onWatchedFileChanged(const QString& path)
+{
+    // 读取监控着的文件信息
+    QFileInfo* newFile = new QFileInfo(path);
+    // 编辑器保存时首先删除文件再添加文件所有会收到两个信号，通过文件大小来判断写入信号
+    if ( newFile->size() == 0 )
+        return;
+    qDebug() << tr("Updating file: ") + path << newFile->size()
+             << newFile->lastModified() << newFile->lastRead();
+    // 获取文档数据
+    WIZDOCUMENTDATA docData;
+    WizDatabase& db = m_dbMgr.db(view()->note().strKbGUID);
+    if (!db.documentFromGuid(view()->note().strGUID, docData))
+        return;
+    // 用纯文本更新文档
+    QString strHtml = WizFileImporter::loadTextFileToHtml(path);
+    db.updateDocumentData(docData, strHtml, "", 0);
+}
+
 void WizDocumentWebView::replaceDefaultCss(QString& strHtml)
 {
     QString strFileName = Utils::WizPathResolve::resourcesPath() + "files/wizeditor/default.css";
@@ -721,6 +780,10 @@ void WizDocumentWebView::editorFocus()
     emit focusIn();
 }
 
+/**
+ * @brief 打开原生富文本编辑器
+ * @param enalbe
+ */
 void WizDocumentWebView::enableEditor(bool enalbe)
 {
     if (enalbe)
@@ -1408,6 +1471,10 @@ void WizDocumentWebView::onNoteLoadFinished()
     WizGlobal::instance()->emitViewNoteLoaded(view(), view()->note(), true);
 }
 
+/**
+ * @brief 设置文档编辑状态
+ * @param editorMode
+ */
 void WizDocumentWebView::setEditorMode(WizEditorMode editorMode)
 {
     if (m_currentEditorMode == editorMode)
@@ -2112,34 +2179,36 @@ void WizDocumentWebView::saveAsHtml()
 
 void WizDocumentWebView::saveAsMarkdown()
 {
+    // 准备文件与目录
     CString strTitle = view()->note().strTitle;
     WizMakeValidFileNameNoPath(strTitle);
     static QString strInitPath = QDir::homePath();
     QString strInitFileName = Utils::WizMisc::addBackslash2(strInitPath) + strTitle;
-    //
+    // 目的文件地址
     QString strIndexFileName = QFileDialog::getSaveFileName(this, QString(),
                                                        strInitFileName,
                                                        tr("Markdown Files (*.md)"));
-    //
+    saveAsMarkdown(strIndexFileName);
+}
+
+void WizDocumentWebView::saveAsMarkdown(QString& strIndexFileName, bool bSaveResource)
+{
+    Q_UNUSED(bSaveResource);
     if (strIndexFileName.isEmpty())
         return;
-    //
-    strInitPath = Utils::WizMisc::extractFilePath(strIndexFileName);
     //
     if (::WizPathFileExists(strIndexFileName))
     {
         ::WizDeleteFile(strIndexFileName);
     }
-    //
+    // 准备笔记数据
     const WIZDOCUMENTDATA& doc = view()->note();
     WizDatabase& db = m_dbMgr.db(doc.strKbGUID);
-    //
+    // 导出HTML和资源文件到目标文件地址
     if (!db.exportToHtmlFile(doc, strIndexFileName)) {
         return;
     }
-    /*
-     因为存在内置的表格，todo，图片，导致无法正常输出成标准的markdown
-    */
+    // 因为存在内置的表格，todo，图片，导致无法正常输出成标准的markdown
     page()->runJavaScript(QString("WizEditor.getMarkdownSrc({unEscapeHtml: true});"), [=](const QVariant& vModified){
         //
         QString source = vModified.toString();

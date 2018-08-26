@@ -65,6 +65,7 @@ public:
 public Q_SLOTS:
     void onEditButtonClicked();
     void onSeparateButtonClicked();
+    void onExternalEditorMenuSelected();
     void onTagButtonClicked();
     void onShareButtonClicked();
     void onAttachButtonClicked();
@@ -100,10 +101,13 @@ signals:
     void notifyBar_link_clicked(const QString& link);
     void loadComment_request(const QString& url);
     void viewNoteInSeparateWindow_request();
+    void viewNoteInExternalEditor_request(QString& Name, QString& ProgramFile,
+                                QString& Arguments, int TextEditor, int UTF8Encoding);
 private:
     void showInfoBar();
     void showEditorBar();
     void setTagBarVisible(bool visible);
+    QMenu* createEditorMenu();
     //
     WizDocumentWebView* m_editor;
     WizExplorerApp& m_app;

@@ -792,18 +792,25 @@ void WizMainWindow::showTrayIconMenu()
     }
 }
 
+/**
+ * @brief 根据messageID来浏览消息
+ *
+ * 应该是接收消息弹窗的点击信号
+ * @param messageID 消息ID
+ */
 void WizMainWindow::on_viewMessage_request(qint64 messageID)
 {
+    // 主窗口状态
     if (windowState() & Qt::WindowMinimized)
     {
         setWindowState(windowState() & ~Qt::WindowMinimized);
         show();
     }
-
+    // 获得要浏览的分类树
     WizCategoryViewItemBase* pBase = m_category->findAllMessagesItem();
     if (!pBase)
         return;
-
+    // 显示消息分类
     WizCategoryViewMessageItem* pItem = dynamic_cast<WizCategoryViewMessageItem*>(pBase);
     showMessageList(pItem);
     m_msgList->selectMessage(messageID);
@@ -832,6 +839,10 @@ void WizMainWindow::on_viewMessage_requestNormal(QVariant messageData)
     }
 }
 
+/**
+ * @brief 根据消息数据浏览消息
+ * @param msg
+ */
 void WizMainWindow::on_viewMessage_request(const WIZMESSAGEDATA& msg)
 {
     WIZDOCUMENTDATA doc;
@@ -845,7 +856,8 @@ void WizMainWindow::on_viewMessage_request(const WIZMESSAGEDATA& msg)
             )
     {
         //FIXME: 在当前文档视图弹出消息，但如果新标签是网页呢？
-        m_doc->promptMessage(tr("Can't find note %1 , may be it has been deleted.").arg(msg.title));
+        //m_doc->promptMessage(tr("Can't find note %1 , may be it has been deleted.").arg(msg.title));
+        QMessageBox::information(this, tr("Warning"), tr("Can't find note %1 , may be it has been deleted.").arg(msg.title));
         return;
     }
 
@@ -854,8 +866,9 @@ void WizMainWindow::on_viewMessage_request(const WIZMESSAGEDATA& msg)
             msg.nMessageType == WIZ_USER_MSG_TYPE_COMMENT_REPLY)
     {
         //  show comments
+        //viewDocument(doc, true);
+        viewDocument(doc); // 在新标签浏览
         showCommentWidget();
-        viewDocument(doc, true);
     }
     else if (msg.nMessageType < WIZ_USER_MSG_TYPE_REQUEST_JOIN_GROUP
              || msg.nMessageType == WIZ_USER_MSG_TYPE_LIKE
@@ -863,7 +876,8 @@ void WizMainWindow::on_viewMessage_request(const WIZMESSAGEDATA& msg)
              || msg.nMessageType == WIZ_USER_MSG_TYPE_REMIND_CREATE
              )
     {
-        viewDocument(doc, true);
+        //viewDocument(doc, true);
+        viewDocument(doc);
     }
 }
 
@@ -3795,14 +3809,11 @@ void WizMainWindow::viewDocument(const WIZDOCUMENTDATAEX& data)
     Q_ASSERT(!data.strGUID.isEmpty());
     // 遍历tab，查找已经打开的标签中是否有该文档
     for (int i = 0; i < m_mainTab->count(); ++i) {
-        // 注意，此处没有考虑标签页是非WizDocumentView的情况
         WizDocumentView* docView = qobject_cast<WizDocumentView*>(m_mainTab->widget(i));
         if ( docView == nullptr ) {
-            // 非WizDocumentView则跳过
             continue;
         } else {
             if ( data.strGUID == docView->note().strGUID ) {
-                // 激活当前文档标签
                 m_mainTab->setCurrentWidget(docView);
                 return;
             }
@@ -3811,21 +3822,18 @@ void WizMainWindow::viewDocument(const WIZDOCUMENTDATAEX& data)
     }
     // 重置许可
     resetPermission(data.strKbGUID, data.strOwner);
-    // 如果文档正好是要编辑的
+    //
     bool forceEditing = false;
     if (data.strGUID == m_documentForEditing.strGUID)
     {
         forceEditing = true;
         m_documentForEditing = WIZDOCUMENTDATA();
     }
-    // 创建一个新的文档视图，然后用这个指针发送信号
     WizDocumentView* newDocView = createDocumentView();
-    //newDocView->web()->setUrl(QUrl("www.wiz.cn"));
     m_mainTab->createTab(newDocView);
     // 可以考虑直接调用newDocView->viewNote()方法，而不用发送信号
     WizGlobal::emitViewNoteRequested(newDocView, data, forceEditing);
-    // 再将m_doc指向新的文档视图
-    setCurrentDocumentView(newDocView);
+    setCurrentDocumentView(newDocView); //FIXME: 如果放弃当前文档视图功能，则修改
     //
     m_actions->actionFromName(WIZACTION_GLOBAL_SAVE_AS_MARKDOWN)->setEnabled(WizIsMarkdownNote(data));
     return;
@@ -4344,6 +4352,7 @@ void WizMainWindow::resortDocListAfterViewDocument(const WIZDOCUMENTDATA& doc)
 
 void WizMainWindow::showCommentWidget()
 {
+    //FIXME: 不能直接在m_doc上显示
     QWidget* commentWidget = m_doc->commentWidget();
     if (!commentWidget->isVisible())
     {

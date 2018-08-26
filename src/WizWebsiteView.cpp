@@ -1,6 +1,7 @@
 #include "WizWebsiteView.h"
 
 #include <QWidget>
+#include <QVBoxLayout>
 
 #include "WizMainWindow.h"
 #include "share/WizWebEngineView.h"
