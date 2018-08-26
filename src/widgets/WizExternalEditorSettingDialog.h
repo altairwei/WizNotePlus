@@ -3,6 +3,8 @@
 
 #include <QDialog>
 
+class QTableWidget;
+
 namespace Ui {
 class WizExternalEditorSettingDialog;
 }
@@ -17,6 +19,8 @@ public:
 
 private:
     Ui::WizExternalEditorSettingDialog *ui;
+    QTableWidget* m_extEditorTable;
+
 };
 
 #endif // WIZEXTERNALEDITORSETTINGDIALOG_H

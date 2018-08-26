@@ -66,6 +66,7 @@ public Q_SLOTS:
     void onEditButtonClicked();
     void onSeparateButtonClicked();
     void onExternalEditorMenuSelected();
+    void onEditorOptionSelected();
     void onTagButtonClicked();
     void onShareButtonClicked();
     void onAttachButtonClicked();

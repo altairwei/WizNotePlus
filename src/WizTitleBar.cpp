@@ -37,6 +37,7 @@
 #include "utils/WizPathResolve.h"
 #include "widgets/WizLocalProgressWebView.h"
 #include "widgets/WizTipsWidget.h"
+#include "widgets/WizExternalEditorSettingDialog.h"
 
 #include "WizMessageCompleter.h"
 #include "WizOEMSettings.h"
@@ -281,6 +282,9 @@ void WizTitleBar::setLocked(bool bReadOnly, int nReason, bool bIsGroup)
 QMenu* WizTitleBar::createEditorMenu()
 {
     QMenu* editorMenu = new QMenu(this);
+    // 添加编辑器选项
+    editorMenu->addAction(tr("Editor Options"), this, SLOT(onEditorOptionSelected()));
+    editorMenu->addSeparator();
     // 读取设置
     QSettings* extEditorSettings = new QSettings(
                 Utils::WizPathResolve::dataStorePath() + "externalEditor.ini", QSettings::IniFormat);
@@ -564,6 +568,16 @@ void WizTitleBar::onEditButtonClicked()
     {
         analyzer.logAction("viewNote");
     }
+}
+
+/**
+ * @brief 弹出编辑器选项对话框
+ */
+void WizTitleBar::onEditorOptionSelected()
+{
+    WizExternalEditorSettingDialog* editorSetting = new WizExternalEditorSettingDialog(this);
+    editorSetting->setAttribute(Qt::WA_DeleteOnClose);
+    editorSetting->show();
 }
 
 /**

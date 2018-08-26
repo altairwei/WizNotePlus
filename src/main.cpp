@@ -139,6 +139,10 @@ int mainCore(int argc, char *argv[])
     QApplication::setAttribute(Qt::AA_EnableHighDpiScaling);
 #endif
 
+#ifdef Q_OS_MAC
+    QApplication::setAttribute(Qt::AA_EnableHighDpiScaling);
+#endif
+
 #ifdef Q_OS_WIN
     // 暂时先采用UI缩放+字体缩小的方案来适配Windows高分屏
     QApplication::setAttribute(Qt::AA_EnableHighDpiScaling);

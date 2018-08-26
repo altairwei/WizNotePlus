@@ -6,6 +6,7 @@ WizExternalEditorSettingDialog::WizExternalEditorSettingDialog(QWidget *parent) 
     ui(new Ui::WizExternalEditorSettingDialog)
 {
     ui->setupUi(this);
+    m_extEditorTable = ui->listEditor;
 }
 
 WizExternalEditorSettingDialog::~WizExternalEditorSettingDialog()
