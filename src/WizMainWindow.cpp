@@ -2037,12 +2037,13 @@ void WizMainWindow::initToolBar()
     prepareNewNoteMenu();
     //
     QAction* newNoteAction = m_actions->actionFromName(WIZACTION_GLOBAL_NEW_DOCUMENT);
+    newNoteAction->setIcon(::WizLoadSkinIcon(this->userSettings().skin(), "toolButtonNewNote"));
     //
     QToolButton* buttonNew = new QToolButton(m_toolBar);
     buttonNew->setMenu(m_newNoteExtraMenu);//选择模板的菜单
     buttonNew->setDefaultAction(newNoteAction);//m_newNoteExtraMenu->actionAt(QPoint(0 ,0)));
     buttonNew->setPopupMode(QToolButton::MenuButtonPopup);
-    buttonNew->setToolButtonStyle(Qt::ToolButtonTextOnly);
+    buttonNew->setToolButtonStyle(Qt::ToolButtonTextBesideIcon);
     buttonNew->setAutoRaise(true);
     //buttonNew->setAction(newNoteAction);
     m_toolBar->addWidget(buttonNew);
