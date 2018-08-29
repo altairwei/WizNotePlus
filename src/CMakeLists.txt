@@ -95,7 +95,6 @@ set(wiznote_SOURCES
     widgets/WizUserInfoWidgetBase.cpp
     widgets/WizSegmentedButton.cpp
     widgets/WizExternalEditorSettingDialog.cpp
-    widgets/WizExternalEditorInfoDialog.cpp
     utils/WizStyleHelper.cpp
     utils/WizPathResolve.cpp
     share/WizWindowTitleBar.cpp
@@ -248,7 +247,6 @@ set(wiznote_HEADERS
     widgets/WizUserInfoWidgetBase.h
     widgets/WizScrollBar.h
     widgets/WizExternalEditorSettingDialog.h
-    widgets/WizExternalEditorInfoDialog.h
     sync/WizToken.h
     sync/WizToken_p.h
     sync/WizApiEntry.h
