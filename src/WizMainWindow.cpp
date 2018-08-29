@@ -4090,12 +4090,13 @@ void WizMainWindow::reconnectServer()
 
 void WizMainWindow::setFocusForNewNote(WIZDOCUMENTDATA doc)
 {
-    WizDocumentView* docView = currentDocumentView();
+    //FIXME: 因为当前标签非文档视图，引起空指针错误
+    //WizDocumentView* docView = currentDocumentView();
     m_documentForEditing = doc;
     m_documents->addAndSelectDocument(doc);
     m_documents->clearFocus();
-    docView->web()->setFocus(Qt::MouseFocusReason);
-    docView->web()->editorFocus();
+    //docView->web()->setFocus(Qt::MouseFocusReason);
+    //docView->web()->editorFocus();
 }
 
 /**
@@ -4634,7 +4635,10 @@ void WizMainWindow::downloadAttachment(const WIZDOCUMENTATTACHMENTDATA& attachme
 
 void WizMainWindow::viewNoteInSeparateWindow(const WIZDOCUMENTDATA& data)
 {
+    //FIXME: non-docuView causes break!
     WizDocumentView* docView = currentDocumentView();
+    if (!docView)
+        return;
     docView->web()->trySaveDocument(docView->note(), false, [=](const QVariant&){
 
         docView->setEditorMode(modeReader);

@@ -1,0 +1,31 @@
+# This function will prevent in-source builds
+function(AssureOutOfSourceBuilds)
+  # make sure the user doesn't play dirty with symlinks
+  get_filename_component(srcdir "${CMAKE_SOURCE_DIR}" REALPATH)
+  get_filename_component(bindir "${CMAKE_BINARY_DIR}" REALPATH)
+
+  # disallow in-source builds
+  if("${srcdir}" STREQUAL "${bindir}")
+    message("")
+    message("###############################################################")
+    message("#                                                             #")
+    message("# Error: In-source builds are not permitted.                  #")
+    message("#        Instead, please run cmake from a build directory.    #")
+    message("#                                                             #")
+    message("#            mkdir build; cd build; cmake ..                  #")
+    message("#                                                             #")
+    message("# NOTE:  Given that you have tried to run an in-source build, #")
+    message("#        CMake has created several files and directories      #")
+    message("#        in your source tree.                                 #")
+    message("#        Please remove them using:                            #")
+    message("#                                                             #")
+    message("#            rm -rf CMakeCache.txt CMakeFiles                 #")
+    message("#                                                             #")
+    message("###############################################################")
+    message("")
+    message(FATAL_ERROR "Quitting configuration.")
+    message("")
+  endif("${srcdir}" STREQUAL "${bindir}")
+endfunction(AssureOutOfSourceBuilds)
+
+AssureOutOfSourceBuilds()

@@ -60,10 +60,11 @@ public:
 private:
     Ui::WizExternalEditorSettingDialog *ui;
     QTableWidget* m_extEditorTable;
-    QPushButton* m_btnAddEditor();
+    QSettings* m_extEditorSetting;
 
 private:
     void loadDataFromIni(QSettings* settings);
+    void writeDataToIni(QSettings* settings);
     void modifyRowContent(int row, SettingMap& data);
 
 private Q_SLOTS:

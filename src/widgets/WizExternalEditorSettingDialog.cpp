@@ -36,7 +36,7 @@ WizExternalEditorInfoDialog::WizExternalEditorInfoDialog(QWidget *parent) :
     m_checkTextEditor = ui->checkTextEditor;
     m_checkUTF8 = ui->checkUTF8;
     // Program File LineEdit
-    QRegExp path("^([a-zA-Z]:|)((\\\\|\\/)[a-z0-9\\s_@\\-^!#$%&+={}\\[\\]\\.]+)+$");
+    QRegExp path("^([a-zA-Z]:|)((\\\\|\\/)[a-zA-Z0-9\\s_@\\-^!#$%&+={}\\[\\]\\.]+)+$");
     QRegExpValidator* pathValidator = new QRegExpValidator(path, this);
     m_editProgram->setValidator(pathValidator);
     connect(ui->pushBrowse, SIGNAL(clicked()), this, SLOT(setSelectedProgramFile()));
@@ -135,9 +135,9 @@ WizExternalEditorSettingDialog::WizExternalEditorSettingDialog(QWidget *parent) 
     m_extEditorTable->setEditTriggers(QAbstractItemView::NoEditTriggers);
     m_extEditorTable->setSelectionBehavior(QAbstractItemView::SelectRows);
     //
-    QSettings* extEditorSettings = new QSettings(
+    m_extEditorSetting = new QSettings(
                 Utils::WizPathResolve::dataStorePath() + "externalEditor.ini", QSettings::IniFormat);
-    loadDataFromIni(extEditorSettings);
+    loadDataFromIni(m_extEditorSetting);
     // Ui had already connect this name-type slot function
     // if connect again,
     //connect(ui->btnAddEditor, SIGNAL(clicked()), this, SLOT(on_btnAddEditor_clicked()));
@@ -171,6 +171,28 @@ void WizExternalEditorSettingDialog::loadDataFromIni(QSettings* settings)
         //
         ++row;
         //
+        settings->endGroup();
+    }
+}
+
+void WizExternalEditorSettingDialog::writeDataToIni(QSettings* settings)
+{
+    settings->clear();
+    int rowLength = m_extEditorTable->rowCount();
+    for (int i = 0; i < rowLength; ++i)
+    {
+        QString Name = m_extEditorTable->item(i, 0)->text();
+        QString ProgramFile = m_extEditorTable->item(i, 1)->text();
+        QString Arguments = m_extEditorTable->item(i, 2)->text();
+        QString TextEditor = m_extEditorTable->item(i, 3)->text();
+        QString UTF8Encoding = m_extEditorTable->item(i, 4)->text();
+        //
+        settings->beginGroup("Editor_" + QString::number(i));
+        settings->setValue("Name", Name);
+        settings->setValue("ProgramFile", ProgramFile);
+        settings->setValue("Arguments", Arguments);
+        settings->setValue("TextEditor", TextEditor);
+        settings->setValue("UTF8Encoding", UTF8Encoding);
         settings->endGroup();
     }
 }
@@ -218,8 +240,10 @@ void WizExternalEditorSettingDialog::on_btnDeleteEditor_clicked()
 void WizExternalEditorSettingDialog::on_btnEditSetting_clicked()
 {
     // Get Selection and data
-    QItemSelectionModel* selection = m_extEditorTable->selectionModel();
-    int row = selection->selectedRows().first().row();
+    QModelIndexList selectedRows = m_extEditorTable->selectionModel()->selectedRows();
+    if (selectedRows.length() == 0 )
+        return;
+    int row = selectedRows.first().row();
     SettingMap data;
     data["Name"] = m_extEditorTable->item(row, 0)->text();
     data["ProgramFile"] = m_extEditorTable->item(row, 1)->text();
@@ -244,7 +268,7 @@ void WizExternalEditorSettingDialog::modifyEditor(int row, SettingMap& data)
 void WizExternalEditorSettingDialog::accept()
 {
     // Write Setting
-
+    writeDataToIni(m_extEditorSetting);
     //
     QDialog::accept();
 }
