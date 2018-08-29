@@ -679,15 +679,33 @@ void WizDocumentWebView::viewDocumentInExternalEditor(QString &Name, QString &Pr
     WizDatabase& db = m_dbMgr.db(view()->note().strKbGUID);
     if (!db.documentFromGuid(view()->note().strGUID, docData))
         return;
-
     trySaveDocument(docData, false, [=](const QVariant&){
         //
         //
     });
-    // 准备进程参数
+    // 准备文件与目录
     QString strFileName = m_mapFile.value(docData.strGUID);
+    QDir noteTempDir = QFileInfo(strFileName).absoluteDir();
+    CString strTitle = view()->note().strTitle;
+    WizMakeValidFileNameNoPath(strTitle);
+    if (noteTempDir.exists(strTitle))
+        noteTempDir.remove(strTitle);
+    QString cacheFileName = QFileInfo(noteTempDir.absolutePath() + "/" + strTitle).absoluteFilePath();
+    // Export Note to file
+    if (TextEditor != 0) {
+        // Should not use this function, it add more temp files or dirs.
+        saveAsMarkdown(cacheFileName);
+        //FIXME: here need a error control.
+    } else {
+        //FIXME: Empty file.
+        cacheFileName = cacheFileName + ".html";
+        if (!QFile(strFileName).copy(cacheFileName))
+            qWarning() << QString("Can't cache the file: %1").arg(cacheFileName);
+            return;
+    }
+    // 准备进程参数
     QString program = ProgramFile;
-    QStringList args = Arguments.arg(strFileName).split(" ");
+    QStringList args = Arguments.arg(cacheFileName).split(" ");
     // 创建并开启进程
     qDebug() << "Use external editor: " + Name
              << ProgramFile << args << TextEditor << UTF8Encoding;
@@ -695,7 +713,7 @@ void WizDocumentWebView::viewDocumentInExternalEditor(QString &Name, QString &Pr
     extEditorProcess->start(program, args);
     // 设置文件监控器
     QFileSystemWatcher* extFileWatcher = new QFileSystemWatcher(this);
-    extFileWatcher->addPath(strFileName);
+    extFileWatcher->addPath(cacheFileName);
     //TODO: 添加一个m_mapWatchedFile用于记录文档和GUID
     //TODO: 兴许可以通过文件路径直接获取GUID
     //

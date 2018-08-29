@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>IDESourceControlProjectFavoriteDictionaryKey</key>
+	<false/>
+	<key>IDESourceControlProjectIdentifier</key>
+	<string>C09634DD-F27B-41BD-9841-E9C9D4C07399</string>
+	<key>IDESourceControlProjectName</key>
+	<string>gumbo-query</string>
+	<key>IDESourceControlProjectOriginsDictionary</key>
+	<dict>
+		<key>01C6A9D66718B99F86FD419C739BAB585EDEE81D</key>
+		<string>https://github.com/Falven/gumbo-query.git</string>
+	</dict>
+	<key>IDESourceControlProjectPath</key>
+	<string>Xcode/gumbo-query.xcodeproj</string>
+	<key>IDESourceControlProjectRelativeInstallPathDictionary</key>
+	<dict>
+		<key>01C6A9D66718B99F86FD419C739BAB585EDEE81D</key>
+		<string>../../..</string>
+	</dict>
+	<key>IDESourceControlProjectURL</key>
+	<string>https://github.com/Falven/gumbo-query.git</string>
+	<key>IDESourceControlProjectVersion</key>
+	<integer>111</integer>
+	<key>IDESourceControlProjectWCCIdentifier</key>
+	<string>01C6A9D66718B99F86FD419C739BAB585EDEE81D</string>
+	<key>IDESourceControlProjectWCConfigurations</key>
+	<array>
+		<dict>
+			<key>IDESourceControlRepositoryExtensionIdentifierKey</key>
+			<string>public.vcs.git</string>
+			<key>IDESourceControlWCCIdentifierKey</key>
+			<string>01C6A9D66718B99F86FD419C739BAB585EDEE81D</string>
+			<key>IDESourceControlWCCName</key>
+			<string>gumbo-query</string>
+		</dict>
+	</array>
+</dict>
+</plist>
