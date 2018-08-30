@@ -20,6 +20,7 @@
 #include <QProcess>
 #include <QFileSystemWatcher>
 #include <QCommandLineParser>
+#include <QTimer>
 
 #include <QApplication>
 #include <QUndoStack>
@@ -733,7 +734,15 @@ void WizDocumentWebView::startExternalEditor(QString cacheFileName, QString Name
     extFileWatcher->addPath(cacheFileName);
     //
     connect(extFileWatcher, &QFileSystemWatcher::fileChanged, [=](const QString& fileName){
+        //QFileSystemWatcher* watcher = qobject_cast<QFileSystemWatcher*>(sender());
         onWatchedFileChanged(fileName, TextEditor, UTF8Encoding);
+        // watch file again, in order to avoid some editor remove watched files.
+        if (extFileWatcher)
+        {
+            QTimer::singleShot(300, [=](){
+                extFileWatcher->addPath(fileName);
+            });
+        }
     });
 }
 
@@ -752,18 +761,17 @@ void WizDocumentWebView::onWatchedFileChanged(const QString& fileName, int TextE
     WizDatabase& db = m_dbMgr.db(view()->note().strKbGUID);
     if (!db.documentFromGuid(view()->note().strGUID, docData))
         return;
-    // 用纯文本更新文档
-    // FIXME: 只适用于纯文本更新
     QString strHtml;
     if (isPlainText) {
         // Plain Text
         strHtml = WizFileImporter::loadTextFileToHtml(fileName, isUTF8);
     } else {
-        // FIXME: 为什么会上传数据失败？
         strHtml = WizFileImporter::loadHtmlFileToHtml(fileName, isUTF8);
     }
     //FIXME: Windows client has encoding problem.
-    m_docSaverThread->save(docData, strHtml, fileName, 0);
+    QString indexFileName = Utils::WizMisc::extractFilePath(fileName);
+    db.updateDocumentData(docData, strHtml, indexFileName, 0);
+    //m_docSaverThread->save(docData, strHtml, fileName, 0); // cannot immediately update document view
 }
 
 void WizDocumentWebView::queryHtmlNodeText(QString& strHtml, QString strSelector)
@@ -2298,7 +2306,21 @@ void WizDocumentWebView::saveAsPlainText(QString& destFileName, std::function<vo
 
 void WizDocumentWebView::saveAsPlainHtml(QString& destFileName, std::function<void(QString fileName)> callback)
 {
+    //FIXME: should trimmed Wiz's Script and Style.
+    //Script: name="wiz_inner_script", wiz_style="unsave", src="contains: odemirror"
+    //Style: id="wiz_custom_css", id="wiz_tmp_style_reader_common", name="wiz_tmp_editor_style"
+    //          id="wiz_tmp_style_reader_block_scroll", id="wiz_tmp_style_code_common", name="wiz_tmp_editor_style"
+    //          id="wiz_tmp_style_code_reader"
+    //Tags: wiz_tmp_tag
     page()->toHtml([=](const QString& strHtml){
+        //
+        CDocument doc;
+        doc.parse(strHtml.toStdString().c_str());
+        size_t scriptNum = doc.find("script[name=\"wiz_inner_script\"]").nodeNum();
+        qDebug() << QString("There are %1 wiz_inner_script").arg(QString::number(scriptNum));
+        size_t styleNum = doc.find("style[name=\"wiz_tmp_editor_style\"]").nodeNum();
+        qDebug() << QString("There are %1 wiz_tmp_editor_style").arg(QString::number(styleNum));
+        //
         if(::WizSaveUnicodeTextToUtf8File(destFileName, strHtml, false))
             callback(destFileName);
     });
