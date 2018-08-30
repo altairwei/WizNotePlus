@@ -22,7 +22,7 @@ endif(APPLE)
 # Set Variables
 #============================================================================
 
-# 配置Qt库
+# Set FindQt Module
 set(CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 
 # rpath resolve.
@@ -50,11 +50,11 @@ endif()
 # Internal compiler options
 #============================================================================
 
+# MSVC don't need this check process.
 include(CheckCXXCompilerFlag)
 CHECK_CXX_COMPILER_FLAG("-std=c++11" COMPILER_SUPPORTS_CXX11)
 CHECK_CXX_COMPILER_FLAG("-std=c++0x" COMPILER_SUPPORTS_CXX0X)
 
-# MSVC 不适用次检查
 if(UNIX)
     if(COMPILER_SUPPORTS_CXX11)
         if(APPLE)
@@ -81,7 +81,7 @@ if(APPLE)
     add_definitions(-DUSECOCOATOOLBAR=TRUE)
 endif(APPLE)
 
-# WizNotePluse目录结构
+# WizNotePlus Dirs
 if(APPLE)
     set(WIZNOTE_ROOT_DIR ${CMAKE_BINARY_DIR}/WizNote.app)
     set(WIZNOTE_CONTENTS_DIR ${WIZNOTE_ROOT_DIR}/Contents)
@@ -91,7 +91,8 @@ else(APPLE)
     set(WIZNOTE_RESOURCE_DIR ${WIZNOTE_ROOT_DIR}/share) # 资源文件目录
 endif(APPLE)
 
-# Windows端的QuaZIP库
+# when including QuaZip sources directly into a project, QUAZIP_STATIC should
+# be defined explicitly to avoid possible troubles with unnecessary importing/exporting.
 if (WIN32)
     add_definitions(-DQUAZIP_STATIC)
 endif()

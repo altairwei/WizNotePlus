@@ -175,6 +175,7 @@ public:
     void viewDocumentInExternalEditor(QString& Name, QString& ProgramFile,
                                         QString& Arguments, int TextEditor, int UTF8Encoding);
     void startExternalEditor(QString cacheFileName, QString Name, QString ProgramFile, QString Arguments, int TextEditor, int UTF8Encoding);
+    void queryHtmlNodeText(QString& strHtml, QString strSelector);
 
     // initialize editor style before render, only invoke once.
     void replaceDefaultCss(QString& strHtml);
@@ -215,6 +216,7 @@ public:
     void saveAsMarkdown();
     void saveAsMarkdown(QString& strIndexFileName, bool bSaveResource = true);
     void saveAsPlainText(QString& destFileName, std::function<void(QString fileName)> callback);
+    void saveAsPlainHtml(QString& destFileName, std::function<void(QString fileName)> callback);
     void saveAsHtml();
     void shareNoteByEmail();
     void shareNoteByLink();

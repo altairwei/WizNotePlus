@@ -15,7 +15,8 @@ public:
     void importFiles(const QStringList& strFiles, const QString& strKbGUID, const WIZTAGDATA& tag);
     void importFiles(const QStringList& strFiles, const QString& strKbGUID, const QString& strTargetFolderLocation, const WIZTAGDATA& tag);
 
-    static QString loadHtmlFileToHtml(const QString& strFileName);
+    QString loadHtmlFileToHtml(const QString& strFileName);
+    static QString loadHtmlFileToHtml(const QString& strFileName, bool isUTF8);
     QString loadTextFileToHtml(const QString& strFileName);
     static QString loadTextFileToHtml(const QString& strFileName, bool isUTF8);
     QString loadImageFileToHtml(const QString& strFileName);

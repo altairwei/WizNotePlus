@@ -73,6 +73,22 @@ QString WizFileImporter::loadHtmlFileToHtml(const QString& strFileName)
     return ret;
 }
 
+QString WizFileImporter::loadHtmlFileToHtml(const QString& strFileName, bool isUTF8)
+{
+    QFile file(strFileName);
+    if(!file.open(QIODevice::ReadOnly|QIODevice::Text))
+        return "";
+    QTextStream in(&file);
+    if (isUTF8)
+    {
+        in.setCodec("UTF-8");
+    }
+    QString ret = in.readAll();
+    file.close();
+
+    return ret;
+}
+
 /**
  * @brief 将纯文本导入成HTML
  * @param strFileName 文件地址

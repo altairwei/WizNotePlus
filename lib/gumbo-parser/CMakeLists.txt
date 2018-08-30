@@ -17,42 +17,43 @@ cmake_minimum_required(VERSION 2.8.7)
 
 project(Gumbo C)
 
-set(Gumbo_VERSION 0.10.1)
-
-set(Gumbo_DIR ${PROJECT_SOURCE_DIR})
+set(Gumbo_VERSION "0.10.1")
 
 # Gumbo source files.
 set(Gumbo_SRCS
-    ${Gumbo_DIR}/src/attribute.c
-    ${Gumbo_DIR}/src/attribute.h
-    ${Gumbo_DIR}/src/char_ref.c
-    ${Gumbo_DIR}/src/char_ref.h
-    ${Gumbo_DIR}/src/error.c
-    ${Gumbo_DIR}/src/error.h
-    ${Gumbo_DIR}/src/insertion_mode.h
-    ${Gumbo_DIR}/src/parser.c
-    ${Gumbo_DIR}/src/parser.h
-    ${Gumbo_DIR}/src/string_buffer.c
-    ${Gumbo_DIR}/src/string_buffer.h
-    ${Gumbo_DIR}/src/string_piece.c
-    ${Gumbo_DIR}/src/string_piece.h
-    ${Gumbo_DIR}/src/tag.c
-    ${Gumbo_DIR}/src/tag_enum.h
-    ${Gumbo_DIR}/src/tag_gperf.h
-    ${Gumbo_DIR}/src/tag_strings.h
-    ${Gumbo_DIR}/src/tag_sizes.h
-    ${Gumbo_DIR}/src/token_type.h
-    ${Gumbo_DIR}/src/tokenizer.c
-    ${Gumbo_DIR}/src/tokenizer.h
-    ${Gumbo_DIR}/src/tokenizer_states.h
-    ${Gumbo_DIR}/src/utf8.c
-    ${Gumbo_DIR}/src/utf8.h
-    ${Gumbo_DIR}/src/util.c
-    ${Gumbo_DIR}/src/util.h
-    ${Gumbo_DIR}/src/vector.c
-    ${Gumbo_DIR}/src/vector.h)
+    attribute.c
+    attribute.h
+    char_ref.c
+    char_ref.h
+    error.c
+    error.h
+    insertion_mode.h
+    parser.c
+    parser.h
+    string_buffer.c
+    string_buffer.h
+    string_piece.c
+    string_piece.h
+    tag.c
+    tag_enum.h
+    tag_gperf.h
+    tag_strings.h
+    tag_sizes.h
+    token_type.h
+    tokenizer.c
+    tokenizer.h
+    tokenizer_states.h
+    utf8.c
+    utf8.h
+    util.c
+    util.h
+    vector.c
+    vector.h)
 
-include_directories(${Gumbo_DIR}/src)
+include_directories(
+	${PROJECT_SOURCE_DIR}
+	${PROJECT_BINARY_DIR}
+)
 
 # Compile as C99 (default is C89, which Gumbo is not written in).
 if(CMAKE_C_COMPILER_ID EQUAL GNU OR
@@ -62,6 +63,9 @@ if(CMAKE_C_COMPILER_ID EQUAL GNU OR
 endif()
 
 # Library target.
-add_library(Gumbo STATIC ${Gumbo_SRCS})
+add_library(Gumbo SHARED ${Gumbo_SRCS})
+add_library(Gumbo_static STATIC ${Gumbo_SRCS})
+
 set_target_properties(Gumbo PROPERTIES VERSION ${Gumbo_VERSION})
+set_target_properties(Gumbo_static PROPERTIES OUTPUT_NAME "Gumbo")
 

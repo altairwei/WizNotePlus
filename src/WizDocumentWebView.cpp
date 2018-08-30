@@ -70,6 +70,8 @@
 
 #include "WizTitleBar.h"
 
+#include "gumbo-query/Document.h"
+#include "gumbo-query/Node.h"
 
 enum WizLinkType {
     WizLink_Doucment,
@@ -703,14 +705,10 @@ void WizDocumentWebView::viewDocumentInExternalEditor(QString &Name, QString &Pr
         cacheFileName += ".html";
         if (noteTempDir.exists(cacheFileName))
             noteTempDir.remove(cacheFileName);
-        //FIXME: do not simplily copy index file.
-        if (QFile(strFileName).copy(cacheFileName))
-        {
-            //startExternalEditor(cacheFileName, Name, ProgramFile, Arguments, TextEditor, UTF8Encoding);
-        } else {
-            qWarning() << QString("Can't cache the file: %1").arg(cacheFileName);
-            return;
-        }
+        //
+        saveAsPlainHtml(cacheFileName, [=](QString fileName){
+            startExternalEditor(fileName, Name, ProgramFile, Arguments, TextEditor, UTF8Encoding);
+        });
     } else {
         //
         return;
@@ -734,7 +732,6 @@ void WizDocumentWebView::startExternalEditor(QString cacheFileName, QString Name
     QFileSystemWatcher* extFileWatcher = new QFileSystemWatcher(this);
     extFileWatcher->addPath(cacheFileName);
     //
-    //connect(extFileWatcher, SIGNAL(fileChanged(const QString&)), SLOT(onWatchedFileChanged(const QString&)));
     connect(extFileWatcher, &QFileSystemWatcher::fileChanged, [=](const QString& fileName){
         onWatchedFileChanged(fileName, TextEditor, UTF8Encoding);
     });
@@ -762,11 +759,20 @@ void WizDocumentWebView::onWatchedFileChanged(const QString& fileName, int TextE
         // Plain Text
         strHtml = WizFileImporter::loadTextFileToHtml(fileName, isUTF8);
     } else {
-        // FIXME: 保存后一直处于待同步状态
-        //strHtml = WizFileImporter::loadHtmlFileToHtml(fileName, isUTF8);
+        // FIXME: 为什么会上传数据失败？
+        strHtml = WizFileImporter::loadHtmlFileToHtml(fileName, isUTF8);
     }
     //FIXME: Windows client has encoding problem.
-    db.updateDocumentData(docData, strHtml, "", 0);
+    m_docSaverThread->save(docData, strHtml, fileName, 0);
+}
+
+void WizDocumentWebView::queryHtmlNodeText(QString& strHtml, QString strSelector)
+{
+    CDocument doc;
+    doc.parse(strHtml.toStdString().c_str());
+
+    CSelection c = doc.find(strSelector.toStdString().c_str());
+    qDebug() << QString::fromUtf8(c.nodeAt(0).text().c_str()); // some link
 }
 
 void WizDocumentWebView::replaceDefaultCss(QString& strHtml)
@@ -2278,24 +2284,22 @@ void WizDocumentWebView::saveAsPlainText(QString& destFileName, std::function<vo
     {
         ::WizDeleteFile(destFileName);
     }
-    // 准备笔记数据
-    //const WIZDOCUMENTDATA& doc = view()->note();
-    //WizDatabase& db = m_dbMgr.db(doc.strKbGUID);
-    // 导出HTML和资源文件到目标文件地址
-    //if (!db.exportToHtmlFile(doc, destFileName)) {
-    //    return;
-    //}
     // 因为存在内置的表格，todo，图片，导致无法正常输出成标准的markdown
     page()->runJavaScript(QString("WizEditor.getMarkdownSrc({unEscapeHtml: true});"), [=](const QVariant& vModified){
         //
         QString source = vModified.toString();
         //
         QString fileTitle = Utils::WizMisc::extractFileTitle(destFileName);
-
-        //QString strResFolder = fileTitle.toHtmlEscaped() + "_files/";
-        //source.replace("index_files/", strResFolder);
         //
         if(::WizSaveUnicodeTextToUtf8File(destFileName, source, false))
+            callback(destFileName);
+    });
+}
+
+void WizDocumentWebView::saveAsPlainHtml(QString& destFileName, std::function<void(QString fileName)> callback)
+{
+    page()->toHtml([=](const QString& strHtml){
+        if(::WizSaveUnicodeTextToUtf8File(destFileName, strHtml, false))
             callback(destFileName);
     });
 }
