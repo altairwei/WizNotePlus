@@ -696,7 +696,7 @@ void WizDocumentWebView::viewDocumentInExternalEditor(QString &Name, QString &Pr
             noteTempDir.remove(cacheFileName);
         //
         saveAsPlainText(cacheFileName, [=](QString fileName){
-            startExternalEditor(fileName, Name, ProgramFile, Arguments, TextEditor);
+            startExternalEditor(fileName, Name, ProgramFile, Arguments, TextEditor, UTF8Encoding);
         });
         return;
     } else if (TextEditor == 0) {
@@ -706,7 +706,7 @@ void WizDocumentWebView::viewDocumentInExternalEditor(QString &Name, QString &Pr
         //FIXME: do not simplily copy index file.
         if (QFile(strFileName).copy(cacheFileName))
         {
-            //startExternalEditor(cacheFileName, Name, ProgramFile, Arguments, TextEditor);
+            //startExternalEditor(cacheFileName, Name, ProgramFile, Arguments, TextEditor, UTF8Encoding);
         } else {
             qWarning() << QString("Can't cache the file: %1").arg(cacheFileName);
             return;
@@ -718,10 +718,12 @@ void WizDocumentWebView::viewDocumentInExternalEditor(QString &Name, QString &Pr
 
 }
 
-void WizDocumentWebView::startExternalEditor(QString cacheFileName, QString Name, QString ProgramFile, QString Arguments, int TextEditor)
+void WizDocumentWebView::startExternalEditor(QString cacheFileName, QString Name, QString ProgramFile,
+                                                        QString Arguments, int TextEditor, int UTF8Encoding)
 {
     // 准备进程参数
     //FIXME: split too many items
+    ProgramFile = "\"" + ProgramFile + "\"";
     QString args = Arguments.arg("\"" + cacheFileName + "\"");
     QString strCmd = ProgramFile + " " + args;
     // 创建并开启进程
@@ -734,12 +736,14 @@ void WizDocumentWebView::startExternalEditor(QString cacheFileName, QString Name
     //
     //connect(extFileWatcher, SIGNAL(fileChanged(const QString&)), SLOT(onWatchedFileChanged(const QString&)));
     connect(extFileWatcher, &QFileSystemWatcher::fileChanged, [=](const QString& fileName){
-        onWatchedFileChanged(fileName, TextEditor);
+        onWatchedFileChanged(fileName, TextEditor, UTF8Encoding);
     });
 }
 
-void WizDocumentWebView::onWatchedFileChanged(const QString& fileName, int TextEditor)
+void WizDocumentWebView::onWatchedFileChanged(const QString& fileName, int TextEditor, int UTF8Encoding)
 {
+    bool isUTF8 = UTF8Encoding == 0 ? false : true;
+    bool isPlainText = TextEditor == 0 ? false : true;
     QFileInfo* changedFileInfo = new QFileInfo(fileName);
     // 编辑器保存时首先删除文件再添加文件所有会收到两个信号，通过文件大小来判断写入信号
     if ( changedFileInfo->size() == 0 )
@@ -754,15 +758,14 @@ void WizDocumentWebView::onWatchedFileChanged(const QString& fileName, int TextE
     // 用纯文本更新文档
     // FIXME: 只适用于纯文本更新
     QString strHtml;
-    if (TextEditor == 0) {
+    if (isPlainText) {
         // FIXME: 保存后一直处于待同步状态
-        //strHtml = WizFileImporter::loadHtmlFileToHtml(fileName);
-    } else if (TextEditor == 2) {
-        // Plain Text
-        strHtml = WizFileImporter::loadTextFileToHtml(fileName);
+        //strHtml = WizFileImporter::loadHtmlFileToHtml(fileName, isUTF8);
     } else {
-        return;
+        // Plain Text
+        strHtml = WizFileImporter::loadTextFileToHtml(fileName, isUTF8);
     }
+    //FIXME: Windows client has encoding problem.
     db.updateDocumentData(docData, strHtml, "", 0);
 }
 

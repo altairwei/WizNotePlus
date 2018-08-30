@@ -174,7 +174,7 @@ public:
 
     void viewDocumentInExternalEditor(QString& Name, QString& ProgramFile,
                                         QString& Arguments, int TextEditor, int UTF8Encoding);
-    void startExternalEditor(QString cacheFileName, QString Name, QString ProgramFile, QString Arguments, int TextEditor);
+    void startExternalEditor(QString cacheFileName, QString Name, QString ProgramFile, QString Arguments, int TextEditor, int UTF8Encoding);
 
     // initialize editor style before render, only invoke once.
     void replaceDefaultCss(QString& strHtml);
@@ -327,7 +327,7 @@ public Q_SLOTS:
 
     void on_insertCodeHtml_requset(QString strOldHtml);
 
-    void onWatchedFileChanged(const QString& path, int TextEditor);
+    void onWatchedFileChanged(const QString& path, int TextEditor, int UTF8Encoding);
 
     /* editor API */
 

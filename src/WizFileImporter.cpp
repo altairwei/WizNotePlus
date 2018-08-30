@@ -93,6 +93,25 @@ QString WizFileImporter::loadTextFileToHtml(const QString& strFileName)
     return ret;
 }
 
+QString WizFileImporter::loadTextFileToHtml(const QString& strFileName, bool isUTF8)
+{
+    QFile file(strFileName);
+    if(!file.open(QIODevice::ReadOnly|QIODevice::Text))
+        return "";
+    QTextStream in(&file);
+    if (isUTF8)
+    {
+        in.setCodec("UTF-8");
+    }
+    QString ret = in.readAll();
+    file.close();
+    ret = ret.toHtmlEscaped();
+    ret.replace("\n","<br>");
+    ret.replace(" ","&nbsp");
+
+    return ret;
+}
+
 QString WizFileImporter::loadImageFileToHtml(const QString& strFileName)
 {
     return QString("<img border=\"0\" src=\"file://%1\" />").arg(strFileName);
