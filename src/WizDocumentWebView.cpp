@@ -19,6 +19,7 @@
 #include <QMessageBox>
 #include <QProcess>
 #include <QFileSystemWatcher>
+#include <QCommandLineParser>
 
 #include <QApplication>
 #include <QUndoStack>
@@ -688,55 +689,80 @@ void WizDocumentWebView::viewDocumentInExternalEditor(QString &Name, QString &Pr
     QDir noteTempDir = QFileInfo(strFileName).absoluteDir();
     CString strTitle = view()->note().strTitle;
     WizMakeValidFileNameNoPath(strTitle);
-    if (noteTempDir.exists(strTitle))
-        noteTempDir.remove(strTitle);
     QString cacheFileName = QFileInfo(noteTempDir.absolutePath() + "/" + strTitle).absoluteFilePath();
     // Export Note to file
-    if (TextEditor != 0) {
-        // Should not use this function, it add more temp files or dirs.
-        saveAsMarkdown(cacheFileName);
-        //FIXME: here need a error control.
-    } else {
-        //FIXME: Empty file.
-        cacheFileName = cacheFileName + ".html";
-        if (!QFile(strFileName).copy(cacheFileName))
+    if (TextEditor == 2) {
+        if (noteTempDir.exists(cacheFileName))
+            noteTempDir.remove(cacheFileName);
+        //
+        saveAsPlainText(cacheFileName, [=](QString fileName){
+            startExternalEditor(fileName, Name, ProgramFile, Arguments, TextEditor);
+        });
+        return;
+    } else if (TextEditor == 0) {
+        cacheFileName += ".html";
+        if (noteTempDir.exists(cacheFileName))
+            noteTempDir.remove(cacheFileName);
+        //FIXME: do not simplily copy index file.
+        if (QFile(strFileName).copy(cacheFileName))
+        {
+            //startExternalEditor(cacheFileName, Name, ProgramFile, Arguments, TextEditor);
+        } else {
             qWarning() << QString("Can't cache the file: %1").arg(cacheFileName);
             return;
+        }
+    } else {
+        //
+        return;
     }
-    // 准备进程参数
-    QString program = ProgramFile;
-    QStringList args = Arguments.arg(cacheFileName).split(" ");
-    // 创建并开启进程
-    qDebug() << "Use external editor: " + Name
-             << ProgramFile << args << TextEditor << UTF8Encoding;
-    QProcess *extEditorProcess = new QProcess(this);
-    extEditorProcess->start(program, args);
-    // 设置文件监控器
-    QFileSystemWatcher* extFileWatcher = new QFileSystemWatcher(this);
-    extFileWatcher->addPath(cacheFileName);
-    //TODO: 添加一个m_mapWatchedFile用于记录文档和GUID
-    //TODO: 兴许可以通过文件路径直接获取GUID
-    //
-    connect(extFileWatcher, SIGNAL(fileChanged(const QString&)), SLOT(onWatchedFileChanged(const QString&)));
 
 }
 
-void WizDocumentWebView::onWatchedFileChanged(const QString& path)
+void WizDocumentWebView::startExternalEditor(QString cacheFileName, QString Name, QString ProgramFile, QString Arguments, int TextEditor)
 {
-    // 读取监控着的文件信息
-    QFileInfo* newFile = new QFileInfo(path);
+    // 准备进程参数
+    //FIXME: split too many items
+    QString args = Arguments.arg("\"" + cacheFileName + "\"");
+    QString strCmd = ProgramFile + " " + args;
+    // 创建并开启进程
+    qInfo() << "Use external editor: " + Name << strCmd;
+    QProcess *extEditorProcess = new QProcess(this);
+    extEditorProcess->start(strCmd);
+    // 设置文件监控器
+    QFileSystemWatcher* extFileWatcher = new QFileSystemWatcher(this);
+    extFileWatcher->addPath(cacheFileName);
+    //
+    //connect(extFileWatcher, SIGNAL(fileChanged(const QString&)), SLOT(onWatchedFileChanged(const QString&)));
+    connect(extFileWatcher, &QFileSystemWatcher::fileChanged, [=](const QString& fileName){
+        onWatchedFileChanged(fileName, TextEditor);
+    });
+}
+
+void WizDocumentWebView::onWatchedFileChanged(const QString& fileName, int TextEditor)
+{
+    QFileInfo* changedFileInfo = new QFileInfo(fileName);
     // 编辑器保存时首先删除文件再添加文件所有会收到两个信号，通过文件大小来判断写入信号
-    if ( newFile->size() == 0 )
+    if ( changedFileInfo->size() == 0 )
         return;
-    qDebug() << tr("Updating file: ") + path << newFile->size()
-             << newFile->lastModified() << newFile->lastRead();
-    // 获取文档数据
+    qDebug() << tr("Updating file: ") + fileName << changedFileInfo->size()
+             << changedFileInfo->lastModified() << changedFileInfo->lastRead();
+    //
     WIZDOCUMENTDATA docData;
     WizDatabase& db = m_dbMgr.db(view()->note().strKbGUID);
     if (!db.documentFromGuid(view()->note().strGUID, docData))
         return;
     // 用纯文本更新文档
-    QString strHtml = WizFileImporter::loadTextFileToHtml(path);
+    // FIXME: 只适用于纯文本更新
+    QString strHtml;
+    if (TextEditor == 0) {
+        // FIXME: 保存后一直处于待同步状态
+        //strHtml = WizFileImporter::loadHtmlFileToHtml(fileName);
+    } else if (TextEditor == 2) {
+        // Plain Text
+        strHtml = WizFileImporter::loadTextFileToHtml(fileName);
+    } else {
+        return;
+    }
     db.updateDocumentData(docData, strHtml, "", 0);
 }
 
@@ -2237,6 +2263,37 @@ void WizDocumentWebView::saveAsMarkdown(QString& strIndexFileName, bool bSaveRes
         source.replace("index_files/", strResFolder);
         //
         ::WizSaveUnicodeTextToUtf8File(strIndexFileName, source, false);
+    });
+}
+
+void WizDocumentWebView::saveAsPlainText(QString& destFileName, std::function<void(QString fileName)> callback)
+{
+    if (destFileName.isEmpty())
+        return;
+    //
+    if (::WizPathFileExists(destFileName))
+    {
+        ::WizDeleteFile(destFileName);
+    }
+    // 准备笔记数据
+    //const WIZDOCUMENTDATA& doc = view()->note();
+    //WizDatabase& db = m_dbMgr.db(doc.strKbGUID);
+    // 导出HTML和资源文件到目标文件地址
+    //if (!db.exportToHtmlFile(doc, destFileName)) {
+    //    return;
+    //}
+    // 因为存在内置的表格，todo，图片，导致无法正常输出成标准的markdown
+    page()->runJavaScript(QString("WizEditor.getMarkdownSrc({unEscapeHtml: true});"), [=](const QVariant& vModified){
+        //
+        QString source = vModified.toString();
+        //
+        QString fileTitle = Utils::WizMisc::extractFileTitle(destFileName);
+
+        //QString strResFolder = fileTitle.toHtmlEscaped() + "_files/";
+        //source.replace("index_files/", strResFolder);
+        //
+        if(::WizSaveUnicodeTextToUtf8File(destFileName, source, false))
+            callback(destFileName);
     });
 }
 

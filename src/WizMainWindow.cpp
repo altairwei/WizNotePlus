@@ -632,6 +632,7 @@ void WizMainWindow::showEvent(QShowEvent* event)
 
 void WizMainWindow::on_actionExit_triggered()
 {
+    //FIXME: 增加一个进度条，显示正在处理的收尾工作
     WizGetAnalyzer().logAction("MenuBarExit");
     //
     qApp->exit();
