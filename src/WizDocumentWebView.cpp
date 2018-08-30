@@ -759,11 +759,11 @@ void WizDocumentWebView::onWatchedFileChanged(const QString& fileName, int TextE
     // FIXME: 只适用于纯文本更新
     QString strHtml;
     if (isPlainText) {
-        // FIXME: 保存后一直处于待同步状态
-        //strHtml = WizFileImporter::loadHtmlFileToHtml(fileName, isUTF8);
-    } else {
         // Plain Text
         strHtml = WizFileImporter::loadTextFileToHtml(fileName, isUTF8);
+    } else {
+        // FIXME: 保存后一直处于待同步状态
+        //strHtml = WizFileImporter::loadHtmlFileToHtml(fileName, isUTF8);
     }
     //FIXME: Windows client has encoding problem.
     db.updateDocumentData(docData, strHtml, "", 0);
