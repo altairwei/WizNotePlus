@@ -17,7 +17,7 @@
 #define PARSER_H_
 
 #include <string>
-#include "../gumbo-parser/gumbo.h"
+#include <gumbo.h>
 #include "Selector.h"
 
 class CParser

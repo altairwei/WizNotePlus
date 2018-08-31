@@ -1260,9 +1260,23 @@ bool uploadResources(WizKMDatabaseServer& server, const QString& url, const QStr
     return true;
 }
 
-
+/**
+ * @brief 上传较大资源文件对象
+ * @param server
+ * @param url
+ * @param key
+ * @param kbGuid
+ * @param docGuid
+ * @param objType
+ * @param objId
+ * @param data 待上传的数据
+ * @param isLast
+ * @param res
+ * @return
+ */
 bool uploadObject(WizKMDatabaseServer& server, const QString& url, const QString& key, const QString& kbGuid, const QString& docGuid, const QString& objType, const QString& objId, const QByteArray& data, bool isLast, Json::Value& res)
 {
+    // 将数据分割成1M的块
     int partSize = 1024 * 1024; //1M
     int partCount = (data.length() + partSize - 1) / partSize;
     for (int i = 0; i < partCount; i++)
@@ -1312,7 +1326,7 @@ bool uploadObject(WizKMDatabaseServer& server, const QString& url, const QString
         }
         QByteArray partData = data.mid(i * partSize, partSize - extra);
         filePart.setBody(partData);
-        //
+        // 组装HTTP请求
         multiPart->append(keyPart);
         multiPart->append(kbGuidPart);
         multiPart->append(docGuidPart);
@@ -1324,7 +1338,7 @@ bool uploadObject(WizKMDatabaseServer& server, const QString& url, const QString
         multiPart->append(filePart);
         //
         QNetworkRequest request(url);
-
+        // 建立链接并上传
         QNetworkAccessManager networkManager;
         QNetworkReply* reply = networkManager.post(request, multiPart);
         multiPart->setParent(reply); // delete the multiPart with the reply
@@ -1332,7 +1346,7 @@ bool uploadObject(WizKMDatabaseServer& server, const QString& url, const QString
         WizAutoTimeOutEventLoop loop(reply);
         loop.setTimeoutWaitSeconds(60 * 60);
         loop.exec();
-        //
+        // 检查错误
         QNetworkReply::NetworkError err = loop.error();
         if (err != QNetworkReply::NoError)
         {
@@ -1424,13 +1438,19 @@ bool WizKMDatabaseServer::attachment_postDataNew(WIZDOCUMENTATTACHMENTDATAEX& da
     return true;
 }
 
-
+/**
+ * @brief 上传新数据
+ * @param dataTemp 笔记数据
+ * @param withData
+ * @param nServerVersion
+ * @return
+ */
 bool WizKMDatabaseServer::document_postDataNew(const WIZDOCUMENTDATAEX& dataTemp, bool withData, __int64& nServerVersion)
 {
     m_strLastLocalError.clear();
-    //
+    // 拷贝笔记数据
     WIZDOCUMENTDATAEX data = dataTemp;
-    //
+    // 构建地址
     QString url_main = buildUrl("/ks/note/upload/" + m_userInfo.strKbGUID + "/" + data.strGUID);
     QString url_res = buildUrl("/ks/object/upload/" + m_userInfo.strKbGUID + "/" + data.strGUID);
     //
@@ -1456,7 +1476,7 @@ bool WizKMDatabaseServer::document_postDataNew(const WIZDOCUMENTDATAEX& dataTemp
     //
     CString tags;
     ::WizStringArrayToText(data.arrayTagGUID, tags, "*");
-    //
+    // 准备要发送的笔记数据
     Json::Value doc;
     doc["kbGuid"] = m_userInfo.strKbGUID.toStdString();
     doc["docGuid"] = data.strGUID.toStdString();
@@ -1482,8 +1502,10 @@ bool WizKMDatabaseServer::document_postDataNew(const WIZDOCUMENTDATAEX& dataTemp
     //
     std::vector<WIZZIPENTRYDATA> allLocalResources;
     WizUnzipFile zip;
+    // 如果有数据且笔记不是受保护的
     if (withData && !data.nProtected)
     {
+        // 打开压缩数据
         if (!zip.open(data.arrayData))
         {
             m_strLastLocalError = "WizErrorInvalidZip";
@@ -1491,7 +1513,7 @@ bool WizKMDatabaseServer::document_postDataNew(const WIZDOCUMENTDATAEX& dataTemp
             qDebug() << "Can't open document data";
             return false;
         }
-        //
+        // 读取主要的HTML和资源文件
         QString html;
         if (!zip.readMainHtmlAndResources(html, allLocalResources))
         {
@@ -1500,9 +1522,9 @@ bool WizKMDatabaseServer::document_postDataNew(const WIZDOCUMENTDATAEX& dataTemp
             qDebug() << "Can't load html and resources";
             return false;
         }
-        //
+        // 将HTML写入JSON
         doc["html"] = html.toStdString();
-        //
+        // 将资源文件信息写入JSON
         Json::Value res(Json::arrayValue);
         for (auto data : allLocalResources)
         {
@@ -1516,7 +1538,7 @@ bool WizKMDatabaseServer::document_postDataNew(const WIZDOCUMENTDATAEX& dataTemp
         doc["resources"] = res;
     }
 
-    //
+    // 服务端返回值
     Json::Value ret;
     WIZSTANDARDRESULT jsonRet = WizRequest::execStandardJsonRequest(url_main, "POST", doc, ret);
     m_lastJsonResult = jsonRet;
@@ -1528,12 +1550,13 @@ bool WizKMDatabaseServer::document_postDataNew(const WIZDOCUMENTDATAEX& dataTemp
     }
     //
     long long newVersion = -1;
-    //
+    // 建立连接后上传资源文件
     if (withData)
     {
         QString key = QString::fromUtf8(ret["key"].asString().c_str());
+
         if (data.nProtected)
-        {
+        {// 如果笔记是受保护的
             Json::Value res;
             if (!uploadObject(*this, url_res, key, m_userInfo.strKbGUID, data.strGUID, "document", data.strGUID, data.arrayData, true, res))
             {
@@ -1543,19 +1566,19 @@ bool WizKMDatabaseServer::document_postDataNew(const WIZDOCUMENTDATAEX& dataTemp
             newVersion = res["version"].asInt64();
         }
         else
-        {
+        {// 如果笔记不是受保护的
             Json::Value resourcesWaitForUpload = ret["resources"];
             size_t resCount = resourcesWaitForUpload.size();
             //
             if (resCount > 0)
             {
-                //
+                // 准备资源文件压缩包信息
                 std::map<QString, WIZZIPENTRYDATA> localResources;
                 for (auto entry : allLocalResources)
                 {
                     localResources[entry.name] = entry;
                 }
-                //
+                // 将资源文件按照大小分成两部分
                 std::vector<WIZZIPENTRYDATA> resLess300K;
                 std::vector<WIZZIPENTRYDATA> resLarge;
                 //
@@ -1574,7 +1597,7 @@ bool WizKMDatabaseServer::document_postDataNew(const WIZDOCUMENTDATAEX& dataTemp
                 }
                 //
                 bool hasLarge = !resLarge.empty();
-                //
+                // 解压并上传小于300K的资源文件
                 while (!resLess300K.empty())
                 {
                     int size = 0;
@@ -1618,7 +1641,7 @@ bool WizKMDatabaseServer::document_postDataNew(const WIZDOCUMENTDATAEX& dataTemp
                         newVersion = res["version"].asInt64();
                     }
                 }
-                //
+                // 解压并上传较大的资源文件
                 while (!resLarge.empty())
                 {
                     int count = resLarge.size();

@@ -16,7 +16,7 @@
 #ifndef NODE_H_
 #define NODE_H_
 
-#include "../gumbo-parser/gumbo.h"
+#include <gumbo.h>
 #include <string>
 
 class CSelection;

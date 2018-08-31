@@ -16,7 +16,7 @@
 #ifndef SELECTOR_H_
 #define SELECTOR_H_
 
-#include "../gumbo-parser/gumbo.h"
+#include <gumbo.h>
 #include <string>
 #include <vector>
 #include "Object.h"

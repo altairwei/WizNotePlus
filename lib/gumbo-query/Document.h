@@ -16,8 +16,7 @@
 #ifndef DOCUMENT_H_
 #define DOCUMENT_H_
 
-//#include <gumbo.h>
-#include "../gumbo-parser/gumbo.h"
+#include <gumbo.h>
 #include <string>
 #include "Selection.h"
 

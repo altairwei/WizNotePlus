@@ -16,7 +16,7 @@
 #ifndef QUERYUTIL_H_
 #define QUERYUTIL_H_
 
-#include "../gumbo-parser/gumbo.h"
+#include <gumbo.h>
 #include <string>
 #include <vector>
 

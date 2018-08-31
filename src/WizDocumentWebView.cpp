@@ -21,6 +21,7 @@
 #include <QFileSystemWatcher>
 #include <QCommandLineParser>
 #include <QTimer>
+#include <QTextDocument>
 
 #include <QApplication>
 #include <QUndoStack>
@@ -674,6 +675,8 @@ bool WizDocumentWebView::isInSeperateWindow() const
 
 /**
  * @brief 在外置编辑器中浏览和编辑文档
+ *
+ * 编辑状态下不允许使用外置编辑器
  */
 void WizDocumentWebView::viewDocumentInExternalEditor(QString &Name, QString &ProgramFile,
                                                         QString &Arguments, int TextEditor, int UTF8Encoding)
@@ -707,7 +710,7 @@ void WizDocumentWebView::viewDocumentInExternalEditor(QString &Name, QString &Pr
         if (noteTempDir.exists(cacheFileName))
             noteTempDir.remove(cacheFileName);
         //
-        saveAsPlainHtml(cacheFileName, [=](QString fileName){
+        saveAsRenderedHtml(cacheFileName, [=](QString fileName){
             startExternalEditor(fileName, Name, ProgramFile, Arguments, TextEditor, UTF8Encoding);
         });
     } else {
@@ -2192,6 +2195,112 @@ void WizDocumentWebView::saveAsPDF()
     page()->printToPdf(strFileName, layout);
 }
 
+void WizDocumentWebView::saveAsMarkdown()
+{
+    // 准备文件与目录
+    CString strTitle = view()->note().strTitle;
+    WizMakeValidFileNameNoPath(strTitle);
+    static QString strInitPath = QDir::homePath();
+    QString strInitFileName = Utils::WizMisc::addBackslash2(strInitPath) + strTitle;
+    // 目的文件地址
+    QString strIndexFileName = QFileDialog::getSaveFileName(this, QString(),
+                                                       strInitFileName,
+                                                       tr("Markdown Files (*.md)"));
+    saveAsMarkdown(strIndexFileName);
+}
+
+void WizDocumentWebView::saveAsMarkdown(QString& strIndexFileName, bool bSaveResource)
+{
+    Q_UNUSED(bSaveResource);
+    if (strIndexFileName.isEmpty())
+        return;
+    //
+    if (::WizPathFileExists(strIndexFileName))
+    {
+        ::WizDeleteFile(strIndexFileName);
+    }
+    // 准备笔记数据
+    const WIZDOCUMENTDATA& doc = view()->note();
+    WizDatabase& db = m_dbMgr.db(doc.strKbGUID);
+    // 导出HTML和资源文件到目标文件地址
+    if (!db.exportToHtmlFile(doc, strIndexFileName)) {
+        return;
+    }
+    // 因为存在内置的表格，todo，图片，导致无法正常输出成标准的markdown
+    page()->runJavaScript(QString("WizEditor.getMarkdownSrc({unEscapeHtml: true});"), [=](const QVariant& vModified){
+        //
+        QString source = vModified.toString();
+        //
+        QString fileTitle = Utils::WizMisc::extractFileTitle(strIndexFileName);
+
+        QString strResFolder = fileTitle.toHtmlEscaped() + "_files/";
+        source.replace("index_files/", strResFolder);
+        //
+        ::WizSaveUnicodeTextToUtf8File(strIndexFileName, source, false);
+    });
+}
+
+void WizDocumentWebView::saveAsPlainMarkdown(QString& destFileName, std::function<void(QString fileName)> callback)
+{
+    if (destFileName.isEmpty())
+        return;
+    //
+    if (::WizPathFileExists(destFileName))
+    {
+        ::WizDeleteFile(destFileName);
+    }
+    page()->runJavaScript(QString("WizEditor.getMarkdownSrc({unEscapeHtml: true});"), [=](const QVariant& vModified){
+        //
+        QString source = vModified.toString();
+        //
+        QString fileTitle = Utils::WizMisc::extractFileTitle(destFileName);
+        //
+        if(::WizSaveUnicodeTextToUtf8File(destFileName, source, false))
+            callback(destFileName);
+    });
+}
+
+void WizDocumentWebView::saveAsPlainText(QString& destFileName, std::function<void(QString fileName)> callback)
+{
+    // 准备笔记数据
+    WIZDOCUMENTDATA docData;
+    WizDatabase& db = m_dbMgr.db(view()->note().strKbGUID);
+    if (!db.documentFromGuid(view()->note().strGUID, docData))
+        return;
+    trySaveDocument(docData, false, [=](const QVariant&){
+        //FIXME: 无法保证笔记临时文件是最新的
+        // 确保目的为止没有文件
+        if (destFileName.isEmpty())
+            return;
+        //
+        if (::WizPathFileExists(destFileName))
+        {
+            ::WizDeleteFile(destFileName);
+        }
+        // 读取HTML
+        QString strHtml;
+        QString strFileName = m_mapFile.value(docData.strGUID);
+        bool ret = WizLoadUnicodeTextFromFile(strFileName, strHtml);
+        if (!ret)
+        {
+            return;
+        }
+        // 获取纯文本
+        QTextDocument doc;
+        doc.setHtml(strHtml);
+        QString strText = doc.toPlainText(); //auto deHtmlEscaped
+        strText.replace("&nbsp", " ");
+        // 写入文件
+        if(WizSaveUnicodeTextToUtf8File(destFileName, strText, false))
+        {
+            callback(destFileName);
+        }
+    });
+}
+
+/**
+ * @brief 将笔记另存为HTML，包括资源文件
+ */
 void WizDocumentWebView::saveAsHtml()
 {
     CString strTitle = view()->note().strTitle;
@@ -2238,73 +2347,12 @@ void WizDocumentWebView::saveAsHtml()
     }
 }
 
-void WizDocumentWebView::saveAsMarkdown()
-{
-    // 准备文件与目录
-    CString strTitle = view()->note().strTitle;
-    WizMakeValidFileNameNoPath(strTitle);
-    static QString strInitPath = QDir::homePath();
-    QString strInitFileName = Utils::WizMisc::addBackslash2(strInitPath) + strTitle;
-    // 目的文件地址
-    QString strIndexFileName = QFileDialog::getSaveFileName(this, QString(),
-                                                       strInitFileName,
-                                                       tr("Markdown Files (*.md)"));
-    saveAsMarkdown(strIndexFileName);
-}
-
-void WizDocumentWebView::saveAsMarkdown(QString& strIndexFileName, bool bSaveResource)
-{
-    Q_UNUSED(bSaveResource);
-    if (strIndexFileName.isEmpty())
-        return;
-    //
-    if (::WizPathFileExists(strIndexFileName))
-    {
-        ::WizDeleteFile(strIndexFileName);
-    }
-    // 准备笔记数据
-    const WIZDOCUMENTDATA& doc = view()->note();
-    WizDatabase& db = m_dbMgr.db(doc.strKbGUID);
-    // 导出HTML和资源文件到目标文件地址
-    if (!db.exportToHtmlFile(doc, strIndexFileName)) {
-        return;
-    }
-    // 因为存在内置的表格，todo，图片，导致无法正常输出成标准的markdown
-    page()->runJavaScript(QString("WizEditor.getMarkdownSrc({unEscapeHtml: true});"), [=](const QVariant& vModified){
-        //
-        QString source = vModified.toString();
-        //
-        QString fileTitle = Utils::WizMisc::extractFileTitle(strIndexFileName);
-
-        QString strResFolder = fileTitle.toHtmlEscaped() + "_files/";
-        source.replace("index_files/", strResFolder);
-        //
-        ::WizSaveUnicodeTextToUtf8File(strIndexFileName, source, false);
-    });
-}
-
-void WizDocumentWebView::saveAsPlainText(QString& destFileName, std::function<void(QString fileName)> callback)
-{
-    if (destFileName.isEmpty())
-        return;
-    //
-    if (::WizPathFileExists(destFileName))
-    {
-        ::WizDeleteFile(destFileName);
-    }
-    // 因为存在内置的表格，todo，图片，导致无法正常输出成标准的markdown
-    page()->runJavaScript(QString("WizEditor.getMarkdownSrc({unEscapeHtml: true});"), [=](const QVariant& vModified){
-        //
-        QString source = vModified.toString();
-        //
-        QString fileTitle = Utils::WizMisc::extractFileTitle(destFileName);
-        //
-        if(::WizSaveUnicodeTextToUtf8File(destFileName, source, false))
-            callback(destFileName);
-    });
-}
-
-void WizDocumentWebView::saveAsPlainHtml(QString& destFileName, std::function<void(QString fileName)> callback)
+/**
+ * @brief 将当前笔记另存为渲染后的HTML，没有资源文件。
+ * @param destFileName
+ * @param callback
+ */
+void WizDocumentWebView::saveAsRenderedHtml(QString& destFileName, std::function<void(QString fileName)> callback)
 {
     //FIXME: should trimmed Wiz's Script and Style.
     //Script: name="wiz_inner_script", wiz_style="unsave", src="contains: odemirror"
@@ -2312,6 +2360,7 @@ void WizDocumentWebView::saveAsPlainHtml(QString& destFileName, std::function<vo
     //          id="wiz_tmp_style_reader_block_scroll", id="wiz_tmp_style_code_common", name="wiz_tmp_editor_style"
     //          id="wiz_tmp_style_code_reader"
     //Tags: wiz_tmp_tag
+    // 现在不需要去除这些东西了，因为本就要渲染后的页面
     page()->toHtml([=](const QString& strHtml){
         //
         CDocument doc;

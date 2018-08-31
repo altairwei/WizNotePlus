@@ -215,8 +215,9 @@ public:
     void saveAsPDF();
     void saveAsMarkdown();
     void saveAsMarkdown(QString& strIndexFileName, bool bSaveResource = true);
+    void saveAsPlainMarkdown(QString& destFileName, std::function<void(QString fileName)> callback);
     void saveAsPlainText(QString& destFileName, std::function<void(QString fileName)> callback);
-    void saveAsPlainHtml(QString& destFileName, std::function<void(QString fileName)> callback);
+    void saveAsRenderedHtml(QString& destFileName, std::function<void(QString fileName)> callback);
     void saveAsHtml();
     void shareNoteByEmail();
     void shareNoteByLink();
