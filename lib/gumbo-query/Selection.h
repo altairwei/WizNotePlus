@@ -19,7 +19,7 @@
 #include "Object.h"
 #include <vector>
 #include <string>
-#include <gumbo.h>
+#include "gumbo.h"
 
 class CNode;
 

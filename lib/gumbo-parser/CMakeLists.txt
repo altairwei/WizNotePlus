@@ -55,6 +55,13 @@ include_directories(
 	${PROJECT_BINARY_DIR}
 )
 
+if(MSVC)
+    include_directories(
+        ${PROJECT_SOURCE_DIR}/msvc
+        ${PROJECT_BINARY_DIR}/msvc
+    )
+endif(MSVC)
+
 # Compile as C99 (default is C89, which Gumbo is not written in).
 if(CMAKE_C_COMPILER_ID EQUAL GNU OR
    CMAKE_CXX_COMPILER_ID EQUAL GNU OR

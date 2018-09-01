@@ -526,6 +526,7 @@ include_directories(
     ${CMAKE_CURRENT_BINARY_DIR}
     ${CMAKE_SOURCE_DIR}/lib
     ${CMAKE_SOURCE_DIR}/lib/openssl/include
+    ${CMAKE_SOURCE_DIR}/lib/gumbo-parser
     )
 
 if (APPLE)

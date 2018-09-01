@@ -8,14 +8,13 @@ set(CMAKE_VERBOSE_MAKEFILE ON)
 set(CMAKE_BUILD_TYPE Debug)
 
 # Set our output directories.
-set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}/lib)
+set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/lib)
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_LIBRARY_OUTPUT_DIRECTORY})
 
 # Create library directory if it does not exist.
 file(MAKE_DIRECTORY ${CMAKE_LIBRARY_OUTPUT_DIRECTORY})
 
 set(Gumbo_INCLUDE_DIRS ${Gumbo_INCLUDE_DIR})
-#set(Gumbo_LIBRARY ${Gumbo_LIBRARY})
 
 # Set our library source directory.
 set(gumbo_query_SOURCE_DIRECTORY ${PROJECT_SOURCE_DIR}/src)

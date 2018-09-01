@@ -16,6 +16,9 @@ add_subdirectory(cryptopp) #用支持CMake的v5.6.4替代旧版本
 # Gumbo libs
 add_subdirectory(gumbo-parser)
 message("Gumbo not found, using internal: ${Gumbo_SOURCE_DIR}")
-set(Gumbo_INCLUDE_DIR ${Gumbo_SOURCE_DIR} ${Gumbo_BINARY_DIR})
+set(Gumbo_INCLUDE_DIR
+    ${Gumbo_SOURCE_DIR}
+    ${Gumbo_BINARY_DIR}
+)
 set(Gumbo_LIBRARY Gumbo)
 add_subdirectory(gumbo-query)
