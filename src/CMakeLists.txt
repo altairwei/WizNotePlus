@@ -526,6 +526,7 @@ include_directories(
     ${CMAKE_CURRENT_BINARY_DIR}
     ${CMAKE_SOURCE_DIR}/lib
     ${CMAKE_SOURCE_DIR}/lib/openssl/include
+    ${CMAKE_SOURCE_DIR}/lib/gumbo-parser
     )
 
 if (APPLE)
@@ -550,8 +551,9 @@ if(UNIX)
 	if(APPLE)
 		if(APPSTORE_BUILD)
 			target_link_libraries(${PROJECT_NAME}
-                quazip_static
+                                quazip_static
 				cryptopp-static
+                                gumbo_query_static
 				Qt5::WebEngine
 				Qt5::WebEngineWidgets
 				${CMAKE_SOURCE_DIR}/lib/openssl/lib/libcrypto.a
@@ -560,8 +562,9 @@ if(UNIX)
 			)
 		else(APPSTORE_BUILD)
 			target_link_libraries(${PROJECT_NAME}
-                quazip_static
+                                quazip_static
 				cryptopp-static
+                                gumbo_query_static
 				Qt5::WebEngine
 				Qt5::WebEngineWidgets
 				${CMAKE_SOURCE_DIR}/lib/openssl/lib/libcrypto.a
@@ -573,8 +576,9 @@ if(UNIX)
 		target_link_libraries(${PROJECT_NAME}
                         -lpthread
                         X11
-            quazip_static   
+                        quazip_static
 			cryptopp-static
+                        gumbo_query_static
 			Qt5::WebEngine
 			Qt5::WebEngineWidgets
 			${CMAKE_DL_LIBS}
@@ -582,8 +586,9 @@ if(UNIX)
 	endif(APPLE)
 else(NOT UNIX)
 	target_link_libraries(${PROJECT_NAME}
-        quazip_static
+                quazip_static
 		cryptopp-static
+                gumbo_query_static
 		Qt5::WebEngine
 		Qt5::WebEngineWidgets
 		${CMAKE_DL_LIBS}

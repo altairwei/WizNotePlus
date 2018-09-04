@@ -54,6 +54,11 @@
 
 QString WizDatabase::m_strUserId = QString();
 
+/**
+ * @brief 从HTML文件的路径获取想要的资源文件夹路径
+ * @param strHtmlFileName
+ * @return
+ */
 QString GetResoucePathFromFile(const QString& strHtmlFileName)
 {
     if (!QFile::exists(strHtmlFileName))
@@ -3135,6 +3140,15 @@ bool WizDatabase::setDocumentFlags(const QString& strDocumentGuid, const QString
     return setDocumentParam(strDocumentGuid, TABLE_KEY_WIZ_DOCUMENT_PARAM_FLAGS, strFlags);
 }
 
+/**
+ * @brief 用HTML更新笔记数据
+ * @param data 笔记数据
+ * @param strHtml HTML字符串
+ * @param strURL 用于获取资源文件的超链接
+ * @param nFlags
+ * @param notifyDataModify
+ * @return
+ */
 bool WizDatabase::updateDocumentData(WIZDOCUMENTDATA& data,
                                       const QString& strHtml,
                                       const QString& strURL,
@@ -3143,7 +3157,8 @@ bool WizDatabase::updateDocumentData(WIZDOCUMENTDATA& data,
 {
     m_mtxTempFile.lock();
     QString strProcessedHtml(strHtml);
-    QString strResourcePath = GetResoucePathFromFile(strURL);
+    // 将HTML文件内所有绝对路径转换成相对路径
+    QString strResourcePath = GetResoucePathFromFile(strURL); // HTML文件对于的资源文件夹路径
     if (!strResourcePath.isEmpty()) {
         QUrl urlResource = QUrl::fromLocalFile(strResourcePath);
         strProcessedHtml.replace(urlResource.toString(), "index_files/");
