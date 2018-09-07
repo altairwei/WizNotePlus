@@ -104,6 +104,7 @@
 #include "share/jsoncpp/json/json.h"
 
 #include "WizDevToolsDialog.h"
+#include "WizCellButton.h"
 
 #define MAINWINDOW  "MainWindow"
 
@@ -2038,9 +2039,10 @@ void WizMainWindow::initToolBar()
     prepareNewNoteMenu();
     //
     QAction* newNoteAction = m_actions->actionFromName(WIZACTION_GLOBAL_NEW_DOCUMENT);
-    newNoteAction->setIcon(::WizLoadSkinIcon(this->userSettings().skin(), "toolButtonNewNote"));
+    //newNoteAction->setIcon(::WizLoadSkinIcon(this->userSettings().skin(), "toolButtonNewNote"));
     //
-    QToolButton* buttonNew = new QToolButton(m_toolBar);
+    //QToolButton* buttonNew = new QToolButton(m_toolBar);
+    QToolButton* buttonNew = new WizToolButton(m_toolBar);
     buttonNew->setMenu(m_newNoteExtraMenu);//选择模板的菜单
     buttonNew->setDefaultAction(newNoteAction);//m_newNoteExtraMenu->actionAt(QPoint(0 ,0)));
     buttonNew->setPopupMode(QToolButton::MenuButtonPopup);

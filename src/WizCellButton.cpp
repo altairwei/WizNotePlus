@@ -8,10 +8,12 @@
 #include <QDebug>
 #include <QFontMetrics>
 #include <QPropertyAnimation>
+#include <QStylePainter>
 
 #include "utils/WizStyleHelper.h"
 #include "share/WizMisc.h"
 #include "share/WizQtHelper.h"
+#include "WizNoteStyle.h"
 
 
 WizCellButton::WizCellButton(ButtonType type, QWidget *parent)
@@ -21,6 +23,7 @@ WizCellButton::WizCellButton(ButtonType type, QWidget *parent)
     , m_buttonType(type)
     , m_iconSize(WizSmartScaleUI(14), WizSmartScaleUI(14))
 {    
+    //setAutoRaise(true);
 }
 
 void WizCellButton::setNormalIcon(const QIcon& icon, const QString& strTips)
@@ -80,11 +83,12 @@ const int nTextWidth = 14;
 void WizCellButton::paintEvent(QPaintEvent *event)
 {
     Q_UNUSED(event);
-
+    // Create StyleOption
     QStyleOptionToolButton opt;
-    initStyleOption(&opt);
+    initStyleOption(&opt); // autofill information
     QPainter p(this);
 
+    // set icon state
     QIcon::Mode mode = opt.state & QStyle::State_Enabled ? QIcon::Normal : QIcon::Disabled;
     if (mode == QIcon::Normal && (opt.state & QStyle::State_HasFocus || opt.state & QStyle::State_Sunken))
         mode = QIcon::Active;
@@ -92,14 +96,16 @@ void WizCellButton::paintEvent(QPaintEvent *event)
     if (opt.state & QStyle::State_On)
         state = QIcon::On;    
 
+    // calculate icon rect
     QSize size = m_iconSize;// opt.icon.actualSize(iconSize());
     int nLeft = (opt.rect.width() - size.width()) / 2;
     if (WithCountInfo == m_buttonType)
     {
         nLeft = (opt.rect.width() - WizSmartScaleUI(nTextWidth) - size.width()) / 2;
     }
-
     QRect rcIcon(nLeft, (opt.rect.height() - size.height()) / 2, size.width(), size.height());
+
+    // paint icon
     if (opt.icon.isNull())
     {
         m_iconNomal.paint(&p, rcIcon, Qt::AlignCenter, mode, state);
@@ -109,12 +115,16 @@ void WizCellButton::paintEvent(QPaintEvent *event)
         opt.icon.paint(&p, rcIcon, Qt::AlignCenter, mode, state);
     }
 
+
+    // calculate text rect
     if (WithCountInfo == m_buttonType)
     {
         QRect rcText(rcIcon.right() + 5, opt.rect.y(), opt.rect.width() - rcIcon.width(), opt.rect.height());
         p.setPen(m_count == 0 ? QColor("#A7A7A7") : QColor("#5990EF"));
         p.drawText(rcText,Qt::AlignVCenter | Qt::AlignLeft, countInfo());
     }
+
+    // 基本上直接开始绘制，一点都没有把绘制任务委托给样式
 }
 
 QSize WizCellButton::sizeHint() const
@@ -289,5 +299,20 @@ void WizRoundCellButton::applyAnimation()
     m_animation->start();
 }
 
+WizToolButton::WizToolButton(QWidget* parent)
+    : QToolButton(parent)
+{
+    setStyle(new WizNotePlusStyle);
+}
 
+void WizToolButton::paintEvent(QPaintEvent* event)
+{
+    Q_UNUSED(event);
 
+    QStylePainter p(this);
+    QStyleOptionToolButton opt;
+    initStyleOption(&opt);
+
+    //opt.subControls &= ~QStyle::SC_ToolButtonMenu;
+    p.drawComplexControl(QStyle::CC_ToolButton, opt);
+}

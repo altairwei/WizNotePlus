@@ -86,4 +86,16 @@ protected:
 };
 
 
+class WizToolButton : public QToolButton
+{
+    Q_OBJECT
+
+public:
+    explicit WizToolButton(QWidget* parent);
+
+protected:
+    void paintEvent(QPaintEvent* event);
+
+};
+
 #endif // CORE_CELLBUTTON_H
