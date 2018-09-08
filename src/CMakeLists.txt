@@ -201,6 +201,13 @@ set(wiznote_SOURCES
     main.cpp
     WizInitBizCertDialog.cpp
     share/WizDocumentStyle.cpp
+
+    interface/IWizHtmlEditorApp.cpp
+    interface/IWizExplorerWindow.cpp
+    interface/IWizCategoryCtrl.cpp
+    interface/IWizDocumentListCtrl.cpp
+    interface/IWizDatabase.cpp
+    interface/IWizExplorerApp.cpp
 )
 
 set(wiznote_HEADERS
@@ -368,6 +375,13 @@ set(wiznote_HEADERS
     WizInitBizCertDialog.h
     share/WizDocumentStyle.h
     WizCombineNotesDialog.h
+
+    interface/IWizHtmlEditorApp.h
+    interface/IWizExplorerWindow.h
+    interface/IWizCategoryCtrl.h
+    interface/IWizDocumentListCtrl.h
+    interface/IWizDatabase.h
+    interface/IWizExplorerApp.h
 )
 
 set(wiznote_FORMS

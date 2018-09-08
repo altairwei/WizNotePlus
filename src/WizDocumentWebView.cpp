@@ -71,6 +71,7 @@
 #include "html/WizHtmlReader.h"
 
 #include "WizTitleBar.h"
+#include "interface/IWizHtmlEditorApp.h"
 
 #include "gumbo-query/Document.h"
 #include "gumbo-query/Node.h"
@@ -160,6 +161,9 @@ WizDocumentWebView::WizDocumentWebView(WizExplorerApp& app, QWidget* parent)
     // FIXME: should accept drop picture, attachment, link etc.
     setAcceptDrops(true);
 
+    //
+    m_htmlEditorApp = new IWizHtmlEditorApp(this, this);
+
     // refers
     qRegisterMetaType<WizEditorMode>("WizEditorMode");
     m_docLoadThread = new WizDocumentWebViewLoaderThread(m_dbMgr, this);
@@ -175,8 +179,11 @@ WizDocumentWebView::WizDocumentWebView(WizExplorerApp& app, QWidget* parent)
     connect(&m_timerAutoSave, SIGNAL(timeout()), SLOT(onTimerAutoSaveTimout()));
     //
     // 向页面JS脚本空间注册对象
-    addToJavaScriptWindowObject("WizExplorerApp", m_app.object());
-    addToJavaScriptWindowObject("WizQtEditor", this);
+    //addToJavaScriptWindowObject("WizExplorerApp", m_app.object());
+    WizMainWindow* mainWindow = qobject_cast<WizMainWindow*>(m_app.mainWindow());
+    addToJavaScriptWindowObject("WizExplorerApp", mainWindow->getIWizExplorerApp());
+    //addToJavaScriptWindowObject("WizQtEditor", this);
+    addToJavaScriptWindowObject("WizQtEditor", m_htmlEditorApp);
 
     connect(this, SIGNAL(loadFinishedEx(bool)), SLOT(onEditorLoadFinished(bool)));
     //

@@ -105,6 +105,7 @@
 
 #include "WizDevToolsDialog.h"
 #include "WizCellButton.h"
+#include "interface/IWizExplorerApp.h"
 
 #define MAINWINDOW  "MainWindow"
 
@@ -173,6 +174,7 @@ WizMainWindow::WizMainWindow(WizDatabaseManager& dbMgr, QWidget *parent)
     , m_mobileFileReceiver(nullptr)
     , m_bQuickDownloadMessageEnable(false)
     , m_quiting(false)
+    , m_IWizExplorerApp(new IWizExplorerApp(this, this))
 {
 #ifdef QT_DEBUG
     int ret = WizToolsSmartCompare("H", "d");
@@ -2331,6 +2333,11 @@ WizIAPDialog*WizMainWindow::iapDialog()
 #endif
 }
 
+QObject* WizMainWindow::getIWizExplorerApp()
+{
+    return m_IWizExplorerApp;
+}
+
 //void MainWindow::on_documents_documentCountChanged()
 //{
 //    QString text;
@@ -3931,6 +3938,11 @@ QObject*WizMainWindow::CategoryCtrl()
     return m_category;
 }
 
+WizCategoryView* WizMainWindow::CategoryView()
+{
+    return m_category;
+}
+
 void WizMainWindow::on_application_messageAvailable(const QString& strMsg)
 {
     qDebug() << "application message received : " << strMsg;
@@ -4010,6 +4022,11 @@ QObject* WizMainWindow::DocumentsCtrl()
 }
 
 QObject* WizMainWindow::DatabaseManager()
+{
+    return &m_dbMgr;
+}
+
+WizDatabaseManager* WizMainWindow::DatabaseManagerEx()
 {
     return &m_dbMgr;
 }

@@ -14,6 +14,7 @@
 #include "WizDef.h"
 #include "share/WizObject.h"
 #include "share/WizWebEngineView.h"
+#include "interface/IWizHtmlEditorApp.h"
 
 
 class WizObjectDownloaderHost;
@@ -140,7 +141,9 @@ private:
     WizDocumentWebView* m_engineView;
 };
 
-
+/**
+ * @brief WizDocumentWebView is responsible for display notes and server as WizQtEditor.
+ */
 class WizDocumentWebView : public WizWebEngineView
 {
     Q_OBJECT
@@ -154,6 +157,7 @@ public:
     void clear();
     //
     friend class WizDocumentWebViewPage;
+    friend class IWizHtmlEditorApp;
     //
     void waitForDone();
 
@@ -223,36 +227,28 @@ public:
     void shareNoteByLink();
     //
     void isModified(std::function<void(bool modified)> callback);
-    Q_INVOKABLE void setModified(bool b);
+    void setModified(bool b);
 
     //use undo func provied by editor
     void undo();
     void redo();
 
     //js environment func
-    Q_INVOKABLE QString getUserGuid();
-    Q_INVOKABLE QString getUserAvatarFilePath();
-    Q_INVOKABLE QString getUserAlias();
-    Q_INVOKABLE bool isPersonalDocument();
-    Q_INVOKABLE QString getCurrentNoteHtml();
-    Q_INVOKABLE bool hasEditPermissionOnCurrentNote();
-    Q_INVOKABLE void changeCurrentDocumentType(const QString& strType);
-    Q_INVOKABLE bool checkListClickable();
-    Q_INVOKABLE bool shouldAddCustomCSS();
-    Q_INVOKABLE bool canRenderMarkdown();
-    Q_INVOKABLE bool canEditNote();
-    Q_INVOKABLE QString getLocalLanguage();
-    Q_INVOKABLE void OnSelectionChange(const QString& currentStyle);
-    Q_INVOKABLE void saveCurrentNote();
+    QString getUserGuid();
+    QString getUserAvatarFilePath();
+    QString getUserAlias();
+    bool isPersonalDocument();
+    QString getCurrentNoteHtml();
+    bool hasEditPermissionOnCurrentNote();
+    void changeCurrentDocumentType(const QString& strType);
+    bool checkListClickable();
+    bool shouldAddCustomCSS();
+    bool canRenderMarkdown();
+    bool canEditNote();
+    QString getLocalLanguage();
+    void OnSelectionChange(const QString& currentStyle);
+    void saveCurrentNote();
 
-    Q_PROPERTY(QString userGuid READ getUserGuid)
-    Q_PROPERTY(QString userAlias READ getUserAlias)
-    Q_PROPERTY(QString userAvatarFilePath READ getUserAvatarFilePath)
-    Q_PROPERTY(bool isPersonalDocument READ isPersonalDocument)
-    Q_PROPERTY(QString canEditNote READ canEditNote)
-    Q_PROPERTY(QString currentNoteHtml READ getCurrentNoteHtml NOTIFY currentHtmlChanged STORED false)
-    Q_PROPERTY(bool hasEditPermissionOnCurrentNote READ hasEditPermissionOnCurrentNote)
-    //
 private:
     void loadDocumentInWeb(WizEditorMode editorMode);
     //
@@ -309,9 +305,10 @@ private:
     QPointer<WizEditorInsertLinkForm> m_editorInsertLinkForm;
 
     WizSearchReplaceWidget* m_searchReplaceWidget;
+    IWizHtmlEditorApp* m_htmlEditorApp;
 
 public:
-    Q_INVOKABLE void onNoteLoadFinished(); // editor callback
+    void onNoteLoadFinished(); // editor callback
 
 public Q_SLOTS:
     void onActionTriggered(QWebEnginePage::WebAction act);
@@ -396,11 +393,10 @@ Q_SIGNALS:
     void viewDocumentFinished();
     //
     void shareDocumentByLinkRequest(const QString& strKbGUID, const QString& strGUID);
+    void currentHtmlChanged();
 
     // signal connect to checklist in javascript
     void clickingTodoCallBack(bool cancel, bool needCallAgain);
-    //
-    void currentHtmlChanged();
     //
     void titleEdited(WizDocumentView*, QString strTitle);
 

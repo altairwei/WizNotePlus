@@ -72,6 +72,8 @@ class WizDocumentView;
 class WizSingleDocumentViewDelegate;
 class QWebEngineView;
 
+class IWizExplorerApp; // interface
+
 #ifdef Q_OS_MAC
 class WizMacToolBarButtonItem;
 #endif
@@ -93,7 +95,7 @@ class WizMainWindow
 #endif
 
 public:
-    explicit WizMainWindow(WizDatabaseManager& dbMgr, QWidget *parent = 0);
+    explicit WizMainWindow(WizDatabaseManager& dbMgr, QWidget *parent = nullptr);
     virtual void init();
 
     void saveStatus();
@@ -222,6 +224,7 @@ private:
     //
     WIZDOCUMENTDATA m_documentForEditing;
 
+    IWizExplorerApp* m_IWizExplorerApp;
 private:
     void initActions();
 
@@ -259,6 +262,8 @@ public:
     WizObjectDownloaderHost* downloaderHost() const;
     WizProgressDialog* progressDialog() const { return m_progress; }
     WizIAPDialog* iapDialog();
+
+    QObject* getIWizExplorerApp();
 
     void resetPermission(const QString& strKbGUID, const QString& strDocumentOwner);
     void viewDocument(const WIZDOCUMENTDATAEX& data, bool addToHistory);
@@ -475,13 +480,15 @@ public:
     QObject* Window() { return this; }
     Q_PROPERTY(QObject* Window READ Window)
 
-    QObject* CategoryCtrl();
+    QObject* CategoryCtrl(); // deprecated
+    WizCategoryView* CategoryView();
     Q_PROPERTY(QObject* CategoryCtrl READ CategoryCtrl)
 
     QObject* DocumentsCtrl();
     Q_PROPERTY(QObject* DocumentsCtrl READ DocumentsCtrl)
 
     QObject* DatabaseManager();
+    WizDatabaseManager* DatabaseManagerEx();
     Q_PROPERTY(QObject* DatabaseManager READ DatabaseManager)
 
     Q_INVOKABLE QObject* CreateWizObject(const QString& strObjectID);
