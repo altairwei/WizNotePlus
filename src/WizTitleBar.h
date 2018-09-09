@@ -7,6 +7,7 @@
 
 class QString;
 class QMenu;
+class QToolBar;
 
 struct WIZDOCUMENTDATA;
 class WizDatabase;
@@ -28,6 +29,7 @@ class WizInfoBar;
 class WizNotifyBar;
 class WizEditorToolBar;
 class WizCellButton;
+class WizToolButton;
 class WizRoundCellButton;
 class WizTagBar;
 
@@ -113,6 +115,7 @@ private:
     WizDocumentWebView* m_editor;
     WizExplorerApp& m_app;
 
+    QToolBar* m_documentToolBar;
     WizTitleEdit* m_editTitle;
     WizTagBar* m_tagBar;
     WizInfoBar* m_infoBar;
@@ -121,12 +124,12 @@ private:
 
     WizRoundCellButton* m_editBtn;
     WizCellButton* m_separateBtn;
-    WizCellButton* m_tagBtn;    
+    WizToolButton* m_tagBtn;
 //    CellButton* m_emailBtn;
-    WizCellButton* m_shareBtn;
+    WizToolButton* m_shareBtn;
     WizCellButton* m_attachBtn;
 //    CellButton* m_historyBtn;
-    WizCellButton* m_infoBtn;    
+    WizToolButton* m_infoBtn;
 
     QMenu* m_shareMenu;
 

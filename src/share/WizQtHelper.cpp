@@ -416,15 +416,19 @@ int WizSmartScaleUI(int spec)
 #ifdef Q_OS_MAC
     return spec;
 #else
-
     static double rate = 0;
-    if (0 == (int)rate)
+
+    if (0 == static_cast<int>(rate))
     {
         //
-        QList<QScreen*> screens = QApplication::screens();
+        QList<QScreen*> screens = QGuiApplication::screens();
         if (screens.size() > 0)
         {
             QScreen* screen = screens[0];
+            // WARNING!!! Cannot get real dpi!!
+            // Shouldn't use this to calculate Widget layout !!!
+            // QApplication::setAttribute(Qt::AA_EnableHighDpiScaling) is enough !!!
+            // FIXME: Modify all calculation depends on this Function!!
             double dpi = screen->logicalDotsPerInch();
             //
             rate = dpi / 96.0;
@@ -458,9 +462,19 @@ int WizSmartScaleUI(int spec)
         }
     }
     //
+    //qreal rate = QGuiApplication::screens().first()->devicePixelRatio();
     return int(spec * rate);
     //
 #endif
+}
+
+/**
+ * @brief Get the screen's scale rate.
+ * @return
+ */
+qreal GetDevicePixelRatio()
+{
+    return QGuiApplication::screens().first()->devicePixelRatio();
 }
 
 #ifdef Q_OS_LINUX

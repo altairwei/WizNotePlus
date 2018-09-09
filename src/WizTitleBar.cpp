@@ -8,6 +8,7 @@
 #include <QSplitter>
 #include <QList>
 #include <QLabel>
+#include <QToolBar>
 #include <QAction>
 #include <QVariant>
 #include <QMap>
@@ -25,6 +26,7 @@
 #include "WizDocumentWebEngine.h"
 #include "WizDocumentWebView.h"
 #include "WizNoteInfoForm.h"
+#include "WizNoteStyle.h"
 #include "share/WizMisc.h"
 #include "share/WizDatabase.h"
 #include "share/WizSettings.h"
@@ -62,6 +64,7 @@ QString getOptionKey()
 WizTitleBar::WizTitleBar(WizExplorerApp& app, QWidget *parent)
     : QWidget(parent)
     , m_app(app)
+    , m_documentToolBar(new QToolBar(this))
     , m_editTitle(new WizTitleEdit(this))
     , m_tagBar(new WizTagBar(app, this))
     , m_infoBar(new WizInfoBar(app, this))
@@ -74,21 +77,25 @@ WizTitleBar::WizTitleBar(WizExplorerApp& app, QWidget *parent)
     , m_editButtonAnimation(nullptr)
     , m_commentManager(new WizCommentManager(this))
 {
+    // 标题栏输入框
     m_editTitle->setCompleter(new WizMessageCompleter(m_editTitle));
     int nTitleHeight = Utils::WizStyleHelper::titleEditorHeight();
     m_editTitle->setFixedHeight(nTitleHeight);
     m_editTitle->setAlignment(Qt::AlignVCenter);
     m_editTitle->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Preferred);
 
+    // 编辑器工具栏
 //    m_editorBar->setFixedHeight(nEditToolBarHeight);
     m_editorBar->layout()->setAlignment(Qt::AlignVCenter);
 
     QString strTheme = Utils::WizStyleHelper::themeName();
 
+    // 添加垂直布局<工具栏+状态栏？>
     QVBoxLayout* layout = new QVBoxLayout;
     layout->setContentsMargins(0, 0, 0, 6);
     layout->setSpacing(0);
     setLayout(layout);
+
     // 编辑按钮
     QSize iconSize = QSize(Utils::WizStyleHelper::titleIconHeight(), Utils::WizStyleHelper::titleIconHeight());
     m_editBtn = new WizRoundCellButton(this);
@@ -111,7 +118,8 @@ WizTitleBar::WizTitleBar(WizExplorerApp& app, QWidget *parent)
     m_separateBtn->setNormalIcon(::WizLoadSkinIcon(strTheme, "document_use_separate", iconSize), tr("View note in seperate window  %1%2").arg(getOptionKey()).arg(2));
     connect(m_separateBtn, SIGNAL(clicked()), SLOT(onSeparateButtonClicked()));
 
-    m_tagBtn = new WizCellButton(WizCellButton::ImageOnly, this);
+    // 标签按钮
+    m_tagBtn = new WizToolButton(this, WizToolButton::ImageOnly);
     m_tagBtn->setFixedHeight(nTitleHeight);
     QString tagsShortcut = ::WizGetShortcut("EditNoteTags", "Alt+3");
     m_tagBtn->setShortcut(QKeySequence::fromString(tagsShortcut));
@@ -119,7 +127,8 @@ WizTitleBar::WizTitleBar(WizExplorerApp& app, QWidget *parent)
     m_tagBtn->setCheckedIcon(::WizLoadSkinIcon(strTheme, "document_tag_on", iconSize), tr("View and add tags  %1%2").arg(getOptionKey()).arg(3));
     connect(m_tagBtn, SIGNAL(clicked()), SLOT(onTagButtonClicked()));
 
-    m_shareBtn = new WizCellButton(WizCellButton::ImageOnly, this);
+    // 分享按钮
+    m_shareBtn = new WizToolButton(this, WizToolButton::ImageOnly);
     m_shareBtn->setFixedHeight(nTitleHeight);
     QString shareShortcut = ::WizGetShortcut("EditShare", "Alt+4");
     m_shareBtn->setShortcut(QKeySequence::fromString(shareShortcut));
@@ -148,7 +157,8 @@ WizTitleBar::WizTitleBar(WizExplorerApp& app, QWidget *parent)
 //    connect(m_emailBtn, SIGNAL(clicked()), SLOT(onEmailButtonClicked()));
 //    m_emailBtn->setVisible(!oemSettings.isHideShareByEmail());
 
-    m_infoBtn = new WizCellButton(WizCellButton::ImageOnly, this);
+    // 笔记信息按钮
+    m_infoBtn = new WizToolButton(this, WizToolButton::ImageOnly);
     m_infoBtn->setFixedHeight(nTitleHeight);
     QString infoShortcut = ::WizGetShortcut("EditNoteInfo", "Alt+5");
     m_infoBtn->setShortcut(QKeySequence::fromString(infoShortcut));
@@ -156,6 +166,7 @@ WizTitleBar::WizTitleBar(WizExplorerApp& app, QWidget *parent)
     m_infoBtn->setCheckedIcon(::WizLoadSkinIcon(strTheme, "document_info_on", iconSize), tr("View and modify note's info  %1%2").arg(getOptionKey()).arg(5));
     connect(m_infoBtn, SIGNAL(clicked()), SLOT(onInfoButtonClicked()));
 
+    // 附件按钮
     m_attachBtn = new WizCellButton(WizCellButton::WithCountInfo, this);
     m_attachBtn->setFixedHeight(nTitleHeight);
     QString attachmentShortcut = ::WizGetShortcut("EditNoteAttachments", "Alt+6");
@@ -175,7 +186,21 @@ WizTitleBar::WizTitleBar(WizExplorerApp& app, QWidget *parent)
     connect(WizGlobal::instance(), SIGNAL(viewNoteLoaded(WizDocumentView*,const WIZDOCUMENTDATAEX&,bool)),
             SLOT(onViewNoteLoaded(WizDocumentView*,const WIZDOCUMENTDATAEX&,bool)));
 
-
+    // 标题工具栏
+    m_documentToolBar->setIconSize(iconSize);
+    m_documentToolBar->setContextMenuPolicy(Qt::PreventContextMenu);
+    m_documentToolBar->setMovable(false);
+    m_documentToolBar->addWidget(m_editTitle);
+    m_documentToolBar->addWidget(m_editBtn);
+    m_documentToolBar->addWidget(new WizFixedSpacer(QSize(7, 1), m_documentToolBar));
+    m_documentToolBar->addWidget(m_separateBtn);
+    m_documentToolBar->addWidget(m_tagBtn);
+    m_documentToolBar->addWidget(m_shareBtn);
+    m_documentToolBar->addWidget(m_infoBtn);
+    m_documentToolBar->addWidget(m_attachBtn);
+    m_documentToolBar->addWidget(m_commentsBtn);
+    // 标题工具栏布局
+    /*
     QHBoxLayout* layoutInfo2 = new QHBoxLayout();
     layoutInfo2->setContentsMargins(0, 0, 0, 0);
     layoutInfo2->setSpacing(0);
@@ -191,12 +216,15 @@ WizTitleBar::WizTitleBar(WizExplorerApp& app, QWidget *parent)
 //    layoutInfo2->addWidget(m_emailBtn);
     layoutInfo2->addWidget(m_infoBtn);
     layoutInfo2->addWidget(m_attachBtn);
-    layoutInfo2->addWidget(m_commentsBtn);    
+    layoutInfo2->addWidget(m_commentsBtn);
+    */
 
+    // 笔记状态信息布局
     QVBoxLayout* layoutInfo1 = new QVBoxLayout();
     layoutInfo1->setContentsMargins(Utils::WizStyleHelper::editorBarMargins());
     layoutInfo1->setSpacing(0);
-    layoutInfo1->addLayout(layoutInfo2);
+    //layoutInfo1->addLayout(layoutInfo2); // 将标题工具栏放入整体布局中
+    layoutInfo1->addWidget(m_documentToolBar);
     layoutInfo1->addWidget(m_tagBar);
     layoutInfo1->addWidget(m_infoBar);
     layoutInfo1->addWidget(m_editorBar);
@@ -353,7 +381,7 @@ void WizTitleBar::updateTagButtonStatus()
 {
     if (m_tagBar && m_tagBtn)
     {
-        m_tagBtn->setState(m_tagBar->isVisible() ? WizCellButton::Checked : WizCellButton::Normal);
+        m_tagBtn->setState(m_tagBar->isVisible() ? WizToolButton::Checked : WizToolButton::Normal);
     }
 }
 
@@ -369,7 +397,7 @@ void WizTitleBar::updateInfoButtonStatus()
 {
     if (m_info && m_infoBtn)
     {
-        m_infoBtn->setState(m_info->isVisible() ? WizCellButton::Checked : WizCellButton::Normal);
+        m_infoBtn->setState(m_info->isVisible() ? WizToolButton::Checked : WizToolButton::Normal);
     }
 }
 

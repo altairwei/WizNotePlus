@@ -61,6 +61,7 @@ class WizNotePlusStyle : public QProxyStyle
     Q_OBJECT
 
 public:
+    explicit WizNotePlusStyle(QString styleName);
     static void drawArrow(const QStyle *style, const QStyleOptionToolButton *toolbutton,
                           const QRect &rect, QPainter *painter, const QWidget *widget = nullptr);
     static QWindow *qt_getWindow(const QWidget *widget);
@@ -75,7 +76,7 @@ public:
     QColor innerContrastLine() const;
 
     void drawControl(ControlElement element, const QStyleOption *opt, QPainter *p,
-                     const QWidget *w = nullptr) const override;
+                                                const QWidget *w = nullptr) const override;
     void drawComplexControl(ComplexControl cc, const QStyleOptionComplex *opt,
                                           QPainter *p, const QWidget *widget) const override;
     void drawPrimitive(PrimitiveElement elem, const QStyleOption *option,

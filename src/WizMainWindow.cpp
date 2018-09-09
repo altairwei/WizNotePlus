@@ -2044,7 +2044,8 @@ void WizMainWindow::initToolBar()
     //newNoteAction->setIcon(::WizLoadSkinIcon(this->userSettings().skin(), "toolButtonNewNote"));
     //
     //QToolButton* buttonNew = new QToolButton(m_toolBar);
-    QToolButton* buttonNew = new WizToolButton(m_toolBar);
+    QToolButton* buttonNew = new QToolButton(m_toolBar);
+    buttonNew->setStyle(new WizNotePlusStyle("fusion"));
     buttonNew->setMenu(m_newNoteExtraMenu);//选择模板的菜单
     buttonNew->setDefaultAction(newNoteAction);//m_newNoteExtraMenu->actionAt(QPoint(0 ,0)));
     buttonNew->setPopupMode(QToolButton::MenuButtonPopup);
@@ -3791,8 +3792,8 @@ WizDocumentView* WizMainWindow::createDocumentView()
     newDocView->commentWidget()->setMinimumWidth(isHighPix ? 170 : 195);
     newDocView->web()->setMinimumWidth(576);
 
-    newDocView->setStyleSheet(QString("QLineEdit{border:1px solid #DDDDDD; border-radius:2px;}"
-                                 "QToolButton {border:0px; padding:0px; border-radius:0px;}"));
+    newDocView->setStyleSheet(QString("QLineEdit{border:1px solid #DDDDDD; border-radius:2px;}"));
+    //                             "QToolButton {border:0px; padding:0px; border-radius:0px;}"));
     newDocView->titleBar()->setStyleSheet(QString("QLineEdit{padding:0px; padding-left:-2px; padding-bottom:1px; border:0px; border-radius:0px;}"));
 
     //

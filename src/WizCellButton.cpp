@@ -3,6 +3,10 @@
 #include <QString>
 #include <QPainter>
 #include <QStyleOptionToolButton>
+#include <QStyleFactory>
+#include <QStyle>
+#include <QColor>
+#include <QPalette>
 #include <QSettings>
 #include <QSize>
 #include <QDebug>
@@ -23,7 +27,8 @@ WizCellButton::WizCellButton(ButtonType type, QWidget *parent)
     , m_buttonType(type)
     , m_iconSize(WizSmartScaleUI(14), WizSmartScaleUI(14))
 {    
-    //setAutoRaise(true);
+    setAutoRaise(true);
+    setStyle(new WizNotePlusStyle("fusion"));
 }
 
 void WizCellButton::setNormalIcon(const QIcon& icon, const QString& strTips)
@@ -85,18 +90,20 @@ void WizCellButton::paintEvent(QPaintEvent *event)
     Q_UNUSED(event);
     // Create StyleOption
     QStyleOptionToolButton opt;
-    initStyleOption(&opt); // autofill information
+    initStyleOption(&opt); // autofill QToolButton information
     QPainter p(this);
 
-    // set icon state
+    // icon State and Mode
     QIcon::Mode mode = opt.state & QStyle::State_Enabled ? QIcon::Normal : QIcon::Disabled;
     if (mode == QIcon::Normal && (opt.state & QStyle::State_HasFocus || opt.state & QStyle::State_Sunken))
+        // set icon active mode if focus or pushdown
         mode = QIcon::Active;
     QIcon::State state = QIcon::Off;
     if (opt.state & QStyle::State_On)
+        // set icon state checkon if widget checkon
         state = QIcon::On;    
 
-    // calculate icon rect
+    // icon Rect
     QSize size = m_iconSize;// opt.icon.actualSize(iconSize());
     int nLeft = (opt.rect.width() - size.width()) / 2;
     if (WithCountInfo == m_buttonType)
@@ -123,8 +130,6 @@ void WizCellButton::paintEvent(QPaintEvent *event)
         p.setPen(m_count == 0 ? QColor("#A7A7A7") : QColor("#5990EF"));
         p.drawText(rcText,Qt::AlignVCenter | Qt::AlignLeft, countInfo());
     }
-
-    // 基本上直接开始绘制，一点都没有把绘制任务委托给样式
 }
 
 QSize WizCellButton::sizeHint() const
@@ -299,10 +304,92 @@ void WizRoundCellButton::applyAnimation()
     m_animation->start();
 }
 
-WizToolButton::WizToolButton(QWidget* parent)
+WizToolButton::WizToolButton(QWidget* parent, ButtonType type)
     : QToolButton(parent)
+    , m_state(Normal)
+    , m_count(0)
+    , m_buttonType(type)
+    , m_iconSize(WizSmartScaleUI(14), WizSmartScaleUI(14))
 {
-    setStyle(new WizNotePlusStyle);
+    setStyle(new WizNotePlusStyle("fusion"));
+    setAutoRaise(true);
+    setContentsMargins(10, 0, 10, 0);
+}
+
+void WizToolButton::setNormalIcon(const QIcon& icon, const QString& strTips)
+{
+    m_iconNomal = icon;
+    m_strTipsNormal = strTips;
+
+    setToolTip(strTips);
+}
+
+void WizToolButton::setCheckedIcon(const QIcon& icon, const QString& strTips)
+{
+    m_iconChecked = icon;
+    m_strTipsChecked = strTips;
+
+    setToolTip(strTips);
+}
+
+void WizToolButton::setBadgeIcon(const QIcon& icon, const QString& strTips)
+{
+    m_iconBadge = icon;
+    m_strTipsBagde = strTips;
+
+    setToolTip(strTips);
+}
+
+void WizToolButton::setState(int state)
+{
+    switch (state) {
+    case Normal:
+        setIcon(m_iconNomal);
+        setToolTip(m_strTipsNormal);
+        m_state = 0;
+        break;
+    case Checked:
+        setIcon(m_iconChecked);
+        setToolTip(m_strTipsChecked);
+        m_state = 1;
+        break;
+    case Badge:
+        setIcon(m_iconBadge);
+        setToolTip(m_strTipsBagde);
+        m_state = 2;
+        break;
+    default:
+        Q_ASSERT(0);
+    }
+}
+
+void WizToolButton::setCount(int count)
+{
+    m_count = count;
+    update();
+}
+
+QSize WizToolButton::sizeHint() const
+{
+    switch (m_buttonType)
+    {
+    case WithTextLabel:
+    case ImageOnly:
+        return QSize(WizSmartScaleUI(28), WizSmartScaleUI(26));
+    case WithCountInfo:
+        return QSize(WizSmartScaleUI(28) + WizSmartScaleUI(nTextWidth), WizSmartScaleUI(26));
+#ifdef Q_OS_WIN
+    default:
+        return QSize(WizSmartScaleUI(28), WizSmartScaleUI(26));
+#endif
+    }
+}
+
+QString WizToolButton::countInfo() const
+{
+    if (m_count > 99)
+        return "99+";
+    return QString::number(m_count);
 }
 
 void WizToolButton::paintEvent(QPaintEvent* event)
@@ -312,7 +399,8 @@ void WizToolButton::paintEvent(QPaintEvent* event)
     QStylePainter p(this);
     QStyleOptionToolButton opt;
     initStyleOption(&opt);
-
-    //opt.subControls &= ~QStyle::SC_ToolButtonMenu;
+    if (opt.icon.isNull())
+        opt.icon = m_iconNomal;
+    //
     p.drawComplexControl(QStyle::CC_ToolButton, opt);
 }

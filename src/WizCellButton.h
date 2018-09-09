@@ -91,11 +91,44 @@ class WizToolButton : public QToolButton
     Q_OBJECT
 
 public:
-    explicit WizToolButton(QWidget* parent);
+    enum ButtonType {
+        ImageOnly,
+        WithCountInfo,
+        WithTextLabel
+    };
+
+    enum State {
+        Normal,
+        Checked,
+        Badge
+    };
+
+    explicit WizToolButton(QWidget* parent, ButtonType type = WithTextLabel);
+    void setNormalIcon(const QIcon& icon, const QString& strTips);
+    void setCheckedIcon(const QIcon& icon, const QString& strTips);
+    void setBadgeIcon(const QIcon& icon, const QString& strTips);
+    int state() const { return m_state; }
+
+public slots:
+    void setState(int state);
+    void setCount(int count);
+
+protected:
+    ButtonType m_buttonType;
+    int m_state;
+    int m_count;
+    QSize m_iconSize;
+    QIcon m_iconNomal;
+    QIcon m_iconChecked;
+    QIcon m_iconBadge;
+    QString m_strTipsNormal;
+    QString m_strTipsChecked;
+    QString m_strTipsBagde;
 
 protected:
     void paintEvent(QPaintEvent* event);
-
+    QSize sizeHint() const;
+    QString countInfo() const;
 };
 
 #endif // CORE_CELLBUTTON_H

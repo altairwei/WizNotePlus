@@ -1715,10 +1715,11 @@ QIcon WizLoadSkinIcon(const QString& strSkinName, const QString& strIconName,
 QPixmap WizLoadPixmapIcon(const QString& strSkinName, const QString& strIconName, const QSize& iconSize)
 {
     static int rate = 0;
-    if (!rate) {
+    //if (!rate) {
         //
-        rate = WizSmartScaleUI(100);
-    }
+    //rate = WizSmartScaleUI(100);
+    rate = static_cast<int>(100 * GetDevicePixelRatio());
+    //}
     //
     if (rate < 175) {
         //
@@ -2586,7 +2587,8 @@ double calScaleFactor()
 
     if (scaleFactor < 0.5)
     {
-        scaleFactor = 1.0 * WizSmartScaleUI(100) / 100;
+        //scaleFactor = 1.0 * WizSmartScaleUI(100) / 100;
+        scaleFactor = GetDevicePixelRatio();
     }
 
     return scaleFactor;
@@ -2594,12 +2596,10 @@ double calScaleFactor()
 
 void WizScaleIconSizeForRetina(QSize& size)
 {
-#ifdef Q_OS_MAC
     if (qApp->devicePixelRatio() >= 2)
     {
         size.scale(size.width() / 2, size.height() / 2, Qt::IgnoreAspectRatio);
     }
-#endif
 }
 
 

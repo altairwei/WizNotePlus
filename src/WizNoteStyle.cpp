@@ -615,6 +615,12 @@ void WizNotePlusStyle::drawArrow(const QStyle *style, const QStyleOptionToolButt
 }
 
 
+WizNotePlusStyle::WizNotePlusStyle(QString styleName)
+    : QProxyStyle(styleName)
+{
+
+}
+
 QWindow* WizNotePlusStyle::qt_getWindow(const QWidget *widget)
 {
     return widget ? widget->window()->windowHandle() : nullptr;
@@ -835,6 +841,8 @@ void WizNotePlusStyle::drawComplexControl(ComplexControl cc, const QStyleOptionC
     switch (cc) {
 
     case CC_ToolButton:
+    {
+
         if (const QStyleOptionToolButton *toolbutton
             = qstyleoption_cast<const QStyleOptionToolButton *>(opt)) {
 
@@ -864,7 +872,6 @@ void WizNotePlusStyle::drawComplexControl(ComplexControl cc, const QStyleOptionC
             //-------------------------------------------------------------------
             // 绘制样式元素
             //-------------------------------------------------------------------
-
             // 绘制按钮悬浮
             QStyleOption pannel = *toolbutton;
             if ( ( bflags | mflags ) & (State_Sunken | State_On | State_Raised)) {
@@ -931,6 +938,8 @@ void WizNotePlusStyle::drawComplexControl(ComplexControl cc, const QStyleOptionC
     default:
         QProxyStyle::drawComplexControl(cc, opt, p, widget);
         break;
+    }
+
     }
 }
 
