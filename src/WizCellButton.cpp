@@ -304,28 +304,59 @@ void WizRoundCellButton::applyAnimation()
     m_animation->start();
 }
 
-WizToolButton::WizToolButton(QWidget* parent, ButtonType type)
+
+//-------------------------------------------------------------------
+// Class WizToolButton implementation block.
+//-------------------------------------------------------------------
+
+
+WizToolButton::WizToolButton(QWidget* parent, int type)
     : QToolButton(parent)
+    , m_buttonType(type)
     , m_state(Normal)
     , m_count(0)
-    , m_buttonType(type)
-    , m_iconSize(WizSmartScaleUI(14), WizSmartScaleUI(14))
+    , m_iconSize(WizSmartScaleUI(14), WizSmartScaleUI(14)) //FIXME: cannot really scale iconsize.
 {
     setStyle(new WizNotePlusStyle("fusion"));
     setAutoRaise(true);
-    setContentsMargins(10, 0, 10, 0);
+    setIcon(m_icon);
+
+    switch (type) {
+
+    case WithCountInfo:
+    case WithTextLabel:
+        setToolButtonStyle(Qt::ToolButtonTextBesideIcon);
+        break;
+    case ImageOnly:
+    case ImageOnly | WithMenu:
+        setToolButtonStyle(Qt::ToolButtonIconOnly);
+        break;
+    }
 }
 
+/**
+ * @brief Set QIcon::off state icon pixmap.
+ * @param icon
+ * @param strTips
+ */
 void WizToolButton::setNormalIcon(const QIcon& icon, const QString& strTips)
 {
+    m_icon = icon;
     m_iconNomal = icon;
     m_strTipsNormal = strTips;
 
     setToolTip(strTips);
 }
 
+/**
+ * @brief Set QIcon::on state icon pixmap.
+ * @param icon
+ * @param strTips
+ */
 void WizToolButton::setCheckedIcon(const QIcon& icon, const QString& strTips)
 {
+    QPixmap pm = icon.pixmap(m_iconSize, QIcon::Normal, QIcon::On);
+    m_icon.addPixmap(pm, QIcon::Normal, QIcon::On);
     m_iconChecked = icon;
     m_strTipsChecked = strTips;
 
@@ -342,25 +373,7 @@ void WizToolButton::setBadgeIcon(const QIcon& icon, const QString& strTips)
 
 void WizToolButton::setState(int state)
 {
-    switch (state) {
-    case Normal:
-        setIcon(m_iconNomal);
-        setToolTip(m_strTipsNormal);
-        m_state = 0;
-        break;
-    case Checked:
-        setIcon(m_iconChecked);
-        setToolTip(m_strTipsChecked);
-        m_state = 1;
-        break;
-    case Badge:
-        setIcon(m_iconBadge);
-        setToolTip(m_strTipsBagde);
-        m_state = 2;
-        break;
-    default:
-        Q_ASSERT(0);
-    }
+    m_state = state;
 }
 
 void WizToolButton::setCount(int count)
@@ -369,20 +382,25 @@ void WizToolButton::setCount(int count)
     update();
 }
 
+
 QSize WizToolButton::sizeHint() const
 {
-    switch (m_buttonType)
-    {
+
+    switch (m_buttonType) {
+
     case WithTextLabel:
     case ImageOnly:
-        return QSize(WizSmartScaleUI(28), WizSmartScaleUI(26));
+        return QSize(28, 26);
     case WithCountInfo:
-        return QSize(WizSmartScaleUI(28) + WizSmartScaleUI(nTextWidth), WizSmartScaleUI(26));
+        return QSize(28 + nTextWidth, 26);
+    case ImageOnly | WithMenu:
+        return QSize(28 + 8, 26);
 #ifdef Q_OS_WIN
     default:
-        return QSize(WizSmartScaleUI(28), WizSmartScaleUI(26));
+        return QSize(28, 26);
 #endif
     }
+
 }
 
 QString WizToolButton::countInfo() const
@@ -395,12 +413,108 @@ QString WizToolButton::countInfo() const
 void WizToolButton::paintEvent(QPaintEvent* event)
 {
     Q_UNUSED(event);
-
+    // 模拟一下菜单按钮下拉时不弹出菜单，而弹出自定义部件时，按钮的下层状态。
     QStylePainter p(this);
     QStyleOptionToolButton opt;
     initStyleOption(&opt);
+    opt.iconSize = m_iconSize;
+    if (m_buttonType == WithCountInfo)
+    {
+        opt.toolButtonStyle = Qt::ToolButtonTextBesideIcon;
+        opt.text = countInfo();
+        QColor textColor = m_count == 0 ? QColor("#A7A7A7") : QColor("#5990EF");
+        opt.palette.setColor(QPalette::ButtonText, textColor);
+    }
+    //
     if (opt.icon.isNull())
-        opt.icon = m_iconNomal;
+        opt.icon = m_icon;
+    //
+    p.drawComplexControl(QStyle::CC_ToolButton, opt);
+}
+
+//TODO: 工具按钮除了能弹出菜单外，还要能弹出自定义窗口部件。
+// QMenu 拥有aboutToHide()信号，参考QMenu来实现弹出部件的自动隐藏
+// 然后用connect(actualMenu, SIGNAL(aboutToHide()), q, SLOT(_q_updateButtonDown()));来更新按钮状态
+
+//-------------------------------------------------------------------
+// Class WizToolButton implementation block.
+//-------------------------------------------------------------------
+
+//TODO: <保存/编辑> 可切换状态按钮
+// 1. 按钮得checkable的。
+// 2. 默认动作是打开内置内置编辑器的阅读和编辑模式
+// 3. 能弹出外置编辑器选择菜单
+// 4. 有一个较暗的背景可以标识此按钮
+// 5. 状态转换之间的动画，比如群组笔记状态转换
+// 6. 高度缩小，形状为药丸形
+
+WizEditButton::WizEditButton(QWidget* parent)
+    : WizToolButton(parent, WizToolButton::WithTextLabel | WizToolButton::WithMenu)
+{
+    m_iconSize = QSize(14, 14);
+    setMaximumWidth(0);
+    setCheckable(true);
+    //
+    m_animation = new QPropertyAnimation(this, "maximumWidth", this);
+}
+
+QString WizEditButton::text() const
+{
+    switch (m_state) {
+
+    case Normal:
+        return m_textNormal;
+    case Checked:
+        return m_textChecked;
+    case Badge:
+        return m_textBadge;
+    default:
+        Q_ASSERT(0);
+        break;
+    }
+    return "";
+}
+
+void WizEditButton::setStatefulText(const QString& text, const QString& strTips, WizToolButton::State state)
+{
+    switch (state) {
+
+    case Normal:
+        m_textNormal = text;
+        m_strTipsNormal = strTips;
+        break;
+    case Checked:
+        m_textChecked = text;
+        m_strTipsChecked = strTips;
+        break;
+    case Badge:
+        m_textBadge = text;
+        m_strTipsBagde = strTips;
+        break;
+    }
+}
+
+void WizEditButton::paintEvent(QPaintEvent* event)
+{
+    Q_UNUSED(event);
+    QStylePainter p(this);
+    QStyleOptionToolButton opt;
+    initStyleOption(&opt);
+    opt.iconSize = m_iconSize;
+    opt.toolButtonStyle = Qt::ToolButtonTextBesideIcon;
+    // label and tips rely on button states.
+    if (opt.state &  QStyle::State_Raised)
+    {
+        //Normal
+        opt.text = m_textNormal;
+        setToolTip(m_strTipsNormal);
+    }
+    else if (opt.state & QStyle::State_On)
+    {
+        //Checked
+        opt.text = m_textChecked;
+        setToolTip(m_strTipsChecked);
+    }
     //
     p.drawComplexControl(QStyle::CC_ToolButton, opt);
 }

@@ -263,7 +263,7 @@ public:
     WizProgressDialog* progressDialog() const { return m_progress; }
     WizIAPDialog* iapDialog();
 
-    QObject* getIWizExplorerApp();
+    QObject* Interface();
 
     void resetPermission(const QString& strKbGUID, const QString& strDocumentOwner);
     void viewDocument(const WIZDOCUMENTDATAEX& data, bool addToHistory);

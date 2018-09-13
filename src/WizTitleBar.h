@@ -123,17 +123,17 @@ private:
     WizEditorToolBar* m_editorBar;
 
     WizRoundCellButton* m_editBtn;
-    WizCellButton* m_separateBtn;
+    WizToolButton* m_separateBtn;
     WizToolButton* m_tagBtn;
 //    CellButton* m_emailBtn;
     WizToolButton* m_shareBtn;
-    WizCellButton* m_attachBtn;
+    WizToolButton* m_attachBtn;
 //    CellButton* m_historyBtn;
     WizToolButton* m_infoBtn;
 
     QMenu* m_shareMenu;
 
-    WizCellButton* m_commentsBtn;
+    WizToolButton* m_commentsBtn;
 
     WizCommentManager* m_commentManager;
 

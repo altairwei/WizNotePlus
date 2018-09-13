@@ -732,7 +732,7 @@ void WizNotePlusStyle::drawControl(ControlElement element, const QStyleOption *o
     case CE_ToolButtonLabel:
         if (const QStyleOptionToolButton *toolbutton
                 = qstyleoption_cast<const QStyleOptionToolButton *>(opt)) {
-            //
+            // get shift cor.
             QRect rect = toolbutton->rect;
             int shiftX = 0;
             int shiftY = 0;

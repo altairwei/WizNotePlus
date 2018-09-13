@@ -94,7 +94,8 @@ public:
     enum ButtonType {
         ImageOnly,
         WithCountInfo,
-        WithTextLabel
+        WithTextLabel,
+        WithMenu
     };
 
     enum State {
@@ -103,7 +104,7 @@ public:
         Badge
     };
 
-    explicit WizToolButton(QWidget* parent, ButtonType type = WithTextLabel);
+    explicit WizToolButton(QWidget* parent, int type = WithTextLabel);
     void setNormalIcon(const QIcon& icon, const QString& strTips);
     void setCheckedIcon(const QIcon& icon, const QString& strTips);
     void setBadgeIcon(const QIcon& icon, const QString& strTips);
@@ -114,10 +115,11 @@ public slots:
     void setCount(int count);
 
 protected:
-    ButtonType m_buttonType;
+    int m_buttonType;
     int m_state;
     int m_count;
     QSize m_iconSize;
+    QIcon m_icon;
     QIcon m_iconNomal;
     QIcon m_iconChecked;
     QIcon m_iconBadge;
@@ -129,6 +131,26 @@ protected:
     void paintEvent(QPaintEvent* event);
     QSize sizeHint() const;
     QString countInfo() const;
+};
+
+class WizEditButton : public WizToolButton
+{
+    Q_OBJECT
+
+private:
+    QPropertyAnimation* m_animation;
+    QString m_textNormal;
+    QString m_textChecked;
+    QString m_textBadge;
+
+public:
+    explicit WizEditButton(QWidget* parent);
+    //
+    QString text() const;
+    void setStatefulText(const QString& text, const QString& strTips, WizToolButton::State state);
+
+protected:
+    void paintEvent(QPaintEvent* event);
 };
 
 #endif // CORE_CELLBUTTON_H
