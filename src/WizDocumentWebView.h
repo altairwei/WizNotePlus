@@ -6,6 +6,7 @@
 #include <QPointer>
 #include <QMutex>
 #include <QColorDialog>
+#include <QProcess>
 #include <QMap>
 #include <QThread>
 #include <QWaitCondition>
@@ -168,6 +169,7 @@ public:
     void reloadNoteData(const WIZDOCUMENTDATA& data);
 
     bool isEditing() const { return m_currentEditorMode == modeEditor; }
+    bool isExternalEditing() const {return m_currentEditorMode == modeExternal;}
 
     void setNoteTitleInited(bool inited);
 
@@ -399,6 +401,9 @@ Q_SIGNALS:
     void clickingTodoCallBack(bool cancel, bool needCallAgain);
     //
     void titleEdited(WizDocumentView*, QString strTitle);
+    //
+    void externalEditorOpened();
+    void externalEditorClosed(int exitCode, QProcess::ExitStatus exitStatus);
 
 private slots:
     void on_insertCommentToNote_request(const QString& docGUID, const QString& comment);

@@ -385,7 +385,11 @@ void WizDocumentWebView::focusOutEvent(QFocusEvent *event)
 
 void WizDocumentWebView::contextMenuEvent(QContextMenuEvent *event)
 {
-    Q_EMIT showContextMenuRequest(mapToGlobal(event->pos()));
+    if (isEditing()) {
+        Q_EMIT showContextMenuRequest(mapToGlobal(event->pos()));
+    } else {
+        WizWebEngineView::contextMenuEvent(event);
+    }
 }
 
 void WizDocumentWebView::dragEnterEvent(QDragEnterEvent *event)
@@ -739,6 +743,15 @@ void WizDocumentWebView::startExternalEditor(QString cacheFileName, QString Name
     qInfo() << "Use external editor: " + Name << strCmd;
     QProcess *extEditorProcess = new QProcess(this);
     extEditorProcess->start(strCmd);
+    connect(extEditorProcess, &QProcess::started, [=]{
+        emit this->externalEditorOpened();
+        m_currentEditorMode = modeExternal;
+    });
+    connect(extEditorProcess, QOverload<int, QProcess::ExitStatus>::of(&QProcess::finished),
+    [=](int exitCode, QProcess::ExitStatus exitStatus){
+        emit this->externalEditorClosed(exitCode, exitStatus);
+        m_currentEditorMode = modeReader;
+    });
     // 设置文件监控器
     QFileSystemWatcher* extFileWatcher = new QFileSystemWatcher(this);
     extFileWatcher->addPath(cacheFileName);

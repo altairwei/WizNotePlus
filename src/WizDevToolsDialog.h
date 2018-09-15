@@ -18,10 +18,10 @@ class WizDevToolsDialog : public QWidget
 private:
     WizWebEngineView* m_web;
     virtual QSize sizeHint() const;
+
 public:
     WizDevToolsDialog(QWidget *parent = nullptr);
-    WizWebEngineView* getWeb();
-
+    WizWebEngineView* web();
 
 };
 

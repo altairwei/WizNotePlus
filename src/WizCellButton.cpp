@@ -214,18 +214,6 @@ int WizRoundCellButton::iconWidth() const
 {
     return WizSmartScaleUI(RoundCellButtonConst::iconHeight);
 
-//    switch (m_state) {
-//    case Normal:
-//        return 12;
-//        break;
-//    case Checked:
-//    case Badge:
-//        return 13;
-//        break;
-//    default:
-//        Q_ASSERT(0);
-//        break;
-//    }
 }
 
 int WizRoundCellButton::buttonWidth() const
@@ -233,8 +221,8 @@ int WizRoundCellButton::buttonWidth() const
     QFont f;
     f.setPixelSize(WizSmartScaleUI(RoundCellButtonConst::fontSize));
     QFontMetrics fm(f);
-    int width = RoundCellButtonConst::margin * 2.5 + RoundCellButtonConst::spacing
-            + iconWidth() + fm.width(text());
+    int width = static_cast<int>(RoundCellButtonConst::margin * 2.5 + RoundCellButtonConst::spacing
+            + iconWidth() + fm.width(text()));
     return width;
 }
 
@@ -366,7 +354,7 @@ void WizToolButton::setCheckedIcon(const QIcon& icon, const QString& strTips)
 void WizToolButton::setBadgeIcon(const QIcon& icon, const QString& strTips)
 {
     m_iconBadge = icon;
-    m_strTipsBagde = strTips;
+    m_strTipsBadge = strTips;
 
     setToolTip(strTips);
 }
@@ -449,9 +437,9 @@ void WizToolButton::paintEvent(QPaintEvent* event)
 // 6. 高度缩小，形状为药丸形
 
 WizEditButton::WizEditButton(QWidget* parent)
-    : WizToolButton(parent, WizToolButton::WithTextLabel | WizToolButton::WithMenu)
+    : WizToolButton(parent, WizToolButton::WithMenu)
 {
-    m_iconSize = QSize(14, 14);
+    m_iconSize = QSize(14, 12);
     setMaximumWidth(0);
     setCheckable(true);
     //
@@ -475,6 +463,50 @@ QString WizEditButton::text() const
     return "";
 }
 
+QString WizEditButton::tips() const
+{
+    switch (m_state) {
+
+    case Normal:
+        return m_strTipsNormal;
+    case Checked:
+        return m_strTipsChecked;
+    case Badge:
+        return m_strTipsBadge;
+    default:
+        Q_ASSERT(0);
+        break;
+    }
+    return "";
+}
+
+void WizEditButton::setStatefulIcon(const QIcon& ico, WizToolButton::State state)
+{
+
+    switch (state) {
+
+    case Normal:
+    {
+        QPixmap pm = ico.pixmap(m_iconSize, QIcon::Normal, QIcon::Off);
+        QIcon i = icon();
+        i.addPixmap(pm, QIcon::Normal, QIcon::Off);
+        setIcon(i);
+     }
+        break;
+    case Checked:
+    {
+        QPixmap pm = ico.pixmap(m_iconSize, QIcon::Normal, QIcon::On);
+        QIcon i = icon();
+        i.addPixmap(pm, QIcon::Normal, QIcon::On);
+        setIcon(i);
+    }
+        break;
+    case Badge:
+
+        break;
+    }
+}
+
 void WizEditButton::setStatefulText(const QString& text, const QString& strTips, WizToolButton::State state)
 {
     switch (state) {
@@ -489,32 +521,83 @@ void WizEditButton::setStatefulText(const QString& text, const QString& strTips,
         break;
     case Badge:
         m_textBadge = text;
-        m_strTipsBagde = strTips;
+        m_strTipsBadge = strTips;
         break;
     }
 }
 
-void WizEditButton::paintEvent(QPaintEvent* event)
+/**
+ * @brief Set button state programmatically.
+ * @param state
+ */
+void WizEditButton::setState(WizToolButton::State state)
 {
-    Q_UNUSED(event);
+    switch (state) {
+    case Normal:
+        setChecked(false);
+        setText(m_textNormal);
+        setToolTip(m_strTipsNormal);
+        m_state = Normal;
+        break;
+    case Checked:
+        setChecked(true);
+        setText(m_textChecked);
+        setToolTip(m_strTipsChecked);
+        m_state = Checked;
+        break;
+    case Badge:
+        setText(m_textBadge);
+        setToolTip(m_strTipsBadge);
+        m_state = Badge;
+        break;
+    }
+
+    applyAnimation();
+}
+
+int WizEditButton::iconWidth() const
+{
+    return 14;
+}
+
+int WizEditButton::buttonWidth() const
+{
+    QFont f;
+    f.setPixelSize(WizSmartScaleUI(RoundCellButtonConst::fontSize));
+    QFontMetrics fm(f);
+    int width = static_cast<int>(RoundCellButtonConst::margin * 2.5 + RoundCellButtonConst::spacing
+            + iconWidth() + fm.width(text()));
+    return width;
+}
+
+void WizEditButton::paintEvent(QPaintEvent*)
+{
+    m_state = isChecked() ? Checked : Normal;
+    setText(text());
+    setToolTip(tips());
     QStylePainter p(this);
     QStyleOptionToolButton opt;
     initStyleOption(&opt);
     opt.iconSize = m_iconSize;
     opt.toolButtonStyle = Qt::ToolButtonTextBesideIcon;
-    // label and tips rely on button states.
-    if (opt.state &  QStyle::State_Raised)
-    {
-        //Normal
-        opt.text = m_textNormal;
-        setToolTip(m_strTipsNormal);
-    }
-    else if (opt.state & QStyle::State_On)
-    {
-        //Checked
-        opt.text = m_textChecked;
-        setToolTip(m_strTipsChecked);
-    }
     //
     p.drawComplexControl(QStyle::CC_ToolButton, opt);
+}
+
+QSize WizEditButton::sizeHint() const
+{
+    //NTOE: 设置一个最大宽度，实际宽度由animation通过maxWidth进行控制
+    int maxWidth = 200;
+    return QSize(maxWidth, WizSmartScaleUI(RoundCellButtonConst::buttonHeight));
+}
+
+void WizEditButton::applyAnimation()
+{
+    m_animation->stop();
+    m_animation->setDuration(150);
+    m_animation->setStartValue(maximumWidth());
+    m_animation->setEndValue(buttonWidth());
+    m_animation->setEasingCurve(QEasingCurve::InCubic);
+
+    m_animation->start();
 }

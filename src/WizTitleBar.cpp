@@ -98,12 +98,14 @@ WizTitleBar::WizTitleBar(WizExplorerApp& app, QWidget *parent)
 
     // 编辑按钮
     QSize iconSize = QSize(Utils::WizStyleHelper::titleIconHeight(), Utils::WizStyleHelper::titleIconHeight());
-    m_editBtn = new WizRoundCellButton(this);
+    m_editBtn = new WizEditButton(this);
+    m_editBtn->setFixedHeight(nTitleHeight);
     QString shortcut = ::WizGetShortcut("EditNote", "Alt+1");
     m_editBtn->setShortcut(QKeySequence::fromString(shortcut));
-    m_editBtn->setNormalIcon(::WizLoadSkinIcon(strTheme, "document_lock", iconSize), tr("Edit"), tr("Switch to Editing View  %1%2").arg(getOptionKey()).arg(1));
-    m_editBtn->setCheckedIcon(::WizLoadSkinIcon(strTheme, "document_unlock", iconSize), tr("Read") , tr("Switch to Reading View  %1%2").arg(getOptionKey()).arg(1));
-    m_editBtn->setBadgeIcon(::WizLoadSkinIcon(strTheme, "document_unlock", iconSize), tr("Save & Read"), tr("Save and switch to Reading View  %1%2").arg(getOptionKey()).arg(1));
+    m_editBtn->setStatefulIcon(::WizLoadSkinIcon(strTheme, "document_lock", iconSize), WizToolButton::Normal);
+    m_editBtn->setStatefulText(tr("Edit"), tr("Switch to Editing View  %1%2").arg(getOptionKey()).arg(1), WizToolButton::Normal);
+    m_editBtn->setStatefulIcon(::WizLoadSkinIcon(strTheme, "document_unlock", iconSize), WizToolButton::Checked);
+    m_editBtn->setStatefulText(tr("Read") , tr("Switch to Reading View  %1%2").arg(getOptionKey()).arg(1), WizToolButton::Checked);
     // 准备外置编辑器菜单
     QMenu* extEditorMenu = createEditorMenu();
     m_editBtn->setMenu(extEditorMenu);
@@ -485,7 +487,7 @@ void WizTitleBar::updateInfo(const WIZDOCUMENTDATA& doc)
 void WizTitleBar::setEditorMode(WizEditorMode editorMode)
 {
     m_editTitle->setReadOnly(editorMode == modeReader);
-    m_editBtn->setState(editorMode == modeEditor ? WizCellButton::Checked : WizCellButton::Normal);
+    m_editBtn->setState(editorMode == modeEditor ? WizEditButton::Checked : WizEditButton::Normal);
     //
     if (editorMode == modeReader)
     {
@@ -506,9 +508,9 @@ void WizTitleBar::updateEditButton(WizEditorMode editorMode)
 {
     m_editor->isModified([=](bool modified) {
         if (modified){
-            m_editBtn->setState(WizCellButton::Badge);
+            m_editBtn->setState(WizEditButton::Badge);
         } else {
-            m_editBtn->setState(editorMode == modeEditor ? WizCellButton::Checked : WizCellButton::Normal);
+            m_editBtn->setState(editorMode == modeEditor ? WizEditButton::Checked : WizEditButton::Normal);
         }
     });
 }

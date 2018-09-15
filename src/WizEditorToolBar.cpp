@@ -1592,7 +1592,10 @@ QWebEnginePage::WebAction menuText2WebAction(QWebEnginePage* page, QString text)
     return it->second;
 }
 
-
+/**
+ * @brief 笔记编辑器视图下网页右键弹出菜单
+ * @param pos
+ */
 void WizEditorToolBar::on_delegate_showContextMenuRequest(const QPoint& pos)
 {
     if (!m_editor)
@@ -1601,7 +1604,7 @@ void WizEditorToolBar::on_delegate_showContextMenuRequest(const QPoint& pos)
     QWebEnginePage* page = m_editor->page();
     if (!page)
         return;
-    //
+    // create default context menu
     QMenu *menu = page->createStandardContextMenu();
     if (!menu)
         return;
@@ -1610,7 +1613,8 @@ void WizEditorToolBar::on_delegate_showContextMenuRequest(const QPoint& pos)
     //
     bool hasPasteMenu = false;
     bool hasLinkMenu = false;
-    //
+    // get all actions of menu
+    // FIXME: 不要使用这种遍历方法，速度有点慢，参考Qt浏览器实现示例
     QList<QAction*> actions = menu->actions();
     for (QAction* action : actions)
     {

@@ -92,10 +92,10 @@ class WizToolButton : public QToolButton
 
 public:
     enum ButtonType {
-        ImageOnly,
-        WithCountInfo,
-        WithTextLabel,
-        WithMenu
+        ImageOnly = 0x00000000,
+        WithCountInfo = 0x00000001,
+        WithTextLabel = 0x00000002,
+        WithMenu = 0x00000004
     };
 
     enum State {
@@ -125,10 +125,10 @@ protected:
     QIcon m_iconBadge;
     QString m_strTipsNormal;
     QString m_strTipsChecked;
-    QString m_strTipsBagde;
+    QString m_strTipsBadge;
 
 protected:
-    void paintEvent(QPaintEvent* event);
+    virtual void paintEvent(QPaintEvent* event);
     QSize sizeHint() const;
     QString countInfo() const;
 };
@@ -146,11 +146,19 @@ private:
 public:
     explicit WizEditButton(QWidget* parent);
     //
-    QString text() const;
+    void setStatefulIcon(const QIcon& icon, WizToolButton::State state);
     void setStatefulText(const QString& text, const QString& strTips, WizToolButton::State state);
+    void setState(WizToolButton::State state);
+
+    QString text() const;
+    QString tips()const;
+    int iconWidth() const;
+    int buttonWidth() const;
 
 protected:
-    void paintEvent(QPaintEvent* event);
+    void paintEvent(QPaintEvent* event) override;
+    QSize sizeHint() const override;
+    void applyAnimation();
 };
 
 #endif // CORE_CELLBUTTON_H

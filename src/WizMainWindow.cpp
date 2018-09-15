@@ -103,7 +103,6 @@
 
 #include "share/jsoncpp/json/json.h"
 
-#include "WizDevToolsDialog.h"
 #include "WizCellButton.h"
 #include "interface/IWizExplorerApp.h"
 
@@ -128,13 +127,13 @@ WizMainWindow::WizMainWindow(WizDatabaseManager& dbMgr, QWidget *parent)
     , m_userVerifyDialog(nullptr)
     , m_iapDialog(nullptr)
     , m_templateIAPDialog(nullptr)
-#ifndef Q_OS_MAC
-    , m_labelNotice(NULL)
-    , m_optionsAction(NULL)
-#endif
     , m_menuBar(nullptr)
     , m_dockMenu(nullptr)
     , m_windowListMenu(nullptr)
+#ifndef Q_OS_MAC
+    , m_labelNotice(nullptr)
+    , m_optionsAction(nullptr)
+#endif
     , m_newNoteExtraMenu(nullptr)
 #ifdef Q_OS_MAC
     #ifdef USECOCOATOOLBAR
@@ -180,29 +179,30 @@ WizMainWindow::WizMainWindow(WizDatabaseManager& dbMgr, QWidget *parent)
     int ret = WizToolsSmartCompare("H", "d");
     qDebug() << ret;
 #endif
-    // 为什么不新建一个APP类把WizMainWindow的功能拆分呢？
+    //TODO: 为什么不新建一个APP类把WizMainWindow的功能拆分呢？
     WizGlobal::setMainWindow(this);
-    WizKMSyncThread::setQuickThread(m_syncQuick);
-    //
+    windowInstance = this;
     qRegisterMetaType<WIZGROUPDATA>("WIZGROUPDATA");
     //
-#ifndef Q_OS_MAC
+    //WizKMSyncThread::setQuickThread(m_syncQuick);
+    initSyncQuick();
+    //
+    initQuitHandler();
+//#ifndef Q_OS_MAC
     // 将标题工具栏添加到布局
-    clientLayout()->addWidget(m_toolBar);
-#ifdef Q_OS_LINUX
+//    clientLayout()->addWidget(m_toolBar);
+//#ifdef Q_OS_LINUX
     // 根据是否使用系统标题栏样式来选择窗口样式
-    setWindowStyleForLinux(m_useSystemBasedStyle);
-#endif
+//    setWindowStyleForLinux(m_useSystemBasedStyle);
+//#endif
     // 当最后一个窗口关闭时，触发QApplication的退出
-    connect(qApp, SIGNAL(lastWindowClosed()), qApp, SLOT(quit())); // Qt bug: Qt5 bug
-#endif
-    // 设置主窗口实例
-    windowInstance = this;
+//    connect(qApp, SIGNAL(lastWindowClosed()), qApp, SLOT(quit())); // Qt bug: Qt5 bug
+//#endif
     // 当QApplication将要退出时，触发清理工作
-    connect(qApp, SIGNAL(aboutToQuit()), SLOT(on_application_aboutToQuit()));
-    // 在QApplication上安装事件过滤器this->eventFilter()创建的事件过滤器
+//    connect(qApp, SIGNAL(aboutToQuit()), SLOT(on_application_aboutToQuit()));
     // 这种行为会严重降低整个应用程序的事件分发效率
-    qApp->installEventFilter(this);
+//    qApp->installEventFilter(this);
+/*
 #ifdef Q_OS_MAC
     installEventFilter(this);
 
@@ -213,16 +213,20 @@ WizMainWindow::WizMainWindow(WizDatabaseManager& dbMgr, QWidget *parent)
     }
 
 #endif
+*/
 
     // 多线程设置
     //-------------------------------------------------------------------
 
     // search and full text search
     // 开启搜索线程
-    m_searcher->start(QThread::HighPriority);
+    //m_searcher->start(QThread::HighPriority);
+    initSearcher();
 
     // 同步线程
     // 设置同步间隔时间
+    initSyncFull();
+    /*
     m_syncFull->setFullSyncInterval(userSettings().syncInterval());
     connect(m_syncFull, SIGNAL(processLog(const QString&)), SLOT(on_syncProcessLog(const QString&)));
     connect(m_syncFull, SIGNAL(promptMessageRequest(int, const QString&, const QString&)),
@@ -234,18 +238,20 @@ WizMainWindow::WizMainWindow(WizDatabaseManager& dbMgr, QWidget *parent)
             SLOT(on_bubbleNotification_request(const QVariant&)));
     connect(m_syncFull, SIGNAL(syncStarted(bool)), SLOT(on_syncStarted(bool)));
     connect(m_syncFull, SIGNAL(syncFinished(int, bool, QString, bool)), SLOT(on_syncDone(int, bool, QString, bool)));
-
-    connect(m_syncQuick, SIGNAL(promptFreeServiceExpr(WIZGROUPDATA)), SLOT(on_promptFreeServiceExpr(WIZGROUPDATA)));
-    connect(m_syncQuick, SIGNAL(promptVipServiceExpr(WIZGROUPDATA)), SLOT(on_promptVipServiceExpr(WIZGROUPDATA)));
+    */
+    //connect(m_syncQuick, SIGNAL(promptFreeServiceExpr(WIZGROUPDATA)), SLOT(on_promptFreeServiceExpr(WIZGROUPDATA)));
+    //connect(m_syncQuick, SIGNAL(promptVipServiceExpr(WIZGROUPDATA)), SLOT(on_promptVipServiceExpr(WIZGROUPDATA)));
     //
     // 如果没有禁止自动同步，则在打开软件后立即同步一次
+    /*
     if (m_settings->syncInterval() > 0)
     {
         QTimer::singleShot(15 * 1000, m_syncFull, SLOT(syncAfterStart()));
     }
+    */
 
-    connect(m_searcher, SIGNAL(searchProcess(const QString&, const CWizDocumentDataArray&, bool, bool)),
-        SLOT(on_searchProcess(const QString&, const CWizDocumentDataArray&, bool, bool)));
+    //connect(m_searcher, SIGNAL(searchProcess(const QString&, const CWizDocumentDataArray&, bool, bool)),
+    //    SLOT(on_searchProcess(const QString&, const CWizDocumentDataArray&, bool, bool)));
 
     connect(m_documents, SIGNAL(addDocumentToShortcutsRequest(WIZDOCUMENTDATA)),
             m_category, SLOT(addDocumentToShortcuts(WIZDOCUMENTDATA)));
@@ -294,8 +300,8 @@ WizMainWindow::WizMainWindow(WizDatabaseManager& dbMgr, QWidget *parent)
     }
 #endif
 
-    initToolBar(); // 主菜单工具栏上的组件<用户信息, 搜索栏...>
-    initClient(); // 主界面容器组件<文件夹树, 笔记列表...>
+    initToolBar(); // 主菜单工具栏上的组件: <用户信息, 搜索栏...>
+    initClient(); // 主界面容器组件: <文件夹树, 笔记列表, 多标签浏览...>
 
     setWindowTitle(tr("WizNote"));
 
@@ -1064,6 +1070,67 @@ void WizMainWindow::restoreStatus()
 
     restoreGeometry(geometry);
     m_splitter->restoreState(splitterState);
+}
+
+void WizMainWindow::initQuitHandler()
+{
+#ifndef Q_OS_MAC
+    // 当最后一个窗口关闭时，触发QApplication的退出
+    connect(qApp, SIGNAL(lastWindowClosed()), qApp, SLOT(quit())); // Qt bug: Qt5 bug
+#endif
+    // 当QApplication将要退出时，触发清理工作
+    connect(qApp, SIGNAL(aboutToQuit()), SLOT(on_application_aboutToQuit()));
+    // 这种行为会严重降低整个应用程序的事件分发效率
+    qApp->installEventFilter(this);
+
+#ifdef Q_OS_MAC
+    installEventFilter(this);
+
+    if (systemWidgetBlurAvailable())
+    {
+        setAutoFillBackground(false);
+        setAttribute(Qt::WA_TranslucentBackground, true);
+    }
+
+#endif
+}
+
+/**
+ * @brief Init searcher thread when application stat.
+ */
+void WizMainWindow::initSearcher()
+{
+    m_searcher->start(QThread::HighPriority);
+    connect(m_searcher, SIGNAL(searchProcess(const QString&, const CWizDocumentDataArray&, bool, bool)),
+        SLOT(on_searchProcess(const QString&, const CWizDocumentDataArray&, bool, bool)));
+}
+
+void WizMainWindow::initSyncFull()
+{
+    m_syncFull->setFullSyncInterval(userSettings().syncInterval());
+    connect(m_syncFull, SIGNAL(processLog(const QString&)), SLOT(on_syncProcessLog(const QString&)));
+    connect(m_syncFull, SIGNAL(promptMessageRequest(int, const QString&, const QString&)),
+            SLOT(on_promptMessage_request(int, QString, QString)));
+    connect(m_syncFull, SIGNAL(promptFreeServiceExpr(WIZGROUPDATA)), SLOT(on_promptFreeServiceExpr(WIZGROUPDATA)));
+    connect(m_syncFull, SIGNAL(promptVipServiceExpr(WIZGROUPDATA)), SLOT(on_promptVipServiceExpr(WIZGROUPDATA)));
+
+    connect(m_syncFull, SIGNAL(bubbleNotificationRequest(const QVariant&)),
+            SLOT(on_bubbleNotification_request(const QVariant&)));
+    connect(m_syncFull, SIGNAL(syncStarted(bool)), SLOT(on_syncStarted(bool)));
+    connect(m_syncFull, SIGNAL(syncFinished(int, bool, QString, bool)), SLOT(on_syncDone(int, bool, QString, bool)));
+    // 如果没有禁止自动同步，则在打开软件后立即同步一次
+    if (m_settings->syncInterval() > 0)
+    {
+        QTimer::singleShot(15 * 1000, m_syncFull, SLOT(syncAfterStart()));
+    }
+}
+
+void WizMainWindow::initSyncQuick()
+{
+    WizKMSyncThread::setQuickThread(m_syncQuick);
+    //
+    connect(m_syncQuick, SIGNAL(promptFreeServiceExpr(WIZGROUPDATA)), SLOT(on_promptFreeServiceExpr(WIZGROUPDATA)));
+    connect(m_syncQuick, SIGNAL(promptVipServiceExpr(WIZGROUPDATA)), SLOT(on_promptVipServiceExpr(WIZGROUPDATA)));
 }
 
 /**
@@ -1949,6 +2016,16 @@ void WizMainWindow::initMenuList()
  */
 void WizMainWindow::initToolBar()
 {
+
+#ifndef Q_OS_MAC
+    // 将标题工具栏添加到布局
+    clientLayout()->addWidget(m_toolBar);
+#ifdef Q_OS_LINUX
+    // 根据是否使用系统标题栏样式来选择窗口样式
+    setWindowStyleForLinux(m_useSystemBasedStyle);
+#endif
+#endif
+
 #ifdef Q_OS_MAC
     m_toolBar->showInWindow(this);
 
@@ -2126,8 +2203,11 @@ void WizMainWindow::initClient()
     layoutDocument->setContentsMargins(0, 0, 0, 0);
     layoutDocument->setSpacing(0);
     documentPanel->setLayout(layoutDocument);
+    // WizMainTab
     layoutDocument->addWidget(m_mainTab); // 将主标签栏放在文档板布局上
+    connect(m_mainTab, SIGNAL(currentChanged(int)), SLOT(on_mainTabWidget_currentChanged(int)));
     m_mainTab->createTab(QUrl::fromUserInput("www.wiz.cn")); // 默认打开Wiz主页
+    //
     layoutDocument->addWidget(m_documentSelection);
     m_documentSelection->hide(); // 这个是什么东西？
     // append after client
@@ -2155,16 +2235,7 @@ void WizMainWindow::initClient()
     setMinimumWidth(isHighPix ? 785 : 985);
     m_category->setMinimumWidth(isHighPix ? 76 : 165);
     m_docListContainer->setMinimumWidth(isHighPix ? 113 : 244);
-    //FIXME: 不应该在此处进行初始化，因为不是唯一文档视图
-    /*
-    m_doc->web()->setInSeperateWindow(false);
-    m_doc->commentWidget()->setMinimumWidth(isHighPix ? 170 : 195);
-    m_doc->web()->setMinimumWidth(576);
-
-    m_doc->setStyleSheet(QString("QLineEdit{border:1px solid #DDDDDD; border-radius:2px;}"
-                                 "QToolButton {border:0px; padding:0px; border-radius:0px;}"));
-    m_doc->titleBar()->setStyleSheet(QString("QLineEdit{padding:0px; padding-left:-2px; padding-bottom:1px; border:0px; border-radius:0px;}"));
-    */
+    //
     m_msgListWidget->hide();
     //
     connect(m_splitter.get(), SIGNAL(splitterMoved(int, int)), SLOT(on_client_splitterMoved(int, int)));
@@ -3502,20 +3573,10 @@ void WizMainWindow::on_actionGoForward_triggered()
  *  重现上一次的状态。
  */
 void WizMainWindow::on_actionOpenDevTools_triggered() {
-    WizDocumentView* docView =  qobject_cast<WizDocumentView*>(m_mainTab->currentWidget());
     WizWebEngineView* webView = m_mainTab->currentWebView();
-    if (!webView) return;
-    WizDevToolsDialog* devToolsWindow = new WizDevToolsDialog();
-    devToolsWindow->setAttribute(Qt::WA_DeleteOnClose); // 由于没有制定parent所以设置该属性以防止内存泄露
-    // 设置外观
-    QString title = docView ? docView->note().strTitle : webView->title();
-    devToolsWindow->setWindowTitle("DevTools - " + title);
     //
-    WizWebEnginePage* devToolsWebPage = devToolsWindow->getWeb()->getPage();
-    WizWebEnginePage* webPage = webView->getPage();
-    webPage->setDevToolsPage(devToolsWebPage);
-    //
-    devToolsWindow->show();
+    if (webView)
+        webView->openDevTools();
 }
 
 void WizMainWindow::on_category_itemSelectionChanged()
@@ -3753,9 +3814,25 @@ void WizMainWindow::resetPermission(const QString& strKbGUID, const QString& str
     }
 }
 
-void WizMainWindow::setCurrentDocumentView(WizDocumentView* newDocView)
+void WizMainWindow::setCurrentDocumentView(WizDocumentView* docView)
 {
-    m_doc = newDocView;
+    m_doc = docView;
+}
+
+void WizMainWindow::on_mainTabWidget_currentChanged(int pageIndex)
+{
+    WizDocumentView* docView = qobject_cast<WizDocumentView*>(m_mainTab->widget(pageIndex));
+    if ( docView ) {
+        setCurrentDocumentView(docView);
+        // check if some actions should get enabled.
+        m_actions->actionFromName(WIZACTION_GLOBAL_SAVE_AS_MARKDOWN)->setEnabled(WizIsMarkdownNote(docView->note()));
+        m_actions->actionFromName(WIZACTION_GLOBAL_SAVE_AS_PDF)->setEnabled(true);
+        m_actions->actionFromName(WIZACTION_GLOBAL_SAVE_AS_HTML)->setEnabled(true);
+    } else {
+        m_actions->actionFromName(WIZACTION_GLOBAL_SAVE_AS_MARKDOWN)->setEnabled(false);
+        m_actions->actionFromName(WIZACTION_GLOBAL_SAVE_AS_PDF)->setEnabled(false);
+        m_actions->actionFromName(WIZACTION_GLOBAL_SAVE_AS_HTML)->setEnabled(false);
+    }
 }
 
 WizDocumentView* WizMainWindow::currentDocumentView()

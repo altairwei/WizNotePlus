@@ -195,8 +195,8 @@ private:
     WizMessageListTitleBar* m_msgListTitleBar;
 
     WizDocumentSelectionView* m_documentSelection;
-    WizDocumentView* m_doc; /**< 用于储存当前活动文档视图 */
-    WizMainTabWidget* m_mainTab; /**< 主标签部件，文档视图储存在内部 */
+    WizDocumentView* m_doc; /**< 用于储存多标签浏览器里当前活动笔记文档视图。 */
+    WizMainTabWidget* m_mainTab; /**< 主标签部件，笔记文档视图储存在内部 */
     std::shared_ptr<WizSplitter> m_splitter;
     QWidget* m_docListContainer;
     WizSingleDocumentViewDelegate* m_singleViewDelegate;
@@ -226,8 +226,11 @@ private:
 
     IWizExplorerApp* m_IWizExplorerApp;
 private:
+    void initQuitHandler();
+    void initSearcher();
+    void initSyncFull();
+    void initSyncQuick();
     void initActions();
-
     void initToolBar();
     void initClient();
     //
@@ -468,6 +471,9 @@ public Q_SLOTS:
     void onAttachmentModified(QString strKbGUID, QString strGUID,QString strFileName,
                               QString strMD5, QDateTime dtLastModified);
 
+    void setCurrentDocumentView(WizDocumentView* newDocView);
+    void on_mainTabWidget_currentChanged(int pageIndex);
+
 public:
     // WizExplorerApp pointer
     virtual QWidget* mainWindow();
@@ -534,8 +540,7 @@ private:
 
     //
     WizDocumentWebView* getActiveEditor();
-    WizDocumentView* createDocumentView();
-    void setCurrentDocumentView(WizDocumentView* newDocView);
+    WizDocumentView* createDocumentView();    
     WizDocumentView* currentDocumentView();
     void waitForAllDocumentViewDone();
     void processAllDocumentViews(std::function<void(WizDocumentView*)> callback);

@@ -30,6 +30,7 @@ class WizNotifyBar;
 class WizEditorToolBar;
 class WizCellButton;
 class WizToolButton;
+class WizEditButton;
 class WizRoundCellButton;
 class WizTagBar;
 
@@ -122,7 +123,7 @@ private:
     WizNotifyBar* m_notifyBar;
     WizEditorToolBar* m_editorBar;
 
-    WizRoundCellButton* m_editBtn;
+    WizEditButton* m_editBtn;
     WizToolButton* m_separateBtn;
     WizToolButton* m_tagBtn;
 //    CellButton* m_emailBtn;

@@ -217,6 +217,7 @@ private: // noncopyable
 typedef std::deque<CString> CWizStdStringArray;
 
 int WizSmartScaleUI(int spec);
+int WizSmartScaleUIEx(int spec);
 qreal GetDevicePixelRatio();
 
 struct WizWindowInfo

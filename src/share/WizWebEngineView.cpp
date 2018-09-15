@@ -1,6 +1,8 @@
 ﻿#include <QWebEngineView>
 #include <QWebSocketServer>
 #include <QWebChannel>
+#include <QDesktopWidget>
+#include <QStyle>
 #include "WizWebEngineView.h"
 #include "WizMisc.h"
 #include "utils/WizPathResolve.h"
@@ -13,6 +15,9 @@
 #include <QTimer>
 #include <QMimeData>
 #endif
+
+#include "WizDevToolsDialog.h"
+#include "WizDocumentView.h"
 
 class WizInvisibleWebEngineView : public QWebEngineView
 {
@@ -65,9 +70,7 @@ WizWebEnginePage::WizWebEnginePage(QObject* parent)
     : QWebEnginePage(parent)
     , m_continueNavigate(true)
 {
-    // Qt 5.11 才引入这个特性
-    //QWebEnginePage::setInspectedPage(this);
-    //QWebEnginePage::setDevToolsPage(this);
+
 }
 
 void WizWebEnginePage::javaScriptConsoleMessage(JavaScriptConsoleMessageLevel level, const QString& message, int lineNumber, const QString& sourceID)
@@ -258,9 +261,34 @@ void WizWebEngineView::openLinkInDefaultBrowser(QUrl url)
     QDesktopServices::openUrl(url);
 }
 
-/** 下面是一个含有两个参数的函数的注释说明（简述）
- *
- *   @return 获得指向WebPage的指针
+void WizWebEngineView::openDevTools()
+{
+    if (!m_devToolsWindow)
+    {
+        m_devToolsWindow = new WizDevToolsDialog(this);
+        // 设置外观
+        WizDocumentView* docView =  qobject_cast<WizDocumentView*>(this);
+        QString title = docView ? docView->note().strTitle : this->title();
+        m_devToolsWindow->setWindowTitle("DevTools - " + title);
+        //
+        m_devToolsWindow->web()->page()->setInspectedPage(this->page());
+    }
+    // align on center of the screen
+    m_devToolsWindow->setGeometry(
+        QStyle::alignedRect(
+            Qt::LeftToRight,
+            Qt::AlignCenter,
+            QSize(800, 500),
+            qApp->desktop()->availableGeometry()
+        )
+    );
+    //
+    m_devToolsWindow->show();
+}
+
+/**
+ * @brief WizWebEngineView::getPage
+ * @return
  */
 WizWebEnginePage* WizWebEngineView::getPage() {
     return qobject_cast<WizWebEnginePage*>(page());

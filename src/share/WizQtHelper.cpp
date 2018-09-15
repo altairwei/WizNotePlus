@@ -416,6 +416,7 @@ int WizSmartScaleUI(int spec)
 #ifdef Q_OS_MAC
     return spec;
 #else
+    /*
     static double rate = 0;
 
     if (0 == static_cast<int>(rate))
@@ -462,10 +463,18 @@ int WizSmartScaleUI(int spec)
         }
     }
     //
-    //qreal rate = QGuiApplication::screens().first()->devicePixelRatio();
+    */
+    int rate = 1;
+    //
     return int(spec * rate);
     //
 #endif
+}
+
+int WizSmartScaleUIEx(int spec)
+{
+    qreal rate = GetDevicePixelRatio();
+    return static_cast<int>(spec * rate);
 }
 
 /**
