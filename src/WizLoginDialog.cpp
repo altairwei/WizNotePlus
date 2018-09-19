@@ -183,7 +183,7 @@ WizLoginDialog::WizLoginDialog(const QString &strLocale, const QList<WizLocalUse
 
     loadDefaultUser();
     //
-#ifndef Q_OS_MAC
+//#ifndef Q_OS_MAC
     //
     QSize totalSizeHint = layout()->totalSizeHint();
     //
@@ -205,7 +205,7 @@ WizLoginDialog::WizLoginDialog(const QString &strLocale, const QList<WizLocalUse
         ui->btn_singUp->setMinimumSize(sz);
 
     }, 300, 30000, [=]{});
-#endif
+//#endif
     //
     initSateMachine();
 }

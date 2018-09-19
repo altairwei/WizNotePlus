@@ -67,10 +67,9 @@ public:
     static QWindow *qt_getWindow(const QWidget *widget);
     static QColor mergedColors(const QColor &colorA, const QColor &colorB, int factor = 50);
     static QLinearGradient qt_fusion_gradient(const QRect &rect, const QBrush &baseColor, Direction direction = TopDown);
-    bool isMacSystemPalette(const QPalette &pal) const;
+
     QColor outline(const QPalette &pal) const;
-    QColor highlight(const QPalette &pal) const;
-    QColor highlightedOutline(const QPalette &pal) const;
+
     QColor buttonColor(const QPalette &pal) const;
     QColor tabFrameColor(const QPalette &pal) const;
     QColor innerContrastLine() const;
@@ -79,8 +78,6 @@ public:
                                                 const QWidget *w = nullptr) const override;
     void drawComplexControl(ComplexControl cc, const QStyleOptionComplex *opt,
                                           QPainter *p, const QWidget *widget) const override;
-    void drawPrimitive(PrimitiveElement elem, const QStyleOption *option,
-                       QPainter *painter, const QWidget *widget = nullptr) const override;
 
 };
 

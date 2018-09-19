@@ -140,7 +140,7 @@ int mainCore(int argc, char *argv[])
 #endif
 
 #ifdef Q_OS_MAC
-    QApplication::setAttribute(Qt::AA_EnableHighDpiScaling);
+    //QApplication::setAttribute(Qt::AA_EnableHighDpiScaling);
 #endif
 
 #ifdef Q_OS_WIN
@@ -349,8 +349,6 @@ int mainCore(int argc, char *argv[])
         WizLoginDialog loginDialog(strLocale, localUsers);
         if (QDialog::Accepted != loginDialog.exec())
             return 0;
-
-        qDebug() << "deafult user id : " << strUserGuid << " login dailog user id : " << loginDialog.loginUserGuid();
 
         // 如果默认UserId为空，或者登录ID不等于默认UserId
         if (strUserId.isEmpty() || loginDialog.loginUserGuid() != strUserGuid)

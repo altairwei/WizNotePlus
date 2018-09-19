@@ -616,7 +616,7 @@ void WizTitleBar::onEditorOptionSelected()
 {
     WizExternalEditorSettingDialog* editorSetting = new WizExternalEditorSettingDialog(this);
     editorSetting->setAttribute(Qt::WA_DeleteOnClose);
-    editorSetting->show();
+    editorSetting->exec();
 }
 
 /**

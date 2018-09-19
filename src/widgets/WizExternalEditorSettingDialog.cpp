@@ -115,7 +115,8 @@ void WizExternalEditorInfoDialog::accept()
 void WizExternalEditorInfoDialog::setSelectedProgramFile()
 {
     QString programFilePath = QFileDialog::getOpenFileName(this,
-                                    tr("Select a program file."), QString("/usr/bin"));
+                                    tr("Select a program file."), QString("/home"),
+                                                           "", 0, 0);
     m_editProgram->setText(programFilePath);
 
 }
@@ -204,7 +205,7 @@ void WizExternalEditorSettingDialog::on_btnAddEditor_clicked()
     //
     connect(infoDialog, SIGNAL(dataAdded(SettingMap&)), this, SLOT(addEditor(SettingMap&)));
     //
-    infoDialog->show();
+    infoDialog->exec();
 }
 
 void WizExternalEditorSettingDialog::modifyRowContent(int row, SettingMap& data)
@@ -218,7 +219,8 @@ void WizExternalEditorSettingDialog::modifyRowContent(int row, SettingMap& data)
 
 void WizExternalEditorSettingDialog::addEditor(SettingMap& data)
 {
-    int rowLength = m_extEditorTable->rowCount();
+    int rowLength = 0;
+    rowLength = m_extEditorTable->rowCount();
     m_extEditorTable->setRowCount(rowLength + 1);
     //
     modifyRowContent(rowLength, data);
@@ -256,7 +258,7 @@ void WizExternalEditorSettingDialog::on_btnEditSetting_clicked()
     //
     connect(infoDialog, SIGNAL(dataEdited(int, SettingMap&)), this, SLOT(modifyEditor(int, SettingMap&)));
     //
-    infoDialog->show();
+    infoDialog->exec();
 
 }
 
