@@ -23,6 +23,7 @@ class QLabel;
 class QSystemTrayIcon;
 class QComboBox;
 class QActionGroup;
+class QFileSystemWatcher;
 struct TemplateData;
 
 class WizProgressDialog;
@@ -119,6 +120,8 @@ public:
     WizDocumentView* docView();
     //
     void trySaveCurrentNote(std::function<void(const QVariant &)> callback);
+    //
+    void startExternalEditor(QString cacheFileName, QString Name, QString ProgramFile, QString Arguments, int TextEditor, int UTF8Encoding, const WIZDOCUMENTDATAEX& noteData);
 
 protected:
     bool eventFilter(QObject* watched, QEvent* event);
@@ -225,6 +228,10 @@ private:
     WIZDOCUMENTDATA m_documentForEditing;
 
     IWizExplorerApp* m_IWizExplorerApp;
+    //
+    QFileSystemWatcher* m_extFileWatcher;
+    QMap<QString, WIZDOCUMENTDATAEX> m_watchedFileData;
+
 private:
     void initQuitHandler();
     void initSearcher();
@@ -247,6 +254,8 @@ private:
     QWidget* createMessageListView();
     //
     void promptServiceExpr(bool free, WIZGROUPDATA group);
+    //
+    void saveWatchedFile(const QString& path, int TextEditor, int UTF8Encoding);
 
 public:
     // CWizDocument passthrough methods
@@ -266,7 +275,7 @@ public:
     WizProgressDialog* progressDialog() const { return m_progress; }
     WizIAPDialog* iapDialog();
 
-    QObject* Interface();
+    QObject* interface();
 
     void resetPermission(const QString& strKbGUID, const QString& strDocumentOwner);
     void viewDocument(const WIZDOCUMENTDATAEX& data, bool addToHistory);

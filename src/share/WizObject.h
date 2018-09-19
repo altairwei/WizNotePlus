@@ -797,8 +797,7 @@ enum WizDocumentViewMode
 enum WizEditorMode
 {
     modeEditor,
-    modeReader,
-    modeExternal
+    modeReader
 };
 
 

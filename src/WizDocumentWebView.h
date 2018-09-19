@@ -169,7 +169,7 @@ public:
     void reloadNoteData(const WIZDOCUMENTDATA& data);
 
     bool isEditing() const { return m_currentEditorMode == modeEditor; }
-    bool isExternalEditing() const {return m_currentEditorMode == modeExternal;}
+    /*bool isExternalEditing() const {return m_currentEditorMode == modeExternal;}*/
 
     void setNoteTitleInited(bool inited);
 
@@ -180,7 +180,7 @@ public:
 
     void viewDocumentInExternalEditor(QString& Name, QString& ProgramFile,
                                         QString& Arguments, int TextEditor, int UTF8Encoding);
-    void startExternalEditor(QString cacheFileName, QString Name, QString ProgramFile, QString Arguments, int TextEditor, int UTF8Encoding);
+    //void startExternalEditor(QString cacheFileName, QString Name, QString ProgramFile, QString Arguments, int TextEditor, int UTF8Encoding);
     void queryHtmlNodeText(QString& strHtml, QString strSelector);
 
     // initialize editor style before render, only invoke once.
@@ -329,8 +329,7 @@ public Q_SLOTS:
 
     void on_insertCodeHtml_requset(QString strOldHtml);
 
-    void onWatchedFileChanged(const QString& path, int TextEditor, int UTF8Encoding);
-
+    //void onWatchedFileChanged(const QString& path, int TextEditor, int UTF8Encoding);
     /* editor API */
 
     // font

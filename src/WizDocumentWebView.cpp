@@ -181,7 +181,7 @@ WizDocumentWebView::WizDocumentWebView(WizExplorerApp& app, QWidget* parent)
     // 向页面JS脚本空间注册对象
     //addToJavaScriptWindowObject("WizExplorerApp", m_app.object());
     WizMainWindow* mainWindow = qobject_cast<WizMainWindow*>(m_app.mainWindow());
-    addToJavaScriptWindowObject("WizExplorerApp", mainWindow->Interface());
+    addToJavaScriptWindowObject("WizExplorerApp", mainWindow->interface());
     //addToJavaScriptWindowObject("WizQtEditor", this);
     addToJavaScriptWindowObject("WizQtEditor", m_htmlEditorApp);
 
@@ -713,7 +713,7 @@ void WizDocumentWebView::viewDocumentInExternalEditor(QString &Name, QString &Pr
             noteTempDir.remove(cacheFileName);
         //
         saveAsPlainText(cacheFileName, [=](QString fileName){
-            startExternalEditor(fileName, Name, ProgramFile, Arguments, TextEditor, UTF8Encoding);
+            WizGlobal::mainWindow()->startExternalEditor(fileName, Name, ProgramFile, Arguments, TextEditor, UTF8Encoding, view()->note());
         });
         return;
     } else if (TextEditor == 0) {
@@ -722,7 +722,7 @@ void WizDocumentWebView::viewDocumentInExternalEditor(QString &Name, QString &Pr
             noteTempDir.remove(cacheFileName);
         //
         saveAsRenderedHtml(cacheFileName, [=](QString fileName){
-            startExternalEditor(fileName, Name, ProgramFile, Arguments, TextEditor, UTF8Encoding);
+            WizGlobal::mainWindow()->startExternalEditor(fileName, Name, ProgramFile, Arguments, TextEditor, UTF8Encoding, view()->note());
         });
     } else {
         //
@@ -731,6 +731,7 @@ void WizDocumentWebView::viewDocumentInExternalEditor(QString &Name, QString &Pr
 
 }
 
+/* move these two function to WizMainWindow
 void WizDocumentWebView::startExternalEditor(QString cacheFileName, QString Name, QString ProgramFile,
                                                         QString Arguments, int TextEditor, int UTF8Encoding)
 {
@@ -742,16 +743,7 @@ void WizDocumentWebView::startExternalEditor(QString cacheFileName, QString Name
     // 创建并开启进程
     qInfo() << "Use external editor: " + Name << strCmd;
     QProcess *extEditorProcess = new QProcess(this);
-    extEditorProcess->start(strCmd);
-    connect(extEditorProcess, &QProcess::started, [=]{
-        emit this->externalEditorOpened();
-        m_currentEditorMode = modeExternal;
-    });
-    connect(extEditorProcess, QOverload<int, QProcess::ExitStatus>::of(&QProcess::finished),
-    [=](int exitCode, QProcess::ExitStatus exitStatus){
-        emit this->externalEditorClosed(exitCode, exitStatus);
-        m_currentEditorMode = modeReader;
-    });
+    extEditorProcess->startDetached(strCmd);
     // 设置文件监控器
     QFileSystemWatcher* extFileWatcher = new QFileSystemWatcher(this);
     extFileWatcher->addPath(cacheFileName);
@@ -796,6 +788,7 @@ void WizDocumentWebView::onWatchedFileChanged(const QString& fileName, int TextE
     db.updateDocumentData(docData, strHtml, indexFileName, 0);
     //m_docSaverThread->save(docData, strHtml, fileName, 0); // cannot immediately update document view
 }
+*/
 
 void WizDocumentWebView::queryHtmlNodeText(QString& strHtml, QString strSelector)
 {

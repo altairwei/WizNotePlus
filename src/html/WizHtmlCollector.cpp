@@ -367,6 +367,14 @@ bool WizHtmlCollector::downloadImage(const QString& strUrl, QString& strFileName
     return true;
 }
 
+/**
+ * @brief WizHtmlCollector::collect
+ * @param strUrl
+ * @param strHtml
+ * @param mainPage
+ * @param strTempPath
+ * @return
+ */
 bool WizHtmlCollector::collect(const QString& strUrl, \
                                 QString& strHtml, \
                                 bool mainPage,
@@ -397,6 +405,12 @@ bool WizHtmlCollector::collect(const QString& strUrl, \
     return true;
 }
 
+/**
+ * @brief 将笔记所有内容包括资源文件压缩成zip
+ * @param strExtResourcePath
+ * @param strZipFileName
+ * @return
+ */
 bool WizHtmlCollector::html2Zip(const QString& strExtResourcePath, \
                                  const QString& strZipFileName)
 {

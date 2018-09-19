@@ -13,9 +13,11 @@
 
 #include "share/WizWebEngineView.h"
 #include "share/WizGlobal.h"
+#include "WizDef.h"
 #include "share/WizMisc.h"
 #include "utils/WizStyleHelper.h"
 #include "utils/WizPathResolve.h"
+#include "share/WizDatabaseManager.h"
 #include "WizTitleBar.h"
 #include "WizDocumentView.h"
 #include "WizWebsiteView.h"
@@ -118,6 +120,7 @@ void TabButton::drawTabBtn(const QStyleOptionButton *opt, QPainter *p, const QWi
 WizMainTabWidget::WizMainTabWidget(WizExplorerApp& app, QWidget *parent)
     : QTabWidget(parent)
     , m_app(app)
+    , m_dbMgr(app.databaseManager())
     , m_strTheme(Utils::WizStyleHelper::themeName())
 {
     // 标签栏设置
@@ -135,6 +138,7 @@ WizMainTabWidget::WizMainTabWidget(WizExplorerApp& app, QWidget *parent)
     connect(tabBar, &QTabBar::customContextMenuRequested,
                     this, &WizMainTabWidget::handleContextMenuRequested);
     connect(tabBar, &QTabBar::tabCloseRequested, this, &WizMainTabWidget::closeTab);
+    connect(&m_dbMgr, &WizDatabaseManager::documentDeleted, this, &WizMainTabWidget::on_document_deleted);
     //
     setDocumentMode(true); // 不渲染tab widget frame
     setElideMode(Qt::ElideRight);
@@ -236,6 +240,24 @@ void WizMainTabWidget::setTabTextToDocumentTitle(WizDocumentView* view, QString 
     }
 }
 
+/**
+ * @brief Remove related tab page when recieve document deletion signal.
+ */
+void WizMainTabWidget::on_document_deleted(const WIZDOCUMENTDATA& data)
+{
+    for (int i = 0; i < count(); ++i) {
+        WizDocumentView* docView = qobject_cast<WizDocumentView*>(widget(i));
+        if ( docView == nullptr ) {
+            continue;
+        } else {
+            QString noteGUID = data.strGUID;
+            if (noteGUID == docView->note().strGUID)
+                closeTab(i);
+        }
+
+    }
+}
+
 void WizMainTabWidget::setupTab(QWidget *wgt)
 {
     int index = indexOf(wgt);
@@ -271,7 +293,7 @@ void WizMainTabWidget::createTab(WizDocumentView *docView)
     connect(docView, SIGNAL(documentSaved(QString, WizDocumentView*)),
             SLOT(setTabTextToDocumentTitle(QString, WizDocumentView*)));
     connect(docView->web(), SIGNAL(titleEdited(WizDocumentView*, QString)), SLOT(setTabTextToDocumentTitle(WizDocumentView*, QString)));
-    //
+    /*
     connect(docView->web(), &WizDocumentWebView::externalEditorOpened, [=]{
        int widgetIndex = indexOf(docView);
        this->lockTab(widgetIndex);
@@ -282,6 +304,7 @@ void WizMainTabWidget::createTab(WizDocumentView *docView)
         int widgetIndex = indexOf(docView);
         this->unlockTab(widgetIndex);
     });
+    */
     // 设置成当前部件
     setCurrentWidget(docView);
 }
@@ -315,20 +338,12 @@ void WizMainTabWidget::closeTab(int index)
     // process document view closing.
     WizDocumentView* docView = qobject_cast<WizDocumentView*>(widget(index));
     if (docView) {
-        if (docView->web()->isExternalEditing()) {
-            QMessageBox::StandardButton ret = QMessageBox::question(this,
-                    tr("Do you really want to close this page ?"),
-                    tr("There is a external editor running, please saving you content before closing."
-                       "Otherwise, the file wathcer will be destroyed and you content will not be updated."),
-                    QMessageBox::Yes | QMessageBox::No, QMessageBox::No);
-            if (ret != QMessageBox::Yes)
-                return;
-        }
         //
         docView->waitForDone();
     }
     //
     removeTab(index);
+    widget(index)->deleteLater();
 }
 
 void WizMainTabWidget::lockTab(int index)

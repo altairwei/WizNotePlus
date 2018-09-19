@@ -105,6 +105,7 @@
 
 #include "WizCellButton.h"
 #include "interface/IWizExplorerApp.h"
+#include "WizFileImporter.h"
 
 #define MAINWINDOW  "MainWindow"
 
@@ -174,6 +175,7 @@ WizMainWindow::WizMainWindow(WizDatabaseManager& dbMgr, QWidget *parent)
     , m_bQuickDownloadMessageEnable(false)
     , m_quiting(false)
     , m_IWizExplorerApp(new IWizExplorerApp(this, this))
+    , m_extFileWatcher(new QFileSystemWatcher)
 {
 #ifdef QT_DEBUG
     int ret = WizToolsSmartCompare("H", "d");
@@ -184,89 +186,20 @@ WizMainWindow::WizMainWindow(WizDatabaseManager& dbMgr, QWidget *parent)
     windowInstance = this;
     qRegisterMetaType<WIZGROUPDATA>("WIZGROUPDATA");
     //
-    //WizKMSyncThread::setQuickThread(m_syncQuick);
     initSyncQuick();
     //
     initQuitHandler();
-//#ifndef Q_OS_MAC
-    // 将标题工具栏添加到布局
-//    clientLayout()->addWidget(m_toolBar);
-//#ifdef Q_OS_LINUX
-    // 根据是否使用系统标题栏样式来选择窗口样式
-//    setWindowStyleForLinux(m_useSystemBasedStyle);
-//#endif
-    // 当最后一个窗口关闭时，触发QApplication的退出
-//    connect(qApp, SIGNAL(lastWindowClosed()), qApp, SLOT(quit())); // Qt bug: Qt5 bug
-//#endif
-    // 当QApplication将要退出时，触发清理工作
-//    connect(qApp, SIGNAL(aboutToQuit()), SLOT(on_application_aboutToQuit()));
-    // 这种行为会严重降低整个应用程序的事件分发效率
-//    qApp->installEventFilter(this);
-/*
-#ifdef Q_OS_MAC
-    installEventFilter(this);
-
-    if (systemWidgetBlurAvailable())
-    {
-        setAutoFillBackground(false);
-        setAttribute(Qt::WA_TranslucentBackground, true);
-    }
-
-#endif
-*/
 
     // 多线程设置
     //-------------------------------------------------------------------
 
     // search and full text search
-    // 开启搜索线程
-    //m_searcher->start(QThread::HighPriority);
     initSearcher();
 
-    // 同步线程
-    // 设置同步间隔时间
     initSyncFull();
-    /*
-    m_syncFull->setFullSyncInterval(userSettings().syncInterval());
-    connect(m_syncFull, SIGNAL(processLog(const QString&)), SLOT(on_syncProcessLog(const QString&)));
-    connect(m_syncFull, SIGNAL(promptMessageRequest(int, const QString&, const QString&)),
-            SLOT(on_promptMessage_request(int, QString, QString)));
-    connect(m_syncFull, SIGNAL(promptFreeServiceExpr(WIZGROUPDATA)), SLOT(on_promptFreeServiceExpr(WIZGROUPDATA)));
-    connect(m_syncFull, SIGNAL(promptVipServiceExpr(WIZGROUPDATA)), SLOT(on_promptVipServiceExpr(WIZGROUPDATA)));
-
-    connect(m_syncFull, SIGNAL(bubbleNotificationRequest(const QVariant&)),
-            SLOT(on_bubbleNotification_request(const QVariant&)));
-    connect(m_syncFull, SIGNAL(syncStarted(bool)), SLOT(on_syncStarted(bool)));
-    connect(m_syncFull, SIGNAL(syncFinished(int, bool, QString, bool)), SLOT(on_syncDone(int, bool, QString, bool)));
-    */
-    //connect(m_syncQuick, SIGNAL(promptFreeServiceExpr(WIZGROUPDATA)), SLOT(on_promptFreeServiceExpr(WIZGROUPDATA)));
-    //connect(m_syncQuick, SIGNAL(promptVipServiceExpr(WIZGROUPDATA)), SLOT(on_promptVipServiceExpr(WIZGROUPDATA)));
-    //
-    // 如果没有禁止自动同步，则在打开软件后立即同步一次
-    /*
-    if (m_settings->syncInterval() > 0)
-    {
-        QTimer::singleShot(15 * 1000, m_syncFull, SLOT(syncAfterStart()));
-    }
-    */
-
-    //connect(m_searcher, SIGNAL(searchProcess(const QString&, const CWizDocumentDataArray&, bool, bool)),
-    //    SLOT(on_searchProcess(const QString&, const CWizDocumentDataArray&, bool, bool)));
 
     connect(m_documents, SIGNAL(addDocumentToShortcutsRequest(WIZDOCUMENTDATA)),
             m_category, SLOT(addDocumentToShortcuts(WIZDOCUMENTDATA)));
-
-    //FIXME: m_doc已经不在是唯一的文档视图，不应该在此处初始化
-    /*
-    connect(m_doc->web(), SIGNAL(shareDocumentByLinkRequest(QString,QString)),
-            SLOT(on_shareDocumentByLink_request(QString,QString)));
-    connect(m_doc, SIGNAL(documentSaved(QString,WizDocumentView*)),
-            m_singleViewDelegate, SIGNAL(documentChanged(QString,WizDocumentView*)));
-    connect(m_singleViewDelegate, SIGNAL(documentChanged(QString,WizDocumentView*)),
-            m_doc, SLOT(on_document_data_changed(QString,WizDocumentView*)));
-
-    connect(m_doc->titleBar(), SIGNAL(viewNoteInSeparateWindow_request()), SLOT(viewCurrentNoteInSeparateWindow()));
-    */
     //
     connect(&m_dbMgr, SIGNAL(favoritesChanged(QString)), m_category,
             SLOT(on_shortcutDataChanged(QString)));
@@ -518,6 +451,79 @@ void WizMainWindow::trySaveCurrentNote(std::function<void(const QVariant &)> cal
     }
     //
     callback(QVariant(true));
+}
+
+/**
+ * @brief Start external editor process and watch the document file.
+ * @param cacheFileName
+ * @param Name
+ * @param ProgramFile
+ * @param Arguments
+ * @param TextEditor
+ * @param UTF8Encoding
+ */
+void WizMainWindow::startExternalEditor(QString cacheFileName, QString Name,
+                                        QString ProgramFile, QString Arguments,
+                                        int TextEditor, int UTF8Encoding, const WIZDOCUMENTDATAEX& noteData)
+{
+    // 准备进程参数
+    //FIXME: split too many items
+    ProgramFile = "\"" + ProgramFile + "\"";
+    QString args = Arguments.arg("\"" + cacheFileName + "\"");
+    QString strCmd = ProgramFile + " " + args;
+    // 创建并开启进程
+    qInfo() << "Use external editor: " + Name << strCmd;
+    QProcess *extEditorProcess = new QProcess(this);
+    extEditorProcess->startDetached(strCmd);
+    // 设置文件监控器
+    m_extFileWatcher->addPath(cacheFileName);
+    m_watchedFileData.insert(noteData.strGUID, noteData);
+    //
+    connect(m_extFileWatcher, &QFileSystemWatcher::fileChanged, [=](const QString& fileName){
+        saveWatchedFile(fileName, TextEditor, UTF8Encoding);
+        // watch file again, in order to avoid some editor from removing watched files.
+        if (m_extFileWatcher)
+        {
+            QTimer::singleShot(300, [=](){
+                m_extFileWatcher->addPath(fileName);
+            });
+        }
+    });
+}
+
+/**
+ * @brief Save the watched external editor changed document file.
+ * @param fileName
+ * @param TextEditor
+ * @param UTF8Encoding
+ */
+void WizMainWindow::saveWatchedFile(const QString& fileName, int TextEditor, int UTF8Encoding)
+{
+    bool isUTF8 = UTF8Encoding == 0 ? false : true;
+    bool isPlainText = TextEditor == 0 ? false : true;
+    QFileInfo* changedFileInfo = new QFileInfo(fileName);
+    // 编辑器保存时首先删除文件再添加文件所有会收到两个信号，通过文件大小来判断写入信号
+    if ( changedFileInfo->size() == 0 )
+        return;
+    qDebug() << tr("Updating file: ") + fileName << changedFileInfo->size()
+             << changedFileInfo->lastModified() << changedFileInfo->lastRead();
+    //
+    QString noteGUID = changedFileInfo->absoluteDir().dirName();
+    const WIZDOCUMENTDATAEX& noteData = m_watchedFileData[noteGUID];
+    WIZDOCUMENTDATA docData;
+    WizDatabase& db = m_dbMgr.db(noteData.strKbGUID);
+    if (!db.documentFromGuid(noteGUID, docData))
+        return;
+    QString strHtml;
+    if (isPlainText) {
+        // Plain Text
+        strHtml = WizFileImporter::loadTextFileToHtml(fileName, isUTF8);
+    } else {
+        strHtml = WizFileImporter::loadHtmlFileToHtml(fileName, isUTF8);
+    }
+    //FIXME: Windows client has encoding problem.
+    QString indexFileName = Utils::WizMisc::extractFilePath(fileName);
+    db.updateDocumentData(docData, strHtml, indexFileName, 0);
 }
 
 void WizMainWindow::closeEvent(QCloseEvent* event)
@@ -2409,7 +2415,7 @@ WizIAPDialog*WizMainWindow::iapDialog()
  * @brief Get IWizExplorerApp for the main window.
  * @return
  */
-QObject* WizMainWindow::Interface()
+QObject* WizMainWindow::interface()
 {
     return m_IWizExplorerApp;
 }

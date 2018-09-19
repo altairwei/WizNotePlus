@@ -11,7 +11,15 @@
 
 
 
-
+/**
+ * @brief 打包并压缩笔记HTML与资源文件
+ * @param strUrl 笔记<index.html>文件地址
+ * @param strHtml 笔记HTML内容字符串
+ * @param strResourcePath 资源文件地址
+ * @param flags
+ * @param strZipFileName
+ * @return
+ */
 bool WizHtml2Zip(const QString& strUrl, const QString& strHtml, \
                  const QString& strResourcePath, long flags, \
                  const QString& strZipFileName)

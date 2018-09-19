@@ -30,9 +30,8 @@ public:
     void getAll(std::deque<WIZHTMLFILEDATA>& arrayFile);
 };
 
-
-/*
- * Collect media resources path list from html file
+/**
+ * @brief Collect media resources path list from html file
  */
 class WizHtmlCollector : public WizHtmlReaderEvents
 {

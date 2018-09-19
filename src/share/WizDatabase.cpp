@@ -3143,8 +3143,8 @@ bool WizDatabase::setDocumentFlags(const QString& strDocumentGuid, const QString
 /**
  * @brief 用HTML更新笔记数据
  * @param data 笔记数据
- * @param strHtml HTML字符串
- * @param strURL 用于获取资源文件的超链接
+ * @param strHtml HTML内容字符串
+ * @param strURL 笔记<index.html>文件地址
  * @param nFlags
  * @param notifyDataModify
  * @return
@@ -3157,19 +3157,19 @@ bool WizDatabase::updateDocumentData(WIZDOCUMENTDATA& data,
 {
     m_mtxTempFile.lock();
     QString strProcessedHtml(strHtml);
-    // 将HTML文件内所有绝对路径转换成相对路径
-    QString strResourcePath = GetResoucePathFromFile(strURL); // HTML文件对于的资源文件夹路径
+    // resources path
+    QString strResourcePath = GetResoucePathFromFile(strURL); // HTML文件对应的资源文件夹index_files路径
     if (!strResourcePath.isEmpty()) {
-        QUrl urlResource = QUrl::fromLocalFile(strResourcePath);
-        strProcessedHtml.replace(urlResource.toString(), "index_files/");
+        QUrl urlResource = QUrl::fromLocalFile(strResourcePath); // 将平台特异性路径转变成统一的QUrl
+        strProcessedHtml.replace(urlResource.toString(), "index_files/"); // 将HTML字符串内所有绝对路径转换成相对路径
     }
     m_mtxTempFile.unlock();
-    //
+    // check if note is encrypted or not
     if (isEncryptAllData())
         data.nProtected = 1;
     //
     WizDocument doc(*this, data);
-    //
+    // compress files to zip
     CString strZipFileName = getDocumentFileName(data.strGUID);
     if (!data.nProtected) {
         bool bZip = ::WizHtml2Zip(strURL, strProcessedHtml, strResourcePath, nFlags, strZipFileName);

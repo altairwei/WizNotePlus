@@ -11,6 +11,8 @@ class QUrl;
 QT_END_NAMESPACE
 
 class WizExplorerApp;
+class WizDatabaseManager;
+class WIZDOCUMENTDATA;
 class WizDocumentView;
 class WizDocumentWebView;
 class WizWebsiteView;
@@ -51,6 +53,7 @@ public:
 
 private:
     WizExplorerApp& m_app;
+    WizDatabaseManager& m_dbMgr;
     QString m_strTheme;
 
 signals:
@@ -71,6 +74,7 @@ public slots:
     void setTabTextToDocumentTitle(WizDocumentView* view, const WIZDOCUMENTDATAEX& doc, bool forceEditing);
     void setTabTextToDocumentTitle(QString strGUID, WizDocumentView* view);
     void setTabTextToDocumentTitle(WizDocumentView*, QString newTitle);
+    void on_document_deleted(const WIZDOCUMENTDATA&);
 private:
     void setupView(WizWebsiteView *websiteView);
     void setupTab(QWidget* wgt);

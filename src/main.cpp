@@ -191,8 +191,8 @@ int mainCore(int argc, char *argv[])
     QApplication::setFont(appFont);
 #endif
     // Debug 输出
-    //qInstallMessageHandler(Utils::WizLogger::messageHandler); // 输出到 Wiznote 消息控制台
-    qInstallMessageHandler(nullptr); // 输出到 Qt Debug console
+    qInstallMessageHandler(Utils::WizLogger::messageHandler); // 输出到 Wiznote 消息控制台
+    //qInstallMessageHandler(nullptr); // 输出到 Qt Debug console
     // 设置高分屏图标
     QApplication::setAttribute(Qt::AA_UseHighDpiPixmaps);
     // 设置应用名和组织名用于QSetting

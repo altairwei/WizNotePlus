@@ -91,7 +91,7 @@ QIcon WizStyleHelper::loadIcon(const QString& strName)
         qWarning() << "load icon failed, filePath:" << strIconNormal << " name : " << strName;
         return QIcon();
     }
-
+    //FIXME: Always warning "Empty filename passed to function"
     QIcon icon;
     icon.addFile(strIconNormal, QSize(), QIcon::Normal, QIcon::Off);
 
