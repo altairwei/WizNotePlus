@@ -61,7 +61,7 @@ QString WizDatabase::m_strUserId = QString();
  */
 QString GetResoucePathFromFile(const QString& strHtmlFileName)
 {
-    if (!QFile::exists(strHtmlFileName))
+    if (!strHtmlFileName.isEmpty() && !QFile::exists(strHtmlFileName))
         return QString();
 
     QString strTitle = Utils::WizMisc::extractFileTitle(strHtmlFileName);

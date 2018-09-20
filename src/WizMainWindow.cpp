@@ -2061,13 +2061,13 @@ void WizMainWindow::initToolBar()
     m_toolBar->addWidget(newNoteItem, "", "");
     //
     m_newNoteButton = newNoteItem;
-
+    /*
     // 前进后退
     m_actions->actionFromName(WIZACTION_GLOBAL_GOBACK)->setEnabled(false);
     m_actions->actionFromName(WIZACTION_GLOBAL_GOFORWARD)->setEnabled(false);
     m_toolBar->addAction(m_actions->actionFromName(WIZACTION_GLOBAL_GOBACK));
     m_toolBar->addAction(m_actions->actionFromName(WIZACTION_GLOBAL_GOFORWARD));
-
+    */
     //
     m_toolBar->addStandardItem(WizMacToolBar::FlexibleSpace);
     //
@@ -2107,6 +2107,7 @@ void WizMainWindow::initToolBar()
     //
     m_toolBar->addWidget(new WizFixedSpacer(QSize(20, 1), m_toolBar));
     //
+    /*
     // 前一篇文档
     WizButton* buttonBack = new WizButton(m_toolBar);
     buttonBack->setIconSize(iconSize);
@@ -2117,6 +2118,7 @@ void WizMainWindow::initToolBar()
     buttonForward->setIconSize(iconSize);
     buttonForward->setAction(m_actions->actionFromName(WIZACTION_GLOBAL_GOFORWARD));
     m_toolBar->addWidget(buttonForward);
+    */
     //
     m_toolBar->addWidget(new WizFixedSpacer(QSize(20, 1), m_toolBar));
     //

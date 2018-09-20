@@ -189,7 +189,7 @@ void WizCategoryViewItemBase::setExtraButtonIcon(const QString& file)
     {
         int nIndex = file.lastIndexOf('.');
         QString strFile = file.left(nIndex) + "@2x" + file.right(file.length() - nIndex);
-        if (QFile::exists(strFile))
+        if (!strFile.isEmpty() && QFile::exists(strFile))
         {
             m_extraButtonIcon = QPixmap(strFile);
             return;

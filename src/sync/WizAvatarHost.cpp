@@ -110,7 +110,7 @@ void WizAvatarDownloader::fetchUserAvatarEnd(bool bSucceed)
 bool WizAvatarDownloader::save(const QString& strUserGUID, const QByteArray& bytes)
 {
     QString strFileName = Utils::WizPathResolve::avatarPath() + strUserGUID + ".png";
-    if (QFile::exists(strFileName)) {
+    if (!strFileName.isEmpty() && QFile::exists(strFileName)) {
         ::WizDeleteFile(strFileName);
         qDebug() << "[AvatarHost]avatar file exists , remove it :" << !QFile::exists(strFileName);
     }

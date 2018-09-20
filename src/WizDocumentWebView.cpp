@@ -1380,7 +1380,7 @@ void WizDocumentWebView::on_insertCodeHtml_requset(QString strOldHtml)
         QString strSrcCssFileName = Utils::WizPathResolve::resourcesPath() + "files/code/" + name;
         QString strDestCssFileName = noteResourcesPath() + name;
 
-        if (QFile::exists(strDestCssFileName))
+        if (!strDestCssFileName.isEmpty() && QFile::exists(strDestCssFileName))
         {
             QFile::remove(strDestCssFileName);
         }

@@ -335,15 +335,16 @@ void WizMainTabWidget::createTab(const QUrl &url)
  */
 void WizMainTabWidget::closeTab(int index)
 {
+    QWidget* p = widget(index);
+    // hide page first
+    removeTab(index);
     // process document view closing.
-    WizDocumentView* docView = qobject_cast<WizDocumentView*>(widget(index));
+    WizDocumentView* docView = qobject_cast<WizDocumentView*>(p);
     if (docView) {
         //
         docView->waitForDone();
     }
-    //
-    removeTab(index);
-    widget(index)->deleteLater();
+    p->deleteLater();
 }
 
 void WizMainTabWidget::lockTab(int index)

@@ -115,7 +115,7 @@ void WizDocTemplateDialog::initTemplateFileTreeWidget()
     //
     //init template list download from server
     QString jsonFile = Utils::WizPathResolve::wizTemplateJsonFilePath();
-    if (QFile::exists(jsonFile))
+    if (!jsonFile.isEmpty() && QFile::exists(jsonFile))
     {
         QFile file(jsonFile);
         if (!file.open(QFile::ReadOnly))
@@ -339,13 +339,13 @@ void WizDocTemplateDialog::itemClicked(QTreeWidgetItem *item, int)
                 downloader->startDownload();
             }
         }
-        else if (QFile::exists(strZiwFile))
+        else if (!strZiwFile.isEmpty() && QFile::exists(strZiwFile))
         {
             QString strTempFolder = Utils::WizPathResolve::tempPath() +Utils::WizMisc::extractFileTitle(strZiwFile) + "/";
             if (WizUnzipFile::extractZip(strZiwFile, strTempFolder))
             {
                 QString previewFile = strTempFolder + previewFileName();
-                if (!QFile::exists(previewFile))
+                if (!previewFile.isEmpty() && !QFile::exists(previewFile))
                 {
                     if (QFile::exists(strTempFolder + "preview.html"))
                     {
@@ -590,7 +590,7 @@ bool getTemplateListFroNewNoteMenu(QList<TemplateData>& tmplList)
 
     // 通过服务器下载的笔记模板
     QString jsonFile = Utils::WizPathResolve::wizTemplateJsonFilePath();
-    if (QFile::exists(jsonFile))
+    if (!jsonFile.isEmpty() && QFile::exists(jsonFile))
     {
         QFile file(jsonFile);
         if (!file.open(QFile::ReadOnly))
