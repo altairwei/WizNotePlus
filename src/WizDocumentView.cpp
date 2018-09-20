@@ -186,7 +186,7 @@ WizDocumentView::WizDocumentView(WizExplorerApp& app, QWidget* parent)
     // 编辑状态同步线程
     m_editStatusSyncThread->start(QThread::IdlePriority);
 
-    m_editStatusChecker = new WizDocumentStatusChecker();
+    m_editStatusChecker = new WizDocumentStatusChecker(this);
     connect(this, SIGNAL(checkDocumentEditStatusRequest(QString,QString)), m_editStatusChecker,
             SLOT(checkEditStatus(QString,QString)));
     connect(this, SIGNAL(stopCheckDocumentEditStatusRequest(QString,QString)),
@@ -210,7 +210,7 @@ WizDocumentView::WizDocumentView(WizExplorerApp& app, QWidget* parent)
 WizDocumentView::~WizDocumentView()
 {
     if (m_editStatusChecker)
-        delete m_editStatusChecker;
+       delete m_editStatusChecker;
 }
 
 QSize WizDocumentView::sizeHint() const
