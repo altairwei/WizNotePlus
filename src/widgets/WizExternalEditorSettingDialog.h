@@ -67,6 +67,9 @@ private:
     void writeDataToIni(QSettings* settings);
     void modifyRowContent(int row, SettingMap& data);
 
+signals:
+    void settingChanged();
+
 private Q_SLOTS:
     void accept();
     void on_btnAddEditor_clicked();

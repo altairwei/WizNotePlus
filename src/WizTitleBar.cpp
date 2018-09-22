@@ -615,6 +615,10 @@ void WizTitleBar::onEditButtonClicked()
 void WizTitleBar::onEditorOptionSelected()
 {
     WizExternalEditorSettingDialog* editorSetting = new WizExternalEditorSettingDialog(this);
+    connect(editorSetting, &WizExternalEditorSettingDialog::settingChanged, this, [=]{
+        QMenu* m = createEditorMenu();
+        m_editBtn->setMenu(m);
+    });
     editorSetting->setAttribute(Qt::WA_DeleteOnClose);
     editorSetting->exec();
 }

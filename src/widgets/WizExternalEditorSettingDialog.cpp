@@ -196,6 +196,8 @@ void WizExternalEditorSettingDialog::writeDataToIni(QSettings* settings)
         settings->setValue("UTF8Encoding", UTF8Encoding);
         settings->endGroup();
     }
+    settings->sync();
+    emit settingChanged();
 }
 
 void WizExternalEditorSettingDialog::on_btnAddEditor_clicked()
