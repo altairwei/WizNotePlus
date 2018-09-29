@@ -10,20 +10,21 @@
 # UPDATE_TRANSLATIONS  update transation files
 # PLCrashReporter   use PLCrashReporter for mac, need PLCrashReporter framework
 
-project("WizNotePlus")
-
 if (APPLE)
-    cmake_minimum_required(VERSION 2.8.12)
+    cmake_minimum_required(VERSION 3.0)
 else(APPLE)
-    cmake_minimum_required(VERSION 2.8.4)
+    cmake_minimum_required(VERSION 3.0)
 endif(APPLE)
+
+project(WizNotePlus VERSION 2.7.0)
 
 #============================================================================
 # Set Variables
 #============================================================================
 
-# Set FindQt Module
-set(CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
+list(APPEND CMAKE_MODULE_PATH 
+    "${CMAKE_CURRENT_SOURCE_DIR}/cmake"
+)
 
 # rpath resolve.
 #set(CMAKE_BUILD_WITH_INSTALL_RPATH YES)     // would cause wheelEvent problem on centos/fedora when compiled with qt5

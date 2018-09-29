@@ -421,6 +421,16 @@ set(wiznote_RCS
     ${CMAKE_SOURCE_DIR}/resources/wiznote.qrc
 )
 
+include_directories(
+    ${CMAKE_CURRENT_SOURCE_DIR}
+    ${CMAKE_CURRENT_BINARY_DIR}
+    ${CMAKE_SOURCE_DIR}/lib
+    ${CMAKE_SOURCE_DIR}/lib/quazip
+    ${CMAKE_SOURCE_DIR}/lib/openssl/include
+    ${CMAKE_SOURCE_DIR}/lib/gumbo-parser/src
+    ${CMAKE_SOURCE_DIR}/lib/gumbo-query/src
+)
+
 #============================================================================
 # Internal compiler options
 #============================================================================
@@ -534,14 +544,6 @@ endif()
 
 qt_use_modules(WizNote)
 qt_suppress_warnings(WizNote)
-
-include_directories(
-    ${CMAKE_CURRENT_SOURCE_DIR}
-    ${CMAKE_CURRENT_BINARY_DIR}
-    ${CMAKE_SOURCE_DIR}/lib
-    ${CMAKE_SOURCE_DIR}/lib/openssl/include
-    ${CMAKE_SOURCE_DIR}/lib/gumbo-parser
-    )
 
 if (APPLE)
     include_directories(~/Library/Frameworks)
