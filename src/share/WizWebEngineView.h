@@ -10,6 +10,7 @@
 class QWebChannel;
 
 class WizWebEngineView;
+class WizDevToolsDialog;
 
 class WizWebEnginePage: public QWebEnginePage
 {
@@ -45,6 +46,7 @@ public:
 public Q_SLOTS:
     void innerLoadFinished(bool);
     void openLinkInDefaultBrowser(QUrl url);
+    void openDevTools();
 Q_SIGNALS:
     void loadFinishedEx(bool);
 private:
@@ -52,6 +54,7 @@ private:
     WebSocketClientWrapper* m_clientWrapper;
     QWebChannel* m_channel;
     QString m_objectNames;
+    WizDevToolsDialog* m_devToolsWindow = nullptr;
     //WizWebEnginePage* m_page;
 protected:
     void wheelEvent(QWheelEvent *event);

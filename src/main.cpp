@@ -139,6 +139,10 @@ int mainCore(int argc, char *argv[])
     QApplication::setAttribute(Qt::AA_EnableHighDpiScaling);
 #endif
 
+#ifdef Q_OS_MAC
+    //QApplication::setAttribute(Qt::AA_EnableHighDpiScaling);
+#endif
+
 #ifdef Q_OS_WIN
     // 暂时先采用UI缩放+字体缩小的方案来适配Windows高分屏
     QApplication::setAttribute(Qt::AA_EnableHighDpiScaling);
@@ -187,8 +191,8 @@ int mainCore(int argc, char *argv[])
     QApplication::setFont(appFont);
 #endif
     // Debug 输出
-    //qInstallMessageHandler(Utils::WizLogger::messageHandler); // 输出到 Wiznote 消息控制台
-    qInstallMessageHandler(0); // 输出到 Qt Debug console
+    qInstallMessageHandler(Utils::WizLogger::messageHandler); // 输出到 Wiznote 消息控制台
+    //qInstallMessageHandler(nullptr); // 输出到 Qt Debug console
     // 设置高分屏图标
     QApplication::setAttribute(Qt::AA_UseHighDpiPixmaps);
     // 设置应用名和组织名用于QSetting
@@ -228,6 +232,7 @@ int mainCore(int argc, char *argv[])
 #endif
 
     // tooltip 样式
+    app.setStyle(QStyleFactory::create("fusion"));
     app.setStyleSheet("QToolTip { \
                     font: 12px; \
                     color:#000000; \
@@ -239,7 +244,7 @@ int mainCore(int argc, char *argv[])
     //-------------------------------------------------------------------
 
     // setup settings
-    QSettings::setDefaultFormat(QSettings::IniFormat); //用ini文件来储存设置
+    QSettings::setDefaultFormat(QSettings::IniFormat);
 
     /// 全局设置
     /** 设置文件在～/.wiznote/wiznote.ini或者%HOMEPATH%/Wiznote/wiznote.ini里面. */
@@ -258,9 +263,23 @@ int mainCore(int argc, char *argv[])
 
     QString strPassword;
     WizUserSettings userSettings(strAccountFolderName);
-    // 获取用户设置
+
+    /// 获取用户设置
     QSettings* settings = new QSettings(Utils::WizPathResolve::userSettingsFile(strAccountFolderName), QSettings::IniFormat);
     WizGlobal::setSettings(settings);
+
+    /// 外置编辑器设置
+    /*
+    QSettings* extEditorSettings = new QSettings(
+                Utils::WizPathResolve::dataStorePath() + strAccountFolderName + "/externalEditor.ini", QSettings::IniFormat);
+    extEditorSettings->beginGroup("Editor_0");
+    extEditorSettings->setValue("Name", "Typora");
+    extEditorSettings->setValue("ProgramFile", "/usr/bin/typora");
+    extEditorSettings->setValue("Arguments", "%1"); // %1 将被传入文件地址
+    extEditorSettings->setValue("TextEditor", "1");
+    extEditorSettings->setValue("UTF8Encoding", "0");
+    extEditorSettings->endGroup();
+    */
 
     // 语言本地化
     //-------------------------------------------------------------------
@@ -330,8 +349,6 @@ int mainCore(int argc, char *argv[])
         WizLoginDialog loginDialog(strLocale, localUsers);
         if (QDialog::Accepted != loginDialog.exec())
             return 0;
-
-        qDebug() << "deafult user id : " << strUserGuid << " login dailog user id : " << loginDialog.loginUserGuid();
 
         // 如果默认UserId为空，或者登录ID不等于默认UserId
         if (strUserId.isEmpty() || loginDialog.loginUserGuid() != strUserGuid)

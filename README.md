@@ -1,4 +1,4 @@
-# WizNotePlus for Wins/MacOS/Linux
+# WizNotePlus for Linux/OSX/Windows
 
 forked from [WizTeam/WizQTClient](https://github.com/WizTeam/WizQTClient)
 
@@ -26,7 +26,7 @@ if you are windows or portable platform users, we have WizNote for windows, ios,
 
 ## Compile (Windows, macOS, Linux)
 
-需要高于Qt5.11的版本才能编译成功。
+需要高于Qt5.11的版本才能编译成功。相关文档正在撰写中。
 
 ## Feature
 
@@ -34,34 +34,30 @@ if you are windows or portable platform users, we have WizNote for windows, ios,
 
 macOS 端能提供系统本地对高分屏的支持，除了替换高分辨率图标外，不需要额外设置。linux 端对高分屏的支持很简单，只要在主进程之前设置 `QApplication::setAttribute(Qt::AA_EnableHighDpiScaling);` ，就能完成对高分屏的支持。相比之下，Window 端的高分屏适配就要复杂很多，目前采用了将字体回调到小字号的办法来暂时适配高分屏，这种做法的缺陷是字体稍有有一点儿模糊。Windows 端高分屏适配除了字体问题外，还有某些图标的显示上存在问题。
 
-- [x] 笔记列表顶部工具栏两个按钮；
-- [x] 目录树列表图标；
-- [x] 目录树指示三角；通过Qt对高分屏的支持来解决
-- [x] 调整标题栏按钮布局，将搜索组件变成固定宽度；
-- [ ] 账户头像分辨率太低；
-
 ### Chrome 开发者工具
 
-增加F1快捷键打开开发者工具，用以调整笔记格式以及未来用作JavaScript插件的调试器。
+增加 `F12` 快捷键打开开发者工具，用以调整笔记格式以及未来用作 `JavaScript` 插件的调试器。
 
 ### 多标签浏览文档和网页
 
-通过QTabWidget部件实现多标签浏览文档和网页的功能。
+通过 `QTabWidget` 部件实现多标签浏览文档和网页的功能。
 
 ![tabViewer](documents/images/tabViewer.png?raw=true)
 
+### 外部编辑器
+
+在编辑按钮右侧新增了一个菜单，用于添加和使用外部编辑器。
+
+![extenalEditor](documents/images/external_editor.png?raw=true)
+
+上图展示了使用 Typora 作为外部编辑器打开笔记的示意图。
+
 ## Project Plan
 
-- [x] 文档页面增加 Devtools
-- [x] 多标签页功能：使用QTabWidget实现多标签，将WizDocumentView部件嵌入WizMainTab的Page中
-- [x] 浏览网页功能：新建WizWebsiteView类，包裹WizWebEngineView部件并嵌入WizMainTab
-- [ ] 添加外置编辑器功能，用 QFileSystemWatcher 监控文件变动
+- [x] 文档页面增加 Devtools 。
+- [x] 多标签页功能：使用 `QTabWidget` 实现多标签，将WizDocumentView部件嵌入WizMainTab的Page中，新建 `WizWebsiteView` 类，包裹 `WizWebEngineView` 用于浏览普通网页。
+- [x] 添加外外部编辑器功能，用 `QFileSystemWatcher` 监控文件变动。
+- [ ] 建立插件系统，包括 Global Plugin 、ExecuteScript Plugin 、HtmlDialog Plugin 、QML Plugin 、C++/Qt Plugin 、 WebSocket 等形式的插件。
 - [ ] Windows 端插件添加 QAxObject 接口
-- [ ] 建立插件系统
-- [ ] 建立其他云服务系统
-- [ ] 更换内核为 Electron 内核
-
-## 已知问题
-
-- [x] 非系统标题栏样式下切换笔记视图会导致软件崩溃
-- [ ] Windows 笔记渲染具有较严重的性能问题。
+- [ ] 建立其他云服务系统，如 OneDrive、Ｎextcloud 等
+- [ ] 实现 NodeJs-like APIs

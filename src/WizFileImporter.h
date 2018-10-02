@@ -9,14 +9,16 @@ class WizFileImporter : public QObject
 {
     Q_OBJECT
 public:
-    explicit WizFileImporter(WizDatabaseManager& dbMgr,QObject *parent = 0);
+    explicit WizFileImporter(WizDatabaseManager& dbMgr,QObject *parent = nullptr);
 
     void importFiles(const QStringList& strFiles, const QString& strTargetFolderLocation);
     void importFiles(const QStringList& strFiles, const QString& strKbGUID, const WIZTAGDATA& tag);
     void importFiles(const QStringList& strFiles, const QString& strKbGUID, const QString& strTargetFolderLocation, const WIZTAGDATA& tag);
 
     QString loadHtmlFileToHtml(const QString& strFileName);
+    static QString loadHtmlFileToHtml(const QString& strFileName, bool isUTF8);
     QString loadTextFileToHtml(const QString& strFileName);
+    static QString loadTextFileToHtml(const QString& strFileName, bool isUTF8);
     QString loadImageFileToHtml(const QString& strFileName);
     //
 signals:

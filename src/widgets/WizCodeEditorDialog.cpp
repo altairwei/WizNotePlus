@@ -34,7 +34,7 @@ WizCodeEditorDialog::WizCodeEditorDialog(WizExplorerApp& app, WizDocumentWebView
   , m_codeBrowser(new WizWebEngineView(this))
 {
     m_codeBrowser->addToJavaScriptWindowObject("codeEditor", this);
-    m_codeBrowser->addToJavaScriptWindowObject("external", m_external);
+    m_codeBrowser->addToJavaScriptWindowObject("external", m_external); //FIXME: Change the interface to minimized version.
 
     //
     //setAttribute(Qt::WA_DeleteOnClose);

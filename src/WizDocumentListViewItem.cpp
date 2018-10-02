@@ -52,7 +52,7 @@ void WizDocumentListViewDocumentItem::resetAvatar(const QString& strFileName)
 
 bool WizDocumentListViewDocumentItem::isAvatarNeedUpdate(const QString& strFileName)
 {
-    if (!QFile::exists(strFileName)) {
+    if (!strFileName.isEmpty() && !QFile::exists(strFileName)) {
         return true;
     }
 

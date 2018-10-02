@@ -1,0 +1,15 @@
+[submodule "lib/quazip"]
+	path = lib/quazip
+	url = git@github.com:altairwei/quazip.git
+[submodule "lib/cryptopp"]
+	path = lib/cryptopp
+	url = git@github.com:altairwei/cryptopp.git
+[submodule "lib/zlib"]
+	path = lib/zlib
+	url = git@github.com:altairwei/zlib.git
+[submodule "lib/gumbo-parser"]
+	path = lib/gumbo-parser
+	url = git@github.com:altairwei/gumbo-parser.git
+[submodule "lib/gumbo-query"]
+	path = lib/gumbo-query
+	url = git@github.com:altairwei/gumbo-query.git

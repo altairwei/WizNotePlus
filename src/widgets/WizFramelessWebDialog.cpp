@@ -17,7 +17,7 @@ WizFramelessWebDialog::WizFramelessWebDialog(QWidget *parent) :
 
     m_web = new WizWebEngineView(this);
     //
-    m_web->addToJavaScriptWindowObject("customObject", this);
+    m_web->addToJavaScriptWindowObject("customObject", this); //FIXME: check the interface.
     //
     m_frame = m_web->page();
     connect(m_web, SIGNAL(loadFinishedEx(bool)), SLOT(onPageLoadFinished(bool)));

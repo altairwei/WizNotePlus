@@ -2,7 +2,9 @@
 #include "utils/WizPathResolve.h"
 
 #include "WizDef.h"
+#include "WizMisc.h"
 #include <QLocale>
+#include <QList>
 #include <algorithm>
 
 WizSettings::WizSettings(const QString& strFileName)

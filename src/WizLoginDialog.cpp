@@ -183,7 +183,7 @@ WizLoginDialog::WizLoginDialog(const QString &strLocale, const QList<WizLocalUse
 
     loadDefaultUser();
     //
-#ifndef Q_OS_MAC
+//#ifndef Q_OS_MAC
     //
     QSize totalSizeHint = layout()->totalSizeHint();
     //
@@ -205,7 +205,7 @@ WizLoginDialog::WizLoginDialog(const QString &strLocale, const QList<WizLocalUse
         ui->btn_singUp->setMinimumSize(sz);
 
     }, 300, 30000, [=]{});
-#endif
+//#endif
     //
     initSateMachine();
 }
@@ -1499,7 +1499,7 @@ bool WizLoginDialog::onOEMSettingsDownloaded(const QString& settings)
 
 void WizLoginDialog::onOEMLogoDownloaded(const QString& logoFile)
 {
-    if (!QFile::exists(logoFile))
+    if (!logoFile.isEmpty() && !QFile::exists(logoFile))
         return;
     //
     setLogo(logoFile);
@@ -1803,7 +1803,7 @@ void WizOEMDownloader::downloadOEMLogo(const QString& strUrl)
     loop.exec();
 
     strFileName = Utils::WizPathResolve::tempPath() + strFileName;
-    if (!QFile::exists(strFileName))
+    if (!strFileName.isEmpty() && !QFile::exists(strFileName))
     {
         qDebug() << "Download logo image failed";
         return;

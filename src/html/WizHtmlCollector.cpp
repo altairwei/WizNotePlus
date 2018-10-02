@@ -215,7 +215,7 @@ void WizHtmlCollector::processImgTagValue(WizHtmlTag* pTag, const QString& strAt
         //
 
         QString strFile = m_strTempPath + strFileName;
-        if (QFile::exists(strFile))
+        if (!strFile.isEmpty() && QFile::exists(strFile))
         {
             qDebug() <<"[Save] change to local image : " << strFile;
             QString strAbsFile = "file://" + strFile;
@@ -231,7 +231,7 @@ void WizHtmlCollector::processImgTagValue(WizHtmlTag* pTag, const QString& strAt
         QString filepath = url.toLocalFile();
         if (!filepath.startsWith(resourcePath))
         {
-            if (QFile::exists(filepath))
+            if (!filepath.isEmpty() && QFile::exists(filepath))
             {
                 QString destFile = resourcePath + ::WizGenGUIDLowerCaseLetterOnly() + Utils::WizMisc::extractFileExt(filepath);
                 if (QFile::copy(filepath, destFile))
@@ -367,6 +367,14 @@ bool WizHtmlCollector::downloadImage(const QString& strUrl, QString& strFileName
     return true;
 }
 
+/**
+ * @brief WizHtmlCollector::collect
+ * @param strUrl
+ * @param strHtml
+ * @param mainPage
+ * @param strTempPath
+ * @return
+ */
 bool WizHtmlCollector::collect(const QString& strUrl, \
                                 QString& strHtml, \
                                 bool mainPage,
@@ -397,6 +405,12 @@ bool WizHtmlCollector::collect(const QString& strUrl, \
     return true;
 }
 
+/**
+ * @brief 将笔记所有内容包括资源文件压缩成zip
+ * @param strExtResourcePath
+ * @param strZipFileName
+ * @return
+ */
 bool WizHtmlCollector::html2Zip(const QString& strExtResourcePath, \
                                  const QString& strZipFileName)
 {

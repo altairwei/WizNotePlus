@@ -87,21 +87,21 @@ QIcon WizStyleHelper::loadIcon(const QString& strName)
     QString strIconActive1 = ::WizGetSkinResourceFileName(strThemeName, strName+ "_on");
     QString strIconActive2 = ::WizGetSkinResourceFileName(strThemeName, strName+ "_selected");
 
-    if (!QFile::exists(strIconNormal)) {
+    if (!strIconNormal.isEmpty() && !QFile::exists(strIconNormal)) {
         qWarning() << "load icon failed, filePath:" << strIconNormal << " name : " << strName;
         return QIcon();
     }
-
+    //FIXME: Always warning "Empty filename passed to function"
     QIcon icon;
     icon.addFile(strIconNormal, QSize(), QIcon::Normal, QIcon::Off);
 
     // used for check state
-    if (QFile::exists(strIconActive1)) {
+    if (!strIconActive1.isEmpty() && QFile::exists(strIconActive1)) {
         icon.addFile(strIconActive1, QSize(), QIcon::Active, QIcon::On);
     }
 
     // used for sunken state
-    if (QFile::exists(strIconActive2)) {
+    if (!strIconActive2.isEmpty() && QFile::exists(strIconActive2)) {
         icon.addFile(strIconActive2, QSize(), QIcon::Active, QIcon::Off);
     }
 

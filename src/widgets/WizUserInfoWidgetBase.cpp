@@ -9,7 +9,6 @@
 #include <QPainter>
 #include <QMouseEvent>
 #include "utils/WizStyleHelper.h"
-#include "share/WizMisc.h"
 #ifdef Q_OS_MAC
 #include "mac/WizMacHelper.h"
 #endif
@@ -25,9 +24,9 @@ void WizUserInfoWidgetBase::paintEvent(QPaintEvent *event)
 {
     Q_UNUSED(event);
 
-    int nAvatarWidth = WizSmartScaleUI(32);
-    int nArrawWidth = WizSmartScaleUI(10);
-    int nMargin = WizSmartScaleUI(4);
+    int nAvatarWidth = 32;
+    int nArrawWidth = 10;
+    int nMargin = 4;
 
     QStyleOptionToolButton opt;
     initStyleOption(&opt);
@@ -37,7 +36,6 @@ void WizUserInfoWidgetBase::paintEvent(QPaintEvent *event)
 
     // draw user avatar
     QRect rectIcon = opt.rect;
-    //rectIcon.setHeight(WizSmartScaleUI(rectIcon.height())); // scale height
     rectIcon.setLeft(rectIcon.left());
     rectIcon.setRight(rectIcon.left() + nAvatarWidth);
     rectIcon.setTop(rectIcon.top() + (rectIcon.height() - nAvatarWidth) / 2);
@@ -80,16 +78,18 @@ void WizUserInfoWidgetBase::paintEvent(QPaintEvent *event)
 //    rectVip.setBottom(rectVip.top() + rectVip.height()/2);
 //    rectVip.setTop(rectVip.top() + (rectVip.height() - iconSize.height()) / 2);
     if (!iconVip.isNull()) {
-        iconVip.paint(&p, rectVip, Qt::AlignLeft|Qt::AlignVCenter);
+        QPixmap pm = iconVip.pixmap(iconSize);
+        style()->drawItemPixmap(&p, rectVip, Qt::AlignLeft|Qt::AlignVCenter, pm);
     }
 
     // draw arraw
     QRect rectArrow = rectVip;
-    rectArrow.setLeft(rectArrow.right() + nMargin);
-    rectArrow.setRight(rectArrow.left() + nArrawWidth);
     QIcon arrow = getArrow();
     if (!arrow.isNull()) {
-        arrow.paint(&p, rectArrow, Qt::AlignVCenter, QIcon::Normal);
+        rectArrow.setLeft(rectArrow.right() + nMargin);
+        rectArrow.setRight(rectArrow.left() + nArrawWidth);
+        QPixmap pm = arrow.pixmap(10, 6);
+        style()->drawItemPixmap(&p, rectArrow, Qt::AlignVCenter, pm);
     }
 }
 

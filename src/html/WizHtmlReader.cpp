@@ -1681,7 +1681,10 @@ bool WizHtmlReader::parseTag(WizHtmlTag &rTag,
 
 
 
-
+/**
+ * @brief 解析笔记文档内容
+ * @return
+ */
 UINT WizHtmlReader::parseDocument(void)
 {
     ATLASSERT(m_lpszBuffer != NULL);
@@ -1855,6 +1858,11 @@ UINT WizHtmlReader::parseDocument(void)
 	return (m_dwBufPos);
 }
 
+/**
+ * @brief 读取HTML内容
+ * @param strHtml
+ * @return
+ */
 UINT WizHtmlReader::read(const QString& strHtml)
 {
     const unsigned short* lpszString = strHtml.utf16();

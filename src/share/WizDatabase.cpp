@@ -54,9 +54,14 @@
 
 QString WizDatabase::m_strUserId = QString();
 
+/**
+ * @brief 从HTML文件的路径获取想要的资源文件夹路径
+ * @param strHtmlFileName
+ * @return
+ */
 QString GetResoucePathFromFile(const QString& strHtmlFileName)
 {
-    if (!QFile::exists(strHtmlFileName))
+    if (!strHtmlFileName.isEmpty() && !QFile::exists(strHtmlFileName))
         return QString();
 
     QString strTitle = Utils::WizMisc::extractFileTitle(strHtmlFileName);
@@ -3135,6 +3140,15 @@ bool WizDatabase::setDocumentFlags(const QString& strDocumentGuid, const QString
     return setDocumentParam(strDocumentGuid, TABLE_KEY_WIZ_DOCUMENT_PARAM_FLAGS, strFlags);
 }
 
+/**
+ * @brief 用HTML更新笔记数据
+ * @param data 笔记数据
+ * @param strHtml HTML内容字符串
+ * @param strURL 笔记<index.html>文件地址
+ * @param nFlags
+ * @param notifyDataModify
+ * @return
+ */
 bool WizDatabase::updateDocumentData(WIZDOCUMENTDATA& data,
                                       const QString& strHtml,
                                       const QString& strURL,
@@ -3143,18 +3157,19 @@ bool WizDatabase::updateDocumentData(WIZDOCUMENTDATA& data,
 {
     m_mtxTempFile.lock();
     QString strProcessedHtml(strHtml);
-    QString strResourcePath = GetResoucePathFromFile(strURL);
+    // resources path
+    QString strResourcePath = GetResoucePathFromFile(strURL); // HTML文件对应的资源文件夹index_files路径
     if (!strResourcePath.isEmpty()) {
-        QUrl urlResource = QUrl::fromLocalFile(strResourcePath);
-        strProcessedHtml.replace(urlResource.toString(), "index_files/");
+        QUrl urlResource = QUrl::fromLocalFile(strResourcePath); // 将平台特异性路径转变成统一的QUrl
+        strProcessedHtml.replace(urlResource.toString(), "index_files/"); // 将HTML字符串内所有绝对路径转换成相对路径
     }
     m_mtxTempFile.unlock();
-    //
+    // check if note is encrypted or not
     if (isEncryptAllData())
         data.nProtected = 1;
     //
     WizDocument doc(*this, data);
-    //
+    // compress files to zip
     CString strZipFileName = getDocumentFileName(data.strGUID);
     if (!data.nProtected) {
         bool bZip = ::WizHtml2Zip(strURL, strProcessedHtml, strResourcePath, nFlags, strZipFileName);
@@ -4308,8 +4323,13 @@ bool WizDatabase::exportToHtmlFile(const WIZDOCUMENTDATA& document, const QStrin
 
     QString strPath = Utils::WizMisc::extractFilePath(strIndexFileName);
     bool bCoverIfExists = true;
-    if (!WizCopyFolder(strTempPath + "index_files/", strPath + strResFolder, bCoverIfExists))
-        return false;
+    // 判定是否真的有index_files
+    if (QDir(strTempPath + "index_files/").exists())
+    {
+        if (!WizCopyFolder(strTempPath + "index_files/", strPath + strResFolder, bCoverIfExists))
+            return false;
+    }
+
     //
     return true;
 }

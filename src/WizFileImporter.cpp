@@ -32,6 +32,13 @@ void WizFileImporter::importFiles(const QStringList& strFiles, const QString& st
     importFiles(strFiles, strKbGUID, location, tag);
 }
 
+/**
+ * @brief 批量导入文件
+ * @param strFiles 要导入的文件路径列表
+ * @param strKbGUID
+ * @param strTargetFolderLocation 文件夹路径
+ * @param tag 标签
+ */
 void WizFileImporter::importFiles(const QStringList& strFiles, const QString& strKbGUID,
                                    const QString& strTargetFolderLocation, const WIZTAGDATA& tag)
 {
@@ -66,6 +73,27 @@ QString WizFileImporter::loadHtmlFileToHtml(const QString& strFileName)
     return ret;
 }
 
+QString WizFileImporter::loadHtmlFileToHtml(const QString& strFileName, bool isUTF8)
+{
+    QFile file(strFileName);
+    if(!file.open(QIODevice::ReadOnly|QIODevice::Text))
+        return "";
+    QTextStream in(&file);
+    if (isUTF8)
+    {
+        in.setCodec("UTF-8");
+    }
+    QString ret = in.readAll();
+    file.close();
+
+    return ret;
+}
+
+/**
+ * @brief 将纯文本导入成HTML
+ * @param strFileName 文件地址
+ * @return
+ */
 QString WizFileImporter::loadTextFileToHtml(const QString& strFileName)
 {
     QFile file(strFileName);
@@ -81,12 +109,38 @@ QString WizFileImporter::loadTextFileToHtml(const QString& strFileName)
     return ret;
 }
 
+QString WizFileImporter::loadTextFileToHtml(const QString& strFileName, bool isUTF8)
+{
+    QFile file(strFileName);
+    if(!file.open(QIODevice::ReadOnly|QIODevice::Text))
+        return "";
+    QTextStream in(&file);
+    if (isUTF8)
+    {
+        in.setCodec("UTF-8");
+    }
+    QString ret = in.readAll();
+    file.close();
+    ret = ret.toHtmlEscaped();
+    ret.replace("\n","<br>");
+    ret.replace(" ","&nbsp");
+
+    return ret;
+}
+
 QString WizFileImporter::loadImageFileToHtml(const QString& strFileName)
 {
     return QString("<img border=\"0\" src=\"file://%1\" />").arg(strFileName);
 }
 
-
+/**
+ * @brief 导入文件
+ * @param strFile 文件地址
+ * @param strKbGUID
+ * @param strLocation
+ * @param tag
+ * @return
+ */
 bool WizFileImporter::importFile(const QString& strFile, const QString& strKbGUID,
                                   const QString& strLocation, const WIZTAGDATA& tag)
 {

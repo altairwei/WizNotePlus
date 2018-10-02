@@ -33,7 +33,7 @@ WizLogger::~WizLogger()
 
 void WizLogger::messageHandler(QtMsgType type, const QMessageLogContext& context, const QString &msg)
 {
-    Q_UNUSED(context);
+    //Q_UNUSED(context);
 
     //FIXME: useless waning message from qt, ignore it
 #ifndef QT_DEBUG
