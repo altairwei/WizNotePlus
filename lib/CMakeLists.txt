@@ -2,6 +2,11 @@ project(libs)
 
 option(GIT_SUBMODULE "Check submodules during build" ON)
 
+# install conan 3rdparty libraries to package dirs.
+include(${CMAKE_BINARY_DIR}/conanbuildinfo.cmake)
+conan_basic_setup()
+install(DIRECTORY ${CONAN_LIB_DIRS} DESTINATION ./ )
+
 #find_package(ZLIB)
 #if(NOT ZLIB_FOUND)
 #    add_subdirectory(zlib)
@@ -110,13 +115,3 @@ if (NOT GumboQuery_INCLUDE_DIR)
 else()
     add_subdirectory(gumbo-query)
 endif()
-
-# Gumbo libs
-#add_subdirectory(gumbo-parser)
-#message("Gumbo not found, using internal: ${Gumbo_SOURCE_DIR}")
-#set(Gumbo_INCLUDE_DIR
-#    ${Gumbo_SOURCE_DIR}
-#    ${Gumbo_BINARY_DIR}
-#)
-#set(Gumbo_LIBRARY Gumbo)
-#add_subdirectory(gumbo-query)

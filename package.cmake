@@ -34,6 +34,9 @@ message(
     "-- WIZNOTE_INSTALL_PREFIX: ${WIZNOTE_INSTALL_PREFIX}\n"
 )
 
+option(GENERATE_INSTALL_DIR ON)
+option(GENERATE_APPIMAGE OFF)
+
 #============================================================================
 # Construct directory tree
 #============================================================================
@@ -42,6 +45,20 @@ file(MAKE_DIRECTORY
     ${WIZNOTE_BUILD_DIR}
     ${WIZNOTE_PACKAGE_DIR}
 )
+
+#============================================================================
+# Generate thirdparty dependencies
+#============================================================================
+
+message("\nStart generate 3rdparty dependencies:\n")
+execute_process(COMMAND conan install ${WIZNOTE_SOURCE_DIR}
+    -s build_type=Release
+    WORKING_DIRECTORY ${WIZNOTE_BUILD_DIR}
+    RESULT_VARIABLE result
+)
+if(NOT result EQUAL "0")
+    message(FATAL_ERROR "Fail to generate 3rdparty dependencies!")
+endif()
 
 #============================================================================
 # Configure and generate WizNotePlus project
@@ -65,6 +82,7 @@ endif()
 
 message("\nStart build WizNotePlus project:\n")
 execute_process(COMMAND ${CMAKE_COMMAND} --build ${WIZNOTE_BUILD_DIR} --target all
+    --config Release
     WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
     RESULT_VARIABLE result
 )
@@ -97,18 +115,21 @@ file(COPY ${WIZNOTE_SOURCE_DIR}/share/qtwebengine_dictionaries
     DESTINATION ${WIZNOTE_PACKAGE_DIR}/WizNote/bin)
 
 # copy WizNote logos
-file(MAKE_DIRECTORY 
-    ${WIZNOTE_PACKAGE_DIR}/logo
-    ${WIZNOTE_PACKAGE_DIR}/logo/hicolor
-)
-foreach(ICON_SIZE 16 32 64 128 256 512)
-    set(icon_dir ${WIZNOTE_PACKAGE_DIR}/logo/hicolor/${ICON_SIZE}x${ICON_SIZE})
-    file(MAKE_DIRECTORY ${icon_dir})
-    file(COPY ${WIZNOTE_SOURCE_DIR}/build/common/logo/wiznote${ICON_SIZE}.png
-        DESTINATION ${icon_dir}
+option(CREATE_LOGO OFF)
+if(CREATE_LOGO)
+    file(MAKE_DIRECTORY 
+        ${WIZNOTE_PACKAGE_DIR}/logo
+        ${WIZNOTE_PACKAGE_DIR}/logo/hicolor
     )
-    file(RENAME ${icon_dir}/wiznote${ICON_SIZE}.png ${icon_dir}/wiznote.png)
-endforeach(ICON_SIZE)
+    foreach(ICON_SIZE 16 32 64 128 256 512)
+        set(icon_dir ${WIZNOTE_PACKAGE_DIR}/logo/hicolor/${ICON_SIZE}x${ICON_SIZE})
+        file(MAKE_DIRECTORY ${icon_dir})
+        file(COPY ${WIZNOTE_SOURCE_DIR}/build/common/logo/wiznote${ICON_SIZE}.png
+            DESTINATION ${icon_dir}
+        )
+        file(RENAME ${icon_dir}/wiznote${ICON_SIZE}.png ${icon_dir}/wiznote.png)
+    endforeach(ICON_SIZE)
+endif()
 
 # copy desktop file
 file(COPY ${WIZNOTE_SOURCE_DIR}/build/common/wiznote2.desktop
@@ -137,13 +158,15 @@ file(COPY ${fcitx-qt5-lib}
 # Deploy Qt5 libraries and package WizNotePlus to an AppImage
 #============================================================================
 
-message("\nStart package WizNotePlus project:\n")
-execute_process(COMMAND ${WIZNOTE_SOURCE_DIR}/external/linuxdeployqt
-    ${WIZNOTE_PACKAGE_DIR}/WizNote/share/applications/wiznote.desktop
-    -verbose=1 -appimage -qmake=${CMAKE_PREFIX_PATH}/bin/qmake
-    WORKING_DIRECTORY ${OUTSIDE_DIR}
-    RESULT_VARIABLE result
-)
-if(NOT result EQUAL "0")
-    message(FATAL_ERROR "Fail to package WizNotePlus project!")
+if(GENERATE_APPIMAGE)
+    message("\nStart package WizNotePlus project:\n")
+    execute_process(COMMAND ${WIZNOTE_SOURCE_DIR}/external/linuxdeployqt
+        ${WIZNOTE_PACKAGE_DIR}/WizNote/share/applications/wiznote.desktop
+        -verbose=1 -appimage -qmake=${CMAKE_PREFIX_PATH}/bin/qmake
+        WORKING_DIRECTORY ${OUTSIDE_DIR}
+        RESULT_VARIABLE result
+    )
+    if(NOT result EQUAL "0")
+        message(FATAL_ERROR "Fail to package WizNotePlus project!")
+    endif()
 endif()
