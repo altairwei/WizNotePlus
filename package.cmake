@@ -64,16 +64,36 @@ endif()
 # Configure and generate WizNotePlus project
 #============================================================================
 
-message("\nStart configure and generate WizNotePlus project:\n")
-execute_process(COMMAND ${CMAKE_COMMAND} -DCMAKE_BUILD_TYPE=Release 
-        -DCMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}
-        -DCMAKE_INSTALL_PREFIX=${WIZNOTE_INSTALL_PREFIX}
-        -H${WIZNOTE_SOURCE_DIR} -B${WIZNOTE_BUILD_DIR}
-    WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
-    RESULT_VARIABLE result
-)
-if(NOT result EQUAL "0")
-    message(FATAL_ERROR "Fail to generate WizNotePlus project!")
+if(UNIX)
+    # use Unix Makefiles generator
+    message("\nStart configure and generate WizNotePlus project:\n")
+    execute_process(COMMAND ${CMAKE_COMMAND} -DCMAKE_BUILD_TYPE=Release 
+            -DCMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}
+            -DCMAKE_INSTALL_PREFIX=${WIZNOTE_INSTALL_PREFIX}
+            -H${WIZNOTE_SOURCE_DIR} -B${WIZNOTE_BUILD_DIR}
+            -G "Unix Makefiles"
+        WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+        RESULT_VARIABLE result
+    )
+    if(NOT result EQUAL "0")
+        message(FATAL_ERROR "Fail to generate WizNotePlus project!")
+    endif()
+elseif(WIN32)
+    # use NMake Makefiles generator
+    message("\nStart configure and generate WizNotePlus project:\n")
+    execute_process(COMMAND ${CMAKE_COMMAND} -DCMAKE_BUILD_TYPE=Release 
+            -DCMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}
+            -DCMAKE_INSTALL_PREFIX=${WIZNOTE_INSTALL_PREFIX}
+            -H${WIZNOTE_SOURCE_DIR} -B${WIZNOTE_BUILD_DIR}
+            -G "NMake Makefiles"
+        WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+        RESULT_VARIABLE result
+    )
+    if(NOT result EQUAL "0")
+        message(FATAL_ERROR "Fail to generate WizNotePlus project!")
+    endif()
+else()
+    message(FATAL_ERROR "\nCan't detect which platform your are useing!")
 endif()
 
 #============================================================================
@@ -94,8 +114,8 @@ endif()
 # Install WizNotePlus project
 #============================================================================
 
-# TODO: 需要根据不同平台指定不同的CMAKE_GENERATOR
 if(UNIX)
+    # use Unix Makefiles generator
     message("\nStart install WizNotePlus project:\n")
     execute_process(COMMAND make install
         WORKING_DIRECTORY ${WIZNOTE_BUILD_DIR}
@@ -104,6 +124,18 @@ if(UNIX)
     if(NOT result EQUAL "0")
         message(FATAL_ERROR "Fail to install WizNotePlus project!")
     endif()
+elseif(WIN32)
+    # use NMake Makefiles generator
+    message("\nStart install WizNotePlus project:\n")
+    execute_process(COMMAND nmake install
+        WORKING_DIRECTORY ${WIZNOTE_BUILD_DIR}
+        RESULT_VARIABLE result
+    )
+    if(NOT result EQUAL "0")
+        message(FATAL_ERROR "Fail to install WizNotePlus project!")
+    endif()
+else()
+    message(FATAL_ERROR "\nCan't detect which platform your are useing!")
 endif()
 
 #============================================================================
