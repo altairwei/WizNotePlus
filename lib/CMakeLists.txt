@@ -1,19 +1,26 @@
 project(libs)
 
-option(GIT_SUBMODULE "Check submodules during build" ON)
+option(WIZNOTE_GIT_SUBMODULE "Check submodules during build" ON)
+option(WIZNOTE_CONAN_LIBS "If enable conan packages" ON)
 
 # install conan 3rdparty libraries to package dirs.
-include(${CMAKE_BINARY_DIR}/conanbuildinfo.cmake)
-conan_basic_setup()
-install(DIRECTORY ${CONAN_LIB_DIRS} DESTINATION ./ )
+if(CONAN_LIBS)
+    message("\nStart generate 3rdparty dependencies:\n")
+    execute_process(COMMAND conan install ${CMAKE_SOURCE_DIR}
+        -s build_type=${CMAKE_BUILD_TYPE}
+        WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
+        RESULT_VARIABLE result
+    )
+    if(NOT result EQUAL "0")
+        message(FATAL_ERROR "Fail to generate 3rdparty dependencies!")
+    endif()
 
-#find_package(ZLIB)
-#if(NOT ZLIB_FOUND)
-#    add_subdirectory(zlib)
-#    message("ZLIB not found, using internal: ${zlib_SOURCE_DIR}")
-#    set(ZLIB_INCLUDE_DIR ${zlib_SOURCE_DIR} ${zlib_BINARY_DIR})
-#    set(ZLIB_LIBRARY zlib)
-#endif(NOT ZLIB_FOUND)
+    include(${CMAKE_BINARY_DIR}/conanbuildinfo.cmake)
+    conan_basic_setup()
+
+    install(DIRECTORY ${CONAN_LIB_DIRS} DESTINATION ./ )
+endif(CONAN_LIBS)
+
 find_package(ZLIB)
 if (NOT ZLIB_FOUND)
     # Update submodules as needed

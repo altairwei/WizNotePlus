@@ -1,35 +1,75 @@
 #!/usr/bin/cmake -P
+
 # Program:
-#   Package WizNotePlus and it's dependencies into a portable AppImage.
+#   Package WizNotePlus and it's dependencies into a portable AppImage or MacOS dmg.
 
 cmake_minimum_required(VERSION 3.5)
 
 #============================================================================
-# Options and Settings
+# Options and Settings 选项和设置
 #============================================================================
 
 get_filename_component(OUTSIDE_DIR ${CMAKE_CURRENT_SOURCE_DIR} DIRECTORY)
 
-# Your Qt5 libraries path.
-set(CMAKE_PREFIX_PATH /home/altairwei/usr/Qt5.11.1/5.11.1/gcc_64)
-set(CMAKE_OSX_SYSROOT /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.10.sdk)
+# Your Qt5 libraries path. 你的Qt5库位置
+if(NOT QT_INSTALL_DIR)
+    set(QT_INSTALL_DIR /home/altairwei/usr/Qt5.11.1/5.11.1/gcc_64)
+    find_path(qt_dir "bin/qmake" ${QT_INSTALL_DIR})
+    if(NOT qt_dir)
+        message(FATAL_ERROR "\nQT_INSTALL_DIR is not valid, Qt5 library cannot be found !\nPlease define CMAKE_OSX_SYSROOT!")
+    endif()
+endif()
 
-# WizNotePlus source directory.
-set(WIZNOTE_SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR})
-# Build directory.
-set(WIZNOTE_BUILD_DIR ${OUTSIDE_DIR}/build-WizNotePlus)
-# Install or Package directory.
-set(WIZNOTE_PACKAGE_DIR ${OUTSIDE_DIR}/package-WizNotePlus)
-# install_prefix WizNote
-set(WIZNOTE_INSTALL_PREFIX ${WIZNOTE_PACKAGE_DIR}/WizNote)
+if(NOT CMAKE_PREFIX_PATH)
+    set(CMAKE_PREFIX_PATH ${QT_INSTALL_DIR})
+endif()
+
+# OSX SDK
 if(APPLE)
-    set(WIZNOTE_INSTALL_PREFIX ${WIZNOTE_PACKAGE_DIR}/WizNote.app)
+    if(NOT CMAKE_OSX_SYSROOT)
+        set(CMAKE_OSX_SYSROOT /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.13.sdk)
+        find_path(osx_sysroot "\nSDKSettings.plist" ${CMAKE_OSX_SYSROOT})
+        if(NOT osx_sysroot)
+            message(FATAL_ERROR "CMAKE_OSX_SYSROOT is not valid, OSX plantform SDK cannot be found !\nPlease define CMAKE_OSX_SYSROOT!")
+        endif()
+    endif()
 endif(APPLE)
-# Package output directory
-set(WIZNOTE_PACKAGE_OUTPUT_PATH ${OUTSIDE_DIR})
 
-option(GENERATE_INSTALL_DIR "Decide whether install or not." ON)
-option(GENERATE_APPIMAGE "Decide whether generate AppImage or not." ON)
+# WizNotePlus source directory. 项目源代码位置
+if(NOT WIZNOTE_SOURCE_DIR)
+    set(WIZNOTE_SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR})
+endif()
+
+# Build directory. 项目构建位置
+if(NOT WIZNOTE_BUILD_DIR)
+    set(WIZNOTE_BUILD_DIR ${OUTSIDE_DIR}/build-WizNotePlus)
+endif()
+
+# Install or Package directory. 项目打包程序工作目录
+if(NOT WIZNOTE_PACKAGE_DIR)
+    set(WIZNOTE_PACKAGE_DIR ${OUTSIDE_DIR}/package-WizNotePlus)
+endif()
+
+# install_prefix WizNote. 项目安装位置
+if(NOT WIZNOTE_INSTALL_PREFIX)
+    set(WIZNOTE_INSTALL_PREFIX ${WIZNOTE_PACKAGE_DIR}/WizNote)
+    if(APPLE)
+        set(WIZNOTE_INSTALL_PREFIX ${WIZNOTE_PACKAGE_DIR}/WizNote.app)
+    endif(APPLE)
+endif()
+
+# Package output directory. 打包结果输出位置
+if(NOT WIZNOTE_PACKAGE_OUTPUT_PATH)
+    set(WIZNOTE_PACKAGE_OUTPUT_PATH ${OUTSIDE_DIR})
+endif()
+
+if(NOT GENERATE_INSTALL_DIR)
+    option(GENERATE_INSTALL_DIR "Decide whether install or not." ON)
+endif()
+
+if(NOT GENERATE_APPIMAGE)
+    option(GENERATE_APPIMAGE "Decide whether generate AppImage or not." ON)
+endif()
 
 message(
     "\nThe following variables must be confirmed:\n"
@@ -43,7 +83,7 @@ message(
 )
 
 #============================================================================
-# Construct directory tree
+# Construct directory tree 构建目录树
 #============================================================================
 
 if(UNIX)
@@ -71,26 +111,12 @@ else(UNIX)
 endif(UNIX)
 
 #============================================================================
-# Generate thirdparty dependencies
-#============================================================================
-
-message("\nStart generate 3rdparty dependencies:\n")
-execute_process(COMMAND conan install ${WIZNOTE_SOURCE_DIR}
-    -s build_type=Release
-    WORKING_DIRECTORY ${WIZNOTE_BUILD_DIR}
-    RESULT_VARIABLE result
-)
-if(NOT result EQUAL "0")
-    message(FATAL_ERROR "Fail to generate 3rdparty dependencies!")
-endif()
-
-#============================================================================
-# Configure and generate WizNotePlus project
+# Configure and generate WizNotePlus project 生成 WizNotePlus CMake 项目
 #============================================================================
 
 if(UNIX)
     if(APPLE)
-        # MacOS platform use Unix Makefiles generator
+        # MacOS platform use Unix Makefiles generator.
         message("\nStart configure and generate WizNotePlus project:\n")
         execute_process(COMMAND ${CMAKE_COMMAND}
                 -DCMAKE_BUILD_TYPE=Release 
@@ -140,7 +166,7 @@ else(UNIX)
 endif(UNIX)
 
 #============================================================================
-# Build WizNotePlus project
+# Build WizNotePlus project 调用本地工具构建项目
 #============================================================================
 
 message("\nStart build WizNotePlus project:\n")
@@ -154,7 +180,7 @@ if(NOT result EQUAL "0")
 endif()
 
 #============================================================================
-# Install WizNotePlus project
+# Install WizNotePlus project 将项目安装到打包位置
 #============================================================================
 
 if(GENERATE_INSTALL_DIR)
@@ -185,7 +211,7 @@ if(GENERATE_INSTALL_DIR)
 endif()
 
 #============================================================================
-# Package resource files
+# Package resource files 打包相关文件
 #============================================================================
 
 if(GENERATE_INSTALL_DIR)
@@ -272,18 +298,102 @@ if(GENERATE_INSTALL_DIR)
 endif(GENERATE_INSTALL_DIR)
 
 #============================================================================
-# Deploy Qt5 libraries and package WizNotePlus to an AppImage or dmg
+# Deploy Qt5 libraries and package WizNotePlus 部署Qt5并生成包
 #============================================================================
 
 if(GENERATE_APPIMAGE)
-    message("\nStart package WizNotePlus project:\n")
-    execute_process(COMMAND ${WIZNOTE_SOURCE_DIR}/external/linuxdeployqt
-        ${WIZNOTE_PACKAGE_DIR}/WizNote/share/applications/wiznote.desktop
-        -verbose=1 -appimage -qmake=${CMAKE_PREFIX_PATH}/bin/qmake
-        WORKING_DIRECTORY ${OUTSIDE_DIR}
-        RESULT_VARIABLE result
-    )
-    if(NOT result EQUAL "0")
-        message(FATAL_ERROR "Fail to package WizNotePlus project!")
-    endif()
-endif()
+    if(UNIX)
+        if(APPLE)
+            # MacOS platform
+
+            # macdeployqt
+            message("\nStart deploy WizNotePlus project:\n")
+            execute_process(COMMAND ${QT_INSTALL_DIR}/bin/macdeployqt
+                ${WIZNOTE_INSTALL_PREFIX} -verbose=1 -dmg
+                WORKING_DIRECTORY ${WIZNOTE_BUILD_DIR}
+                RESULT_VARIABLE result
+            )
+            if(NOT result EQUAL "0")
+                message(FATAL_ERROR "Fail to package WizNotePlus project!")
+            endif()
+
+            # sign code
+            set(APPLCERT "Developer ID Application: Beijing Wozhi Technology Co. Ltd (KCS8N3QJ92)")
+            execute_process(COMMAND codesign --verbose=2 --deep --sign
+                "${APPLCERT}" ${WIZNOTE_INSTALL_PREFIX}
+                WORKING_DIRECTORY ${WIZNOTE_BUILD_DIR}
+                RESULT_VARIABLE result
+            )
+            if(NOT result EQUAL "0")
+                message(FATAL_ERROR "Fail to sign code!")
+            endif()
+
+            # change Package format
+            set(package_home "${WIZNOTE_SOURCE_DIR}/macos-package")
+            set(package_output_path ${WIZNOTE_PACKAGE_OUTPUT_PATH})
+            set(volumn_name "wiznote-disk")
+            set(volumn_path "/Volumes/${volumn_name}")
+            execute_process(COMMAND setFile 
+                -a V ${package_home}/wiznote-disk-cover.jpg
+                WORKING_DIRECTORY ${WIZNOTE_SOURCE_DIR}
+                RESULT_VARIABLE result
+            )
+            if(NOT result EQUAL "0")
+                message(FATAL_ERROR "Fail to execute command:" 
+                "setFile -a V ${package_home}/wiznote-disk-cover.jpg")
+            endif()
+            file(REMOVE_RECURSE 
+                ${package_output_path}/tmp.dmg
+                ${package_output_path}/wiznote-macos.dmg
+                ${package_home}/WizNote.app
+            )
+            file(COPY ${WIZNOTE_PACKAGE_DIR}/WizNote.app
+                DESTINATION ${package_home}
+            )
+            execute_process(COMMAND hdiutil makehybrid
+                -hfs -hfs-volume-name ${volumn_name} 
+                -hfs-openfolder ${package_home} ${package_home}
+                -o ${package_output_path}/tmp.dmg
+                WORKING_DIRECTORY ${WIZNOTE_SOURCE_DIR}
+                RESULT_VARIABLE result
+            )
+            if(NOT result EQUAL "0")
+                message(FATAL_ERROR "Fail to execute command:" 
+                "hdiutil makehybrid")
+            endif()
+            execute_process(COMMAND hdiutil convert
+                -format UDZO ${package_output_path}/tmp.dmg
+                -o ${package_output_path}/wiznote-macos.dmg
+                WORKING_DIRECTORY ${WIZNOTE_SOURCE_DIR}
+                RESULT_VARIABLE result
+            )
+            if(NOT result EQUAL "0")
+                message(FATAL_ERROR "Fail to execute command:" 
+                "hdiutil convert")
+            endif()
+            file(REMOVE_RECURSE 
+                ${package_output_path}/tmp.dmg
+                ${package_home}/WizNote.app
+            )
+
+        else(APPLE)
+            # Linux platform
+            message("\nStart package WizNotePlus project:\n")
+            execute_process(COMMAND ${WIZNOTE_SOURCE_DIR}/external/linuxdeployqt
+                ${WIZNOTE_PACKAGE_DIR}/WizNote/share/applications/wiznote.desktop
+                -verbose=1 -appimage -qmake=${CMAKE_PREFIX_PATH}/bin/qmake
+                WORKING_DIRECTORY ${OUTSIDE_DIR}
+                RESULT_VARIABLE result
+            )
+            if(NOT result EQUAL "0")
+                message(FATAL_ERROR "Fail to package WizNotePlus project!")
+            endif()
+        endif(APPLE)
+    elseif(WIN32)
+        # Windows platform
+
+    else(UNIX)
+        message(FATAL_ERROR "\nCan't detect which platform your are useing!")
+    endif(UNIX)
+endif(GENERATE_APPIMAGE)
+
