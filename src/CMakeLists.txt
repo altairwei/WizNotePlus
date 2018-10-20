@@ -426,7 +426,6 @@ include_directories(
     ${CMAKE_CURRENT_BINARY_DIR}
     ${CMAKE_SOURCE_DIR}/lib
     ${CMAKE_SOURCE_DIR}/lib/quazip
-    ${CMAKE_SOURCE_DIR}/lib/openssl/include
     ${CMAKE_SOURCE_DIR}/lib/gumbo-parser/src
     ${CMAKE_SOURCE_DIR}/lib/gumbo-query/src
 )
@@ -456,7 +455,7 @@ if(UNIX)
         file(GLOB _qt5_QM ${qt_translations_dir}/qt_*.qm)
 
         add_executable(WizNote MACOSX_BUNDLE  ${wiznote_HEADERS} ${wiznote_HEADERS_MAC} ${wiznote_FORM_HEADERS} ${wiznote_SOURCES_MAC} ${wiznote_SOURCES} ${wiznote_QM} ${_qt5_QM} ${wiznote_RC} ${wiznote_LOGO})
-        set_target_properties(WizNote PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
+        set_target_properties(WizNote PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
         set_target_properties(${PROJECT_NAME} PROPERTIES AUTOMOC_MOC_OPTIONS "-DQ_OS_MAC")
 
         # this should be issue of cmake, refer: http://public.kitware.com/Bug/bug_revision_view_page.php?rev_id=958
@@ -572,9 +571,8 @@ if(UNIX)
                                 gumbo_query_static
 				Qt5::WebEngine
 				Qt5::WebEngineWidgets
-				${CMAKE_SOURCE_DIR}/lib/openssl/lib/libcrypto.a
-				${CMAKE_SOURCE_DIR}/lib/openssl/lib/libssl.a
 				${CMAKE_DL_LIBS}
+                                ${CONAN_LIBS}
 			)
 		else(APPSTORE_BUILD)
 			target_link_libraries(${PROJECT_NAME}
@@ -583,9 +581,8 @@ if(UNIX)
                                 gumbo_query_static
 				Qt5::WebEngine
 				Qt5::WebEngineWidgets
-				${CMAKE_SOURCE_DIR}/lib/openssl/lib/libcrypto.a
-				${CMAKE_SOURCE_DIR}/lib/openssl/lib/libssl.a
 				${CMAKE_DL_LIBS}
+                                ${CONAN_LIBS}
 			)
 		endif(APPSTORE_BUILD)
 	else(APPLE) #linux
@@ -598,6 +595,7 @@ if(UNIX)
 			Qt5::WebEngine
 			Qt5::WebEngineWidgets
 			${CMAKE_DL_LIBS}
+                        ${CONAN_LIBS}
 		)
 	endif(APPLE)
 else(NOT UNIX)
@@ -608,6 +606,7 @@ else(NOT UNIX)
 		Qt5::WebEngine
 		Qt5::WebEngineWidgets
 		${CMAKE_DL_LIBS}
+                ${CONAN_LIBS}
                 Qt5::WinMain
 	)
 endif()

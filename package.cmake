@@ -12,23 +12,25 @@ cmake_minimum_required(VERSION 3.5)
 get_filename_component(OUTSIDE_DIR ${CMAKE_CURRENT_SOURCE_DIR} DIRECTORY)
 
 # Your Qt5 libraries path. 你的Qt5库位置
-if(NOT QT_INSTALL_DIR)
-    set(QT_INSTALL_DIR /home/altairwei/usr/Qt5.11.1/5.11.1/gcc_64)
-    find_path(qt_dir "bin/qmake" ${QT_INSTALL_DIR})
-    if(NOT qt_dir)
-        message(FATAL_ERROR "\nQT_INSTALL_DIR is not valid, Qt5 library cannot be found !\nPlease define CMAKE_OSX_SYSROOT!")
-    endif()
+if(NOT QTDIR)
+    set(QTDIR /Users/altairwei/Qt5.11.1/5.11.1/clang_64)
+endif()
+find_path(qt_dir "bin/qmake" ${QTDIR})
+if(NOT qt_dir)
+    message(FATAL_ERROR "\nQTDIR is not valid, Qt5 library cannot be found !\nPlease define CMAKE_OSX_SYSROOT!")
+else()
+    get_filename_component(QTDIR ${QTDIR} ABSOLUTE)
 endif()
 
 if(NOT CMAKE_PREFIX_PATH)
-    set(CMAKE_PREFIX_PATH ${QT_INSTALL_DIR})
+    set(CMAKE_PREFIX_PATH ${QTDIR})
 endif()
 
 # OSX SDK
 if(APPLE)
     if(NOT CMAKE_OSX_SYSROOT)
         set(CMAKE_OSX_SYSROOT /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.13.sdk)
-        find_path(osx_sysroot "\nSDKSettings.plist" ${CMAKE_OSX_SYSROOT})
+        find_path(osx_sysroot "SDKSettings.plist" ${CMAKE_OSX_SYSROOT})
         if(NOT osx_sysroot)
             message(FATAL_ERROR "CMAKE_OSX_SYSROOT is not valid, OSX plantform SDK cannot be found !\nPlease define CMAKE_OSX_SYSROOT!")
         endif()
@@ -122,6 +124,7 @@ if(UNIX)
                 -DCMAKE_BUILD_TYPE=Release 
                 -DCMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}
                 -DCMAKE_INSTALL_PREFIX=${WIZNOTE_INSTALL_PREFIX}
+                -DCMAKE_OSX_SYSROOT=${CMAKE_OSX_SYSROOT}
                 -H${WIZNOTE_SOURCE_DIR} -B${WIZNOTE_BUILD_DIR}
                 -G "Unix Makefiles"
                 -UPDATE_TRANSLATIONS=YES
@@ -219,11 +222,16 @@ if(GENERATE_INSTALL_DIR)
         if(APPLE)
             # MacOS platform
 
+            # copy files
+            file(COPY ${WIZNOTE_BUILD_DIR}/bin/WizNote.app
+                DESTINATION ${WIZNOTE_PACKAGE_DIR}
+            )
+
             # get build version
             execute_process(
                 COMMAND git rev-list HEAD
                 COMMAND wc -l
-                COMMAND awk '{print $1}'
+                COMMAND awk "{print $1}"
                 WORKING_DIRECTORY ${WIZNOTE_SOURCE_DIR}
                 OUTPUT_VARIABLE wiznote_build_version
                 RESULT_VARIABLE result
@@ -241,7 +249,7 @@ if(GENERATE_INSTALL_DIR)
                 RESULT_VARIABLE result
             )
             if(NOT result EQUAL "0")
-                message(FATAL_ERROR "Fail to replace build version!")
+                message(FATAL_ERROR "Fail to replace build version to Info.plist!")
             endif()
 
         else(APPLE)
@@ -306,27 +314,59 @@ if(GENERATE_APPIMAGE)
         if(APPLE)
             # MacOS platform
 
-            # macdeployqt
+            # deploy
             message("\nStart deploy WizNotePlus project:\n")
-            execute_process(COMMAND ${QT_INSTALL_DIR}/bin/macdeployqt
-                ${WIZNOTE_INSTALL_PREFIX} -verbose=1 -dmg
+            execute_process(COMMAND ${QTDIR}/bin/macdeployqt
+                ${WIZNOTE_INSTALL_PREFIX} -verbose=1
+                -executable=${WIZNOTE_INSTALL_PREFIX}/Contents/MacOS/WizNote
+                -libpath=${QTDIR}
+                -always-overwrite
                 WORKING_DIRECTORY ${WIZNOTE_BUILD_DIR}
-                RESULT_VARIABLE result
+                RESULT_VARIABLE macdeployqt_result
             )
-            if(NOT result EQUAL "0")
-                message(FATAL_ERROR "Fail to package WizNotePlus project!")
+            if(NOT macdeployqt_result EQUAL "0")
+                message(FATAL_ERROR
+                    "\nFail to package WizNotePlus project!"
+                    "\n-- Command: ${QTDIR}/bin/macdeployqt"
+                    "\n-- Exit Code: ${macdeployqt_result}"
+                )
+            endif()
+            execute_process(COMMAND python ${WIZNOTE_SOURCE_DIR}/external/macdeployqtfix.py
+                ${WIZNOTE_INSTALL_PREFIX}/Contents/MacOS/WizNote ${QTDIR}
+                WORKING_DIRECTORY ${WIZNOTE_BUILD_DIR}
+                RESULT_VARIABLE macdeployqtfix_result
+            )
+            if(NOT macdeployqtfix_result EQUAL "0")
+                message(FATAL_ERROR
+                    "\nFail to package WizNotePlus project!"
+                    "\n-- Command: python ${WIZNOTE_SOURCE_DIR}/external/macdeployqtfix.py"
+                    "\n-- Exit Code: ${macdeployqtfix_result}"
+                )
+            endif()
+            #FIXME: Should not add rpath by hand!
+            execute_process(COMMAND install_name_tool
+                -add_rpath "@executable_path/../Frameworks"
+                ${WIZNOTE_INSTALL_PREFIX}/Contents/MacOS/WizNote
+                WORKING_DIRECTORY ${WIZNOTE_BUILD_DIR}
+                RESULT_VARIABLE rpath_result
+            )
+            if(NOT rpath_result EQUAL "0")
+                message(FATAL_ERROR
+                    "\nFail to package WizNotePlus project!"
+                    "\n-- Command: install_name_tool"
+                    "\n-- Exit Code: ${rpath_result}"
+                )
             endif()
 
             # sign code
-            set(APPLCERT "Developer ID Application: Beijing Wozhi Technology Co. Ltd (KCS8N3QJ92)")
-            execute_process(COMMAND codesign --verbose=2 --deep --sign
-                "${APPLCERT}" ${WIZNOTE_INSTALL_PREFIX}
-                WORKING_DIRECTORY ${WIZNOTE_BUILD_DIR}
-                RESULT_VARIABLE result
-            )
-            if(NOT result EQUAL "0")
-                message(FATAL_ERROR "Fail to sign code!")
-            endif()
+            #set(APPLCERT "Developer ID Application: Beijing Wozhi Technology Co. Ltd (KCS8N3QJ92)")
+            #execute_process(COMMAND codesign --verbose=2 --deep --sign "${APPLCERT}" ${WIZNOTE_INSTALL_PREFIX}
+            #    WORKING_DIRECTORY ${WIZNOTE_BUILD_DIR}
+            #    RESULT_VARIABLE result
+            #)
+            #if(NOT result EQUAL "0")
+            #    message(FATAL_ERROR "Fail to sign code!")
+            #endif()
 
             # change Package format
             set(package_home "${WIZNOTE_SOURCE_DIR}/macos-package")
@@ -344,7 +384,7 @@ if(GENERATE_APPIMAGE)
             endif()
             file(REMOVE_RECURSE 
                 ${package_output_path}/tmp.dmg
-                ${package_output_path}/wiznote-macos.dmg
+                ${package_output_path}/Wiznote-macOS.dmg
                 ${package_home}/WizNote.app
             )
             file(COPY ${WIZNOTE_PACKAGE_DIR}/WizNote.app
@@ -354,7 +394,7 @@ if(GENERATE_APPIMAGE)
                 -hfs -hfs-volume-name ${volumn_name} 
                 -hfs-openfolder ${package_home} ${package_home}
                 -o ${package_output_path}/tmp.dmg
-                WORKING_DIRECTORY ${WIZNOTE_SOURCE_DIR}
+                WORKING_DIRECTORY ${package_home}
                 RESULT_VARIABLE result
             )
             if(NOT result EQUAL "0")
@@ -363,7 +403,7 @@ if(GENERATE_APPIMAGE)
             endif()
             execute_process(COMMAND hdiutil convert
                 -format UDZO ${package_output_path}/tmp.dmg
-                -o ${package_output_path}/wiznote-macos.dmg
+                -o ${package_output_path}/Wiznote-macOS.dmg
                 WORKING_DIRECTORY ${WIZNOTE_SOURCE_DIR}
                 RESULT_VARIABLE result
             )
