@@ -24,9 +24,11 @@ if(WIZNOTE_CONAN_LIBS)
     message("\nStart generate 3rdparty dependencies at ${CMAKE_BINARY_DIR}:\n")
     execute_process(COMMAND conan install ${CMAKE_SOURCE_DIR}
         -s build_type=${CMAKE_BUILD_TYPE}
+        --build missing
         WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
         RESULT_VARIABLE conan_result
         OUTPUT_VARIABLE conan_output
+        ERROR_VARIABLE conan_error
     )
     if(NOT DEFINED conan_result)
         message(FATAL_ERROR
@@ -35,10 +37,12 @@ if(WIZNOTE_CONAN_LIBS)
         )
     endif()
     if(NOT conan_result EQUAL "0")
+        message("${conan_error}")
+        message("${conan_output}")
         message(FATAL_ERROR
-            "Fail to generate 3rdparty dependencies! "
-            "-- Exit code: ${conan_result}"
-            "-- Build type: ${CMAKE_BUILD_TYPE} \n")
+            "\nFail to generate 3rdparty dependencies! "
+            "\n-- Exit code: ${conan_result}"
+            "\n-- Build type: ${CMAKE_BUILD_TYPE} \n")
     endif()
 
     include(${CMAKE_BINARY_DIR}/conanbuildinfo.cmake)
