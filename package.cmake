@@ -9,6 +9,8 @@ cmake_minimum_required(VERSION 3.5)
 # Options and Settings 选项和设置
 #============================================================================
 
+message("\nThe following variables must be confirmed:\n")
+
 get_filename_component(OUTSIDE_DIR ${CMAKE_CURRENT_SOURCE_DIR} DIRECTORY)
 
 # Your Qt5 libraries path. 你的Qt5库位置
@@ -25,32 +27,41 @@ endif()
 if(NOT CMAKE_PREFIX_PATH)
     set(CMAKE_PREFIX_PATH ${QTDIR})
 endif()
+message(STATUS "Using CMAKE_PREFIX_PATH: ${CMAKE_PREFIX_PATH}")
 
-# OSX SDK
+# MacOSX.SDK
 if(APPLE)
     if(NOT CMAKE_OSX_SYSROOT)
-        set(CMAKE_OSX_SYSROOT /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.13.sdk)
+        execute_process(COMMAND xcodebuild -version -sdk macosx Path
+            OUTPUT_VARIABLE CMAKE_OSX_SYSROOT
+            ERROR_QUIET
+            OUTPUT_STRIP_TRAILING_WHITESPACE
+        )
         find_path(osx_sysroot "SDKSettings.plist" ${CMAKE_OSX_SYSROOT})
         if(NOT osx_sysroot)
-            message(FATAL_ERROR "CMAKE_OSX_SYSROOT is not valid, OSX plantform SDK cannot be found !\nPlease define CMAKE_OSX_SYSROOT!")
-        endif()
-    endif()
+            message(FATAL_ERROR "CMAKE_OSX_SYSROOT is not valid, macOS SDK cannot be found !\nPlease define CMAKE_OSX_SYSROOT!")
+        endif(NOT osx_sysroot)
+    endif(NOT CMAKE_OSX_SYSROOT)
+    message (STATUS "Using CMAKE_OSX_SYSROOT: ${CMAKE_OSX_SYSROOT}")
 endif(APPLE)
 
 # WizNotePlus source directory. 项目源代码位置
 if(NOT WIZNOTE_SOURCE_DIR)
     set(WIZNOTE_SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR})
 endif()
+message(STATUS "Using WIZNOTE_SOURCE_DIR: ${WIZNOTE_SOURCE_DIR}")
 
 # Build directory. 项目构建位置
 if(NOT WIZNOTE_BUILD_DIR)
     set(WIZNOTE_BUILD_DIR ${OUTSIDE_DIR}/build-WizNotePlus)
 endif()
+message(STATUS "Using WIZNOTE_BUILD_DIR: ${WIZNOTE_BUILD_DIR}")
 
 # Install or Package directory. 项目打包程序工作目录
 if(NOT WIZNOTE_PACKAGE_DIR)
     set(WIZNOTE_PACKAGE_DIR ${OUTSIDE_DIR}/package-WizNotePlus)
 endif()
+message(STATUS "Using WIZNOTE_PACKAGE_DIR: ${WIZNOTE_PACKAGE_DIR}")
 
 # install_prefix WizNote. 项目安装位置
 if(NOT WIZNOTE_INSTALL_PREFIX)
@@ -59,6 +70,7 @@ if(NOT WIZNOTE_INSTALL_PREFIX)
         set(WIZNOTE_INSTALL_PREFIX ${WIZNOTE_PACKAGE_DIR}/WizNote.app)
     endif(APPLE)
 endif()
+message(STATUS "Using WIZNOTE_INSTALL_PREFIX: ${WIZNOTE_INSTALL_PREFIX}")
 
 # Package output directory. 打包结果输出位置
 if(NOT WIZNOTE_PACKAGE_OUTPUT_PATH)
@@ -68,21 +80,12 @@ endif()
 if(NOT GENERATE_INSTALL_DIR)
     option(GENERATE_INSTALL_DIR "Decide whether install or not." ON)
 endif()
+message(STATUS "GENERATE_INSTALL_DIR: ${GENERATE_INSTALL_DIR}")
 
 if(NOT GENERATE_APPIMAGE)
     option(GENERATE_APPIMAGE "Decide whether generate AppImage or not." ON)
 endif()
-
-message(
-    "\nThe following variables must be confirmed:\n"
-    "-- CMAKE_PREFIX_PATH: ${CMAKE_PREFIX_PATH}\n"
-    "-- WIZNOTE_SOURCE_DIR: ${WIZNOTE_SOURCE_DIR}\n"
-    "-- WIZNOTE_BUILD_DIR: ${WIZNOTE_BUILD_DIR}\n"
-    "-- WIZNOTE_PACKAGE_DIR: ${WIZNOTE_PACKAGE_DIR}\n"
-    "-- WIZNOTE_INSTALL_PREFIX: ${WIZNOTE_INSTALL_PREFIX}\n"
-    "-- GENERATE_INSTALL_DIR: ${GENERATE_INSTALL_DIR}\n"
-    "-- GENERATE_APPIMAGE: ${GENERATE_APPIMAGE}\n"
-)
+message(STATUS "GENERATE_APPIMAGE: ${GENERATE_APPIMAGE}")
 
 #============================================================================
 # Construct directory tree 构建目录树
@@ -106,7 +109,7 @@ if(UNIX)
         )
     endif(APPLE)
 elseif(WIN32)
-    # Windows platform
+    #TODO: Windows platform
 
 else(UNIX)
     message(FATAL_ERROR "\nCan't detect which platform your are useing!")
@@ -314,13 +317,23 @@ if(GENERATE_APPIMAGE)
         if(APPLE)
             # MacOS platform
 
-            # deploy
+            find_file(create_dmg "create-dmg" "${WIZNOTE_SOURCE_DIR}/external/create-dmg")
+            if (NOT create_dmg)
+                message(STATUS "Downloading dmg package tool...")
+                execute_process(COMMAND git submodule update --init -- ${WIZNOTE_SOURCE_DIR}/external/create-dmg
+                            WORKING_DIRECTORY ${WIZNOTE_SOURCE_DIR}
+                            RESULT_VARIABLE GIT_SUBMOD_RESULT)
+                if(NOT GIT_SUBMOD_RESULT EQUAL "0")
+                    message(FATAL_ERROR "git submodule update --init failed with ${GIT_SUBMOD_RESULT}, please checkout submodules")
+                endif()
+            endif()
+
+            # deploy 3rdpaty libraries
             message("\nStart deploy WizNotePlus project:\n")
             execute_process(COMMAND ${QTDIR}/bin/macdeployqt
                 ${WIZNOTE_INSTALL_PREFIX} -verbose=1
                 -executable=${WIZNOTE_INSTALL_PREFIX}/Contents/MacOS/WizNote
                 -libpath=${QTDIR}
-                -always-overwrite
                 WORKING_DIRECTORY ${WIZNOTE_BUILD_DIR}
                 RESULT_VARIABLE macdeployqt_result
             )
@@ -373,48 +386,74 @@ if(GENERATE_APPIMAGE)
             set(package_output_path ${WIZNOTE_PACKAGE_OUTPUT_PATH})
             set(volumn_name "wiznote-disk")
             set(volumn_path "/Volumes/${volumn_name}")
-            execute_process(COMMAND setFile 
-                -a V ${package_home}/wiznote-disk-cover.jpg
-                WORKING_DIRECTORY ${WIZNOTE_SOURCE_DIR}
-                RESULT_VARIABLE result
-            )
-            if(NOT result EQUAL "0")
-                message(FATAL_ERROR "Fail to execute command:" 
-                "setFile -a V ${package_home}/wiznote-disk-cover.jpg")
-            endif()
-            file(REMOVE_RECURSE 
-                ${package_output_path}/tmp.dmg
+
+            # create dmg
+            file(REMOVE
                 ${package_output_path}/Wiznote-macOS.dmg
-                ${package_home}/WizNote.app
             )
-            file(COPY ${WIZNOTE_PACKAGE_DIR}/WizNote.app
-                DESTINATION ${package_home}
-            )
-            execute_process(COMMAND hdiutil makehybrid
-                -hfs -hfs-volume-name ${volumn_name} 
-                -hfs-openfolder ${package_home} ${package_home}
-                -o ${package_output_path}/tmp.dmg
-                WORKING_DIRECTORY ${package_home}
-                RESULT_VARIABLE result
-            )
-            if(NOT result EQUAL "0")
-                message(FATAL_ERROR "Fail to execute command:" 
-                "hdiutil makehybrid")
-            endif()
-            execute_process(COMMAND hdiutil convert
-                -format UDZO ${package_output_path}/tmp.dmg
-                -o ${package_output_path}/Wiznote-macOS.dmg
+            execute_process(COMMAND ${create_dmg}
+                --volname ${volumn_name}
+                --background ${WIZNOTE_SOURCE_DIR}/resources/wiznote-disk-cover.jpg
+                --window-pos 200 120
+                --window-size 522 350
+                --icon-size 100
+                --icon "WizNote.app" 100 190
+                --hide-extension "WizNote.app"
+                --app-drop-link 400 190
+                --format UDZO
+                ${package_output_path}/Wiznote-macOS.dmg
+                ${WIZNOTE_PACKAGE_DIR}/
                 WORKING_DIRECTORY ${WIZNOTE_SOURCE_DIR}
                 RESULT_VARIABLE result
             )
             if(NOT result EQUAL "0")
-                message(FATAL_ERROR "Fail to execute command:" 
-                "hdiutil convert")
+                message(FATAL_ERROR "Fail to execute command:"
+                "${WIZNOTE_SOURCE_DIR}/external/create-dmg")
             endif()
-            file(REMOVE_RECURSE 
-                ${package_output_path}/tmp.dmg
-                ${package_home}/WizNote.app
-            )
+
+            # delete later.
+#            execute_process(COMMAND setFile
+#                -a V ${package_home}/wiznote-disk-cover.jpg
+#                WORKING_DIRECTORY ${WIZNOTE_SOURCE_DIR}
+#                RESULT_VARIABLE result
+#            )
+#            if(NOT result EQUAL "0")
+#                message(FATAL_ERROR "Fail to execute command:"
+#                "setFile -a V ${package_home}/wiznote-disk-cover.jpg")
+#            endif()
+#            file(REMOVE_RECURSE
+#                ${package_output_path}/tmp.dmg
+#                ${package_output_path}/Wiznote-macOS.dmg
+#                ${package_home}/WizNote.app
+#            )
+#            file(COPY ${WIZNOTE_PACKAGE_DIR}/WizNote.app
+#                DESTINATION ${package_home}
+#            )
+#            execute_process(COMMAND hdiutil makehybrid
+#                -hfs -hfs-volume-name ${volumn_name}
+#                -hfs-openfolder ${package_home} ${package_home}
+#                -o ${package_output_path}/tmp.dmg
+#                WORKING_DIRECTORY ${package_home}
+#                RESULT_VARIABLE result
+#            )
+#            if(NOT result EQUAL "0")
+#                message(FATAL_ERROR "Fail to execute command:"
+#                "hdiutil makehybrid")
+#            endif()
+#            execute_process(COMMAND hdiutil convert
+#                -format UDZO ${package_output_path}/tmp.dmg
+#                -o ${package_output_path}/Wiznote-macOS.dmg
+#                WORKING_DIRECTORY ${WIZNOTE_SOURCE_DIR}
+#                RESULT_VARIABLE result
+#            )
+#            if(NOT result EQUAL "0")
+#                message(FATAL_ERROR "Fail to execute command:"
+#                "hdiutil convert")
+#            endif()
+#            file(REMOVE_RECURSE
+#                ${package_output_path}/tmp.dmg
+#                ${package_home}/WizNote.app
+#            )
 
         else(APPLE)
             # Linux platform

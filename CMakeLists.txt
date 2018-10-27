@@ -64,6 +64,7 @@ list(APPEND CMAKE_MODULE_PATH
 if(APPLE)
     # make the install names for dylibs include "@rpath/" prefix.
     set(MACOSX_RPATH ON)
+    set(CMAKE_OSX_DEPLOYMENT_TARGET 10.11)
     set(CMAKE_BUILD_WITH_INSTALL_RPATH YES)
     SET(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
     # used to initialize the INSTALL_NAME_DIR property on all targets.

@@ -13,3 +13,6 @@
 [submodule "lib/gumbo-query"]
 	path = lib/gumbo-query
 	url = https://github.com/altairwei/gumbo-query.git
+[submodule "external/create-dmg"]
+	path = external/create-dmg
+	url = https://github.com/andreyvit/create-dmg.git
