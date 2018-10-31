@@ -19,7 +19,7 @@ if(NOT QTDIR)
 endif()
 find_path(qt_dir "bin/qmake" ${QTDIR})
 if(NOT qt_dir)
-    message(FATAL_ERROR "\nQTDIR is not valid, Qt5 library cannot be found !\nPlease define CMAKE_OSX_SYSROOT!")
+    message(FATAL_ERROR "\nQTDIR is not valid, Qt5 library cannot be found !\nPlease define QTDIR!")
 else()
     get_filename_component(QTDIR ${QTDIR} ABSOLUTE)
 endif()
@@ -86,6 +86,11 @@ if(NOT GENERATE_APPIMAGE)
     option(GENERATE_APPIMAGE "Decide whether generate AppImage or not." ON)
 endif()
 message(STATUS "GENERATE_APPIMAGE: ${GENERATE_APPIMAGE}")
+
+if(NOT USE_FCITX)
+    option(USE_FCITX "Decide whether use fcitx-qt5 or not." ON)
+endif()
+message(STATUS "USE_FCITX: ${USE_FCITX}")
 
 #============================================================================
 # Construct directory tree 构建目录树
@@ -286,18 +291,21 @@ if(GENERATE_INSTALL_DIR)
                 ${WIZNOTE_PACKAGE_DIR}/wiznote.desktop)
 
             # copy fcitx-qt5 library
-            find_file (fcitx-qt5-lib libfcitxplatforminputcontextplugin.so 
-                /usr/lib/x86_64-linux-gnu/qt5/plugins/platforminputcontexts/ 
-            )
-            if(NOT fcitx-qt5-lib)
-                message(FATAL_ERROR "Fail to find fcitx-qt5 !")
-            endif()
+            if(USE_FCITX)
+                find_file (fcitx-qt5-lib libfcitxplatforminputcontextplugin.so 
+                    /usr/lib/x86_64-linux-gnu/qt5/plugins/platforminputcontexts/ 
+                )
+                if(NOT fcitx-qt5-lib)
+                    message(FATAL_ERROR "Fail to find fcitx-qt5 !")
+                endif()
 
-            file(MAKE_DIRECTORY 
-                ${WIZNOTE_PACKAGE_DIR}/WizNote/plugins/platforminputcontexts
-            )
-            file(COPY ${fcitx-qt5-lib} 
-                DESTINATION ${WIZNOTE_PACKAGE_DIR}/WizNote/plugins/platforminputcontexts)
+                file(MAKE_DIRECTORY 
+                    ${WIZNOTE_PACKAGE_DIR}/WizNote/plugins/platforminputcontexts
+                )
+                file(COPY ${fcitx-qt5-lib} 
+                    DESTINATION ${WIZNOTE_PACKAGE_DIR}/WizNote/plugins/platforminputcontexts)
+            endif(USE_FCITX)
+            
         endif(APPLE)
     elseif(WIN32)
         # Windows platform
@@ -410,50 +418,6 @@ if(GENERATE_APPIMAGE)
                 message(FATAL_ERROR "Fail to execute command:"
                 "${WIZNOTE_SOURCE_DIR}/external/create-dmg")
             endif()
-
-            # delete later.
-#            execute_process(COMMAND setFile
-#                -a V ${package_home}/wiznote-disk-cover.jpg
-#                WORKING_DIRECTORY ${WIZNOTE_SOURCE_DIR}
-#                RESULT_VARIABLE result
-#            )
-#            if(NOT result EQUAL "0")
-#                message(FATAL_ERROR "Fail to execute command:"
-#                "setFile -a V ${package_home}/wiznote-disk-cover.jpg")
-#            endif()
-#            file(REMOVE_RECURSE
-#                ${package_output_path}/tmp.dmg
-#                ${package_output_path}/Wiznote-macOS.dmg
-#                ${package_home}/WizNote.app
-#            )
-#            file(COPY ${WIZNOTE_PACKAGE_DIR}/WizNote.app
-#                DESTINATION ${package_home}
-#            )
-#            execute_process(COMMAND hdiutil makehybrid
-#                -hfs -hfs-volume-name ${volumn_name}
-#                -hfs-openfolder ${package_home} ${package_home}
-#                -o ${package_output_path}/tmp.dmg
-#                WORKING_DIRECTORY ${package_home}
-#                RESULT_VARIABLE result
-#            )
-#            if(NOT result EQUAL "0")
-#                message(FATAL_ERROR "Fail to execute command:"
-#                "hdiutil makehybrid")
-#            endif()
-#            execute_process(COMMAND hdiutil convert
-#                -format UDZO ${package_output_path}/tmp.dmg
-#                -o ${package_output_path}/Wiznote-macOS.dmg
-#                WORKING_DIRECTORY ${WIZNOTE_SOURCE_DIR}
-#                RESULT_VARIABLE result
-#            )
-#            if(NOT result EQUAL "0")
-#                message(FATAL_ERROR "Fail to execute command:"
-#                "hdiutil convert")
-#            endif()
-#            file(REMOVE_RECURSE
-#                ${package_output_path}/tmp.dmg
-#                ${package_home}/WizNote.app
-#            )
 
         else(APPLE)
             # Linux platform
