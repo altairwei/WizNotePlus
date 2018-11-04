@@ -1,23 +1,11 @@
 project(libs)
 
-option(GIT_SUBMODULE "Check submodules during build" ON)
+option(WIZNOTE_GIT_SUBMODULE "Check submodules during build" ON)
 
-# install conan 3rdparty libraries to package dirs.
-include(${CMAKE_BINARY_DIR}/conanbuildinfo.cmake)
-conan_basic_setup()
-install(DIRECTORY ${CONAN_LIB_DIRS} DESTINATION ./ )
-
-#find_package(ZLIB)
-#if(NOT ZLIB_FOUND)
-#    add_subdirectory(zlib)
-#    message("ZLIB not found, using internal: ${zlib_SOURCE_DIR}")
-#    set(ZLIB_INCLUDE_DIR ${zlib_SOURCE_DIR} ${zlib_BINARY_DIR})
-#    set(ZLIB_LIBRARY zlib)
-#endif(NOT ZLIB_FOUND)
 find_package(ZLIB)
 if (NOT ZLIB_FOUND)
     # Update submodules as needed
-    if(GIT_SUBMODULE)
+    if(WIZNOTE_GIT_SUBMODULE)
         message("ZLIB not found, using submodule from github. ")
         message("Start download: ")
         execute_process(COMMAND git submodule update --init -- zlib
@@ -38,7 +26,7 @@ endif()
 find_path(QuaZip_INCLUDE_DIR "quazip/quazip.h" "${CMAKE_CURRENT_SOURCE_DIR}/quazip")
 if (NOT QuaZip_INCLUDE_DIR)
     # Update submodules as needed
-    if(GIT_SUBMODULE)
+    if(WIZNOTE_GIT_SUBMODULE)
         message("QuaZip not found, it needs to be downloaded from github and build from source.")
         message("Start download: ")
         execute_process(COMMAND git submodule update --init -- quazip
@@ -57,7 +45,7 @@ endif()
 find_path(cryptopp_INCLUDE_DIR "cryptlib.h" "${CMAKE_CURRENT_SOURCE_DIR}/cryptopp")
 if (NOT cryptopp_INCLUDE_DIR)
     # Update submodules as needed
-    if(GIT_SUBMODULE)
+    if(WIZNOTE_GIT_SUBMODULE)
         message("CryptoPP not found, it needs to be downloaded from github and build from source.")
         message("Start download: ")
         execute_process(COMMAND git submodule update --init -- cryptopp
@@ -80,7 +68,7 @@ find_package(Gumbo QUIET)
 find_path(Gumbo_INCLUDE_DIR "gumbo.h" PATHS "${CMAKE_CURRENT_SOURCE_DIR}/gumbo-parser/src")
 if ( (NOT Gumbo_LIBRARY) AND (NOT Gumbo_INCLUDE_DIR) )
     # Update submodules as needed
-    if(GIT_SUBMODULE)
+    if(WIZNOTE_GIT_SUBMODULE)
         message("Gumbo not found, it needs to be downloaded from github and build from source.")
         message("Start download: ")
         execute_process(COMMAND git submodule update --init -- gumbo-parser
@@ -91,17 +79,19 @@ if ( (NOT Gumbo_LIBRARY) AND (NOT Gumbo_INCLUDE_DIR) )
         endif()
         # build from source.
         add_subdirectory(gumbo-parser)
-	set(Gumbo_LIBRARY Gumbo)
+        set(Gumbo_static_LIBRARY Gumbo_static)
+        set(Gumbo_LIBRARY Gumbo)
     endif()
 elseif( (NOT Gumbo_LIBRARY) AND Gumbo_INCLUDE_DIR )
     add_subdirectory(gumbo-parser)
+    set(Gumbo_static_LIBRARY Gumbo_static)
     set(Gumbo_LIBRARY Gumbo)
 endif()
 
 find_path(GumboQuery_INCLUDE_DIR "Document.h" "${CMAKE_CURRENT_SOURCE_DIR}/gumbo-query/src")
 if (NOT GumboQuery_INCLUDE_DIR)
     # Update submodules as needed
-    if(GIT_SUBMODULE)
+    if(WIZNOTE_GIT_SUBMODULE)
         message("GumboQuery not found, it needs to be downloaded from github and build from source.")
         message("Start download: ")
         execute_process(COMMAND git submodule update --init -- gumbo-query

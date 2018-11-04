@@ -18,11 +18,11 @@ WizAboutDialog::WizAboutDialog(QWidget *parent)
     labelIcon->setPixmap(qApp->windowIcon().pixmap(QSize(58, 58)));
 
 #if defined Q_OS_MAC
-    QString strProduct("<span style=\"font-weight:bold;font-size:14px\">WizNote for Mac</span>");
+    QString strProduct("<span style=\"font-weight:bold;font-size:14px\">WizNotePlus for Mac</span>");
 #elif defined Q_OS_LINUX
-    QString strProduct("<span style=\"font-weight:bold;font-size:14px\">WizNote for Linux</span>");
+    QString strProduct("<span style=\"font-weight:bold;font-size:14px\">WizNotePlus for Linux</span>");
 #else
-    QString strProduct("<span style=\"font-weight:bold;font-size:14px\">WizNote for Windows</span>");
+    QString strProduct("<span style=\"font-weight:bold;font-size:14px\">WizNotePlus for Windows</span>");
 #endif
 
     QLabel* labelProduct = new QLabel(this);
