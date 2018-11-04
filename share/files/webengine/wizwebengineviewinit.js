@@ -26,9 +26,9 @@
                 window[key] = channel.objects[key];
             }
             //
-            if (initForWebEngine)
+            if (window.initForWebEngine)
             {
-                initForWebEngine();
+                window.initForWebEngine();
             }
         });
     }

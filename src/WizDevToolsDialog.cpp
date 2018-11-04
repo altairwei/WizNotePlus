@@ -19,7 +19,7 @@
 
 
 WizDevToolsDialog::WizDevToolsDialog(QWidget *parent)
-    : QWidget(parent)
+    : QWidget(parent, Qt::Window)
     , m_web(new WizWebEngineView(this))
 {
     // 设置长宽和边界
@@ -38,10 +38,10 @@ WizDevToolsDialog::WizDevToolsDialog(QWidget *parent)
     setLayout(layout);
 }
 
-WizWebEngineView* WizDevToolsDialog::getWeb() {
+WizWebEngineView* WizDevToolsDialog::web() {
     return m_web;
 }
 
 QSize WizDevToolsDialog::sizeHint() const {
-    return QSize(WizSmartScaleUI(800), WizSmartScaleUI(500));
+    return QSize(800, 500);
 }

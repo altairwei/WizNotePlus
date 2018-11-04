@@ -36,12 +36,11 @@ WizUserInfoWidget::WizUserInfoWidget(WizExplorerApp& app, QWidget *parent)
     connect(&m_db, SIGNAL(userInfoChanged()), SLOT(on_userInfo_changed()));
 
     // load builtin arraw
-    bool isHighPix = ::WizIsHighPixel();
-    QString strIconPath = ::WizGetSkinResourcePath(app.userSettings().skin()) + "arrow"  + (isHighPix ? "@2x" : QString()) + ".png";
+    QString strIconPath = ::WizGetSkinResourcePath(app.userSettings().skin()) + "arrow.png";
     m_iconArraw.addFile(strIconPath);
 
     // setup menu
-    m_menuMain = new QMenu(NULL);
+    m_menuMain = new QMenu(nullptr);
 
     QAction* actionAccountInfo = new QAction(tr("View account info..."), m_menuMain);
     connect(actionAccountInfo, SIGNAL(triggered()), SLOT(on_action_accountInfo_triggered()));
@@ -107,16 +106,15 @@ void WizUserInfoWidget::resetUserInfo()
     //m_textWidth = fontMetrics().width(text());
 
     QString iconName;
-    bool isHighPix = ::WizIsHighPixel();
     if (info.strUserType == "vip") {
-        iconName = "vip1" + (isHighPix ? "@2x" : QString()) + ".png";
+        iconName = "vip1.png";
     } else if (info.strUserType == "vip2") {
-        iconName = "vip2" + (isHighPix ? "@2x" : QString()) + ".png";
+        iconName = "vip2.png";
     } else if (info.strUserType == "vip3") {
         // 此图片没有2x图片
         iconName = "vip3.png";
     } else {
-        iconName = "vip0" + (isHighPix ? "@2x" : QString()) + ".png";
+        iconName = "vip0.png";
     }
 
     QString strIconPath = ::WizGetSkinResourcePath(m_app.userSettings().skin()) + iconName;

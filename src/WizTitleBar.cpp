@@ -8,6 +8,10 @@
 #include <QSplitter>
 #include <QList>
 #include <QLabel>
+#include <QToolBar>
+#include <QAction>
+#include <QVariant>
+#include <QMap>
 #include "share/jsoncpp/json/json.h"
 
 #include "widgets/WizTagBar.h"
@@ -22,6 +26,7 @@
 #include "WizDocumentWebEngine.h"
 #include "WizDocumentWebView.h"
 #include "WizNoteInfoForm.h"
+#include "WizNoteStyle.h"
 #include "share/WizMisc.h"
 #include "share/WizDatabase.h"
 #include "share/WizSettings.h"
@@ -34,6 +39,7 @@
 #include "utils/WizPathResolve.h"
 #include "widgets/WizLocalProgressWebView.h"
 #include "widgets/WizTipsWidget.h"
+#include "widgets/WizExternalEditorSettingDialog.h"
 
 #include "WizMessageCompleter.h"
 #include "WizOEMSettings.h"
@@ -58,70 +64,88 @@ QString getOptionKey()
 WizTitleBar::WizTitleBar(WizExplorerApp& app, QWidget *parent)
     : QWidget(parent)
     , m_app(app)
+    , m_documentToolBar(new QToolBar(this))
     , m_editTitle(new WizTitleEdit(this))
     , m_tagBar(new WizTagBar(app, this))
     , m_infoBar(new WizInfoBar(app, this))
     , m_notifyBar(new WizNotifyBar(this))
     , m_editorBar(new WizEditorToolBar(app, this))
-    , m_editor(NULL)
-    , m_tags(NULL)
-    , m_info(NULL)
-    , m_attachments(NULL)
-    , m_editButtonAnimation(0)
+    , m_editor(nullptr)
+    , m_tags(nullptr)
+    , m_info(nullptr)
+    , m_attachments(nullptr)
+    , m_editButtonAnimation(nullptr)
     , m_commentManager(new WizCommentManager(this))
 {
+    // 标题栏输入框
     m_editTitle->setCompleter(new WizMessageCompleter(m_editTitle));
     int nTitleHeight = Utils::WizStyleHelper::titleEditorHeight();
     m_editTitle->setFixedHeight(nTitleHeight);
     m_editTitle->setAlignment(Qt::AlignVCenter);
     m_editTitle->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Preferred);
 
+    // 编辑器工具栏
 //    m_editorBar->setFixedHeight(nEditToolBarHeight);
     m_editorBar->layout()->setAlignment(Qt::AlignVCenter);
 
     QString strTheme = Utils::WizStyleHelper::themeName();
 
+    // 添加垂直布局<工具栏+状态栏？>
     QVBoxLayout* layout = new QVBoxLayout;
     layout->setContentsMargins(0, 0, 0, 6);
     layout->setSpacing(0);
     setLayout(layout);
 
+    // 编辑按钮
     QSize iconSize = QSize(Utils::WizStyleHelper::titleIconHeight(), Utils::WizStyleHelper::titleIconHeight());
-    m_editBtn = new WizRoundCellButton(this);
+    m_editBtn = new WizEditButton(this);
+    m_editBtn->setFixedHeight(nTitleHeight);
     QString shortcut = ::WizGetShortcut("EditNote", "Alt+1");
     m_editBtn->setShortcut(QKeySequence::fromString(shortcut));
-    m_editBtn->setNormalIcon(::WizLoadSkinIcon(strTheme, "document_lock", iconSize), tr("Edit"), tr("Switch to Editing View  %1%2").arg(getOptionKey()).arg(1));
-    m_editBtn->setCheckedIcon(::WizLoadSkinIcon(strTheme, "document_unlock", iconSize), tr("Read") , tr("Switch to Reading View  %1%2").arg(getOptionKey()).arg(1));
-    m_editBtn->setBadgeIcon(::WizLoadSkinIcon(strTheme, "document_unlock", iconSize), tr("Save & Read"), tr("Save and switch to Reading View  %1%2").arg(getOptionKey()).arg(1));
-    connect(m_editBtn, SIGNAL(clicked()), SLOT(onEditButtonClicked()));    
+    m_editBtn->setStatefulIcon(::WizLoadSkinIcon(strTheme, "document_lock", iconSize), WizToolButton::Normal);
+    m_editBtn->setStatefulText(tr("Edit"), tr("Switch to Editing View  %1%2").arg(getOptionKey()).arg(1), WizToolButton::Normal);
+    m_editBtn->setStatefulIcon(::WizLoadSkinIcon(strTheme, "document_unlock", iconSize), WizToolButton::Checked);
+    m_editBtn->setStatefulText(tr("Read") , tr("Switch to Reading View  %1%2").arg(getOptionKey()).arg(1), WizToolButton::Checked);
+    // 准备外置编辑器菜单
+    QMenu* extEditorMenu = createEditorMenu();
+    m_editBtn->setMenu(extEditorMenu);
+    m_editBtn->setPopupMode(QToolButton::MenuButtonPopup);
+    connect(m_editBtn, SIGNAL(clicked()), SLOT(onEditButtonClicked()));
 
-    m_separateBtn = new WizCellButton(WizCellButton::ImageOnly, this);
+    // 分离窗口浏览笔记
+    m_separateBtn = new WizToolButton(this, WizToolButton::ImageOnly);
     m_separateBtn->setFixedHeight(nTitleHeight);
     QString separateShortcut = ::WizGetShortcut("EditNoteSeparate", "Alt+2");
     m_separateBtn->setShortcut(QKeySequence::fromString(separateShortcut));
-    m_separateBtn->setNormalIcon(::WizLoadSkinIcon(strTheme, "document_use_separate", iconSize), tr("View note in seperate window  %1%2").arg(getOptionKey()).arg(2));
+    m_separateBtn->setIcon(::WizLoadSkinIcon(strTheme, "document_use_separate", iconSize));
+    m_separateBtn->setToolTip(tr("View note in seperate window  %1%2").arg(getOptionKey()).arg(2));
     connect(m_separateBtn, SIGNAL(clicked()), SLOT(onSeparateButtonClicked()));
 
-    m_tagBtn = new WizCellButton(WizCellButton::ImageOnly, this);
+    // 标签按钮
+    m_tagBtn = new WizToolButton(this, WizToolButton::ImageOnly);
     m_tagBtn->setFixedHeight(nTitleHeight);
     QString tagsShortcut = ::WizGetShortcut("EditNoteTags", "Alt+3");
     m_tagBtn->setShortcut(QKeySequence::fromString(tagsShortcut));
-    m_tagBtn->setNormalIcon(::WizLoadSkinIcon(strTheme, "document_tag", iconSize), tr("View and add tags  %1%2").arg(getOptionKey()).arg(3));
-    m_tagBtn->setCheckedIcon(::WizLoadSkinIcon(strTheme, "document_tag_on", iconSize), tr("View and add tags  %1%2").arg(getOptionKey()).arg(3));
+    m_tagBtn->setCheckable(true);
+    m_tagBtn->setIcon(::WizLoadSkinIcon(strTheme, "document_tag", iconSize));
+    m_tagBtn->setToolTip(tr("View and add tags  %1%2").arg(getOptionKey()).arg(3));
     connect(m_tagBtn, SIGNAL(clicked()), SLOT(onTagButtonClicked()));
 
-    m_shareBtn = new WizCellButton(WizCellButton::ImageOnly, this);
+    // 分享按钮
+    m_shareBtn = new WizToolButton(this,  WizToolButton::ImageOnly | WizToolButton::WithMenu);
     m_shareBtn->setFixedHeight(nTitleHeight);
     QString shareShortcut = ::WizGetShortcut("EditShare", "Alt+4");
     m_shareBtn->setShortcut(QKeySequence::fromString(shareShortcut));
-    m_shareBtn->setNormalIcon(::WizLoadSkinIcon(strTheme, "document_share", iconSize), tr("Share note  %1%2").arg(getOptionKey()).arg(4));
+    m_shareBtn->setIcon(::WizLoadSkinIcon(strTheme, "document_share", iconSize));
+    m_shareBtn->setToolTip(tr("Share note  %1%2").arg(getOptionKey()).arg(4));
     connect(m_shareBtn, SIGNAL(clicked()), SLOT(onShareButtonClicked()));
     WizOEMSettings oemSettings(m_app.databaseManager().db().getAccountPath());
     m_shareBtn->setVisible(!oemSettings.isHideShare());
+    m_shareBtn->setPopupMode(QToolButton::MenuButtonPopup);
     m_shareMenu = new QMenu(m_shareBtn);
     m_shareMenu->addAction(WIZACTION_TITLEBAR_SHARE_DOCUMENT_BY_LINK, this, SLOT(onShareActionClicked()));
     m_shareMenu->addAction(WIZACTION_TITLEBAR_SHARE_DOCUMENT_BY_EMAIL, this, SLOT(onEmailActionClicked()));
-//    m_shareBtn->setMenu(shareMenu);
+    m_shareBtn->setMenu(m_shareMenu);
 
     //隐藏历史版本按钮，给以后增加提醒按钮保留位置
 //    WizCellButton* historyBtn = new WizCellButton(WizCellButton::ImageOnly, this);
@@ -139,39 +163,59 @@ WizTitleBar::WizTitleBar(WizExplorerApp& app, QWidget *parent)
 //    connect(m_emailBtn, SIGNAL(clicked()), SLOT(onEmailButtonClicked()));
 //    m_emailBtn->setVisible(!oemSettings.isHideShareByEmail());
 
-    m_infoBtn = new WizCellButton(WizCellButton::ImageOnly, this);
+    // 笔记信息按钮
+    m_infoBtn = new WizToolButton(this, WizToolButton::ImageOnly);
     m_infoBtn->setFixedHeight(nTitleHeight);
     QString infoShortcut = ::WizGetShortcut("EditNoteInfo", "Alt+5");
+    m_infoBtn->setCheckable(true);
     m_infoBtn->setShortcut(QKeySequence::fromString(infoShortcut));
-    m_infoBtn->setNormalIcon(::WizLoadSkinIcon(strTheme, "document_info", iconSize), tr("View and modify note's info  %1%2").arg(getOptionKey()).arg(5));
-    m_infoBtn->setCheckedIcon(::WizLoadSkinIcon(strTheme, "document_info_on", iconSize), tr("View and modify note's info  %1%2").arg(getOptionKey()).arg(5));
+    m_infoBtn->setIcon(::WizLoadSkinIcon(strTheme, "document_info", iconSize));
+    m_infoBtn->setToolTip(tr("View and modify note's info  %1%2").arg(getOptionKey()).arg(5));
     connect(m_infoBtn, SIGNAL(clicked()), SLOT(onInfoButtonClicked()));
 
-    m_attachBtn = new WizCellButton(WizCellButton::WithCountInfo, this);
+    // 附件按钮
+    m_attachBtn = new WizToolButton(this, WizToolButton::WithCountInfo);
     m_attachBtn->setFixedHeight(nTitleHeight);
     QString attachmentShortcut = ::WizGetShortcut("EditNoteAttachments", "Alt+6");
+    m_attachBtn->setCheckable(true);
     m_attachBtn->setShortcut(QKeySequence::fromString(attachmentShortcut));
-    m_attachBtn->setNormalIcon(::WizLoadSkinIcon(strTheme, "document_attachment", iconSize), tr("Add attachments  %1%2").arg(getOptionKey()).arg(6));
-    m_attachBtn->setCheckedIcon(::WizLoadSkinIcon(strTheme, "document_attachment_on", iconSize), tr("Add attachments  %1%2").arg(getOptionKey()).arg(6));
+    m_attachBtn->setIcon(::WizLoadSkinIcon(strTheme, "document_attachment", iconSize));
+    m_attachBtn->setToolTip(tr("Add attachments  %1%2").arg(getOptionKey()).arg(6));
     connect(m_attachBtn, SIGNAL(clicked()), SLOT(onAttachButtonClicked()));
 
     // comments
-    m_commentsBtn = new WizCellButton(WizCellButton::WithCountInfo, this);
+    m_commentsBtn = new WizToolButton(this, WizToolButton::WithCountInfo);
     m_commentsBtn->setFixedHeight(nTitleHeight);
     QString commentShortcut = ::WizGetShortcut("ShowComment", "Alt+c");
     m_commentsBtn->setShortcut(QKeySequence::fromString(commentShortcut));
-    m_commentsBtn->setNormalIcon(::WizLoadSkinIcon(strTheme, "comments", iconSize), tr("Add comments  %1C").arg(getOptionKey()));
-    m_commentsBtn->setCheckedIcon(::WizLoadSkinIcon(strTheme, "comments_on", iconSize), tr("Add comments  %1C").arg(getOptionKey()));
+    m_commentsBtn->setCheckable(true);
+    m_commentsBtn->setIcon(::WizLoadSkinIcon(strTheme, "comments", iconSize));
+    m_commentsBtn->setToolTip(tr("Add comments  %1C").arg(getOptionKey()));
     connect(m_commentsBtn, SIGNAL(clicked()), SLOT(onCommentsButtonClicked()));
     connect(WizGlobal::instance(), SIGNAL(viewNoteLoaded(WizDocumentView*,const WIZDOCUMENTDATAEX&,bool)),
             SLOT(onViewNoteLoaded(WizDocumentView*,const WIZDOCUMENTDATAEX&,bool)));
 
-
+    // 标题工具栏
+    m_documentToolBar->setIconSize(iconSize);
+    m_documentToolBar->setContextMenuPolicy(Qt::PreventContextMenu);
+    m_documentToolBar->setMovable(false);
+    m_documentToolBar->addWidget(m_editTitle);
+    m_documentToolBar->addWidget(m_editBtn);
+    m_documentToolBar->addWidget(new WizFixedSpacer(QSize(7, 1), m_documentToolBar));
+    m_documentToolBar->addWidget(m_separateBtn);
+    m_documentToolBar->addWidget(m_tagBtn);
+    m_documentToolBar->addWidget(m_shareBtn);
+    m_documentToolBar->addWidget(m_infoBtn);
+    m_documentToolBar->addWidget(m_attachBtn);
+    m_documentToolBar->addWidget(m_commentsBtn);
+    // 标题工具栏布局
+    /*
     QHBoxLayout* layoutInfo2 = new QHBoxLayout();
     layoutInfo2->setContentsMargins(0, 0, 0, 0);
     layoutInfo2->setSpacing(0);
     layoutInfo2->addWidget(m_editTitle);
     layoutInfo2->addWidget(m_editBtn);
+    //layoutInfo2->addWidget(extEditorButton); // 外置编辑器按钮
     layoutInfo2->addSpacing(::WizSmartScaleUI(7));
     layoutInfo2->addWidget(m_separateBtn);
     layoutInfo2->addWidget(m_tagBtn);
@@ -181,12 +225,15 @@ WizTitleBar::WizTitleBar(WizExplorerApp& app, QWidget *parent)
 //    layoutInfo2->addWidget(m_emailBtn);
     layoutInfo2->addWidget(m_infoBtn);
     layoutInfo2->addWidget(m_attachBtn);
-    layoutInfo2->addWidget(m_commentsBtn);    
+    layoutInfo2->addWidget(m_commentsBtn);
+    */
 
+    // 笔记状态信息布局
     QVBoxLayout* layoutInfo1 = new QVBoxLayout();
     layoutInfo1->setContentsMargins(Utils::WizStyleHelper::editorBarMargins());
     layoutInfo1->setSpacing(0);
-    layoutInfo1->addLayout(layoutInfo2);
+    //layoutInfo1->addLayout(layoutInfo2); // 将标题工具栏放入整体布局中
+    layoutInfo1->addWidget(m_documentToolBar);
     layoutInfo1->addWidget(m_tagBar);
     layoutInfo1->addWidget(m_infoBar);
     layoutInfo1->addWidget(m_editorBar);
@@ -206,6 +253,12 @@ WizTitleBar::WizTitleBar(WizExplorerApp& app, QWidget *parent)
             SLOT(on_commentCountAcquired(QString,int)));
 }
 
+/**
+ * @brief 从部件父组件中搜寻并返回文档视图
+ *
+ * TODO: 这种获取方式太粗暴了，不值得提倡
+ * @return
+ */
 WizDocumentView* WizTitleBar::noteView()
 {
     QWidget* pParent = parentWidget();
@@ -263,6 +316,36 @@ void WizTitleBar::setLocked(bool bReadOnly, int nReason, bool bIsGroup)
     }
 }
 
+QMenu* WizTitleBar::createEditorMenu()
+{
+    QMenu* editorMenu = new QMenu(this);
+    // 添加编辑器选项
+    editorMenu->addAction(tr("Editor Options"), this, SLOT(onEditorOptionSelected()));
+    editorMenu->addSeparator();
+    // 读取设置
+    QSettings* extEditorSettings = new QSettings(
+                Utils::WizPathResolve::dataStorePath() + "externalEditor.ini", QSettings::IniFormat);
+    QStringList groups = extEditorSettings->childGroups();
+    for (QString& editorIndex : groups) {
+        extEditorSettings->beginGroup(editorIndex);
+        // 准备数据
+        QMap<QString, QVariant> data;
+        data["Name"] = extEditorSettings->value("Name");
+        data["ProgramFile"] = extEditorSettings->value("ProgramFile");
+        data["Arguments"] = extEditorSettings->value("Arguments", "%1");
+        data["TextEditor"] = extEditorSettings->value("TextEditor", 0);
+        data["UTF8Encoding"] = extEditorSettings->value("UTF8Encoding", 0);
+        // 准备动作
+        QAction* editorAction = editorMenu->addAction(data.value("Name").toString(), this, SLOT(onExternalEditorMenuSelected()));
+        QVariant var(data);
+        editorAction->setData(var);
+        //
+        extEditorSettings->endGroup();
+    }
+    //
+    return editorMenu;
+}
+
 void WizTitleBar::setEditor(WizDocumentWebView* editor)
 {
     Q_ASSERT(!m_editor);
@@ -307,7 +390,7 @@ void WizTitleBar::updateTagButtonStatus()
 {
     if (m_tagBar && m_tagBtn)
     {
-        m_tagBtn->setState(m_tagBar->isVisible() ? WizCellButton::Checked : WizCellButton::Normal);
+        m_tagBtn->setState(m_tagBar->isVisible() ? WizToolButton::Checked : WizToolButton::Normal);
     }
 }
 
@@ -316,6 +399,7 @@ void WizTitleBar::updateAttachButtonStatus()
     if (m_attachments && m_attachBtn)
     {
         m_attachBtn->setState(m_attachments->isVisible() ? WizCellButton::Checked : WizCellButton::Normal);
+        m_attachments->isVisible() ? m_attachBtn->setChecked(true) : m_attachBtn->setChecked(false);
     }
 }
 
@@ -323,7 +407,8 @@ void WizTitleBar::updateInfoButtonStatus()
 {
     if (m_info && m_infoBtn)
     {
-        m_infoBtn->setState(m_info->isVisible() ? WizCellButton::Checked : WizCellButton::Normal);
+        m_infoBtn->setState(m_info->isVisible() ? WizToolButton::Checked : WizToolButton::Normal);
+        m_info->isVisible() ? m_infoBtn->setChecked(true) : m_infoBtn->setChecked(false);
     }
 }
 
@@ -402,7 +487,7 @@ void WizTitleBar::updateInfo(const WIZDOCUMENTDATA& doc)
 void WizTitleBar::setEditorMode(WizEditorMode editorMode)
 {
     m_editTitle->setReadOnly(editorMode == modeReader);
-    m_editBtn->setState(editorMode == modeEditor ? WizCellButton::Checked : WizCellButton::Normal);
+    m_editBtn->setState(editorMode == modeEditor ? WizEditButton::Checked : WizEditButton::Normal);
     //
     if (editorMode == modeReader)
     {
@@ -423,9 +508,9 @@ void WizTitleBar::updateEditButton(WizEditorMode editorMode)
 {
     m_editor->isModified([=](bool modified) {
         if (modified){
-            m_editBtn->setState(WizCellButton::Badge);
+            m_editBtn->setState(WizEditButton::Badge);
         } else {
-            m_editBtn->setState(editorMode == modeEditor ? WizCellButton::Checked : WizCellButton::Normal);
+            m_editBtn->setState(editorMode == modeEditor ? WizEditButton::Checked : WizEditButton::Normal);
         }
     });
 }
@@ -504,6 +589,11 @@ void WizTitleBar::applyButtonStateForSeparateWindow(bool inSeparateWindow)
     m_separateBtn->setVisible(!inSeparateWindow);
 }
 
+/**
+ * @brief 点击编辑按钮后切换编辑模式
+ *
+ * FIXME: 为什么不使用信号槽而采用这么难看的调用方式？
+ */
 void WizTitleBar::onEditButtonClicked()
 {
     noteView()->setEditorMode(noteView()->editorMode() == modeEditor ? modeReader: modeEditor);
@@ -517,6 +607,38 @@ void WizTitleBar::onEditButtonClicked()
     {
         analyzer.logAction("viewNote");
     }
+}
+
+/**
+ * @brief 弹出编辑器选项对话框
+ */
+void WizTitleBar::onEditorOptionSelected()
+{
+    WizExternalEditorSettingDialog* editorSetting = new WizExternalEditorSettingDialog(this);
+    connect(editorSetting, &WizExternalEditorSettingDialog::settingChanged, this, [=]{
+        QMenu* m = createEditorMenu();
+        m_editBtn->setMenu(m);
+    });
+    editorSetting->setAttribute(Qt::WA_DeleteOnClose);
+    editorSetting->exec();
+}
+
+/**
+ * @brief 发送外置编辑器请求信号
+ */
+void WizTitleBar::onExternalEditorMenuSelected()
+{
+    QAction* action = qobject_cast<QAction*>(sender());
+    QMap<QString, QVariant> data;
+    data = action->data().toMap();
+    QString Name = data.value("Name").toString();
+    QString ProgramFile = data.value("ProgramFile").toString();
+    QString Arguments = data.value("Arguments").toString();
+    int TextEditor = data.value("TextEditor").toInt();
+    int UTF8Encoding = data.value("UTF8Encoding").toInt();
+
+    emit viewNoteInExternalEditor_request(Name, ProgramFile, Arguments, TextEditor, UTF8Encoding);
+
 }
 
 void WizTitleBar::onSeparateButtonClicked()
@@ -575,8 +697,8 @@ void WizTitleBar::onShareButtonClicked()
             }
         }
 
-        QPoint pos = m_shareBtn->mapToGlobal(m_shareBtn->rect().bottomLeft());
-        m_shareMenu->popup(pos);
+        //QPoint pos = m_shareBtn->mapToGlobal(m_shareBtn->rect().bottomLeft());
+        //m_shareMenu->popup(pos);
     }
 }
 

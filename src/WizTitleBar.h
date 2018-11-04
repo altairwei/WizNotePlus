@@ -7,6 +7,7 @@
 
 class QString;
 class QMenu;
+class QToolBar;
 
 struct WIZDOCUMENTDATA;
 class WizDatabase;
@@ -28,6 +29,8 @@ class WizInfoBar;
 class WizNotifyBar;
 class WizEditorToolBar;
 class WizCellButton;
+class WizToolButton;
+class WizEditButton;
 class WizRoundCellButton;
 class WizTagBar;
 
@@ -65,6 +68,8 @@ public:
 public Q_SLOTS:
     void onEditButtonClicked();
     void onSeparateButtonClicked();
+    void onExternalEditorMenuSelected();
+    void onEditorOptionSelected();
     void onTagButtonClicked();
     void onShareButtonClicked();
     void onAttachButtonClicked();
@@ -100,32 +105,36 @@ signals:
     void notifyBar_link_clicked(const QString& link);
     void loadComment_request(const QString& url);
     void viewNoteInSeparateWindow_request();
+    void viewNoteInExternalEditor_request(QString& Name, QString& ProgramFile,
+                                QString& Arguments, int TextEditor, int UTF8Encoding);
 private:
     void showInfoBar();
     void showEditorBar();
     void setTagBarVisible(bool visible);
+    QMenu* createEditorMenu();
     //
     WizDocumentWebView* m_editor;
     WizExplorerApp& m_app;
 
+    QToolBar* m_documentToolBar;
     WizTitleEdit* m_editTitle;
     WizTagBar* m_tagBar;
     WizInfoBar* m_infoBar;
     WizNotifyBar* m_notifyBar;
     WizEditorToolBar* m_editorBar;
 
-    WizRoundCellButton* m_editBtn;
-    WizCellButton* m_separateBtn;
-    WizCellButton* m_tagBtn;    
+    WizEditButton* m_editBtn;
+    WizToolButton* m_separateBtn;
+    WizToolButton* m_tagBtn;
 //    CellButton* m_emailBtn;
-    WizCellButton* m_shareBtn;
-    WizCellButton* m_attachBtn;
+    WizToolButton* m_shareBtn;
+    WizToolButton* m_attachBtn;
 //    CellButton* m_historyBtn;
-    WizCellButton* m_infoBtn;    
+    WizToolButton* m_infoBtn;
 
     QMenu* m_shareMenu;
 
-    WizCellButton* m_commentsBtn;
+    WizToolButton* m_commentsBtn;
 
     WizCommentManager* m_commentManager;
 

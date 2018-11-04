@@ -23,6 +23,7 @@ class QLabel;
 class QSystemTrayIcon;
 class QComboBox;
 class QActionGroup;
+class QFileSystemWatcher;
 struct TemplateData;
 
 class WizProgressDialog;
@@ -72,6 +73,8 @@ class WizDocumentView;
 class WizSingleDocumentViewDelegate;
 class QWebEngineView;
 
+class IWizExplorerApp; // interface
+
 #ifdef Q_OS_MAC
 class WizMacToolBarButtonItem;
 #endif
@@ -93,7 +96,7 @@ class WizMainWindow
 #endif
 
 public:
-    explicit WizMainWindow(WizDatabaseManager& dbMgr, QWidget *parent = 0);
+    explicit WizMainWindow(WizDatabaseManager& dbMgr, QWidget *parent = nullptr);
     virtual void init();
 
     void saveStatus();
@@ -117,6 +120,8 @@ public:
     WizDocumentView* docView();
     //
     void trySaveCurrentNote(std::function<void(const QVariant &)> callback);
+    //
+    void startExternalEditor(QString cacheFileName, QString Name, QString ProgramFile, QString Arguments, int TextEditor, int UTF8Encoding, const WIZDOCUMENTDATAEX& noteData);
 
 protected:
     bool eventFilter(QObject* watched, QEvent* event);
@@ -193,8 +198,8 @@ private:
     WizMessageListTitleBar* m_msgListTitleBar;
 
     WizDocumentSelectionView* m_documentSelection;
-    WizDocumentView* m_doc; /**< 用于储存当前活动文档视图 */
-    WizMainTabWidget* m_mainTab; /**< 主标签部件，文档视图储存在内部 */
+    WizDocumentView* m_doc; /**< 用于储存多标签浏览器里当前活动笔记文档视图。 */
+    WizMainTabWidget* m_mainTab; /**< 主标签部件，笔记文档视图储存在内部 */
     std::shared_ptr<WizSplitter> m_splitter;
     QWidget* m_docListContainer;
     WizSingleDocumentViewDelegate* m_singleViewDelegate;
@@ -222,9 +227,17 @@ private:
     //
     WIZDOCUMENTDATA m_documentForEditing;
 
-private:
-    void initActions();
+    IWizExplorerApp* m_IWizExplorerApp;
+    //
+    QFileSystemWatcher* m_extFileWatcher;
+    QMap<QString, WIZDOCUMENTDATAEX> m_watchedFileData;
 
+private:
+    void initQuitHandler();
+    void initSearcher();
+    void initSyncFull();
+    void initSyncQuick();
+    void initActions();
     void initToolBar();
     void initClient();
     //
@@ -241,6 +254,8 @@ private:
     QWidget* createMessageListView();
     //
     void promptServiceExpr(bool free, WIZGROUPDATA group);
+    //
+    void saveWatchedFile(const QString& path, int TextEditor, int UTF8Encoding);
 
 public:
     // CWizDocument passthrough methods
@@ -259,6 +274,8 @@ public:
     WizObjectDownloaderHost* downloaderHost() const;
     WizProgressDialog* progressDialog() const { return m_progress; }
     WizIAPDialog* iapDialog();
+
+    QObject* interface();
 
     void resetPermission(const QString& strKbGUID, const QString& strDocumentOwner);
     void viewDocument(const WIZDOCUMENTDATAEX& data, bool addToHistory);
@@ -463,6 +480,9 @@ public Q_SLOTS:
     void onAttachmentModified(QString strKbGUID, QString strGUID,QString strFileName,
                               QString strMD5, QDateTime dtLastModified);
 
+    void setCurrentDocumentView(WizDocumentView* newDocView);
+    void on_mainTabWidget_currentChanged(int pageIndex);
+
 public:
     // WizExplorerApp pointer
     virtual QWidget* mainWindow();
@@ -475,13 +495,15 @@ public:
     QObject* Window() { return this; }
     Q_PROPERTY(QObject* Window READ Window)
 
-    QObject* CategoryCtrl();
+    QObject* CategoryCtrl(); // deprecated
+    WizCategoryView* CategoryView();
     Q_PROPERTY(QObject* CategoryCtrl READ CategoryCtrl)
 
     QObject* DocumentsCtrl();
     Q_PROPERTY(QObject* DocumentsCtrl READ DocumentsCtrl)
 
     QObject* DatabaseManager();
+    WizDatabaseManager* DatabaseManagerEx();
     Q_PROPERTY(QObject* DatabaseManager READ DatabaseManager)
 
     Q_INVOKABLE QObject* CreateWizObject(const QString& strObjectID);
@@ -527,8 +549,8 @@ private:
 
     //
     WizDocumentWebView* getActiveEditor();
-    WizDocumentView* createDocumentView();
-    void setCurrentDocumentView(WizDocumentView* newDocView);
+    WizDocumentView* createDocumentView();    
+    WizDocumentView* currentDocumentView();
     void waitForAllDocumentViewDone();
     void processAllDocumentViews(std::function<void(WizDocumentView*)> callback);
     //

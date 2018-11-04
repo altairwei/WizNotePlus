@@ -1503,6 +1503,10 @@ void WizDocumentListView::on_documentUploaded(const QString& kbGuid, const QStri
     }
 }
 
+/**
+ * @brief Remove document item from document list widget when the database sends deletion signal.
+ * @param document
+ */
 void WizDocumentListView::on_document_deleted(const WIZDOCUMENTDATA& document)
 {    
     int index = documentIndexFromGUID(document.strGUID);
@@ -1713,6 +1717,9 @@ void WizDocumentListView::on_action_selectTags()
     m_tagList->showAtPoint(QCursor::pos());
 }
 
+/**
+ * @brief Remove document from the database when deletion action triggered.
+ */
 void WizDocumentListView::on_action_deleteDocument()
 {
     ::WizGetAnalyzer().logAction("documentListMenuDeleteDocument");

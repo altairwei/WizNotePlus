@@ -15,7 +15,6 @@
 #include "quazip/quazipfile.h"
 #include "quazip/quazipfileinfo.h"
 
-
 class JlCompress {
 public:
     static QuaZip* openWriteonlyZip(QString fileName);

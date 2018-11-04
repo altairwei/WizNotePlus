@@ -103,7 +103,9 @@
 
 #include "share/jsoncpp/json/json.h"
 
-#include "WizDevToolsDialog.h"
+#include "WizCellButton.h"
+#include "interface/IWizExplorerApp.h"
+#include "WizFileImporter.h"
 
 #define MAINWINDOW  "MainWindow"
 
@@ -126,13 +128,13 @@ WizMainWindow::WizMainWindow(WizDatabaseManager& dbMgr, QWidget *parent)
     , m_userVerifyDialog(nullptr)
     , m_iapDialog(nullptr)
     , m_templateIAPDialog(nullptr)
-#ifndef Q_OS_MAC
-    , m_labelNotice(NULL)
-    , m_optionsAction(NULL)
-#endif
     , m_menuBar(nullptr)
     , m_dockMenu(nullptr)
     , m_windowListMenu(nullptr)
+#ifndef Q_OS_MAC
+    , m_labelNotice(nullptr)
+    , m_optionsAction(nullptr)
+#endif
     , m_newNoteExtraMenu(nullptr)
 #ifdef Q_OS_MAC
     #ifdef USECOCOATOOLBAR
@@ -172,92 +174,32 @@ WizMainWindow::WizMainWindow(WizDatabaseManager& dbMgr, QWidget *parent)
     , m_mobileFileReceiver(nullptr)
     , m_bQuickDownloadMessageEnable(false)
     , m_quiting(false)
+    , m_IWizExplorerApp(new IWizExplorerApp(this, this))
+    , m_extFileWatcher(new QFileSystemWatcher)
 {
 #ifdef QT_DEBUG
     int ret = WizToolsSmartCompare("H", "d");
     qDebug() << ret;
 #endif
-    // 为什么不新建一个APP类把WizMainWindow的功能拆分呢？
+    //TODO: 为什么不新建一个APP类把WizMainWindow的功能拆分呢？
     WizGlobal::setMainWindow(this);
-    WizKMSyncThread::setQuickThread(m_syncQuick);
-    //
+    windowInstance = this;
     qRegisterMetaType<WIZGROUPDATA>("WIZGROUPDATA");
     //
-#ifndef Q_OS_MAC
-    // 将标题工具栏添加到布局
-    clientLayout()->addWidget(m_toolBar);
-#ifdef Q_OS_LINUX
-    // 根据是否使用系统标题栏样式来选择窗口样式
-    setWindowStyleForLinux(m_useSystemBasedStyle);
-#endif
-    // 当最后一个窗口关闭时，触发QApplication的退出
-    connect(qApp, SIGNAL(lastWindowClosed()), qApp, SLOT(quit())); // Qt bug: Qt5 bug
-#endif
-    // 设置主窗口实例
-    windowInstance = this;
-    // 当QApplication将要退出时，触发清理工作
-    connect(qApp, SIGNAL(aboutToQuit()), SLOT(on_application_aboutToQuit()));
-    // 在QApplication上安装事件过滤器this->eventFilter()创建的事件过滤器
-    // 这种行为会严重降低整个应用程序的事件分发效率
-    qApp->installEventFilter(this);
-#ifdef Q_OS_MAC
-    installEventFilter(this);
-
-    if (systemWidgetBlurAvailable())
-    {
-        setAutoFillBackground(false);
-        setAttribute(Qt::WA_TranslucentBackground, true);
-    }
-
-#endif
+    initSyncQuick();
+    //
+    initQuitHandler();
 
     // 多线程设置
     //-------------------------------------------------------------------
 
     // search and full text search
-    // 开启搜索线程
-    m_searcher->start(QThread::HighPriority);
+    initSearcher();
 
-    // 同步线程
-    // 设置同步间隔时间
-    m_syncFull->setFullSyncInterval(userSettings().syncInterval());
-    connect(m_syncFull, SIGNAL(processLog(const QString&)), SLOT(on_syncProcessLog(const QString&)));
-    connect(m_syncFull, SIGNAL(promptMessageRequest(int, const QString&, const QString&)),
-            SLOT(on_promptMessage_request(int, QString, QString)));
-    connect(m_syncFull, SIGNAL(promptFreeServiceExpr(WIZGROUPDATA)), SLOT(on_promptFreeServiceExpr(WIZGROUPDATA)));
-    connect(m_syncFull, SIGNAL(promptVipServiceExpr(WIZGROUPDATA)), SLOT(on_promptVipServiceExpr(WIZGROUPDATA)));
-
-    connect(m_syncFull, SIGNAL(bubbleNotificationRequest(const QVariant&)),
-            SLOT(on_bubbleNotification_request(const QVariant&)));
-    connect(m_syncFull, SIGNAL(syncStarted(bool)), SLOT(on_syncStarted(bool)));
-    connect(m_syncFull, SIGNAL(syncFinished(int, bool, QString, bool)), SLOT(on_syncDone(int, bool, QString, bool)));
-
-    connect(m_syncQuick, SIGNAL(promptFreeServiceExpr(WIZGROUPDATA)), SLOT(on_promptFreeServiceExpr(WIZGROUPDATA)));
-    connect(m_syncQuick, SIGNAL(promptVipServiceExpr(WIZGROUPDATA)), SLOT(on_promptVipServiceExpr(WIZGROUPDATA)));
-    //
-    // 如果没有禁止自动同步，则在打开软件后立即同步一次
-    if (m_settings->syncInterval() > 0)
-    {
-        QTimer::singleShot(15 * 1000, m_syncFull, SLOT(syncAfterStart()));
-    }
-
-    connect(m_searcher, SIGNAL(searchProcess(const QString&, const CWizDocumentDataArray&, bool, bool)),
-        SLOT(on_searchProcess(const QString&, const CWizDocumentDataArray&, bool, bool)));
+    initSyncFull();
 
     connect(m_documents, SIGNAL(addDocumentToShortcutsRequest(WIZDOCUMENTDATA)),
             m_category, SLOT(addDocumentToShortcuts(WIZDOCUMENTDATA)));
-
-    //FIXME: m_doc已经不在是唯一的文档视图，不应该在此处初始化
-    /*
-    connect(m_doc->web(), SIGNAL(shareDocumentByLinkRequest(QString,QString)),
-            SLOT(on_shareDocumentByLink_request(QString,QString)));
-    connect(m_doc, SIGNAL(documentSaved(QString,WizDocumentView*)),
-            m_singleViewDelegate, SIGNAL(documentChanged(QString,WizDocumentView*)));
-    connect(m_singleViewDelegate, SIGNAL(documentChanged(QString,WizDocumentView*)),
-            m_doc, SLOT(on_document_data_changed(QString,WizDocumentView*)));
-
-    connect(m_doc->titleBar(), SIGNAL(viewNoteInSeparateWindow_request()), SLOT(viewCurrentNoteInSeparateWindow()));
-    */
     //
     connect(&m_dbMgr, SIGNAL(favoritesChanged(QString)), m_category,
             SLOT(on_shortcutDataChanged(QString)));
@@ -291,8 +233,8 @@ WizMainWindow::WizMainWindow(WizDatabaseManager& dbMgr, QWidget *parent)
     }
 #endif
 
-    initToolBar(); // 主菜单工具栏上的组件<用户信息, 搜索栏...>
-    initClient(); // 主界面容器组件<文件夹树, 笔记列表...>
+    initToolBar(); // 主菜单工具栏上的组件: <用户信息, 搜索栏...>
+    initClient(); // 主界面容器组件: <文件夹树, 笔记列表, 多标签浏览...>
 
     setWindowTitle(tr("WizNote"));
 
@@ -511,6 +453,79 @@ void WizMainWindow::trySaveCurrentNote(std::function<void(const QVariant &)> cal
     callback(QVariant(true));
 }
 
+/**
+ * @brief Start external editor process and watch the document file.
+ * @param cacheFileName
+ * @param Name
+ * @param ProgramFile
+ * @param Arguments
+ * @param TextEditor
+ * @param UTF8Encoding
+ */
+void WizMainWindow::startExternalEditor(QString cacheFileName, QString Name,
+                                        QString ProgramFile, QString Arguments,
+                                        int TextEditor, int UTF8Encoding, const WIZDOCUMENTDATAEX& noteData)
+{
+    // 准备进程参数
+    //FIXME: split too many items
+    ProgramFile = "\"" + ProgramFile + "\"";
+    QString args = Arguments.arg("\"" + cacheFileName + "\"");
+    QString strCmd = ProgramFile + " " + args;
+    // 创建并开启进程
+    qInfo() << "Use external editor: " + Name << strCmd;
+    QProcess *extEditorProcess = new QProcess(this);
+    extEditorProcess->startDetached(strCmd);
+    // 设置文件监控器
+    m_extFileWatcher->addPath(cacheFileName);
+    m_watchedFileData.insert(noteData.strGUID, noteData);
+    //
+    connect(m_extFileWatcher, &QFileSystemWatcher::fileChanged, [=](const QString& fileName){
+        saveWatchedFile(fileName, TextEditor, UTF8Encoding);
+        // watch file again, in order to avoid some editor from removing watched files.
+        if (m_extFileWatcher)
+        {
+            QTimer::singleShot(300, [=](){
+                m_extFileWatcher->addPath(fileName);
+            });
+        }
+    });
+}
+
+/**
+ * @brief Save the watched external editor changed document file.
+ * @param fileName
+ * @param TextEditor
+ * @param UTF8Encoding
+ */
+void WizMainWindow::saveWatchedFile(const QString& fileName, int TextEditor, int UTF8Encoding)
+{
+    bool isUTF8 = UTF8Encoding == 0 ? false : true;
+    bool isPlainText = TextEditor == 0 ? false : true;
+    QFileInfo* changedFileInfo = new QFileInfo(fileName);
+    // 编辑器保存时首先删除文件再添加文件所有会收到两个信号，通过文件大小来判断写入信号
+    if ( changedFileInfo->size() == 0 )
+        return;
+    qDebug() << tr("Updating file: ") + fileName << changedFileInfo->size()
+             << changedFileInfo->lastModified() << changedFileInfo->lastRead();
+    //
+    QString noteGUID = changedFileInfo->absoluteDir().dirName();
+    const WIZDOCUMENTDATAEX& noteData = m_watchedFileData[noteGUID];
+    WIZDOCUMENTDATA docData;
+    WizDatabase& db = m_dbMgr.db(noteData.strKbGUID);
+    if (!db.documentFromGuid(noteGUID, docData))
+        return;
+    QString strHtml;
+    if (isPlainText) {
+        // Plain Text
+        strHtml = WizFileImporter::loadTextFileToHtml(fileName, isUTF8);
+    } else {
+        strHtml = WizFileImporter::loadHtmlFileToHtml(fileName, isUTF8);
+    }
+    //FIXME: Windows client has encoding problem.
+    QString indexFileName = Utils::WizMisc::extractFilePath(fileName);
+    db.updateDocumentData(docData, strHtml, indexFileName, 0);
+}
+
 void WizMainWindow::closeEvent(QCloseEvent* event)
 {
 #ifdef Q_OS_MAC
@@ -632,6 +647,7 @@ void WizMainWindow::showEvent(QShowEvent* event)
 
 void WizMainWindow::on_actionExit_triggered()
 {
+    //FIXME: 增加一个进度条，显示正在处理的收尾工作
     WizGetAnalyzer().logAction("MenuBarExit");
     //
     qApp->exit();
@@ -792,18 +808,25 @@ void WizMainWindow::showTrayIconMenu()
     }
 }
 
+/**
+ * @brief 根据messageID来浏览消息
+ *
+ * 应该是接收消息弹窗的点击信号
+ * @param messageID 消息ID
+ */
 void WizMainWindow::on_viewMessage_request(qint64 messageID)
 {
+    // 主窗口状态
     if (windowState() & Qt::WindowMinimized)
     {
         setWindowState(windowState() & ~Qt::WindowMinimized);
         show();
     }
-
+    // 获得要浏览的分类树
     WizCategoryViewItemBase* pBase = m_category->findAllMessagesItem();
     if (!pBase)
         return;
-
+    // 显示消息分类
     WizCategoryViewMessageItem* pItem = dynamic_cast<WizCategoryViewMessageItem*>(pBase);
     showMessageList(pItem);
     m_msgList->selectMessage(messageID);
@@ -832,6 +855,10 @@ void WizMainWindow::on_viewMessage_requestNormal(QVariant messageData)
     }
 }
 
+/**
+ * @brief 根据消息数据浏览消息
+ * @param msg
+ */
 void WizMainWindow::on_viewMessage_request(const WIZMESSAGEDATA& msg)
 {
     WIZDOCUMENTDATA doc;
@@ -845,7 +872,8 @@ void WizMainWindow::on_viewMessage_request(const WIZMESSAGEDATA& msg)
             )
     {
         //FIXME: 在当前文档视图弹出消息，但如果新标签是网页呢？
-        m_doc->promptMessage(tr("Can't find note %1 , may be it has been deleted.").arg(msg.title));
+        //m_doc->promptMessage(tr("Can't find note %1 , may be it has been deleted.").arg(msg.title));
+        QMessageBox::information(this, tr("Warning"), tr("Can't find note %1 , may be it has been deleted.").arg(msg.title));
         return;
     }
 
@@ -854,8 +882,9 @@ void WizMainWindow::on_viewMessage_request(const WIZMESSAGEDATA& msg)
             msg.nMessageType == WIZ_USER_MSG_TYPE_COMMENT_REPLY)
     {
         //  show comments
+        //viewDocument(doc, true);
+        viewDocument(doc); // 在新标签浏览
         showCommentWidget();
-        viewDocument(doc, true);
     }
     else if (msg.nMessageType < WIZ_USER_MSG_TYPE_REQUEST_JOIN_GROUP
              || msg.nMessageType == WIZ_USER_MSG_TYPE_LIKE
@@ -863,7 +892,8 @@ void WizMainWindow::on_viewMessage_request(const WIZMESSAGEDATA& msg)
              || msg.nMessageType == WIZ_USER_MSG_TYPE_REMIND_CREATE
              )
     {
-        viewDocument(doc, true);
+        //viewDocument(doc, true);
+        viewDocument(doc);
     }
 }
 
@@ -1046,6 +1076,67 @@ void WizMainWindow::restoreStatus()
 
     restoreGeometry(geometry);
     m_splitter->restoreState(splitterState);
+}
+
+void WizMainWindow::initQuitHandler()
+{
+#ifndef Q_OS_MAC
+    // 当最后一个窗口关闭时，触发QApplication的退出
+    connect(qApp, SIGNAL(lastWindowClosed()), qApp, SLOT(quit())); // Qt bug: Qt5 bug
+#endif
+    // 当QApplication将要退出时，触发清理工作
+    connect(qApp, SIGNAL(aboutToQuit()), SLOT(on_application_aboutToQuit()));
+    // 这种行为会严重降低整个应用程序的事件分发效率
+    qApp->installEventFilter(this);
+
+#ifdef Q_OS_MAC
+    installEventFilter(this);
+
+    if (systemWidgetBlurAvailable())
+    {
+        setAutoFillBackground(false);
+        setAttribute(Qt::WA_TranslucentBackground, true);
+    }
+
+#endif
+}
+
+/**
+ * @brief Init searcher thread when application stat.
+ */
+void WizMainWindow::initSearcher()
+{
+    m_searcher->start(QThread::HighPriority);
+    connect(m_searcher, SIGNAL(searchProcess(const QString&, const CWizDocumentDataArray&, bool, bool)),
+        SLOT(on_searchProcess(const QString&, const CWizDocumentDataArray&, bool, bool)));
+}
+
+void WizMainWindow::initSyncFull()
+{
+    m_syncFull->setFullSyncInterval(userSettings().syncInterval());
+    connect(m_syncFull, SIGNAL(processLog(const QString&)), SLOT(on_syncProcessLog(const QString&)));
+    connect(m_syncFull, SIGNAL(promptMessageRequest(int, const QString&, const QString&)),
+            SLOT(on_promptMessage_request(int, QString, QString)));
+    connect(m_syncFull, SIGNAL(promptFreeServiceExpr(WIZGROUPDATA)), SLOT(on_promptFreeServiceExpr(WIZGROUPDATA)));
+    connect(m_syncFull, SIGNAL(promptVipServiceExpr(WIZGROUPDATA)), SLOT(on_promptVipServiceExpr(WIZGROUPDATA)));
+
+    connect(m_syncFull, SIGNAL(bubbleNotificationRequest(const QVariant&)),
+            SLOT(on_bubbleNotification_request(const QVariant&)));
+    connect(m_syncFull, SIGNAL(syncStarted(bool)), SLOT(on_syncStarted(bool)));
+    connect(m_syncFull, SIGNAL(syncFinished(int, bool, QString, bool)), SLOT(on_syncDone(int, bool, QString, bool)));
+    // 如果没有禁止自动同步，则在打开软件后立即同步一次
+    if (m_settings->syncInterval() > 0)
+    {
+        QTimer::singleShot(15 * 1000, m_syncFull, SLOT(syncAfterStart()));
+    }
+}
+
+void WizMainWindow::initSyncQuick()
+{
+    WizKMSyncThread::setQuickThread(m_syncQuick);
+    //
+    connect(m_syncQuick, SIGNAL(promptFreeServiceExpr(WIZGROUPDATA)), SLOT(on_promptFreeServiceExpr(WIZGROUPDATA)));
+    connect(m_syncQuick, SIGNAL(promptVipServiceExpr(WIZGROUPDATA)), SLOT(on_promptVipServiceExpr(WIZGROUPDATA)));
 }
 
 /**
@@ -1320,7 +1411,8 @@ void WizMainWindow::createNoteByTemplateCore(const TemplateData& tmplData)
  */
 void WizMainWindow::on_mobileFileRecived(const QString& strFile)
 {
-    if (m_doc->web()->isEditing())
+    WizDocumentView* docView = currentDocumentView();
+    if (docView->web()->isEditing())
     {
         QImageReader imageReader(strFile);
         bool isImageFile = imageReader.canRead();
@@ -1328,14 +1420,14 @@ void WizMainWindow::on_mobileFileRecived(const QString& strFile)
         if (isImageFile)
         {
             QString strHtml;
-            if (WizImage2Html(strFile, strHtml, m_doc->web()->noteResourcesPath()))
+            if (WizImage2Html(strFile, strHtml, docView->web()->noteResourcesPath()))
             {
-                m_doc->web()->editorCommandExecuteInsertHtml(strHtml, false);
+                docView->web()->editorCommandExecuteInsertHtml(strHtml, false);
             }
         }
         else
         {
-            const WIZDOCUMENTDATA& doc = m_doc->note();
+            const WIZDOCUMENTDATA& doc = docView->note();
             WizDatabase& db = m_dbMgr.db(doc.strKbGUID);
             WIZDOCUMENTATTACHMENTDATA attach;
             db.addAttachment(doc, strFile, attach);
@@ -1616,6 +1708,9 @@ void WizMainWindow::showTemplateIAPDlg(const TemplateData& tmpl)
 #endif
 }
 
+/**
+ * @brief 准备新建笔记菜单栏
+ */
 void WizMainWindow::prepareNewNoteMenu()
 {
     if (!m_newNoteExtraMenu)
@@ -1652,6 +1747,9 @@ void WizMainWindow::on_newNoteButton_extraMenuRequest()
 }
 #endif
 
+/**
+ * @brief 根据新建笔记菜单的选项来从模板创建笔记
+ */
 void WizMainWindow::on_newNoteByExtraMenu_request()
 {
     if (QAction* action = qobject_cast<QAction*>(sender()))
@@ -1718,6 +1816,7 @@ void WizMainWindow::OpenURLInDefaultBrowser(const QString& strUrl)
  */
 void WizMainWindow::GetToken(const QString& strFunctionName)
 {
+    WizDocumentView* docView = currentDocumentView();
     CString functionName(strFunctionName);
     ::WizExecuteOnThread(WIZ_THREAD_NETWORK, [=] {
         //
@@ -1729,7 +1828,7 @@ void WizMainWindow::GetToken(const QString& strFunctionName)
 
             QString strExec = functionName + QString("('%1')").arg(strToken);
             qDebug() << "cpp get token callled : " << strExec;
-            m_doc->commentView()->page()->runJavaScript(strExec);
+            docView->commentView()->page()->runJavaScript(strExec);
         });
     });
 }
@@ -1740,15 +1839,16 @@ void WizMainWindow::GetToken(const QString& strFunctionName)
  */
 void WizMainWindow::SetDialogResult(int nResult)
 {
+    WizDocumentView* docView = currentDocumentView();
     if (nResult > 0)
     {
         //
-        const WIZDOCUMENTDATA& doc = m_doc->note();
+        const WIZDOCUMENTDATA& doc = docView->note();
         if (doc.strKbGUID.isEmpty())
             return;
 
         m_dbMgr.db(doc.strKbGUID).setObjectDataDownloaded(doc.strGUID, "document", false);
-        m_doc->viewNote(doc, false);
+        docView->viewNote(doc, false);
     }
 }
 
@@ -1922,21 +2022,34 @@ void WizMainWindow::initMenuList()
  */
 void WizMainWindow::initToolBar()
 {
+
+#ifndef Q_OS_MAC
+    // 将标题工具栏添加到布局
+    clientLayout()->addWidget(m_toolBar);
+#ifdef Q_OS_LINUX
+    // 根据是否使用系统标题栏样式来选择窗口样式
+    setWindowStyleForLinux(m_useSystemBasedStyle);
+#endif
+#endif
+
 #ifdef Q_OS_MAC
     m_toolBar->showInWindow(this);
 
-    m_actions->actionFromName(WIZACTION_GLOBAL_GOBACK)->setEnabled(false);
-    m_actions->actionFromName(WIZACTION_GLOBAL_GOFORWARD)->setEnabled(false);
-    m_toolBar->addAction(m_actions->actionFromName(WIZACTION_GLOBAL_GOBACK));
-    m_toolBar->addAction(m_actions->actionFromName(WIZACTION_GLOBAL_GOFORWARD));
+    //用户信息栏
+    m_userInfoWidget = new WizUserInfoWidget(*this, nullptr);
+    m_toolBar->addWidget(m_userInfoWidget, "", "");
+
+    // 同步按钮
     m_toolBar->addAction(m_actions->actionFromName(WIZACTION_GLOBAL_SYNC));
+
     bool isHighPix = WizIsHighPixel();
-    m_spacerForToolButtonAdjust = new WizMacFixedSpacer(QSize(isHighPix ? 81 : 95, 5), m_toolBar); //new CWizMacFixedSpacer(QSize(120, 5), m_toolBar);
+    m_spacerForToolButtonAdjust = new WizMacFixedSpacer(QSize(isHighPix ? 20 : 34, 5), m_toolBar); //new CWizMacFixedSpacer(QSize(120, 5), m_toolBar);
     m_toolBar->addWidget(m_spacerForToolButtonAdjust, "", "");
 
     m_toolBar->addSearch(tr("Search"), "", isHighPix ? HIGHPIXSEARCHWIDGETWIDTH : NORMALSEARCHWIDGETWIDTH);
     m_toolBar->addWidget(new WizMacFixedSpacer(QSize(28, 1), m_toolBar), "", "");
 
+    // 新建笔记按钮
     int buttonWidth = WizIsChineseLanguage(userSettings().locale()) ? 116 : 124;
     //WARNING:不能创建使用toolbar作为父类对象，会造成输入法偏移
     QPixmap pixExtraMenu = Utils::WizStyleHelper::skinResourceFileName("actionNewNoteExtraMenu", true);
@@ -1948,12 +2061,15 @@ void WizMainWindow::initToolBar()
     m_toolBar->addWidget(newNoteItem, "", "");
     //
     m_newNoteButton = newNoteItem;
-
-
+    /*
+    // 前进后退
+    m_actions->actionFromName(WIZACTION_GLOBAL_GOBACK)->setEnabled(false);
+    m_actions->actionFromName(WIZACTION_GLOBAL_GOFORWARD)->setEnabled(false);
+    m_toolBar->addAction(m_actions->actionFromName(WIZACTION_GLOBAL_GOBACK));
+    m_toolBar->addAction(m_actions->actionFromName(WIZACTION_GLOBAL_GOFORWARD));
+    */
+    //
     m_toolBar->addStandardItem(WizMacToolBar::FlexibleSpace);
-
-    m_userInfoWidget = new WizUserInfoWidget(*this, nullptr);
-    m_toolBar->addWidget(m_userInfoWidget, "", "");
     //
     m_searchWidget = m_toolBar->getSearchWidget();
     m_searchWidget->setUserSettings(m_settings);
@@ -1966,7 +2082,7 @@ void WizMainWindow::initToolBar()
     m_toolBar->setIconSize(iconSize);
     m_toolBar->setContextMenuPolicy(Qt::PreventContextMenu);
     m_toolBar->setMovable(false);
-    m_toolBar->setToolButtonStyle(Qt::ToolButtonIconOnly);
+    //m_toolBar->setToolButtonStyle(Qt::ToolButtonIconOnly); // 通过addWidget添加的QToolButton会忽视这个设置
     // align with categoryview's root item.
     m_toolBar->addWidget(new WizFixedSpacer(QSize(3, 1), m_toolBar));
     //
@@ -1991,6 +2107,7 @@ void WizMainWindow::initToolBar()
     //
     m_toolBar->addWidget(new WizFixedSpacer(QSize(20, 1), m_toolBar));
     //
+    /*
     // 前一篇文档
     WizButton* buttonBack = new WizButton(m_toolBar);
     buttonBack->setIconSize(iconSize);
@@ -2001,6 +2118,7 @@ void WizMainWindow::initToolBar()
     buttonForward->setIconSize(iconSize);
     buttonForward->setAction(m_actions->actionFromName(WIZACTION_GLOBAL_GOFORWARD));
     m_toolBar->addWidget(buttonForward);
+    */
     //
     m_toolBar->addWidget(new WizFixedSpacer(QSize(20, 1), m_toolBar));
     //
@@ -2008,11 +2126,16 @@ void WizMainWindow::initToolBar()
     prepareNewNoteMenu();
     //
     QAction* newNoteAction = m_actions->actionFromName(WIZACTION_GLOBAL_NEW_DOCUMENT);
+    //newNoteAction->setIcon(::WizLoadSkinIcon(this->userSettings().skin(), "toolButtonNewNote"));
     //
+    //QToolButton* buttonNew = new QToolButton(m_toolBar);
     QToolButton* buttonNew = new QToolButton(m_toolBar);
-    buttonNew->setMenu(m_newNoteExtraMenu);
+    buttonNew->setStyle(new WizNotePlusStyle("fusion"));
+    buttonNew->setMenu(m_newNoteExtraMenu);//选择模板的菜单
     buttonNew->setDefaultAction(newNoteAction);//m_newNoteExtraMenu->actionAt(QPoint(0 ,0)));
     buttonNew->setPopupMode(QToolButton::MenuButtonPopup);
+    buttonNew->setToolButtonStyle(Qt::ToolButtonTextBesideIcon);
+    buttonNew->setAutoRaise(true);
     //buttonNew->setAction(newNoteAction);
     m_toolBar->addWidget(buttonNew);
     //
@@ -2042,9 +2165,10 @@ void WizMainWindow::initClient()
     }
     else
     {
-        QPalette pal = m_doc->palette();
-        pal.setColor(QPalette::Window, QColor("#F6F6F6"));
-        m_doc->setPalette(pal);
+        //WizDocumentView* docView = qobject_cast<WizDocumentView*>(m_mainTab->currentWidget());
+        //QPalette pal = docView->palette();
+        //pal.setColor(QPalette::Window, QColor("#F6F6F6"));
+        //docView->setPalette(pal);
     }
 
 #else
@@ -2087,8 +2211,11 @@ void WizMainWindow::initClient()
     layoutDocument->setContentsMargins(0, 0, 0, 0);
     layoutDocument->setSpacing(0);
     documentPanel->setLayout(layoutDocument);
+    // WizMainTab
     layoutDocument->addWidget(m_mainTab); // 将主标签栏放在文档板布局上
+    connect(m_mainTab, SIGNAL(currentChanged(int)), SLOT(on_mainTabWidget_currentChanged(int)));
     m_mainTab->createTab(QUrl::fromUserInput("www.wiz.cn")); // 默认打开Wiz主页
+    //
     layoutDocument->addWidget(m_documentSelection);
     m_documentSelection->hide(); // 这个是什么东西？
     // append after client
@@ -2116,16 +2243,7 @@ void WizMainWindow::initClient()
     setMinimumWidth(isHighPix ? 785 : 985);
     m_category->setMinimumWidth(isHighPix ? 76 : 165);
     m_docListContainer->setMinimumWidth(isHighPix ? 113 : 244);
-    //FIXME: 不应该在此处进行初始化，因为不是唯一文档视图
-    /*
-    m_doc->web()->setInSeperateWindow(false);
-    m_doc->commentWidget()->setMinimumWidth(isHighPix ? 170 : 195);
-    m_doc->web()->setMinimumWidth(576);
-
-    m_doc->setStyleSheet(QString("QLineEdit{border:1px solid #DDDDDD; border-radius:2px;}"
-                                 "QToolButton {border:0px; padding:0px; border-radius:0px;}"));
-    m_doc->titleBar()->setStyleSheet(QString("QLineEdit{padding:0px; padding-left:-2px; padding-bottom:1px; border:0px; border-radius:0px;}"));
-    */
+    //
     m_msgListWidget->hide();
     //
     connect(m_splitter.get(), SIGNAL(splitterMoved(int, int)), SLOT(on_client_splitterMoved(int, int)));
@@ -2268,12 +2386,14 @@ QWidget*WizMainWindow::createMessageListView()
 
 QWidget*WizMainWindow::client() const
 {
-    return m_doc->client();
+    WizDocumentView* docView = qobject_cast<WizDocumentView*>(m_mainTab->currentWidget());
+    return docView->client();
 }
 
 WizDocumentView* WizMainWindow::documentView() const
 {
-    return m_doc;
+    WizDocumentView* docView = qobject_cast<WizDocumentView*>(m_mainTab->currentWidget());
+    return docView;
 }
 
 WizObjectDownloaderHost* WizMainWindow::downloaderHost() const
@@ -2291,6 +2411,15 @@ WizIAPDialog*WizMainWindow::iapDialog()
 #else
     return 0;
 #endif
+}
+
+/**
+ * @brief Get IWizExplorerApp for the main window.
+ * @return
+ */
+QObject* WizMainWindow::interface()
+{
+    return m_IWizExplorerApp;
 }
 
 //void MainWindow::on_documents_documentCountChanged()
@@ -2619,12 +2748,13 @@ void WizMainWindow::on_actionNewNoteByTemplate_triggered()
 
 void WizMainWindow::on_actionEditingUndo_triggered()
 {
+    WizDocumentView* docView = currentDocumentView();
     if (WizCodeEditorDialog::undo())
         return;
     //
-    if (m_doc->commentView()->hasFocus())
+    if (docView->commentView()->hasFocus())
     {
-        m_doc->commentView()->triggerPageAction(QWebEnginePage::Undo);
+        docView->commentView()->triggerPageAction(QWebEnginePage::Undo);
     }
     else
     {
@@ -2634,9 +2764,10 @@ void WizMainWindow::on_actionEditingUndo_triggered()
 
 void WizMainWindow::on_actionEditingRedo_triggered()
 {
-    if (m_doc->commentView()->hasFocus())
+    WizDocumentView* docView = currentDocumentView();
+    if (docView->commentView()->hasFocus())
     {
-        m_doc->commentView()->triggerPageAction(QWebEnginePage::Redo);
+        docView->commentView()->triggerPageAction(QWebEnginePage::Redo);
     }
     else
     {
@@ -2646,12 +2777,13 @@ void WizMainWindow::on_actionEditingRedo_triggered()
 
 void WizMainWindow::on_actionEditingCut_triggered()
 {
+    WizDocumentView* docView = currentDocumentView();
     if (WizCodeEditorDialog::cut())
         return;
     //
-    if (m_doc->commentView()->hasFocus())
+    if (docView->commentView()->hasFocus())
     {
-        m_doc->commentView()->triggerPageAction(QWebEnginePage::Cut);
+        docView->commentView()->triggerPageAction(QWebEnginePage::Cut);
     }
     else
     {
@@ -2661,12 +2793,13 @@ void WizMainWindow::on_actionEditingCut_triggered()
 
 void WizMainWindow::on_actionEditingCopy_triggered()
 {
+    WizDocumentView* docView = currentDocumentView();
     if (WizCodeEditorDialog::copy())
         return;
     //
-    if (m_doc->commentView()->hasFocus())
+    if (docView->commentView()->hasFocus())
     {
-        m_doc->commentView()->triggerPageAction(QWebEnginePage::Copy);
+        docView->commentView()->triggerPageAction(QWebEnginePage::Copy);
     }
     else
     {
@@ -2676,12 +2809,13 @@ void WizMainWindow::on_actionEditingCopy_triggered()
 
 void WizMainWindow::on_actionEditingPaste_triggered()
 {
+    WizDocumentView* docView = currentDocumentView();
     if (WizCodeEditorDialog::paste())
         return;
     //
-    if (m_doc->commentView()->hasFocus())
+    if (docView->commentView()->hasFocus())
     {
-        m_doc->commentView()->triggerPageAction(QWebEnginePage::Paste);
+        docView->commentView()->triggerPageAction(QWebEnginePage::Paste);
     }
     else
     {
@@ -2691,9 +2825,10 @@ void WizMainWindow::on_actionEditingPaste_triggered()
 
 void WizMainWindow::on_actionEditingPastePlain_triggered()
 {
-    if (m_doc->commentView()->hasFocus())
+    WizDocumentView* docView = currentDocumentView();
+    if (docView->commentView()->hasFocus())
     {
-        m_doc->commentView()->triggerPageAction(QWebEnginePage::Paste);
+        docView->commentView()->triggerPageAction(QWebEnginePage::Paste);
     }
     else
     {
@@ -2703,12 +2838,13 @@ void WizMainWindow::on_actionEditingPastePlain_triggered()
 
 void WizMainWindow::on_actionEditingSelectAll_triggered()
 {
+    WizDocumentView* docView = currentDocumentView();
     if (WizCodeEditorDialog::selectAll())
         return;
     //
-    if (m_doc->commentView()->hasFocus())
+    if (docView->commentView()->hasFocus())
     {
-        m_doc->commentView()->triggerPageAction(QWebEnginePage::SelectAll);
+        docView->commentView()->triggerPageAction(QWebEnginePage::SelectAll);
     }
     else
     {
@@ -3386,6 +3522,7 @@ void WizMainWindow::on_client_splitterMoved(int pos, int index)
 
 void WizMainWindow::on_actionGoBack_triggered()
 {
+    WizDocumentView* docView = currentDocumentView();
     WizGetAnalyzer().logAction("ToolBarGoBack");
 
     if (!m_history->canBack())
@@ -3407,11 +3544,12 @@ void WizMainWindow::on_actionGoBack_triggered()
     }
 
     updateHistoryButtonStatus();
-    m_doc->setFocus();
+    docView->setFocus();
 }
 
 void WizMainWindow::on_actionGoForward_triggered()
 {
+    WizDocumentView* docView = currentDocumentView();
     WizGetAnalyzer().logAction("ToolBarGoForward");
 
     if (!m_history->canForward())
@@ -3433,7 +3571,7 @@ void WizMainWindow::on_actionGoForward_triggered()
     }
 
     updateHistoryButtonStatus();
-    m_doc->setFocus();
+    docView->setFocus();
 }
 
 /**
@@ -3443,20 +3581,10 @@ void WizMainWindow::on_actionGoForward_triggered()
  *  重现上一次的状态。
  */
 void WizMainWindow::on_actionOpenDevTools_triggered() {
-    WizDocumentView* docView =  qobject_cast<WizDocumentView*>(m_mainTab->currentWidget());
     WizWebEngineView* webView = m_mainTab->currentWebView();
-    if (!webView) return;
-    WizDevToolsDialog* devToolsWindow = new WizDevToolsDialog();
-    devToolsWindow->setAttribute(Qt::WA_DeleteOnClose); // 由于没有制定parent所以设置该属性以防止内存泄露
-    // 设置外观
-    QString title = docView ? docView->note().strTitle : webView->title();
-    devToolsWindow->setWindowTitle("DevTools - " + title);
     //
-    WizWebEnginePage* devToolsWebPage = devToolsWindow->getWeb()->getPage();
-    WizWebEnginePage* webPage = webView->getPage();
-    webPage->setDevToolsPage(devToolsWebPage);
-    //
-    devToolsWindow->show();
+    if (webView)
+        webView->openDevTools();
 }
 
 void WizMainWindow::on_category_itemSelectionChanged()
@@ -3694,9 +3822,30 @@ void WizMainWindow::resetPermission(const QString& strKbGUID, const QString& str
     }
 }
 
-void WizMainWindow::setCurrentDocumentView(WizDocumentView* newDocView)
+void WizMainWindow::setCurrentDocumentView(WizDocumentView* docView)
 {
-    m_doc = newDocView;
+    m_doc = docView;
+}
+
+void WizMainWindow::on_mainTabWidget_currentChanged(int pageIndex)
+{
+    WizDocumentView* docView = qobject_cast<WizDocumentView*>(m_mainTab->widget(pageIndex));
+    if ( docView ) {
+        setCurrentDocumentView(docView);
+        // check if some actions should get enabled.
+        m_actions->actionFromName(WIZACTION_GLOBAL_SAVE_AS_MARKDOWN)->setEnabled(WizIsMarkdownNote(docView->note()));
+        m_actions->actionFromName(WIZACTION_GLOBAL_SAVE_AS_PDF)->setEnabled(true);
+        m_actions->actionFromName(WIZACTION_GLOBAL_SAVE_AS_HTML)->setEnabled(true);
+    } else {
+        m_actions->actionFromName(WIZACTION_GLOBAL_SAVE_AS_MARKDOWN)->setEnabled(false);
+        m_actions->actionFromName(WIZACTION_GLOBAL_SAVE_AS_PDF)->setEnabled(false);
+        m_actions->actionFromName(WIZACTION_GLOBAL_SAVE_AS_HTML)->setEnabled(false);
+    }
+}
+
+WizDocumentView* WizMainWindow::currentDocumentView()
+{
+    return qobject_cast<WizDocumentView*>(m_mainTab->currentWidget());
 }
 
 /**
@@ -3732,8 +3881,8 @@ WizDocumentView* WizMainWindow::createDocumentView()
     newDocView->commentWidget()->setMinimumWidth(isHighPix ? 170 : 195);
     newDocView->web()->setMinimumWidth(576);
 
-    newDocView->setStyleSheet(QString("QLineEdit{border:1px solid #DDDDDD; border-radius:2px;}"
-                                 "QToolButton {border:0px; padding:0px; border-radius:0px;}"));
+    newDocView->setStyleSheet(QString("QLineEdit{border:1px solid #DDDDDD; border-radius:2px;}"));
+    //                             "QToolButton {border:0px; padding:0px; border-radius:0px;}"));
     newDocView->titleBar()->setStyleSheet(QString("QLineEdit{padding:0px; padding-left:-2px; padding-bottom:1px; border:0px; border-radius:0px;}"));
 
     //
@@ -3787,14 +3936,11 @@ void WizMainWindow::viewDocument(const WIZDOCUMENTDATAEX& data)
     Q_ASSERT(!data.strGUID.isEmpty());
     // 遍历tab，查找已经打开的标签中是否有该文档
     for (int i = 0; i < m_mainTab->count(); ++i) {
-        // 注意，此处没有考虑标签页是非WizDocumentView的情况
         WizDocumentView* docView = qobject_cast<WizDocumentView*>(m_mainTab->widget(i));
         if ( docView == nullptr ) {
-            // 非WizDocumentView则跳过
             continue;
         } else {
             if ( data.strGUID == docView->note().strGUID ) {
-                // 激活当前文档标签
                 m_mainTab->setCurrentWidget(docView);
                 return;
             }
@@ -3803,21 +3949,18 @@ void WizMainWindow::viewDocument(const WIZDOCUMENTDATAEX& data)
     }
     // 重置许可
     resetPermission(data.strKbGUID, data.strOwner);
-    // 如果文档正好是要编辑的
+    //
     bool forceEditing = false;
     if (data.strGUID == m_documentForEditing.strGUID)
     {
         forceEditing = true;
         m_documentForEditing = WIZDOCUMENTDATA();
     }
-    // 创建一个新的文档视图，然后用这个指针发送信号
     WizDocumentView* newDocView = createDocumentView();
-    //newDocView->web()->setUrl(QUrl("www.wiz.cn"));
     m_mainTab->createTab(newDocView);
     // 可以考虑直接调用newDocView->viewNote()方法，而不用发送信号
     WizGlobal::emitViewNoteRequested(newDocView, data, forceEditing);
-    // 再将m_doc指向新的文档视图
-    setCurrentDocumentView(newDocView);
+    setCurrentDocumentView(newDocView); //FIXME: 如果放弃当前文档视图功能，则修改
     //
     m_actions->actionFromName(WIZACTION_GLOBAL_SAVE_AS_MARKDOWN)->setEnabled(WizIsMarkdownNote(data));
     return;
@@ -3825,7 +3968,8 @@ void WizMainWindow::viewDocument(const WIZDOCUMENTDATAEX& data)
 
 void WizMainWindow::titleChanged()
 {
-    m_actions->actionFromName(WIZACTION_GLOBAL_SAVE_AS_MARKDOWN)->setEnabled(WizIsMarkdownNote(m_doc->note()));
+    WizDocumentView* docView = currentDocumentView();
+    m_actions->actionFromName(WIZACTION_GLOBAL_SAVE_AS_MARKDOWN)->setEnabled(WizIsMarkdownNote(docView->note()));
 }
 
 void WizMainWindow::locateDocument(const WIZDOCUMENTDATA& data)
@@ -3880,6 +4024,11 @@ WizUserSettings&WizMainWindow::userSettings()
 }
 
 QObject*WizMainWindow::CategoryCtrl()
+{
+    return m_category;
+}
+
+WizCategoryView* WizMainWindow::CategoryView()
 {
     return m_category;
 }
@@ -3967,6 +4116,11 @@ QObject* WizMainWindow::DatabaseManager()
     return &m_dbMgr;
 }
 
+WizDatabaseManager* WizMainWindow::DatabaseManagerEx()
+{
+    return &m_dbMgr;
+}
+
 QObject* WizMainWindow::CreateWizObject(const QString& strObjectID)
 {
     CString str(strObjectID);
@@ -4046,11 +4200,13 @@ void WizMainWindow::reconnectServer()
 
 void WizMainWindow::setFocusForNewNote(WIZDOCUMENTDATA doc)
 {
+    //FIXME: 因为当前标签非文档视图，引起空指针错误
+    //WizDocumentView* docView = currentDocumentView();
     m_documentForEditing = doc;
     m_documents->addAndSelectDocument(doc);
     m_documents->clearFocus();
-    m_doc->web()->setFocus(Qt::MouseFocusReason);
-    m_doc->web()->editorFocus();
+    //docView->web()->setFocus(Qt::MouseFocusReason);
+    //docView->web()->editorFocus();
 }
 
 /**
@@ -4336,7 +4492,9 @@ void WizMainWindow::resortDocListAfterViewDocument(const WIZDOCUMENTDATA& doc)
 
 void WizMainWindow::showCommentWidget()
 {
-    QWidget* commentWidget = m_doc->commentWidget();
+    //FIXME: 不能直接在m_doc上显示
+    WizDocumentView* docView = currentDocumentView();
+    QWidget* commentWidget = docView->commentWidget();
     if (!commentWidget->isVisible())
     {
         QSplitter* splitter = qobject_cast<QSplitter*>(commentWidget->parentWidget());
@@ -4359,7 +4517,8 @@ void WizMainWindow::showCommentWidget()
 
 WizDocumentWebView* WizMainWindow::getActiveEditor()
 {
-    WizDocumentWebView* editor = m_doc->web();
+    WizDocumentView* docView = currentDocumentView();
+    WizDocumentWebView* editor = docView->web();
     QWidget* activeWgt = qApp->activeWindow();
     if (activeWgt != this)
     {
@@ -4586,9 +4745,13 @@ void WizMainWindow::downloadAttachment(const WIZDOCUMENTATTACHMENTDATA& attachme
 
 void WizMainWindow::viewNoteInSeparateWindow(const WIZDOCUMENTDATA& data)
 {
-    m_doc->web()->trySaveDocument(m_doc->note(), false, [=](const QVariant&){
+    //FIXME: non-docuView causes break!
+    WizDocumentView* docView = currentDocumentView();
+    if (!docView)
+        return;
+    docView->web()->trySaveDocument(docView->note(), false, [=](const QVariant&){
 
-        m_doc->setEditorMode(modeReader);
+        docView->setEditorMode(modeReader);
         //
         m_singleViewDelegate->viewDocument(data);
         // update dock menu
@@ -4599,7 +4762,8 @@ void WizMainWindow::viewNoteInSeparateWindow(const WIZDOCUMENTDATA& data)
 
 void WizMainWindow::viewCurrentNoteInSeparateWindow()
 {
-    WIZDOCUMENTDATA doc = m_doc->note();
+    WizDocumentView* docView = currentDocumentView();
+    WIZDOCUMENTDATA doc = docView->note();
     viewNoteInSeparateWindow(doc);
 }
 

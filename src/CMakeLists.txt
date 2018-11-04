@@ -94,6 +94,7 @@ set(wiznote_SOURCES
     widgets/WizUserInfoWidget.cpp
     widgets/WizUserInfoWidgetBase.cpp
     widgets/WizSegmentedButton.cpp
+    widgets/WizExternalEditorSettingDialog.cpp
     utils/WizStyleHelper.cpp
     utils/WizPathResolve.cpp
     share/WizWindowTitleBar.cpp
@@ -200,6 +201,13 @@ set(wiznote_SOURCES
     main.cpp
     WizInitBizCertDialog.cpp
     share/WizDocumentStyle.cpp
+
+    interface/IWizHtmlEditorApp.cpp
+    interface/IWizExplorerWindow.cpp
+    interface/IWizCategoryCtrl.cpp
+    interface/IWizDocumentListCtrl.cpp
+    interface/IWizDatabase.cpp
+    interface/IWizExplorerApp.cpp
 )
 
 set(wiznote_HEADERS
@@ -245,6 +253,7 @@ set(wiznote_HEADERS
     widgets/WizUserInfoWidget.h
     widgets/WizUserInfoWidgetBase.h
     widgets/WizScrollBar.h
+    widgets/WizExternalEditorSettingDialog.h
     sync/WizToken.h
     sync/WizToken_p.h
     sync/WizApiEntry.h
@@ -366,6 +375,13 @@ set(wiznote_HEADERS
     WizInitBizCertDialog.h
     share/WizDocumentStyle.h
     WizCombineNotesDialog.h
+
+    interface/IWizHtmlEditorApp.h
+    interface/IWizExplorerWindow.h
+    interface/IWizCategoryCtrl.h
+    interface/IWizDocumentListCtrl.h
+    interface/IWizDatabase.h
+    interface/IWizExplorerApp.h
 )
 
 set(wiznote_FORMS
@@ -392,6 +408,8 @@ set(wiznote_FORMS
     ui/WizInitBizCertDialog.ui
     ui/WizUserServiceExprDialog.ui
     ui/WizCombineNotesDialog.ui
+    ui/WizExternalEditorSettingDialog.ui
+    ui/WizExternalEditorInfoDialog.ui
 )
 
 set(wiznote_TRANSLATIONS
@@ -401,6 +419,15 @@ set(wiznote_TRANSLATIONS
 
 set(wiznote_RCS
     ${CMAKE_SOURCE_DIR}/resources/wiznote.qrc
+)
+
+include_directories(
+    ${CMAKE_CURRENT_SOURCE_DIR}
+    ${CMAKE_CURRENT_BINARY_DIR}
+    ${CMAKE_SOURCE_DIR}/lib
+    ${CMAKE_SOURCE_DIR}/lib/quazip
+    ${CMAKE_SOURCE_DIR}/lib/gumbo-parser/src
+    ${CMAKE_SOURCE_DIR}/lib/gumbo-query/src
 )
 
 #============================================================================
@@ -428,7 +455,7 @@ if(UNIX)
         file(GLOB _qt5_QM ${qt_translations_dir}/qt_*.qm)
 
         add_executable(WizNote MACOSX_BUNDLE  ${wiznote_HEADERS} ${wiznote_HEADERS_MAC} ${wiznote_FORM_HEADERS} ${wiznote_SOURCES_MAC} ${wiznote_SOURCES} ${wiznote_QM} ${_qt5_QM} ${wiznote_RC} ${wiznote_LOGO})
-        set_target_properties(WizNote PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
+        set_target_properties(WizNote PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
         set_target_properties(${PROJECT_NAME} PROPERTIES AUTOMOC_MOC_OPTIONS "-DQ_OS_MAC")
 
         # this should be issue of cmake, refer: http://public.kitware.com/Bug/bug_revision_view_page.php?rev_id=958
@@ -517,13 +544,6 @@ endif()
 qt_use_modules(WizNote)
 qt_suppress_warnings(WizNote)
 
-include_directories(
-    ${CMAKE_CURRENT_SOURCE_DIR}
-    ${CMAKE_CURRENT_BINARY_DIR}
-    ${CMAKE_SOURCE_DIR}/lib
-    ${CMAKE_SOURCE_DIR}/lib/openssl/include
-    )
-
 if (APPLE)
     include_directories(~/Library/Frameworks)
 elseif(WIN32)
@@ -546,43 +566,47 @@ if(UNIX)
 	if(APPLE)
 		if(APPSTORE_BUILD)
 			target_link_libraries(${PROJECT_NAME}
-                quazip_static
+                                quazip_static
 				cryptopp-static
+                                gumbo_query_static
 				Qt5::WebEngine
 				Qt5::WebEngineWidgets
-				${CMAKE_SOURCE_DIR}/lib/openssl/lib/libcrypto.a
-				${CMAKE_SOURCE_DIR}/lib/openssl/lib/libssl.a
 				${CMAKE_DL_LIBS}
+                                ${CONAN_LIBS}
 			)
 		else(APPSTORE_BUILD)
 			target_link_libraries(${PROJECT_NAME}
-                quazip_static
+                                quazip_static
 				cryptopp-static
+                                gumbo_query_static
 				Qt5::WebEngine
 				Qt5::WebEngineWidgets
-				${CMAKE_SOURCE_DIR}/lib/openssl/lib/libcrypto.a
-				${CMAKE_SOURCE_DIR}/lib/openssl/lib/libssl.a
 				${CMAKE_DL_LIBS}
+                                ${CONAN_LIBS}
 			)
 		endif(APPSTORE_BUILD)
 	else(APPLE) #linux
 		target_link_libraries(${PROJECT_NAME}
                         -lpthread
                         X11
-            quazip_static   
+                        quazip_static
 			cryptopp-static
+                        gumbo_query_static
 			Qt5::WebEngine
 			Qt5::WebEngineWidgets
 			${CMAKE_DL_LIBS}
+                        ${CONAN_LIBS}
 		)
 	endif(APPLE)
 else(NOT UNIX)
 	target_link_libraries(${PROJECT_NAME}
-        quazip_static
+                quazip_static
 		cryptopp-static
+                gumbo_query_static
 		Qt5::WebEngine
 		Qt5::WebEngineWidgets
 		${CMAKE_DL_LIBS}
+                ${CONAN_LIBS}
                 Qt5::WinMain
 	)
 endif()

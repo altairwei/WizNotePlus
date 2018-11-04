@@ -10,31 +10,69 @@
 # UPDATE_TRANSLATIONS  update transation files
 # PLCrashReporter   use PLCrashReporter for mac, need PLCrashReporter framework
 
-project("WizNotePlus")
+cmake_minimum_required(VERSION 3.0)
 
-if (APPLE)
-    cmake_minimum_required(VERSION 2.8.12)
-else(APPLE)
-    cmake_minimum_required(VERSION 2.8.4)
-endif(APPLE)
+project(WizNotePlus VERSION 2.7.0)
+
+#============================================================================
+# 3rd-party libraries
+#============================================================================
+
+option(WIZNOTE_CONAN_LIBS "If enable conan packages" ON)
+# install conan 3rdparty libraries to package dirs.
+if(WIZNOTE_CONAN_LIBS)
+    message("\nStart generate 3rdparty dependencies at ${CMAKE_BINARY_DIR}:\n")
+    execute_process(COMMAND conan install ${CMAKE_SOURCE_DIR}
+        -s build_type=${CMAKE_BUILD_TYPE}
+        --build missing
+        WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
+        RESULT_VARIABLE conan_result
+        OUTPUT_VARIABLE conan_output
+        ERROR_VARIABLE conan_error
+    )
+    if(NOT DEFINED conan_result)
+        message(FATAL_ERROR
+            "Conan cannot be found, please ensure the location of excutable conan is in your PATH."
+            "-- Exit Code: ${conan_result}."
+        )
+    endif()
+    if(NOT conan_result EQUAL "0")
+        message("${conan_error}")
+        message("${conan_output}")
+        message(FATAL_ERROR
+            "\nFail to generate 3rdparty dependencies! "
+            "\n-- Exit code: ${conan_result}"
+            "\n-- Build type: ${CMAKE_BUILD_TYPE} \n")
+    endif()
+
+    include(${CMAKE_BINARY_DIR}/conanbuildinfo.cmake)
+    conan_basic_setup()
+
+    install(DIRECTORY ${CONAN_LIB_DIRS} DESTINATION lib )
+endif(WIZNOTE_CONAN_LIBS)
 
 #============================================================================
 # Set Variables
 #============================================================================
 
-# 配置Qt库
-set(CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
+list(APPEND CMAKE_MODULE_PATH 
+    "${CMAKE_CURRENT_SOURCE_DIR}/cmake"
+)
 
 # rpath resolve.
 #set(CMAKE_BUILD_WITH_INSTALL_RPATH YES)     // would cause wheelEvent problem on centos/fedora when compiled with qt5
-# rpath是gcc调用的ld的一个参数。rpath添加一个目录。程序运行时，优先到rpath指定的目录去寻找依赖库
-# 当程序被加载时，搜寻此目录，寻找动态库。rpath添加的目录信息保存在可执行文件中。
-# $ORIGING代表程序目录，CMAKE_INSTALL_RPATH是分号分隔的list，它指定了在安装目标时使用的rpath
 if(APPLE)
+    # make the install names for dylibs include "@rpath/" prefix.
+    set(MACOSX_RPATH ON)
+    set(CMAKE_OSX_DEPLOYMENT_TARGET 10.11)
+    set(CMAKE_BUILD_WITH_INSTALL_RPATH YES)
+    SET(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
+    # used to initialize the INSTALL_NAME_DIR property on all targets.
     set(CMAKE_INSTALL_NAME_DIR "@rpath/PlugIns")
-    set(CMAKE_INSTALL_RPATH "@loader_path/..;@executable_path/..")
+    set(CMAKE_INSTALL_RPATH "@loader_path/..;@loader_path/../Frameworks;@executable_path/..;@executable_path/../Frameworks;@rpath")
     #SET(PLCrashReporter on)
 else(APPLE)
+    # $ORIGING代表程序目录，CMAKE_INSTALL_RPATH是分号分隔的list，它指定了在安装目标时使用的rpath
     set(CMAKE_INSTALL_RPATH "$ORIGIN;$ORIGIN/..")
     set (openssl-linked on)
 endif(APPLE)
@@ -50,11 +88,11 @@ endif()
 # Internal compiler options
 #============================================================================
 
+# MSVC don't need this check process.
 include(CheckCXXCompilerFlag)
 CHECK_CXX_COMPILER_FLAG("-std=c++11" COMPILER_SUPPORTS_CXX11)
 CHECK_CXX_COMPILER_FLAG("-std=c++0x" COMPILER_SUPPORTS_CXX0X)
 
-# MSVC 不适用次检查
 if(UNIX)
     if(COMPILER_SUPPORTS_CXX11)
         if(APPLE)
@@ -81,9 +119,9 @@ if(APPLE)
     add_definitions(-DUSECOCOATOOLBAR=TRUE)
 endif(APPLE)
 
-# WizNotePluse目录结构
+# WizNotePlus Dirs
 if(APPLE)
-    set(WIZNOTE_ROOT_DIR ${CMAKE_BINARY_DIR}/WizNote.app)
+    set(WIZNOTE_ROOT_DIR ${CMAKE_BINARY_DIR}/bin/WizNote.app)
     set(WIZNOTE_CONTENTS_DIR ${WIZNOTE_ROOT_DIR}/Contents)
     set(WIZNOTE_RESOURCE_DIR ${WIZNOTE_ROOT_DIR}/Contents/Resources)
 else(APPLE)
@@ -91,7 +129,8 @@ else(APPLE)
     set(WIZNOTE_RESOURCE_DIR ${WIZNOTE_ROOT_DIR}/share) # 资源文件目录
 endif(APPLE)
 
-# Windows端的QuaZIP库
+# when including QuaZip sources directly into a project, QUAZIP_STATIC should
+# be defined explicitly to avoid possible troubles with unnecessary importing/exporting.
 if (WIN32)
     add_definitions(-DQUAZIP_STATIC)
 endif()

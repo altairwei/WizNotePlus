@@ -117,7 +117,7 @@ void WizConsoleDialog::onBtnSaveAsClicked()
     if (strFilePath.isEmpty())
         return;
 
-    if (QFile::exists(strFilePath)) {
+    if (!strFilePath.isEmpty() && QFile::exists(strFilePath)) {
         QMessageBox::warning(this, tr("Failed to save"), tr("you should select a file name which does not exists"));
         return;
     }

@@ -107,7 +107,9 @@ WizDocumentView::WizDocumentView(WizExplorerApp& app, QWidget* parent)
     m_comments->setAcceptDrops(false);
     connect(m_comments, SIGNAL(loadFinishedEx(bool)), m_title, SLOT(onCommentPageLoaded(bool)));
 
-    m_comments->addToJavaScriptWindowObject("WizExplorerApp", m_app.object());
+    WizMainWindow* mv = WizGlobal::mainWindow();
+    QObject* IWizExplorerApp = qobject_cast<QObject*>(mv->interface());
+    m_comments->addToJavaScriptWindowObject("WizExplorerApp", IWizExplorerApp);
     //
     connect(m_commentWidget, SIGNAL(widgetStatusChanged()), SLOT(on_commentWidget_statusChanged()));
 
@@ -179,11 +181,12 @@ WizDocumentView::WizDocumentView(WizExplorerApp& app, QWidget* parent)
 
     connect(m_title, SIGNAL(notifyBar_link_clicked(QString)), SLOT(on_notifyBar_link_clicked(QString)));
     connect(m_title, SIGNAL(loadComment_request(QString)), SLOT(on_loadComment_request(QString)), Qt::QueuedConnection);
+    connect(m_title, SIGNAL(viewNoteInExternalEditor_request(QString&,QString&,QString&,int,int)), SLOT(on_viewNoteInExternalEditor_request(QString&,QString&,QString&,int,int)));
 
     // 编辑状态同步线程
     m_editStatusSyncThread->start(QThread::IdlePriority);
 
-    m_editStatusChecker = new WizDocumentStatusChecker();
+    m_editStatusChecker = new WizDocumentStatusChecker(this);
     connect(this, SIGNAL(checkDocumentEditStatusRequest(QString,QString)), m_editStatusChecker,
             SLOT(checkEditStatus(QString,QString)));
     connect(this, SIGNAL(stopCheckDocumentEditStatusRequest(QString,QString)),
@@ -207,7 +210,7 @@ WizDocumentView::WizDocumentView(WizExplorerApp& app, QWidget* parent)
 WizDocumentView::~WizDocumentView()
 {
     if (m_editStatusChecker)
-        delete m_editStatusChecker;
+       delete m_editStatusChecker;
 }
 
 QSize WizDocumentView::sizeHint() const
@@ -483,6 +486,10 @@ void WizDocumentView::reviewCurrentNote()
     }
 }
 
+/**
+ * @brief 设置编辑模式
+ * @param editorMode
+ */
 void WizDocumentView::setEditorMode(WizEditorMode editorMode)
 {
     if (m_bLocked)
@@ -493,8 +500,8 @@ void WizDocumentView::setEditorMode(WizEditorMode editorMode)
     //
     bool edit = editorMode == modeEditor;
     bool read = !edit;
-
-    bool isGroupNote =m_dbMgr.db(m_note.strKbGUID).isGroup();
+    // 检查文档的团队编辑状态
+    bool isGroupNote = m_dbMgr.db(m_note.strKbGUID).isGroup();
     if (edit && isGroupNote)
     {
         // don not use message tips when check document editable
@@ -507,7 +514,7 @@ void WizDocumentView::setEditorMode(WizEditorMode editorMode)
         // stop check document edit status while enter editing mode
         stopCheckDocumentEditStatus();
     }
-    //
+    // 设置文档视图编辑器状态
     m_editorMode = editorMode;
 
     if (read)
@@ -519,8 +526,9 @@ void WizDocumentView::setEditorMode(WizEditorMode editorMode)
         m_title->hideMessageTips(false);
     }
     m_title->setEditorMode(editorMode);
+    //
     m_web->setEditorMode(editorMode);
-
+    // 发送团队文档编辑状态
     if (isGroupNote)
     {
         if (m_editorMode == modeEditor)
@@ -979,6 +987,12 @@ void WizDocumentView::on_notifyBar_link_clicked(const QString& link)
 
         downloadNoteFromServer(m_note);
     }
+}
+
+void WizDocumentView::on_viewNoteInExternalEditor_request(QString& Name, QString& ProgramFile,
+                                                          QString& Arguments, int TextEditor, int UTF8Encoding)
+{
+    web()->viewDocumentInExternalEditor(Name, ProgramFile, Arguments, TextEditor, UTF8Encoding);
 }
 
 
