@@ -1,46 +1,28 @@
-# WizNotePlus for Linux/OSX/Windows
+# WizNotePlus
 
 forked from [WizTeam/WizQTClient](https://github.com/WizTeam/WizQTClient)
 
-## About WizQTClient
+README [中文](README.md) | English (in progress)
 
-### cross-platform cloud based note-taking client
+**为知笔记+** 是一款基于云服务的跨平台个人知识与时间管理工具。
 
-WizNote is an open-sourced project, published under GPLv3 for individual/personal users and custom commercial license for company users.
+## 介绍
 
-This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version. This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
+**为知笔记+** 项目致力于提高 [为知笔记跨平台客户端](https://github.com/WizTeam/WizQTClient) 的可用性，以达到或者超越 Windows 平台特有客户端的水平。这个目标要求 **为知笔记+** 实现对开发者友好的插件系统，并且促进氛围良好的第三方开发者社区的建成。本项目在遵循 GPLv3 协议的情况下由第三方开发者发起并维护，欢迎任何有意愿参与项目贡献的开发者或用户联系 altair_wei@outlook.com 。
 
-### Introduction to  WizQTClient
+[![release](https://img.shields.io/badge/release-v2.7.0-green.svg)](https://github.com/altairwei/WizNotePlus/releases) [![license](https://img.shields.io/badge/license-GPLv3-green.svg)](https://github.com/altairwei/WizNotePlus/blob/master/LICENSE)
 
-The project is based on Qt, aimed to provide an excellent PKM(personal knowledge management) desktop environment based on cloud usage. At present, we only have Wiz cloud backend(our company) on the table. but we strong encourage developers to contribute to this project to add more cloud backend for different cloud providers like evernote, youdao, etc...even offline usage.
-
-PKM should be an very important thing cross through one person's life, it's unwise to stick yourself to a fixed service provider or jump around and leave your collected info/secrets behide. PKM should be the same as your mind, fly over the ocean but never splash the waves.
-
-freedom, means knowledge, means PKM, means this WizNote client.
-
-if you are windows or portable platform users, we have WizNote for windows, ios, android from our [Homepage](http://www.wiznote.com)
-
-## About WizNotePlus
-
-致力于开发新的开源版为知笔记客户端。
-
-## Compile (Windows, macOS, Linux)
-
-需要高于Qt5.11的版本才能编译成功。相关文档正在撰写中。
-
-## Feature
+## 特点
 
 ### 适配 Linux/Windows 高分屏
 
-macOS 端能提供系统本地对高分屏的支持，除了替换高分辨率图标外，不需要额外设置。linux 端对高分屏的支持很简单，只要在主进程之前设置 `QApplication::setAttribute(Qt::AA_EnableHighDpiScaling);` ，就能完成对高分屏的支持。相比之下，Window 端的高分屏适配就要复杂很多，目前采用了将字体回调到小字号的办法来暂时适配高分屏，这种做法的缺陷是字体稍有有一点儿模糊。Windows 端高分屏适配除了字体问题外，还有某些图标的显示上存在问题。
+在 Linux 端修复了客户端在高分屏下无法检测正确的 DPI 的问题，另外对客户端在 Window 高分屏下做了简单地适配。
 
-### Chrome 开发者工具
+### 支持 Chrome 开发者工具
 
 增加 `F12` 快捷键打开开发者工具，用以调整笔记格式以及未来用作 `JavaScript` 插件的调试器。
 
 ### 多标签浏览文档和网页
-
-通过 `QTabWidget` 部件实现多标签浏览文档和网页的功能。
 
 ![tabViewer](documents/images/tabViewer.png?raw=true)
 
@@ -50,14 +32,39 @@ macOS 端能提供系统本地对高分屏的支持，除了替换高分辨率�
 
 ![extenalEditor](documents/images/external_editor.png?raw=true)
 
-上图展示了使用 Typora 作为外部编辑器打开笔记的示意图。
+## 下载
 
-## Project Plan
+请前往本项目 [Releases](https://github.com/altairwei/WizNotePlus/releases) 页面，根据用户平台和需求选择下载项。
 
-- [x] 文档页面增加 Devtools 。
-- [x] 多标签页功能：使用 `QTabWidget` 实现多标签，将WizDocumentView部件嵌入WizMainTab的Page中，新建 `WizWebsiteView` 类，包裹 `WizWebEngineView` 用于浏览普通网页。
-- [x] 添加外外部编辑器功能，用 `QFileSystemWatcher` 监控文件变动。
-- [ ] 建立插件系统，包括 Global Plugin 、ExecuteScript Plugin 、HtmlDialog Plugin 、QML Plugin 、C++/Qt Plugin 、 WebSocket 等形式的插件。
-- [ ] Windows 端插件添加 QAxObject 接口
-- [ ] 建立其他云服务系统，如 OneDrive、Ｎextcloud 等
-- [ ] 实现 NodeJs-like APIs
+## 使用
+
+### DMG
+
+macOS 平台下请双击 `WizNote-macOS.dmg` ，并在弹出窗口中拖动应用包安装到相应位置。
+
+### AppImage
+
+Linux 平台下为 `WizNote-x86_64.AppImage` 添加可执行权限后即可运行。如果想要将 AppImage 整合入桌面系统，请参考项目维基 [AppImage 整合入桌面环境](https://github.com/altairwei/WizNotePlus/wiki/AppImage%E6%95%B4%E5%90%88%E5%85%A5%E6%A1%8C%E9%9D%A2%E7%8E%AF%E5%A2%83) 。
+
+### 编译
+
+如果预编译和打包的程序无法在特定平台正常运行，可以考虑从源码编译。具体编译步骤请参见项目维基 [客户端编译步骤](https://github.com/altairwei/WizNotePlus/wiki/%E5%AE%A2%E6%88%B7%E7%AB%AF%E7%BC%96%E8%AF%91%E6%AD%A5%E9%AA%A4) 。
+
+## 计划
+
+- [x] Devtools 开发者工具。
+- [x] 多标签浏览
+- [x] 外部编辑器功能
+- [ ] JavaScript 插件系统
+- [ ] 更换默认富文本编辑器
+- [ ] 建立其他云服务系统
+- [ ] 皮肤或主题系统
+
+## 依赖
+
+- Qt 5.11 (L-GPL v3)
+- QuaZIP (L-GPL V2.1)
+- Cryptopp (Boost Software License 1.0)
+- gumbo-query (MIT License)
+- gumbo-parser (Apache License 2.0)
+- create-dmg (MIT License)
