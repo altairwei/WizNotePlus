@@ -5,7 +5,7 @@ OpenSSL/1.0.2p@conan/stable
 cmake
 
 [options]
-OpenSSL:shared=False
+OpenSSL:shared=True
 
 [imports]
 bin, *.dll -> ./bin # Copies all dll files from packages bin folder to my "bin" folder
