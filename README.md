@@ -16,7 +16,7 @@ README [中文](README.md) | English (in progress)
 
 ### 适配 Linux/Windows 高分屏
 
-在 Linux 端修复了客户端在高分屏下无法检测正确的 DPI 的问题，另外对客户端在 Window 高分屏下做了简单地适配。
+修复 Linux 客户端在高分屏下无法检测正确 DPI 的问题，另外对 Window 客户端在高分屏下做了简单的适配。
 
 ### 支持 Chrome 开发者工具
 
