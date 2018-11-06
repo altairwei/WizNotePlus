@@ -48,7 +48,8 @@ if(WIZNOTE_CONAN_LIBS)
     include(${CMAKE_BINARY_DIR}/conanbuildinfo.cmake)
     conan_basic_setup()
 
-    install(DIRECTORY ${CONAN_LIB_DIRS} DESTINATION lib )
+    install(DIRECTORY ${CONAN_LIB_DIRS} DESTINATION ./)
+
 endif(WIZNOTE_CONAN_LIBS)
 
 #============================================================================
