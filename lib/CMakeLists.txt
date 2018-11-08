@@ -40,23 +40,23 @@ else()
     add_subdirectory(quazip)
 endif()
 
-if (NOT EXISTS ${CMAKE_SOURCE_DIR}/lib/cryptopp/cryptlib.h)
-    # Update submodules as needed
-    if(WIZNOTE_GIT_SUBMODULE)
-        message("CryptoPP not found, it needs to be downloaded from github and build from source.")
-        message("Start download: ")
-        execute_process(COMMAND git submodule update --init -- cryptopp
-                    WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
-		    RESULT_VARIABLE GIT_SUBMOD_RESULT)
-        if(NOT GIT_SUBMOD_RESULT EQUAL "0")
-            message(FATAL_ERROR "git submodule update --init failed with ${GIT_SUBMOD_RESULT}, please checkout submodules")
-        endif()
-        # build from source.
-        add_subdirectory(cryptopp)
-    endif()
-else()
-    add_subdirectory(cryptopp)
-endif()
+#if (NOT EXISTS ${CMAKE_SOURCE_DIR}/lib/cryptopp/cryptlib.h)
+#    # Update submodules as needed
+#    if(WIZNOTE_GIT_SUBMODULE)
+#        message("CryptoPP not found, it needs to be downloaded from github and build from source.")
+#        message("Start download: ")
+#        execute_process(COMMAND git submodule update --init -- cryptopp
+#                    WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+#		    RESULT_VARIABLE GIT_SUBMOD_RESULT)
+#        if(NOT GIT_SUBMOD_RESULT EQUAL "0")
+#            message(FATAL_ERROR "git submodule update --init failed with ${GIT_SUBMOD_RESULT}, please checkout submodules")
+#        endif()
+#        # build from source.
+#        add_subdirectory(cryptopp)
+#    endif()
+#else()
+#    add_subdirectory(cryptopp)
+#endif()
 
 #add_subdirectory(aggregation)
 #add_subdirectory(extensionsystem)

@@ -567,7 +567,7 @@ if(UNIX)
 		if(APPSTORE_BUILD)
 			target_link_libraries(${PROJECT_NAME}
                 quazip_static
-				cryptopp-static
+				#cryptopp-static
                 gumbo_query_static
 				Qt5::WebEngine
 				Qt5::WebEngineWidgets
@@ -577,7 +577,7 @@ if(UNIX)
 		else(APPSTORE_BUILD)
 			target_link_libraries(${PROJECT_NAME}
                 quazip_static
-				cryptopp-static
+				#cryptopp-static
                 gumbo_query_static
 				Qt5::WebEngine
 				Qt5::WebEngineWidgets
@@ -590,7 +590,7 @@ if(UNIX)
             -lpthread
             X11
             quazip_static
-			cryptopp-static
+			#cryptopp-static
             gumbo_query_static
 			Qt5::WebEngine
 			Qt5::WebEngineWidgets
@@ -601,7 +601,7 @@ if(UNIX)
 else(NOT UNIX)
 	target_link_libraries(${PROJECT_NAME}
         quazip_static
-		cryptopp-static
+		#cryptopp-static
         gumbo_query_static
 		Qt5::WebEngine
 		Qt5::WebEngineWidgets
