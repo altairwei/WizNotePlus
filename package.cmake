@@ -92,6 +92,13 @@ if(NOT USE_FCITX)
 endif()
 message(STATUS "USE_FCITX: ${USE_FCITX}")
 
+# Extract WizNotePlus Version
+file(STRINGS ${WIZNOTE_SOURCE_DIR}/CMakeLists.txt project_command_str 
+    ENCODING UTF-8
+    REGEX "project\\(WizNotePlus VERSION (.*)\\)"
+)
+string(REGEX MATCH "([0-9]+)\.([0-9]+)\.([0-9]+)" WIZNOTEPLUS_VERSION ${project_command_str})
+
 #============================================================================
 # Construct directory tree 构建目录树
 #============================================================================
@@ -409,7 +416,7 @@ if(GENERATE_APPIMAGE)
                 --hide-extension "WizNote.app"
                 --app-drop-link 400 190
                 --format UDZO
-                ${package_output_path}/Wiznote-macOS.dmg
+                ${package_output_path}/WizNote-mac-v${WIZNOTEPLUS_VERSION}.dmg
                 ${WIZNOTE_PACKAGE_DIR}/
                 WORKING_DIRECTORY ${WIZNOTE_SOURCE_DIR}
                 RESULT_VARIABLE result
@@ -431,6 +438,15 @@ if(GENERATE_APPIMAGE)
             if(NOT result EQUAL "0")
                 message(FATAL_ERROR "Fail to package WizNotePlus project!")
             endif()
+            # Rename AppImage with VERSION.
+            file(GLOB wiznote_appimage_files
+                LIST_DIRECTORIES false
+                ${OUTSIDE_DIR}/WizNote*.AppImage)
+            list(GET wiznote_appimage_files 0 wiznote_appimage_file)
+            string(REGEX REPLACE "WizNote\\-(.*)\\.AppImage"
+                "WizNote-linux-\\1-v${WIZNOTEPLUS_VERSION}.AppImage" new_appimage_filename
+                ${wiznote_appimage_file})
+            file(RENAME ${wiznote_appimage_file} ${new_appimage_filename})
         endif(APPLE)
     elseif(WIN32)
         # Windows platform

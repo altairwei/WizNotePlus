@@ -541,6 +541,8 @@ else()
     endforeach()
 endif()
 
+add_definitions(-DWIZNOTEPLUS_VERSION="${WizNotePlus_VERSION}")
+
 qt_use_modules(WizNote)
 qt_suppress_warnings(WizNote)
 
