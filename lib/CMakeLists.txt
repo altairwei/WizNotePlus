@@ -22,9 +22,7 @@ if (NOT ZLIB_FOUND)
     endif()
 endif()
 
-
-find_path(QuaZip_INCLUDE_DIR "quazip/quazip.h" "${CMAKE_CURRENT_SOURCE_DIR}/quazip")
-if (NOT QuaZip_INCLUDE_DIR)
+if (NOT EXISTS ${CMAKE_SOURCE_DIR}/lib/quazip/quazip/quazip.h)
     # Update submodules as needed
     if(WIZNOTE_GIT_SUBMODULE)
         message("QuaZip not found, it needs to be downloaded from github and build from source.")
@@ -42,31 +40,28 @@ else()
     add_subdirectory(quazip)
 endif()
 
-find_path(cryptopp_INCLUDE_DIR "cryptlib.h" "${CMAKE_CURRENT_SOURCE_DIR}/cryptopp")
-if (NOT cryptopp_INCLUDE_DIR)
-    # Update submodules as needed
-    if(WIZNOTE_GIT_SUBMODULE)
-        message("CryptoPP not found, it needs to be downloaded from github and build from source.")
-        message("Start download: ")
-        execute_process(COMMAND git submodule update --init -- cryptopp
-                    WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
-		    RESULT_VARIABLE GIT_SUBMOD_RESULT)
-        if(NOT GIT_SUBMOD_RESULT EQUAL "0")
-            message(FATAL_ERROR "git submodule update --init failed with ${GIT_SUBMOD_RESULT}, please checkout submodules")
-        endif()
-        # build from source.
-        add_subdirectory(cryptopp)
-    endif()
-else()
-    add_subdirectory(cryptopp)
-endif()
+#if (NOT EXISTS ${CMAKE_SOURCE_DIR}/lib/cryptopp/cryptlib.h)
+#    # Update submodules as needed
+#    if(WIZNOTE_GIT_SUBMODULE)
+#        message("CryptoPP not found, it needs to be downloaded from github and build from source.")
+#        message("Start download: ")
+#        execute_process(COMMAND git submodule update --init -- cryptopp
+#                    WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+#		    RESULT_VARIABLE GIT_SUBMOD_RESULT)
+#        if(NOT GIT_SUBMOD_RESULT EQUAL "0")
+#            message(FATAL_ERROR "git submodule update --init failed with ${GIT_SUBMOD_RESULT}, please checkout submodules")
+#        endif()
+#        # build from source.
+#        add_subdirectory(cryptopp)
+#    endif()
+#else()
+#    add_subdirectory(cryptopp)
+#endif()
 
 #add_subdirectory(aggregation)
 #add_subdirectory(extensionsystem)
 
-find_package(Gumbo QUIET)
-find_path(Gumbo_INCLUDE_DIR "gumbo.h" PATHS "${CMAKE_CURRENT_SOURCE_DIR}/gumbo-parser/src")
-if ( (NOT Gumbo_LIBRARY) AND (NOT Gumbo_INCLUDE_DIR) )
+if (NOT EXISTS ${CMAKE_SOURCE_DIR}/lib/gumbo-parser/src/gumbo.h)
     # Update submodules as needed
     if(WIZNOTE_GIT_SUBMODULE)
         message("Gumbo not found, it needs to be downloaded from github and build from source.")
@@ -78,18 +73,19 @@ if ( (NOT Gumbo_LIBRARY) AND (NOT Gumbo_INCLUDE_DIR) )
             message(FATAL_ERROR "git submodule update --init failed with ${GIT_SUBMOD_RESULT}, please checkout submodules")
         endif()
         # build from source.
+        set(Gumbo_INCLUDE_DIR ${CMAKE_SOURCE_DIR}/lib/gumbo-parser/src/)
         add_subdirectory(gumbo-parser)
         set(Gumbo_static_LIBRARY Gumbo_static)
         set(Gumbo_LIBRARY Gumbo)
     endif()
-elseif( (NOT Gumbo_LIBRARY) AND Gumbo_INCLUDE_DIR )
+else()
+    set(Gumbo_INCLUDE_DIR ${CMAKE_SOURCE_DIR}/lib/gumbo-parser/src/)
     add_subdirectory(gumbo-parser)
     set(Gumbo_static_LIBRARY Gumbo_static)
     set(Gumbo_LIBRARY Gumbo)
 endif()
 
-find_path(GumboQuery_INCLUDE_DIR "Document.h" "${CMAKE_CURRENT_SOURCE_DIR}/gumbo-query/src")
-if (NOT GumboQuery_INCLUDE_DIR)
+if (NOT EXISTS ${CMAKE_SOURCE_DIR}/lib/gumbo-query/src/Document.h)
     # Update submodules as needed
     if(WIZNOTE_GIT_SUBMODULE)
         message("GumboQuery not found, it needs to be downloaded from github and build from source.")

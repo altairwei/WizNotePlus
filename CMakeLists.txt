@@ -12,7 +12,30 @@
 
 cmake_minimum_required(VERSION 3.0)
 
-project(WizNotePlus VERSION 2.7.0)
+project(WizNotePlus VERSION 2.7.2)
+
+#============================================================================
+# RPATH settings
+#============================================================================
+
+# rpath resolve.
+#set(CMAKE_BUILD_WITH_INSTALL_RPATH YES)     // would cause wheelEvent problem on centos/fedora when compiled with qt5
+if(APPLE)
+    # make the install names for dylibs include "@rpath/" prefix.
+    set(CMAKE_MACOSX_RPATH ON)
+    set(CMAKE_BUILD_WITH_INSTALL_RPATH FALSE)
+    set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
+    # used to initialize the INSTALL_NAME_DIR property on all targets.
+    set(CMAKE_INSTALL_NAME_DIR "@rpath/PlugIns")
+    set(CMAKE_INSTALL_RPATH "@loader_path/..;@loader_path/../Frameworks;@executable_path/..;@executable_path/../Frameworks;@rpath")
+    #SET(PLCrashReporter on)
+else(APPLE)
+    set(CMAKE_BUILD_WITH_INSTALL_RPATH FALSE)
+    set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
+    # $ORIGING代表程序目录，CMAKE_INSTALL_RPATH是分号分隔的list，它指定了在安装目标时使用的rpath
+    set(CMAKE_INSTALL_RPATH "$ORIGIN;$ORIGIN/..;$ORIGIN/../lib")
+    set (openssl-linked on)
+endif(APPLE)
 
 #============================================================================
 # 3rd-party libraries
@@ -48,7 +71,8 @@ if(WIZNOTE_CONAN_LIBS)
     include(${CMAKE_BINARY_DIR}/conanbuildinfo.cmake)
     conan_basic_setup()
 
-    install(DIRECTORY ${CONAN_LIB_DIRS} DESTINATION lib )
+    install(DIRECTORY ${CONAN_LIB_DIRS} DESTINATION ./)
+
 endif(WIZNOTE_CONAN_LIBS)
 
 #============================================================================
@@ -59,30 +83,14 @@ list(APPEND CMAKE_MODULE_PATH
     "${CMAKE_CURRENT_SOURCE_DIR}/cmake"
 )
 
-# rpath resolve.
-#set(CMAKE_BUILD_WITH_INSTALL_RPATH YES)     // would cause wheelEvent problem on centos/fedora when compiled with qt5
-if(APPLE)
-    # make the install names for dylibs include "@rpath/" prefix.
-    set(MACOSX_RPATH ON)
-    set(CMAKE_OSX_DEPLOYMENT_TARGET 10.11)
-    set(CMAKE_BUILD_WITH_INSTALL_RPATH YES)
-    SET(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
-    # used to initialize the INSTALL_NAME_DIR property on all targets.
-    set(CMAKE_INSTALL_NAME_DIR "@rpath/PlugIns")
-    set(CMAKE_INSTALL_RPATH "@loader_path/..;@loader_path/../Frameworks;@executable_path/..;@executable_path/../Frameworks;@rpath")
-    #SET(PLCrashReporter on)
-else(APPLE)
-    # $ORIGING代表程序目录，CMAKE_INSTALL_RPATH是分号分隔的list，它指定了在安装目标时使用的rpath
-    set(CMAKE_INSTALL_RPATH "$ORIGIN;$ORIGIN/..")
-    set (openssl-linked on)
-endif(APPLE)
-
 # 缺省构建类型Release
 if(NOT CMAKE_BUILD_TYPE)
     set(CMAKE_BUILD_TYPE Release CACHE STRING
       "Choose the type of build, options are: None Debug Release RelWithDebInfo MinSizeRel."
       FORCE)
 endif()
+
+set(CMAKE_OSX_DEPLOYMENT_TARGET 10.11)
 
 #============================================================================
 # Internal compiler options

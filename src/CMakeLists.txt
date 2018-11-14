@@ -541,6 +541,8 @@ else()
     endforeach()
 endif()
 
+add_definitions(-DWIZNOTEPLUS_VERSION="${WizNotePlus_VERSION}")
+
 qt_use_modules(WizNote)
 qt_suppress_warnings(WizNote)
 
@@ -566,47 +568,47 @@ if(UNIX)
 	if(APPLE)
 		if(APPSTORE_BUILD)
 			target_link_libraries(${PROJECT_NAME}
-                                quazip_static
-				cryptopp-static
-                                gumbo_query_static
+                quazip_static
+				#cryptopp-static
+                gumbo_query_static
 				Qt5::WebEngine
 				Qt5::WebEngineWidgets
 				${CMAKE_DL_LIBS}
-                                ${CONAN_LIBS}
+                #${CONAN_LIBS}
 			)
 		else(APPSTORE_BUILD)
 			target_link_libraries(${PROJECT_NAME}
-                                quazip_static
-				cryptopp-static
-                                gumbo_query_static
+                quazip_static
+				#cryptopp-static
+                gumbo_query_static
 				Qt5::WebEngine
 				Qt5::WebEngineWidgets
 				${CMAKE_DL_LIBS}
-                                ${CONAN_LIBS}
+                #${CONAN_LIBS}
 			)
 		endif(APPSTORE_BUILD)
 	else(APPLE) #linux
 		target_link_libraries(${PROJECT_NAME}
-                        -lpthread
-                        X11
-                        quazip_static
-			cryptopp-static
-                        gumbo_query_static
+            -lpthread
+            X11
+            quazip_static
+			#cryptopp-static
+            gumbo_query_static
 			Qt5::WebEngine
 			Qt5::WebEngineWidgets
 			${CMAKE_DL_LIBS}
-                        ${CONAN_LIBS}
+            ${CONAN_LIBS}
 		)
 	endif(APPLE)
 else(NOT UNIX)
 	target_link_libraries(${PROJECT_NAME}
-                quazip_static
-		cryptopp-static
-                gumbo_query_static
+        quazip_static
+		#cryptopp-static
+        gumbo_query_static
 		Qt5::WebEngine
 		Qt5::WebEngineWidgets
 		${CMAKE_DL_LIBS}
-                ${CONAN_LIBS}
-                Qt5::WinMain
+        ${CONAN_LIBS}
+        Qt5::WinMain
 	)
 endif()
