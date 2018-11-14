@@ -574,7 +574,7 @@ if(UNIX)
 				Qt5::WebEngine
 				Qt5::WebEngineWidgets
 				${CMAKE_DL_LIBS}
-                #${CONAN_LIBS}
+                ${CONAN_LIBS}
 			)
 		else(APPSTORE_BUILD)
 			target_link_libraries(${PROJECT_NAME}
@@ -584,7 +584,7 @@ if(UNIX)
 				Qt5::WebEngine
 				Qt5::WebEngineWidgets
 				${CMAKE_DL_LIBS}
-                #${CONAN_LIBS}
+                ${CONAN_LIBS}
 			)
 		endif(APPSTORE_BUILD)
 	else(APPLE) #linux

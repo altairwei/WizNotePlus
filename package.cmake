@@ -15,13 +15,28 @@ get_filename_component(OUTSIDE_DIR ${CMAKE_CURRENT_SOURCE_DIR} DIRECTORY)
 
 # Your Qt5 libraries path. 你的Qt5库位置
 if(NOT QTDIR)
-    set(QTDIR /Users/altairwei/Qt5.11.1/5.11.1/clang_64)
-endif()
-find_path(qt_dir "bin/qmake" ${QTDIR})
-if(NOT qt_dir)
-    message(FATAL_ERROR "\nQTDIR is not valid, Qt5 library cannot be found !\nPlease define QTDIR!")
+    # check default Qt library
+    execute_process(COMMAND qmake -query QT_INSTALL_PREFIX
+        OUTPUT_VARIABLE qt_dir
+        RESULT_VARIABLE result
+    )
+    if( (NOT result EQUAL "0") OR (NOT qt_dir) )
+        message(FATAL_ERROR "\nQTDIR is not valid, Qt5 library cannot be found !\nPlease define QTDIR!")
+    endif()
+    set(QTDIR ${qt_dir})
+
 else()
-    get_filename_component(QTDIR ${QTDIR} ABSOLUTE)
+    # check user defined Qt library
+    find_file(qmake_file "bin/qmake" ${QTDIR})
+    execute_process(COMMAND ${qmake_file} -query QT_INSTALL_PREFIX
+        OUTPUT_VARIABLE qt_dir
+        RESULT_VARIABLE result
+    )
+    if( (NOT result EQUAL "0") OR (NOT qt_dir) )
+        message(FATAL_ERROR "\nQTDIR is not valid, Qt5 library cannot be found !\nPlease define QTDIR!")
+    else()
+        set(QTDIR ${qt_dir})
+    endif()
 endif()
 
 if(NOT CMAKE_PREFIX_PATH)
@@ -82,10 +97,10 @@ if(NOT GENERATE_INSTALL_DIR)
 endif()
 message(STATUS "GENERATE_INSTALL_DIR: ${GENERATE_INSTALL_DIR}")
 
-if(NOT GENERATE_APPIMAGE)
-    option(GENERATE_APPIMAGE "Decide whether generate AppImage or not." ON)
+if(NOT GENERATE_PACKAGE)
+    option(GENERATE_PACKAGE "Decide whether generate AppImage or not." ON)
 endif()
-message(STATUS "GENERATE_APPIMAGE: ${GENERATE_APPIMAGE}")
+message(STATUS "GENERATE_PACKAGE: ${GENERATE_PACKAGE}")
 
 if(NOT USE_FCITX)
     option(USE_FCITX "Decide whether use fcitx-qt5 or not." ON)
@@ -327,7 +342,7 @@ endif(GENERATE_INSTALL_DIR)
 # Deploy Qt5 libraries and package WizNotePlus 部署Qt5并生成包
 #============================================================================
 
-if(GENERATE_APPIMAGE)
+if(GENERATE_INSTALL_DIR AND GENERATE_PACKAGE)
     if(UNIX)
         if(APPLE)
             # MacOS platform
@@ -416,7 +431,7 @@ if(GENERATE_APPIMAGE)
                 --hide-extension "WizNote.app"
                 --app-drop-link 400 190
                 --format UDZO
-                ${package_output_path}/WizNote-mac-v${WIZNOTEPLUS_VERSION}.dmg
+                ${package_output_path}/WizNotePlus-mac-v${WIZNOTEPLUS_VERSION}.dmg
                 ${WIZNOTE_PACKAGE_DIR}/
                 WORKING_DIRECTORY ${WIZNOTE_SOURCE_DIR}
                 RESULT_VARIABLE result
@@ -431,7 +446,7 @@ if(GENERATE_APPIMAGE)
             message("\nStart package WizNotePlus project:\n")
             execute_process(COMMAND ${WIZNOTE_SOURCE_DIR}/external/linuxdeployqt
                 ${WIZNOTE_PACKAGE_DIR}/WizNote/share/applications/wiznote.desktop
-                -verbose=1 -appimage -qmake=${CMAKE_PREFIX_PATH}/bin/qmake
+                -verbose=1 -appimage -qmake=${qmake_file}
                 WORKING_DIRECTORY ${OUTSIDE_DIR}
                 RESULT_VARIABLE result
             )
@@ -444,7 +459,7 @@ if(GENERATE_APPIMAGE)
                 ${OUTSIDE_DIR}/WizNote*.AppImage)
             list(GET wiznote_appimage_files 0 wiznote_appimage_file)
             string(REGEX REPLACE "WizNote\\-(.*)\\.AppImage"
-                "WizNote-linux-\\1-v${WIZNOTEPLUS_VERSION}.AppImage" new_appimage_filename
+                "WizNotePlus-linux-\\1-v${WIZNOTEPLUS_VERSION}.AppImage" new_appimage_filename
                 ${wiznote_appimage_file})
             file(RENAME ${wiznote_appimage_file} ${new_appimage_filename})
         endif(APPLE)
@@ -454,5 +469,5 @@ if(GENERATE_APPIMAGE)
     else(UNIX)
         message(FATAL_ERROR "\nCan't detect which platform your are useing!")
     endif(UNIX)
-endif(GENERATE_APPIMAGE)
+endif(GENERATE_INSTALL_DIR AND GENERATE_PACKAGE)
 
