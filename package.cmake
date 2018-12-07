@@ -24,7 +24,6 @@ if(NOT QTDIR)
         message(FATAL_ERROR "\nQTDIR is not valid, Qt5 library cannot be found !\nPlease define QTDIR!")
     endif()
     set(QTDIR ${qt_dir})
-
 else()
     # check user defined Qt library
     find_file(qmake_file "bin/qmake" ${QTDIR})
@@ -38,6 +37,7 @@ else()
         set(QTDIR ${qt_dir})
     endif()
 endif()
+string(STRIP ${QTDIR} QTDIR)
 
 if(NOT CMAKE_PREFIX_PATH)
     set(CMAKE_PREFIX_PATH ${QTDIR})

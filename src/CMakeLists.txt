@@ -428,6 +428,8 @@ include_directories(
     ${CMAKE_SOURCE_DIR}/lib/quazip
     ${CMAKE_SOURCE_DIR}/lib/gumbo-parser/src
     ${CMAKE_SOURCE_DIR}/lib/gumbo-query/src
+    ${cryptopp_INCLUDE_DIRS}
+    ${OpenSSL_INCLUDE_DIRS}
 )
 
 #============================================================================
@@ -441,6 +443,8 @@ qt_add_resources(wiznote_RC ${wiznote_RCS}) # 添加资源文件
 qt_add_translation(wiznote_QM ${wiznote_TRANSLATIONS}) # 添加本地化文件
 
 message("WizNote whill compiling as ${CMAKE_BUILD_TYPE}, use Qt: ${QT_VERSION}")
+
+set(EXECUTABLE_OUTPUT_PATH ${CMAKE_BINARY_DIR}/bin)
 
 # build
 if(UNIX)
@@ -569,22 +573,22 @@ if(UNIX)
 		if(APPSTORE_BUILD)
 			target_link_libraries(${PROJECT_NAME}
                 quazip_static
-				#cryptopp-static
+                #cryptopp-static
                 gumbo_query_static
-				Qt5::WebEngine
-				Qt5::WebEngineWidgets
-				${CMAKE_DL_LIBS}
-                ${CONAN_LIBS}
+                Qt5::WebEngine
+                Qt5::WebEngineWidgets
+                ${CMAKE_DL_LIBS}
+                ${cryptopp_LIBRARIES}
 			)
 		else(APPSTORE_BUILD)
 			target_link_libraries(${PROJECT_NAME}
                 quazip_static
-				#cryptopp-static
+                #cryptopp-static
                 gumbo_query_static
-				Qt5::WebEngine
-				Qt5::WebEngineWidgets
-				${CMAKE_DL_LIBS}
-                ${CONAN_LIBS}
+                Qt5::WebEngine
+                Qt5::WebEngineWidgets
+                ${CMAKE_DL_LIBS}
+                ${cryptopp_LIBRARIES}
 			)
 		endif(APPSTORE_BUILD)
 	else(APPLE) #linux
@@ -597,7 +601,8 @@ if(UNIX)
 			Qt5::WebEngine
 			Qt5::WebEngineWidgets
 			${CMAKE_DL_LIBS}
-            ${CONAN_LIBS}
+            ${cryptopp_LIBRARIES}
+            ${OpenSSL_LIBRARIES}
 		)
 	endif(APPLE)
 else(NOT UNIX)
@@ -608,7 +613,8 @@ else(NOT UNIX)
 		Qt5::WebEngine
 		Qt5::WebEngineWidgets
 		${CMAKE_DL_LIBS}
-        ${CONAN_LIBS}
+        ${cryptopp_LIBRARIES}
+        ${OpenSSL_LIBRARIES}
         Qt5::WinMain
 	)
 endif()
