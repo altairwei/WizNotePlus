@@ -25,6 +25,8 @@ if (NOT ZLIB_FOUND)
     find_package(zlib REQUIRED)
     set(ZLIB_INCLUDE_DIR ${zlib_INCLUDE_DIRS})
     set(ZLIB_LIBRARY ${zlib_LIBRARIES})
+    message("~~~~~ZLIB_INCLUDE_DIR: ${ZLIB_INCLUDE_DIR}")
+    message("~~~~~ZLIB_LIBRARY: ${ZLIB_LIBRARY}")
 endif()
 
 if (NOT EXISTS ${CMAKE_SOURCE_DIR}/lib/quazip/quazip/quazip.h)

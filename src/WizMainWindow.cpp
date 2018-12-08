@@ -2417,7 +2417,7 @@ WizIAPDialog*WizMainWindow::iapDialog()
  * @brief Get IWizExplorerApp for the main window.
  * @return
  */
-QObject* WizMainWindow::interface()
+QObject* WizMainWindow::componentInterface()
 {
     return m_IWizExplorerApp;
 }

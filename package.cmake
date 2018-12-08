@@ -181,13 +181,13 @@ if(UNIX)
         endif()
     endif(APPLE)
 elseif(WIN32)
-    # Windows platform use NMake Makefiles generator
+    # Windows platform use NMake Makefiles JOM generator
     message("\nStart configure and generate WizNotePlus project:\n")
     execute_process(COMMAND ${CMAKE_COMMAND} -DCMAKE_BUILD_TYPE=Release 
             -DCMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}
             -DCMAKE_INSTALL_PREFIX=${WIZNOTE_INSTALL_PREFIX}
             -H${WIZNOTE_SOURCE_DIR} -B${WIZNOTE_BUILD_DIR}
-            -G "NMake Makefiles"
+            -G "NMake Makefiles JOM"
         WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
         RESULT_VARIABLE result
     )

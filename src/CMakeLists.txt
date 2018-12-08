@@ -428,6 +428,7 @@ include_directories(
     ${CMAKE_SOURCE_DIR}/lib/quazip
     ${CMAKE_SOURCE_DIR}/lib/gumbo-parser/src
     ${CMAKE_SOURCE_DIR}/lib/gumbo-query/src
+    ${zlib_INCLUDE_DIRS}
     ${cryptopp_INCLUDE_DIRS}
     ${OpenSSL_INCLUDE_DIRS}
 )
@@ -529,6 +530,12 @@ else()
     add_definitions(-D_UNICODE=TRUE)
     add_executable(WizNote WIN32 ${wiznote_SOURCES} ${wiznote_HEADERS} ${wiznote_FORM_HEADERS} ${wiznote_QM} ${wiznote_RC})
     set_target_properties(${PROJECT_NAME} PROPERTIES AUTOMOC_MOC_OPTIONS "-DQ_OS_WIN32")
+    set_target_properties(${PROJECT_NAME} PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin )
+    set_target_properties(${PROJECT_NAME} PROPERTIES RUNTIME_OUTPUT_DIRECTORY_DEBUG ${CMAKE_BINARY_DIR}/bin )
+    set_target_properties(${PROJECT_NAME} PROPERTIES RUNTIME_OUTPUT_DIRECTORY_RELEASE ${CMAKE_BINARY_DIR}/bin )
+    set_target_properties(${PROJECT_NAME} PROPERTIES LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib )
+    set_target_properties(${PROJECT_NAME} PROPERTIES LIBRARY_OUTPUT_DIRECTORY_DEBUG ${CMAKE_BINARY_DIR}/lib )
+    set_target_properties(${PROJECT_NAME} PROPERTIES LIBRARY_OUTPUT_DIRECTORY_RELEASE ${CMAKE_BINARY_DIR}/lib )
 
     install(TARGETS ${PROJECT_NAME} RUNTIME DESTINATION bin)
     install(DIRECTORY ${CMAKE_SOURCE_DIR}/share/ DESTINATION share/wiznote PATTERN ".DS_Store" EXCLUDE)

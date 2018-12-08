@@ -181,7 +181,7 @@ WizDocumentWebView::WizDocumentWebView(WizExplorerApp& app, QWidget* parent)
     // 向页面JS脚本空间注册对象
     //addToJavaScriptWindowObject("WizExplorerApp", m_app.object());
     WizMainWindow* mainWindow = qobject_cast<WizMainWindow*>(m_app.mainWindow());
-    addToJavaScriptWindowObject("WizExplorerApp", mainWindow->interface());
+    addToJavaScriptWindowObject("WizExplorerApp", mainWindow->componentInterface());
     //addToJavaScriptWindowObject("WizQtEditor", this);
     addToJavaScriptWindowObject("WizQtEditor", m_htmlEditorApp);
 
