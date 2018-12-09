@@ -4210,7 +4210,7 @@ void WizMainWindow::setFocusForNewNote(WIZDOCUMENTDATA doc)
 }
 
 /**
- * @brief 通过Wiz地址协议打开文档
+ * @brief 通过Wiz地址协议打开为知笔记文档
  * @param strKMURL
  */
 void WizMainWindow::viewDocumentByWizKMURL(const QString &strKMURL)
@@ -4236,6 +4236,11 @@ void WizMainWindow::viewDocumentByWizKMURL(const QString &strKMURL)
     }
 }
 
+/**
+ * @brief 通过Wiz地址协议打开为知附件
+ * @param strKbGUID
+ * @param strKMURL
+ */
 void WizMainWindow::viewAttachmentByWizKMURL(const QString& strKbGUID, const QString& strKMURL)
 {
 
@@ -4699,6 +4704,11 @@ void WizMainWindow::updateHistoryButtonStatus()
     m_actions->actionFromName(WIZACTION_GLOBAL_GOFORWARD)->setEnabled(canGoForward);
 }
 
+/**
+ * @brief 打开为知笔记附件
+ * @param attachment
+ * @param strFileName
+ */
 void WizMainWindow::openAttachment(const WIZDOCUMENTATTACHMENTDATA& attachment,
                                 const QString& strFileName)
 {

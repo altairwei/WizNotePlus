@@ -1177,13 +1177,19 @@ void WizDocumentWebView::onEditorLoadFinished(bool ok)
     page()->runJavaScript(strCode);
 }
 
-
+/**
+ * @brief 处理笔记页面超链接点击事件
+ * @param url
+ * @param navigationType
+ * @param isMainFrame
+ * @param page
+ */
 void WizDocumentWebView::onEditorLinkClicked(QUrl url, QWebEnginePage::NavigationType navigationType, bool isMainFrame, WizWebEnginePage* page)
 {
     if (!isMainFrame)
         return;
     //
-    page->stopCurrentNavigation();
+    //page->stopCurrentNavigation(); // this will make document page become blank, so it was commented
     //
     if (isInternalUrl(url))
     {
@@ -1248,6 +1254,11 @@ void WizDocumentWebView::viewDocumentByUrl(const QString& strUrl)
     mainWindow->viewDocumentByWizKMURL(strUrl);
 }
 
+/**
+ * @brief 通过笔记页面内的wiz协议链接打开附件
+ * @param strKbGUID
+ * @param strUrl
+ */
 void WizDocumentWebView::viewAttachmentByUrl(const QString& strKbGUID, const QString& strUrl)
 {
     if (strUrl.isEmpty())
