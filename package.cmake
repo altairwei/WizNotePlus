@@ -107,6 +107,18 @@ if(NOT USE_FCITX)
 endif()
 message(STATUS "USE_FCITX: ${USE_FCITX}")
 
+if(NOT CMAKE_BUILD_PARALLEL_LEVEL)
+    set(CMAKE_BUILD_PARALLEL_LEVEL 2)
+endif()
+
+if(NOT VERBOSE_LEVEL)
+    set(VERBOSE_LEVEL 0)
+endif()
+
+if(NOT CMAKE_VERBOSE_MAKEFILE)
+    set(CMAKE_VERBOSE_MAKEFILE FALSE)
+endif()
+
 # Extract WizNotePlus Version
 file(STRINGS ${WIZNOTE_SOURCE_DIR}/CMakeLists.txt project_command_str 
     ENCODING UTF-8
@@ -155,6 +167,7 @@ if(UNIX)
                 -DCMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}
                 -DCMAKE_INSTALL_PREFIX=${WIZNOTE_INSTALL_PREFIX}
                 -DCMAKE_OSX_SYSROOT=${CMAKE_OSX_SYSROOT}
+                -DCMAKE_VERBOSE_MAKEFILE=${CMAKE_VERBOSE_MAKEFILE}
                 -H${WIZNOTE_SOURCE_DIR} -B${WIZNOTE_BUILD_DIR}
                 -G "Unix Makefiles"
                 -UPDATE_TRANSLATIONS=YES
@@ -171,6 +184,7 @@ if(UNIX)
                 -DCMAKE_BUILD_TYPE=Release 
                 -DCMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}
                 -DCMAKE_INSTALL_PREFIX=${WIZNOTE_INSTALL_PREFIX}
+                -DCMAKE_VERBOSE_MAKEFILE=${CMAKE_VERBOSE_MAKEFILE}
                 -H${WIZNOTE_SOURCE_DIR} -B${WIZNOTE_BUILD_DIR}
                 -G "Unix Makefiles"
             WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
@@ -186,6 +200,7 @@ elseif(WIN32)
     execute_process(COMMAND ${CMAKE_COMMAND} -DCMAKE_BUILD_TYPE=Release 
             -DCMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}
             -DCMAKE_INSTALL_PREFIX=${WIZNOTE_INSTALL_PREFIX}
+            -DCMAKE_VERBOSE_MAKEFILE=${CMAKE_VERBOSE_MAKEFILE}
             -H${WIZNOTE_SOURCE_DIR} -B${WIZNOTE_BUILD_DIR}
             -G "NMake Makefiles JOM"
         WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
@@ -205,6 +220,8 @@ endif(UNIX)
 message("\nStart build WizNotePlus project:\n")
 execute_process(COMMAND ${CMAKE_COMMAND} --build ${WIZNOTE_BUILD_DIR} --target all
     --config Release
+    --
+    -j ${CMAKE_BUILD_PARALLEL_LEVEL}
     WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
     RESULT_VARIABLE result
 )
@@ -314,11 +331,17 @@ if(GENERATE_INSTALL_DIR)
 
             # copy fcitx-qt5 library
             if(USE_FCITX)
-                find_file (fcitx-qt5-lib libfcitxplatforminputcontextplugin.so 
-                    /usr/lib/x86_64-linux-gnu/qt5/plugins/platforminputcontexts/ 
+                find_file(fcitx-qt5-lib libfcitxplatforminputcontextplugin.so 
+                    /usr/lib/x86_64-linux-gnu/qt5/plugins/platforminputcontexts/
+                    /usr/lib64/qt5/plugins/platforminputcontexts/
                 )
                 if(NOT fcitx-qt5-lib)
-                    message(FATAL_ERROR "Fail to find fcitx-qt5 !")
+                    if(NOT FCITX_QT5_LIB)
+                        message(FATAL_ERROR "Fail to find fcitx-qt5 !"
+                        " Please specify the path of fcitx-qt5 library"
+                        " with -DFCITX_QT5_LIB=<path/to/libfcitxplatforminputcontextplugin.so>")
+                    endif()
+                    set(fcitx-qt5-lib ${FCITX_QT5_LIB})
                 endif()
 
                 file(MAKE_DIRECTORY 
@@ -361,7 +384,7 @@ if(GENERATE_INSTALL_DIR AND GENERATE_PACKAGE)
             # deploy 3rdpaty libraries
             message("\nStart deploy WizNotePlus project:\n")
             execute_process(COMMAND ${QTDIR}/bin/macdeployqt
-                ${WIZNOTE_INSTALL_PREFIX} -verbose=1
+                ${WIZNOTE_INSTALL_PREFIX} -verbose=${VERBOSE_LEVEL}
                 -executable=${WIZNOTE_INSTALL_PREFIX}/Contents/MacOS/WizNote
                 -libpath=${QTDIR}
                 WORKING_DIRECTORY ${WIZNOTE_BUILD_DIR}
@@ -446,7 +469,7 @@ if(GENERATE_INSTALL_DIR AND GENERATE_PACKAGE)
             message("\nStart package WizNotePlus project:\n")
             execute_process(COMMAND ${WIZNOTE_SOURCE_DIR}/external/linuxdeployqt
                 ${WIZNOTE_PACKAGE_DIR}/WizNote/share/applications/wiznote.desktop
-                -verbose=1 -appimage -qmake=${qmake_file}
+                -verbose=${VERBOSE_LEVEL} -appimage -qmake=${qmake_file}
                 WORKING_DIRECTORY ${OUTSIDE_DIR}
                 RESULT_VARIABLE result
             )
