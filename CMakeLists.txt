@@ -22,11 +22,11 @@ project(WizNotePlus VERSION 2.7.2)
 #set(CMAKE_BUILD_WITH_INSTALL_RPATH YES)     // would cause wheelEvent problem on centos/fedora when compiled with qt5
 if(APPLE)
     # make the install names for dylibs include "@rpath/" prefix.
-    set(CMAKE_MACOSX_RPATH ON)
+    #set(CMAKE_MACOSX_RPATH OFF)
     set(CMAKE_BUILD_WITH_INSTALL_RPATH FALSE)
     set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
     # used to initialize the INSTALL_NAME_DIR property on all targets.
-    set(CMAKE_INSTALL_NAME_DIR "@rpath/PlugIns")
+    #set(CMAKE_INSTALL_NAME_DIR "@rpath/PlugIns")
     set(CMAKE_INSTALL_RPATH "@loader_path/..;@loader_path/../Frameworks;@executable_path/..;@executable_path/../Frameworks;@rpath")
     #SET(PLCrashReporter on)
 else(APPLE)
