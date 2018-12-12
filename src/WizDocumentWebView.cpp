@@ -181,7 +181,7 @@ WizDocumentWebView::WizDocumentWebView(WizExplorerApp& app, QWidget* parent)
     // 向页面JS脚本空间注册对象
     //addToJavaScriptWindowObject("WizExplorerApp", m_app.object());
     WizMainWindow* mainWindow = qobject_cast<WizMainWindow*>(m_app.mainWindow());
-    addToJavaScriptWindowObject("WizExplorerApp", mainWindow->interface());
+    addToJavaScriptWindowObject("WizExplorerApp", mainWindow->componentInterface());
     //addToJavaScriptWindowObject("WizQtEditor", this);
     addToJavaScriptWindowObject("WizQtEditor", m_htmlEditorApp);
 
@@ -638,7 +638,8 @@ void WizDocumentWebView::viewDocument(const WIZDOCUMENTDATA& doc, WizEditorMode 
     if (!m_docLoadThread)
         return;
     // set data
-    int seconds = doc.tCreated.secsTo(QDateTime::currentDateTime());
+    //FIXME: 通过创建时间的长短来判断是否为新文档根本就不稳健!!
+    qint64 seconds = doc.tCreated.secsTo(QDateTime::currentDateTime());
     m_bNewNote = (seconds >= 0 && seconds <= 1) ? true : false;
     m_bNewNoteTitleInited = m_bNewNote ? false : true;
     //
@@ -1177,13 +1178,19 @@ void WizDocumentWebView::onEditorLoadFinished(bool ok)
     page()->runJavaScript(strCode);
 }
 
-
+/**
+ * @brief 处理笔记页面超链接点击事件
+ * @param url
+ * @param navigationType
+ * @param isMainFrame
+ * @param page
+ */
 void WizDocumentWebView::onEditorLinkClicked(QUrl url, QWebEnginePage::NavigationType navigationType, bool isMainFrame, WizWebEnginePage* page)
 {
     if (!isMainFrame)
         return;
     //
-    page->stopCurrentNavigation();
+    //page->stopCurrentNavigation(); // this will make document page become blank, so it was commented
     //
     if (isInternalUrl(url))
     {
@@ -1248,6 +1255,11 @@ void WizDocumentWebView::viewDocumentByUrl(const QString& strUrl)
     mainWindow->viewDocumentByWizKMURL(strUrl);
 }
 
+/**
+ * @brief 通过笔记页面内的wiz协议链接打开附件
+ * @param strKbGUID
+ * @param strUrl
+ */
 void WizDocumentWebView::viewAttachmentByUrl(const QString& strKbGUID, const QString& strUrl)
 {
     if (strUrl.isEmpty())
@@ -1346,7 +1358,6 @@ void WizDocumentWebView::saveEditingViewDocument(const WIZDOCUMENTDATA &data, bo
 void WizDocumentWebView::saveReadingViewDocument(const WIZDOCUMENTDATA &data, bool force, std::function<void(const QVariant &)> callback)
 {
     Q_UNUSED(force);
-    // 拷贝笔记信息
     const WIZDOCUMENTDATA doc = data;
 
     QString strScript = QString("WizReader.closeDocument();");
@@ -1361,7 +1372,6 @@ void WizDocumentWebView::saveReadingViewDocument(const WIZDOCUMENTDATA &data, bo
                 QString strFileName = m_mapFile.value(doc.strGUID);
                 if (!strFileName.isEmpty())
                 {
-                    // 调用保存器线程
                     m_docSaverThread->save(doc, strHtml, strFileName, 0);
                 }
             }
@@ -1498,6 +1508,10 @@ void WizDocumentWebView::insertScriptAndStyleCore(QString& strHtml, const std::m
     }
 }
 
+/**
+ * @brief 从笔记文件读取文本、插入样式表、插入富文本编辑器脚本，最后将修改好的HTML加载入页面
+ * @param editorMode
+ */
 void WizDocumentWebView::loadDocumentInWeb(WizEditorMode editorMode)
 {
     QString strGUID = view()->note().strGUID;
@@ -2302,7 +2316,7 @@ void WizDocumentWebView::saveAsPlainText(QString& destFileName, std::function<vo
         QTextDocument doc;
         doc.setHtml(strHtml);
         QString strText = doc.toPlainText(); //auto deHtmlEscaped
-        strText.replace("&nbsp", " ");
+        strText.replace("&nbsp", " "); // 旧版本中存在一些不规范的&nbsp无法被QTextDocument跳转
         // 写入文件
         if(WizSaveUnicodeTextToUtf8File(destFileName, strText, false))
         {
@@ -2628,6 +2642,7 @@ void WizDocumentWebViewLoaderThread::waitForDone()
 
 void WizDocumentWebViewLoaderThread::run()
 {
+    //FIXME: 为什么循环里那么多判断m_stop的语句？while自身的条件判断难道不够吗？
     while (!m_stop)
     {
         if (m_stop)

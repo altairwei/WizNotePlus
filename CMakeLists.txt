@@ -22,11 +22,11 @@ project(WizNotePlus VERSION 2.7.2)
 #set(CMAKE_BUILD_WITH_INSTALL_RPATH YES)     // would cause wheelEvent problem on centos/fedora when compiled with qt5
 if(APPLE)
     # make the install names for dylibs include "@rpath/" prefix.
-    set(CMAKE_MACOSX_RPATH ON)
+    #set(CMAKE_MACOSX_RPATH OFF)
     set(CMAKE_BUILD_WITH_INSTALL_RPATH FALSE)
     set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
     # used to initialize the INSTALL_NAME_DIR property on all targets.
-    set(CMAKE_INSTALL_NAME_DIR "@rpath/PlugIns")
+    #set(CMAKE_INSTALL_NAME_DIR "@rpath/PlugIns")
     set(CMAKE_INSTALL_RPATH "@loader_path/..;@loader_path/../Frameworks;@executable_path/..;@executable_path/../Frameworks;@rpath")
     #SET(PLCrashReporter on)
 else(APPLE)
@@ -41,39 +41,31 @@ endif(APPLE)
 # 3rd-party libraries
 #============================================================================
 
-option(WIZNOTE_CONAN_LIBS "If enable conan packages" ON)
 # install conan 3rdparty libraries to package dirs.
-if(WIZNOTE_CONAN_LIBS)
-    message("\nStart generate 3rdparty dependencies at ${CMAKE_BINARY_DIR}:\n")
-    execute_process(COMMAND conan install ${CMAKE_SOURCE_DIR}
-        -s build_type=${CMAKE_BUILD_TYPE}
-        --build missing
-        WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
-        RESULT_VARIABLE conan_result
-        OUTPUT_VARIABLE conan_output
-        ERROR_VARIABLE conan_error
-    )
-    if(NOT DEFINED conan_result)
-        message(FATAL_ERROR
-            "Conan cannot be found, please ensure the location of excutable conan is in your PATH."
-            "-- Exit Code: ${conan_result}."
-        )
-    endif()
-    if(NOT conan_result EQUAL "0")
-        message("${conan_error}")
-        message("${conan_output}")
-        message(FATAL_ERROR
-            "\nFail to generate 3rdparty dependencies! "
-            "\n-- Exit code: ${conan_result}"
-            "\n-- Build type: ${CMAKE_BUILD_TYPE} \n")
-    endif()
+message("\nStart generate 3rdparty dependencies at ${CMAKE_BINARY_DIR}:\n")
 
-    include(${CMAKE_BINARY_DIR}/conanbuildinfo.cmake)
-    conan_basic_setup()
+# Download automatically, you can also just copy the conan.cmake file
+if(NOT EXISTS "${CMAKE_BINARY_DIR}/conan.cmake")
+    message(STATUS "Downloading conan.cmake from https://github.com/conan-io/cmake-conan")
+    file(DOWNLOAD "https://raw.githubusercontent.com/conan-io/cmake-conan/master/conan.cmake"
+                    "${CMAKE_BINARY_DIR}/conan.cmake")
+endif()
+include(${CMAKE_BINARY_DIR}/conan.cmake)
+conan_check(REQUIRED)
+conan_cmake_run(
+    CONANFILE conanfile.txt
+    INSTALL_FOLDER ${CMAKE_BINARY_DIR}
+    BUILD_TYPE ${CMAKE_BUILD_TYPE}
+    BUILD missing
+)
+# setup 3rd-party package
+include(${CMAKE_BINARY_DIR}/conan_paths.cmake)
+find_package(cryptopp REQUIRED)
+find_package(OpenSSL)
 
-    install(DIRECTORY ${CONAN_LIB_DIRS} DESTINATION ./)
-
-endif(WIZNOTE_CONAN_LIBS)
+# install 3rd-party package
+list(REMOVE_ITEM OpenSSL_LIBRARIES dl)
+install(FILES ${OpenSSL_LIBRARIES} DESTINATION lib)
 
 #============================================================================
 # Set Variables

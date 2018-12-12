@@ -15,14 +15,29 @@ get_filename_component(OUTSIDE_DIR ${CMAKE_CURRENT_SOURCE_DIR} DIRECTORY)
 
 # Your Qt5 libraries path. 你的Qt5库位置
 if(NOT QTDIR)
-    set(QTDIR /Users/altairwei/Qt5.11.1/5.11.1/clang_64)
-endif()
-find_path(qt_dir "bin/qmake" ${QTDIR})
-if(NOT qt_dir)
-    message(FATAL_ERROR "\nQTDIR is not valid, Qt5 library cannot be found !\nPlease define QTDIR!")
+    # check default Qt library
+    execute_process(COMMAND qmake -query QT_INSTALL_PREFIX
+        OUTPUT_VARIABLE qt_dir
+        RESULT_VARIABLE result
+    )
+    if( (NOT result EQUAL "0") OR (NOT qt_dir) )
+        message(FATAL_ERROR "\nQTDIR is not valid, Qt5 library cannot be found !\nPlease define QTDIR!")
+    endif()
+    set(QTDIR ${qt_dir})
 else()
-    get_filename_component(QTDIR ${QTDIR} ABSOLUTE)
+    # check user defined Qt library
+    find_file(qmake_file "bin/qmake" ${QTDIR})
+    execute_process(COMMAND ${qmake_file} -query QT_INSTALL_PREFIX
+        OUTPUT_VARIABLE qt_dir
+        RESULT_VARIABLE result
+    )
+    if( (NOT result EQUAL "0") OR (NOT qt_dir) )
+        message(FATAL_ERROR "\nQTDIR is not valid, Qt5 library cannot be found !\nPlease define QTDIR!")
+    else()
+        set(QTDIR ${qt_dir})
+    endif()
 endif()
+string(STRIP ${QTDIR} QTDIR)
 
 if(NOT CMAKE_PREFIX_PATH)
     set(CMAKE_PREFIX_PATH ${QTDIR})
@@ -82,15 +97,27 @@ if(NOT GENERATE_INSTALL_DIR)
 endif()
 message(STATUS "GENERATE_INSTALL_DIR: ${GENERATE_INSTALL_DIR}")
 
-if(NOT GENERATE_APPIMAGE)
-    option(GENERATE_APPIMAGE "Decide whether generate AppImage or not." ON)
+if(NOT GENERATE_PACKAGE)
+    option(GENERATE_PACKAGE "Decide whether generate AppImage or not." ON)
 endif()
-message(STATUS "GENERATE_APPIMAGE: ${GENERATE_APPIMAGE}")
+message(STATUS "GENERATE_PACKAGE: ${GENERATE_PACKAGE}")
 
 if(NOT USE_FCITX)
     option(USE_FCITX "Decide whether use fcitx-qt5 or not." ON)
 endif()
 message(STATUS "USE_FCITX: ${USE_FCITX}")
+
+if(NOT CMAKE_BUILD_PARALLEL_LEVEL)
+    set(CMAKE_BUILD_PARALLEL_LEVEL 2)
+endif()
+
+if(NOT VERBOSE_LEVEL)
+    set(VERBOSE_LEVEL 0)
+endif()
+
+if(NOT CMAKE_VERBOSE_MAKEFILE)
+    set(CMAKE_VERBOSE_MAKEFILE FALSE)
+endif()
 
 # Extract WizNotePlus Version
 file(STRINGS ${WIZNOTE_SOURCE_DIR}/CMakeLists.txt project_command_str 
@@ -140,6 +167,7 @@ if(UNIX)
                 -DCMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}
                 -DCMAKE_INSTALL_PREFIX=${WIZNOTE_INSTALL_PREFIX}
                 -DCMAKE_OSX_SYSROOT=${CMAKE_OSX_SYSROOT}
+                -DCMAKE_VERBOSE_MAKEFILE=${CMAKE_VERBOSE_MAKEFILE}
                 -H${WIZNOTE_SOURCE_DIR} -B${WIZNOTE_BUILD_DIR}
                 -G "Unix Makefiles"
                 -UPDATE_TRANSLATIONS=YES
@@ -156,6 +184,7 @@ if(UNIX)
                 -DCMAKE_BUILD_TYPE=Release 
                 -DCMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}
                 -DCMAKE_INSTALL_PREFIX=${WIZNOTE_INSTALL_PREFIX}
+                -DCMAKE_VERBOSE_MAKEFILE=${CMAKE_VERBOSE_MAKEFILE}
                 -H${WIZNOTE_SOURCE_DIR} -B${WIZNOTE_BUILD_DIR}
                 -G "Unix Makefiles"
             WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
@@ -166,13 +195,14 @@ if(UNIX)
         endif()
     endif(APPLE)
 elseif(WIN32)
-    # Windows platform use NMake Makefiles generator
+    # Windows platform use NMake Makefiles JOM generator
     message("\nStart configure and generate WizNotePlus project:\n")
     execute_process(COMMAND ${CMAKE_COMMAND} -DCMAKE_BUILD_TYPE=Release 
             -DCMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}
             -DCMAKE_INSTALL_PREFIX=${WIZNOTE_INSTALL_PREFIX}
+            -DCMAKE_VERBOSE_MAKEFILE=${CMAKE_VERBOSE_MAKEFILE}
             -H${WIZNOTE_SOURCE_DIR} -B${WIZNOTE_BUILD_DIR}
-            -G "NMake Makefiles"
+            -G "NMake Makefiles JOM"
         WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
         RESULT_VARIABLE result
     )
@@ -190,6 +220,8 @@ endif(UNIX)
 message("\nStart build WizNotePlus project:\n")
 execute_process(COMMAND ${CMAKE_COMMAND} --build ${WIZNOTE_BUILD_DIR} --target all
     --config Release
+    --
+    -j ${CMAKE_BUILD_PARALLEL_LEVEL}
     WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
     RESULT_VARIABLE result
 )
@@ -299,11 +331,17 @@ if(GENERATE_INSTALL_DIR)
 
             # copy fcitx-qt5 library
             if(USE_FCITX)
-                find_file (fcitx-qt5-lib libfcitxplatforminputcontextplugin.so 
-                    /usr/lib/x86_64-linux-gnu/qt5/plugins/platforminputcontexts/ 
+                find_file(fcitx-qt5-lib libfcitxplatforminputcontextplugin.so 
+                    /usr/lib/x86_64-linux-gnu/qt5/plugins/platforminputcontexts/
+                    /usr/lib64/qt5/plugins/platforminputcontexts/
                 )
                 if(NOT fcitx-qt5-lib)
-                    message(FATAL_ERROR "Fail to find fcitx-qt5 !")
+                    if(NOT FCITX_QT5_LIB)
+                        message(FATAL_ERROR "Fail to find fcitx-qt5 !"
+                        " Please specify the path of fcitx-qt5 library"
+                        " with -DFCITX_QT5_LIB=<path/to/libfcitxplatforminputcontextplugin.so>")
+                    endif()
+                    set(fcitx-qt5-lib ${FCITX_QT5_LIB})
                 endif()
 
                 file(MAKE_DIRECTORY 
@@ -327,7 +365,7 @@ endif(GENERATE_INSTALL_DIR)
 # Deploy Qt5 libraries and package WizNotePlus 部署Qt5并生成包
 #============================================================================
 
-if(GENERATE_APPIMAGE)
+if(GENERATE_INSTALL_DIR AND GENERATE_PACKAGE)
     if(UNIX)
         if(APPLE)
             # MacOS platform
@@ -346,7 +384,7 @@ if(GENERATE_APPIMAGE)
             # deploy 3rdpaty libraries
             message("\nStart deploy WizNotePlus project:\n")
             execute_process(COMMAND ${QTDIR}/bin/macdeployqt
-                ${WIZNOTE_INSTALL_PREFIX} -verbose=1
+                ${WIZNOTE_INSTALL_PREFIX} -verbose=${VERBOSE_LEVEL}
                 -executable=${WIZNOTE_INSTALL_PREFIX}/Contents/MacOS/WizNote
                 -libpath=${QTDIR}
                 WORKING_DIRECTORY ${WIZNOTE_BUILD_DIR}
@@ -416,7 +454,7 @@ if(GENERATE_APPIMAGE)
                 --hide-extension "WizNote.app"
                 --app-drop-link 400 190
                 --format UDZO
-                ${package_output_path}/WizNote-mac-v${WIZNOTEPLUS_VERSION}.dmg
+                ${package_output_path}/WizNotePlus-mac-v${WIZNOTEPLUS_VERSION}.dmg
                 ${WIZNOTE_PACKAGE_DIR}/
                 WORKING_DIRECTORY ${WIZNOTE_SOURCE_DIR}
                 RESULT_VARIABLE result
@@ -431,7 +469,7 @@ if(GENERATE_APPIMAGE)
             message("\nStart package WizNotePlus project:\n")
             execute_process(COMMAND ${WIZNOTE_SOURCE_DIR}/external/linuxdeployqt
                 ${WIZNOTE_PACKAGE_DIR}/WizNote/share/applications/wiznote.desktop
-                -verbose=1 -appimage -qmake=${CMAKE_PREFIX_PATH}/bin/qmake
+                -verbose=${VERBOSE_LEVEL} -appimage -qmake=${qmake_file}
                 WORKING_DIRECTORY ${OUTSIDE_DIR}
                 RESULT_VARIABLE result
             )
@@ -444,7 +482,7 @@ if(GENERATE_APPIMAGE)
                 ${OUTSIDE_DIR}/WizNote*.AppImage)
             list(GET wiznote_appimage_files 0 wiznote_appimage_file)
             string(REGEX REPLACE "WizNote\\-(.*)\\.AppImage"
-                "WizNote-linux-\\1-v${WIZNOTEPLUS_VERSION}.AppImage" new_appimage_filename
+                "WizNotePlus-linux-\\1-v${WIZNOTEPLUS_VERSION}.AppImage" new_appimage_filename
                 ${wiznote_appimage_file})
             file(RENAME ${wiznote_appimage_file} ${new_appimage_filename})
         endif(APPLE)
@@ -454,5 +492,5 @@ if(GENERATE_APPIMAGE)
     else(UNIX)
         message(FATAL_ERROR "\nCan't detect which platform your are useing!")
     endif(UNIX)
-endif(GENERATE_APPIMAGE)
+endif(GENERATE_INSTALL_DIR AND GENERATE_PACKAGE)
 
