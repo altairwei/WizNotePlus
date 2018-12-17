@@ -42,7 +42,7 @@ endif(APPLE)
 #============================================================================
 
 # install conan 3rdparty libraries to package dirs.
-message("\nStart generate 3rdparty dependencies at ${CMAKE_BINARY_DIR}:\n")
+message("\nStart generate 3rdparty dependencies as ${CMAKE_BUILD_TYPE}:\n")
 
 # Download automatically, you can also just copy the conan.cmake file
 if(NOT EXISTS "${CMAKE_BINARY_DIR}/conan.cmake")
@@ -58,9 +58,12 @@ conan_cmake_run(
     BUILD_TYPE ${CMAKE_BUILD_TYPE}
     BUILD missing
 )
+
 # setup 3rd-party package
 include(${CMAKE_BINARY_DIR}/conan_paths.cmake)
 find_package(cryptopp REQUIRED)
+find_package(quazip REQUIRED)
+find_package(zlib REQUIRED)
 find_package(OpenSSL)
 
 # install 3rd-party package

@@ -428,6 +428,7 @@ include_directories(
     ${CMAKE_SOURCE_DIR}/lib/quazip
     ${CMAKE_SOURCE_DIR}/lib/gumbo-parser/src
     ${CMAKE_SOURCE_DIR}/lib/gumbo-query/src
+    ${quazip_INCLUDE_DIRS}
     ${zlib_INCLUDE_DIRS}
     ${cryptopp_INCLUDE_DIRS}
     ${OpenSSL_INCLUDE_DIRS}
@@ -579,30 +580,34 @@ if(UNIX)
 	if(APPLE)
 		if(APPSTORE_BUILD)
 			target_link_libraries(${PROJECT_NAME}
-                quazip_static
+                #quazip_static
                 #cryptopp-static
                 gumbo_query_static
                 Qt5::WebEngine
                 Qt5::WebEngineWidgets
                 ${CMAKE_DL_LIBS}
                 ${cryptopp_LIBRARIES}
+                ${quazip_LIBRARIES}
+                ${zlib_LIBRARIES}
 			)
 		else(APPSTORE_BUILD)
 			target_link_libraries(${PROJECT_NAME}
-                quazip_static
+                #quazip_static
                 #cryptopp-static
                 gumbo_query_static
                 Qt5::WebEngine
                 Qt5::WebEngineWidgets
                 ${CMAKE_DL_LIBS}
                 ${cryptopp_LIBRARIES}
+                ${quazip_LIBRARIES}
+                ${zlib_LIBRARIES}
 			)
 		endif(APPSTORE_BUILD)
 	else(APPLE) #linux
 		target_link_libraries(${PROJECT_NAME}
             -lpthread
             X11
-            quazip_static
+            #quazip_static
 			#cryptopp-static
             gumbo_query_static
 			Qt5::WebEngine
@@ -610,18 +615,22 @@ if(UNIX)
 			${CMAKE_DL_LIBS}
             ${cryptopp_LIBRARIES}
             ${OpenSSL_LIBRARIES}
+            ${quazip_LIBRARIES}
+            ${zlib_LIBRARIES}
 		)
 	endif(APPLE)
 else(NOT UNIX)
 	target_link_libraries(${PROJECT_NAME}
-        quazip_static
+        #quazip_static
 		#cryptopp-static
         gumbo_query_static
 		Qt5::WebEngine
 		Qt5::WebEngineWidgets
+        Qt5::WinMain
 		${CMAKE_DL_LIBS}
         ${cryptopp_LIBRARIES}
         ${OpenSSL_LIBRARIES}
-        Qt5::WinMain
+        ${quazip_LIBRARIES}
+        ${zlib_LIBRARIES}
 	)
 endif()
