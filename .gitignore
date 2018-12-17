@@ -7,3 +7,4 @@ CMakeLists.txt.user*
 .idea/*
 /.vs
 /.vscode
+tmp

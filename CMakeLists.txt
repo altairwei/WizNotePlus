@@ -14,6 +14,8 @@ cmake_minimum_required(VERSION 3.0)
 
 project(WizNotePlus VERSION 2.7.2)
 
+option(CONAN_INSTALL_MANUALLY "Run Conan install command manually." OFF)
+
 #============================================================================
 # RPATH settings
 #============================================================================
@@ -44,23 +46,25 @@ endif(APPLE)
 # install conan 3rdparty libraries to package dirs.
 message("\nStart generate 3rdparty dependencies as ${CMAKE_BUILD_TYPE}:\n")
 
-# Download automatically, you can also just copy the conan.cmake file
-if(NOT EXISTS "${CMAKE_BINARY_DIR}/conan.cmake")
-    message(STATUS "Downloading conan.cmake from https://github.com/conan-io/cmake-conan")
-    file(DOWNLOAD "https://raw.githubusercontent.com/conan-io/cmake-conan/master/conan.cmake"
-                    "${CMAKE_BINARY_DIR}/conan.cmake")
+if(NOT CONAN_INSTALL_MANUALLY)
+    if(NOT EXISTS "${CMAKE_BINARY_DIR}/conan.cmake")
+        message(STATUS "Downloading conan.cmake from https://github.com/conan-io/cmake-conan")
+        file(DOWNLOAD "https://raw.githubusercontent.com/conan-io/cmake-conan/master/conan.cmake"
+                        "${CMAKE_BINARY_DIR}/conan.cmake")
+    endif()
+    include(${CMAKE_BINARY_DIR}/conan.cmake)
+    conan_check(REQUIRED)
+    conan_cmake_run(
+        CONANFILE conanfile.py
+        BASIC_SETUP
+        INSTALL_FOLDER ${CMAKE_BINARY_DIR}
+        BUILD_TYPE ${CMAKE_BUILD_TYPE}
+        BUILD missing
+    )
+    include(${CMAKE_BINARY_DIR}/conan_paths.cmake)
 endif()
-include(${CMAKE_BINARY_DIR}/conan.cmake)
-conan_check(REQUIRED)
-conan_cmake_run(
-    CONANFILE conanfile.txt
-    INSTALL_FOLDER ${CMAKE_BINARY_DIR}
-    BUILD_TYPE ${CMAKE_BUILD_TYPE}
-    BUILD missing
-)
 
 # setup 3rd-party package
-include(${CMAKE_BINARY_DIR}/conan_paths.cmake)
 find_package(cryptopp REQUIRED)
 find_package(quazip REQUIRED)
 find_package(zlib REQUIRED)
