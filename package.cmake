@@ -87,6 +87,16 @@ if(NOT WIZNOTE_INSTALL_PREFIX)
 endif()
 message(STATUS "Using WIZNOTE_INSTALL_PREFIX: ${WIZNOTE_INSTALL_PREFIX}")
 
+# auto detect proccess number
+if(NOT CMAKE_BUILD_PARALLEL_LEVEL)
+    include(ProcessorCount)
+    ProcessorCount(N)
+    if(NOT N EQUAL 0)
+        set(CMAKE_BUILD_PARALLEL_LEVEL ${N})
+    endif()
+endif()
+message(STATUS "Using CMAKE_BUILD_PARALLEL_LEVEL: ${CMAKE_BUILD_PARALLEL_LEVEL}")
+
 # Package output directory. 打包结果输出位置
 if(NOT WIZNOTE_PACKAGE_OUTPUT_PATH)
     set(WIZNOTE_PACKAGE_OUTPUT_PATH ${OUTSIDE_DIR})
@@ -106,15 +116,6 @@ if(NOT USE_FCITX)
     option(USE_FCITX "Decide whether use fcitx-qt5 or not." ON)
 endif()
 message(STATUS "USE_FCITX: ${USE_FCITX}")
-
-if(NOT CMAKE_BUILD_PARALLEL_LEVEL)
-    # auto detect proccess number
-    include(ProcessorCount)
-    ProcessorCount(N)
-    if(NOT N EQUAL 0)
-        set(CMAKE_BUILD_PARALLEL_LEVEL ${N})
-    endif()
-endif()
 
 if(NOT VERBOSE_LEVEL)
     set(VERBOSE_LEVEL 0)

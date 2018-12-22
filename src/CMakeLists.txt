@@ -576,8 +576,8 @@ if(UNIX)
                 ${cryptopp_LIBRARIES}
                 ${quazip_LIBRARIES}
                 ${zlib_LIBRARIES}
-                ${Gumbo_LIBRARIES}
                 ${GumboQuery_LIBRARIES}
+                ${Gumbo_LIBRARIES}
 			)
 		else(APPSTORE_BUILD)
 			target_link_libraries(${PROJECT_NAME}
@@ -587,11 +587,12 @@ if(UNIX)
                 ${cryptopp_LIBRARIES}
                 ${quazip_LIBRARIES}
                 ${zlib_LIBRARIES}
-                ${Gumbo_LIBRARIES}
                 ${GumboQuery_LIBRARIES}
+                ${Gumbo_LIBRARIES}
 			)
 		endif(APPSTORE_BUILD)
-	else(APPLE) #linux
+	else(APPLE) 
+        # Linux: linking order is important.
 		target_link_libraries(${PROJECT_NAME}
             -lpthread
             X11
@@ -602,8 +603,8 @@ if(UNIX)
             ${OpenSSL_LIBRARIES}
             ${quazip_LIBRARIES}
             ${zlib_LIBRARIES}
-            ${Gumbo_LIBRARIES}
             ${GumboQuery_LIBRARIES}
+            ${Gumbo_LIBRARIES}
 		)
 	endif(APPLE)
 else(NOT UNIX)
@@ -616,7 +617,7 @@ else(NOT UNIX)
         ${OpenSSL_LIBRARIES}
         ${quazip_LIBRARIES}
         ${zlib_LIBRARIES}
-        ${Gumbo_LIBRARIES}
         ${GumboQuery_LIBRARIES}
+        ${Gumbo_LIBRARIES}
 	)
 endif()
