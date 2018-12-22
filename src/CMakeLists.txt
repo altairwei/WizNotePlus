@@ -424,14 +424,12 @@ set(wiznote_RCS
 include_directories(
     ${CMAKE_CURRENT_SOURCE_DIR}
     ${CMAKE_CURRENT_BINARY_DIR}
-    ${CMAKE_SOURCE_DIR}/lib
-    ${CMAKE_SOURCE_DIR}/lib/quazip
-    ${CMAKE_SOURCE_DIR}/lib/gumbo-parser/src
-    ${CMAKE_SOURCE_DIR}/lib/gumbo-query/src
     ${quazip_INCLUDE_DIRS}
     ${zlib_INCLUDE_DIRS}
     ${cryptopp_INCLUDE_DIRS}
     ${OpenSSL_INCLUDE_DIRS}
+    ${Gumbo_INCLUDE_DIRS}
+    ${GumboQuery_INCLUDE_DIRS}
 )
 
 #============================================================================
@@ -445,8 +443,6 @@ qt_add_resources(wiznote_RC ${wiznote_RCS}) # 添加资源文件
 qt_add_translation(wiznote_QM ${wiznote_TRANSLATIONS}) # 添加本地化文件
 
 message("WizNote whill compiling as ${CMAKE_BUILD_TYPE}, use Qt: ${QT_VERSION}")
-
-set(EXECUTABLE_OUTPUT_PATH ${CMAKE_BINARY_DIR}/bin)
 
 # build
 if(UNIX)
@@ -531,12 +527,6 @@ else()
     add_definitions(-D_UNICODE=TRUE)
     add_executable(WizNote WIN32 ${wiznote_SOURCES} ${wiznote_HEADERS} ${wiznote_FORM_HEADERS} ${wiznote_QM} ${wiznote_RC})
     set_target_properties(${PROJECT_NAME} PROPERTIES AUTOMOC_MOC_OPTIONS "-DQ_OS_WIN32")
-    set_target_properties(${PROJECT_NAME} PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin )
-    set_target_properties(${PROJECT_NAME} PROPERTIES RUNTIME_OUTPUT_DIRECTORY_DEBUG ${CMAKE_BINARY_DIR}/bin )
-    set_target_properties(${PROJECT_NAME} PROPERTIES RUNTIME_OUTPUT_DIRECTORY_RELEASE ${CMAKE_BINARY_DIR}/bin )
-    set_target_properties(${PROJECT_NAME} PROPERTIES LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib )
-    set_target_properties(${PROJECT_NAME} PROPERTIES LIBRARY_OUTPUT_DIRECTORY_DEBUG ${CMAKE_BINARY_DIR}/lib )
-    set_target_properties(${PROJECT_NAME} PROPERTIES LIBRARY_OUTPUT_DIRECTORY_RELEASE ${CMAKE_BINARY_DIR}/lib )
 
     install(TARGETS ${PROJECT_NAME} RUNTIME DESTINATION bin)
     install(DIRECTORY ${CMAKE_SOURCE_DIR}/share/ DESTINATION share/wiznote PATTERN ".DS_Store" EXCLUDE)
@@ -580,36 +570,31 @@ if(UNIX)
 	if(APPLE)
 		if(APPSTORE_BUILD)
 			target_link_libraries(${PROJECT_NAME}
-                #quazip_static
-                #cryptopp-static
-                gumbo_query_static
                 Qt5::WebEngine
                 Qt5::WebEngineWidgets
                 ${CMAKE_DL_LIBS}
                 ${cryptopp_LIBRARIES}
                 ${quazip_LIBRARIES}
                 ${zlib_LIBRARIES}
+                ${Gumbo_LIBRARIES}
+                ${GumboQuery_LIBRARIES}
 			)
 		else(APPSTORE_BUILD)
 			target_link_libraries(${PROJECT_NAME}
-                #quazip_static
-                #cryptopp-static
-                gumbo_query_static
                 Qt5::WebEngine
                 Qt5::WebEngineWidgets
                 ${CMAKE_DL_LIBS}
                 ${cryptopp_LIBRARIES}
                 ${quazip_LIBRARIES}
                 ${zlib_LIBRARIES}
+                ${Gumbo_LIBRARIES}
+                ${GumboQuery_LIBRARIES}
 			)
 		endif(APPSTORE_BUILD)
 	else(APPLE) #linux
 		target_link_libraries(${PROJECT_NAME}
             -lpthread
             X11
-            #quazip_static
-			#cryptopp-static
-            gumbo_query_static
 			Qt5::WebEngine
 			Qt5::WebEngineWidgets
 			${CMAKE_DL_LIBS}
@@ -617,13 +602,12 @@ if(UNIX)
             ${OpenSSL_LIBRARIES}
             ${quazip_LIBRARIES}
             ${zlib_LIBRARIES}
+            ${Gumbo_LIBRARIES}
+            ${GumboQuery_LIBRARIES}
 		)
 	endif(APPLE)
 else(NOT UNIX)
 	target_link_libraries(${PROJECT_NAME}
-        #quazip_static
-		#cryptopp-static
-        gumbo_query_static
 		Qt5::WebEngine
 		Qt5::WebEngineWidgets
         Qt5::WinMain
@@ -632,5 +616,7 @@ else(NOT UNIX)
         ${OpenSSL_LIBRARIES}
         ${quazip_LIBRARIES}
         ${zlib_LIBRARIES}
+        ${Gumbo_LIBRARIES}
+        ${GumboQuery_LIBRARIES}
 	)
 endif()

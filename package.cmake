@@ -108,7 +108,12 @@ endif()
 message(STATUS "USE_FCITX: ${USE_FCITX}")
 
 if(NOT CMAKE_BUILD_PARALLEL_LEVEL)
-    set(CMAKE_BUILD_PARALLEL_LEVEL 2)
+    # auto detect proccess number
+    include(ProcessorCount)
+    ProcessorCount(N)
+    if(NOT N EQUAL 0)
+        set(CMAKE_BUILD_PARALLEL_LEVEL ${N})
+    endif()
 endif()
 
 if(NOT VERBOSE_LEVEL)

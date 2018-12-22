@@ -68,11 +68,17 @@ endif()
 find_package(cryptopp REQUIRED)
 find_package(quazip REQUIRED)
 find_package(zlib REQUIRED)
+find_package(Gumbo REQUIRED)
+find_package(GumboQuery REQUIRED)
 find_package(OpenSSL)
 
 # install 3rd-party package
 list(REMOVE_ITEM OpenSSL_LIBRARIES dl)
 install(FILES ${OpenSSL_LIBRARIES} DESTINATION lib)
+
+# set output path
+include(${CMAKE_BINARY_DIR}/conanbuildinfo.cmake)
+conan_output_dirs_setup()
 
 #============================================================================
 # Set Variables
@@ -146,5 +152,5 @@ endif()
 # 执行后续命令
 #============================================================================
 
-add_subdirectory(lib)
+#add_subdirectory(lib)
 add_subdirectory(src)

@@ -73,8 +73,8 @@
 #include "WizTitleBar.h"
 #include "interface/IWizHtmlEditorApp.h"
 
-#include "Document.h"
-#include "Node.h"
+#include "gumbo-query/Document.h"
+#include "gumbo-query/Node.h"
 
 enum WizLinkType {
     WizLink_Doucment,

@@ -7,19 +7,22 @@ class WizNotePlusConan(ConanFile):
     url = "https://github.com/altairwei/WizNotePlus"
     description = "A cross-platform personal knowledge and time management application."
     settings = "os", "compiler", "build_type", "arch"
-    generators = "cmake_find_package", "cmake_paths"
+    generators = "cmake_find_package", "cmake_paths", "cmake"
     requires = (
         "OpenSSL/1.0.2p@conan/stable",
         "cryptopp/5.6.5@bincrafters/stable",
         "zlib/1.2.11@conan/stable",
-        "quazip/0.7.6@altairwei/testing"
+        "quazip/0.7.6@altairwei/testing",
+        "Gumbo/0.10.1@altairwei/testing",
+        "GumboQuery/latest@altairwei/testing"
     )
     options = {}
     default_options = {
         "OpenSSL:shared": True,
         "cryptopp:shared": False,
         "zlib:shared": False,
-        "quazip:shared": False
+        "quazip:shared": False,
+        "GumboQuery:shared": False
     }
 
     def imports(self):
