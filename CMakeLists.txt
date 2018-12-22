@@ -24,11 +24,11 @@ option(CONAN_INSTALL_MANUALLY "Run Conan install command manually." OFF)
 #set(CMAKE_BUILD_WITH_INSTALL_RPATH YES)     // would cause wheelEvent problem on centos/fedora when compiled with qt5
 if(APPLE)
     # make the install names for dylibs include "@rpath/" prefix.
-    #set(CMAKE_MACOSX_RPATH OFF)
+    set(CMAKE_MACOSX_RPATH ON)
     set(CMAKE_BUILD_WITH_INSTALL_RPATH FALSE)
     set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
     # used to initialize the INSTALL_NAME_DIR property on all targets.
-    #set(CMAKE_INSTALL_NAME_DIR "@rpath/PlugIns")
+    set(CMAKE_INSTALL_NAME_DIR "@rpath")
     set(CMAKE_INSTALL_RPATH "@loader_path/..;@loader_path/../Frameworks;@executable_path/..;@executable_path/../Frameworks;@rpath")
     #SET(PLCrashReporter on)
 else(APPLE)
@@ -56,7 +56,6 @@ if(NOT CONAN_INSTALL_MANUALLY)
     conan_check(REQUIRED)
     conan_cmake_run(
         CONANFILE conanfile.py
-        BASIC_SETUP
         INSTALL_FOLDER ${CMAKE_BINARY_DIR}
         BUILD_TYPE ${CMAKE_BUILD_TYPE}
         BUILD missing
@@ -74,7 +73,11 @@ find_package(OpenSSL)
 
 # install 3rd-party package
 list(REMOVE_ITEM OpenSSL_LIBRARIES dl)
-install(FILES ${OpenSSL_LIBRARIES} DESTINATION lib)
+if(NOT APPLE)
+    install(FILES ${OpenSSL_LIBRARIES} DESTINATION lib)
+else()
+    install(FILES ${OpenSSL_LIBRARIES} DESTINATION WizNote/Contents/MacOS)
+endif()
 
 # set output path
 include(${CMAKE_BINARY_DIR}/conanbuildinfo.cmake)
@@ -95,7 +98,7 @@ if(NOT CMAKE_BUILD_TYPE)
       FORCE)
 endif()
 
-set(CMAKE_OSX_DEPLOYMENT_TARGET 10.11)
+#set(CMAKE_OSX_DEPLOYMENT_TARGET 10.11)
 
 #============================================================================
 # Internal compiler options
