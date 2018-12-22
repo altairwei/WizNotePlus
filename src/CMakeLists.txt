@@ -3,7 +3,7 @@ project(WizNote)
 add_subdirectory(test)
 
 #============================================================================
-# 准备头文件和源码
+# Sources
 #============================================================================
 
 set(wiznote_SOURCES_MAC
@@ -433,14 +433,14 @@ include_directories(
 )
 
 #============================================================================
-# Internal compiler options
+# Compilation
 #============================================================================
 
-# 执行QtChooser模块
+# Preprocess Qt related files.
 include(QtChooser)
-qt_add_ui(wiznote_FORM_HEADERS ${wiznote_FORMS}) # 添加ui 设计文件
-qt_add_resources(wiznote_RC ${wiznote_RCS}) # 添加资源文件
-qt_add_translation(wiznote_QM ${wiznote_TRANSLATIONS}) # 添加本地化文件
+qt_add_ui(wiznote_FORM_HEADERS ${wiznote_FORMS})
+qt_add_resources(wiznote_RC ${wiznote_RCS})
+qt_add_translation(wiznote_QM ${wiznote_TRANSLATIONS})
 
 message("WizNote whill compiling as ${CMAKE_BUILD_TYPE}, use Qt: ${QT_VERSION}")
 
@@ -522,9 +522,10 @@ if(UNIX)
         endforeach()
     endif()
 else()
-    # Windows 端
+    # Windows
     add_definitions(-DUNICODE=TRUE)
     add_definitions(-D_UNICODE=TRUE)
+    #add_compile_options("/utf-8") # UNICODE or _UNICODE may not work
     add_executable(WizNote WIN32 ${wiznote_SOURCES} ${wiznote_HEADERS} ${wiznote_FORM_HEADERS} ${wiznote_QM} ${wiznote_RC})
     set_target_properties(${PROJECT_NAME} PROPERTIES AUTOMOC_MOC_OPTIONS "-DQ_OS_WIN32")
 
@@ -550,11 +551,6 @@ qt_suppress_warnings(WizNote)
 
 if (APPLE)
     include_directories(~/Library/Frameworks)
-elseif(WIN32)
-    include_directories(
-        ${CMAKE_SOURCE_DIR}/lib/zlib
-        ${CMAKE_BINARY_DIR}/lib/zlib
-        )
 endif()
 
 
@@ -563,7 +559,7 @@ link_directories(
 )
 
 #============================================================================
-# 第三方依赖
+# Linking libraries
 #============================================================================
 
 if(UNIX)
