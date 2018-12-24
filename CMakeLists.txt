@@ -15,6 +15,36 @@ cmake_minimum_required(VERSION 3.0)
 project(WizNotePlus VERSION 2.7.2)
 
 #============================================================================
+# Options and Variables
+#============================================================================
+
+# Excute conan outside or not.
+option(CONAN_INSTALL_MANUALLY "Run Conan install command manually." OFF)
+
+# Set default build type to Release
+if(NOT CMAKE_BUILD_TYPE)
+    set(CMAKE_BUILD_TYPE Release CACHE STRING
+      "Choose the type of build, options are: None Debug Release RelWithDebInfo MinSizeRel."
+      FORCE)
+endif()
+
+set(CMAKE_OSX_DEPLOYMENT_TARGET 10.11)
+
+list(APPEND CMAKE_MODULE_PATH 
+    "${CMAKE_CURRENT_SOURCE_DIR}/cmake"
+)
+
+# WizNotePlus Dirs
+if(APPLE)
+    set(WIZNOTE_ROOT_DIR ${CMAKE_BINARY_DIR}/bin/WizNote.app)
+    set(WIZNOTE_CONTENTS_DIR ${WIZNOTE_ROOT_DIR}/Contents)
+    set(WIZNOTE_RESOURCE_DIR ${WIZNOTE_ROOT_DIR}/Contents/Resources)
+else(APPLE)
+    set(WIZNOTE_ROOT_DIR ${CMAKE_BINARY_DIR})
+    set(WIZNOTE_RESOURCE_DIR ${WIZNOTE_ROOT_DIR}/share)
+endif(APPLE)
+
+#============================================================================
 # RPATH settings
 #============================================================================
 
@@ -22,17 +52,15 @@ project(WizNotePlus VERSION 2.7.2)
 #set(CMAKE_BUILD_WITH_INSTALL_RPATH YES)     // would cause wheelEvent problem on centos/fedora when compiled with qt5
 if(APPLE)
     # make the install names for dylibs include "@rpath/" prefix.
-    #set(CMAKE_MACOSX_RPATH OFF)
+    set(CMAKE_MACOSX_RPATH ON)
     set(CMAKE_BUILD_WITH_INSTALL_RPATH FALSE)
     set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
-    # used to initialize the INSTALL_NAME_DIR property on all targets.
-    #set(CMAKE_INSTALL_NAME_DIR "@rpath/PlugIns")
+    set(CMAKE_INSTALL_NAME_DIR "@rpath/PlugIns")
     set(CMAKE_INSTALL_RPATH "@loader_path/..;@loader_path/../Frameworks;@executable_path/..;@executable_path/../Frameworks;@rpath")
     #SET(PLCrashReporter on)
 else(APPLE)
     set(CMAKE_BUILD_WITH_INSTALL_RPATH FALSE)
     set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
-    # $ORIGING代表程序目录，CMAKE_INSTALL_RPATH是分号分隔的list，它指定了在安装目标时使用的rpath
     set(CMAKE_INSTALL_RPATH "$ORIGIN;$ORIGIN/..;$ORIGIN/../lib")
     set (openssl-linked on)
 endif(APPLE)
@@ -42,53 +70,49 @@ endif(APPLE)
 #============================================================================
 
 # install conan 3rdparty libraries to package dirs.
-message("\nStart generate 3rdparty dependencies at ${CMAKE_BINARY_DIR}:\n")
+message("\nStart generate 3rdparty dependencies as ${CMAKE_BUILD_TYPE}:\n")
 
-# Download automatically, you can also just copy the conan.cmake file
-if(NOT EXISTS "${CMAKE_BINARY_DIR}/conan.cmake")
-    message(STATUS "Downloading conan.cmake from https://github.com/conan-io/cmake-conan")
-    file(DOWNLOAD "https://raw.githubusercontent.com/conan-io/cmake-conan/master/conan.cmake"
-                    "${CMAKE_BINARY_DIR}/conan.cmake")
+if(NOT CONAN_INSTALL_MANUALLY)
+    if(NOT EXISTS "${CMAKE_BINARY_DIR}/conan.cmake")
+        message(STATUS "Downloading conan.cmake from https://github.com/conan-io/cmake-conan")
+        file(DOWNLOAD "https://raw.githubusercontent.com/conan-io/cmake-conan/master/conan.cmake"
+                        "${CMAKE_BINARY_DIR}/conan.cmake")
+    endif()
+    include(${CMAKE_BINARY_DIR}/conan.cmake)
+    conan_check(REQUIRED)
+    conan_cmake_run(
+        CONANFILE conanfile.py
+        INSTALL_FOLDER ${CMAKE_BINARY_DIR}
+        BUILD_TYPE ${CMAKE_BUILD_TYPE}
+        BUILD missing
+    )
+    include(${CMAKE_BINARY_DIR}/conan_paths.cmake)
 endif()
-include(${CMAKE_BINARY_DIR}/conan.cmake)
-conan_check(REQUIRED)
-conan_cmake_run(
-    CONANFILE conanfile.txt
-    INSTALL_FOLDER ${CMAKE_BINARY_DIR}
-    BUILD_TYPE ${CMAKE_BUILD_TYPE}
-    BUILD missing
-)
+
 # setup 3rd-party package
-include(${CMAKE_BINARY_DIR}/conan_paths.cmake)
 find_package(cryptopp REQUIRED)
+find_package(quazip REQUIRED)
+find_package(zlib REQUIRED)
+find_package(Gumbo REQUIRED)
+find_package(GumboQuery REQUIRED)
 find_package(OpenSSL)
 
 # install 3rd-party package
 list(REMOVE_ITEM OpenSSL_LIBRARIES dl)
-install(FILES ${OpenSSL_LIBRARIES} DESTINATION lib)
-
-#============================================================================
-# Set Variables
-#============================================================================
-
-list(APPEND CMAKE_MODULE_PATH 
-    "${CMAKE_CURRENT_SOURCE_DIR}/cmake"
-)
-
-# 缺省构建类型Release
-if(NOT CMAKE_BUILD_TYPE)
-    set(CMAKE_BUILD_TYPE Release CACHE STRING
-      "Choose the type of build, options are: None Debug Release RelWithDebInfo MinSizeRel."
-      FORCE)
+if(NOT APPLE)
+    install(FILES ${OpenSSL_LIBRARIES} DESTINATION lib)
+else()
+    install(FILES ${OpenSSL_LIBRARIES} DESTINATION WizNote/Contents/MacOS)
 endif()
 
-set(CMAKE_OSX_DEPLOYMENT_TARGET 10.11)
+# set output path
+include(${CMAKE_BINARY_DIR}/conanbuildinfo.cmake)
+conan_output_dirs_setup()
 
 #============================================================================
 # Internal compiler options
 #============================================================================
 
-# MSVC don't need this check process.
 include(CheckCXXCompilerFlag)
 CHECK_CXX_COMPILER_FLAG("-std=c++11" COMPILER_SUPPORTS_CXX11)
 CHECK_CXX_COMPILER_FLAG("-std=c++0x" COMPILER_SUPPORTS_CXX0X)
@@ -119,16 +143,6 @@ if(APPLE)
     add_definitions(-DUSECOCOATOOLBAR=TRUE)
 endif(APPLE)
 
-# WizNotePlus Dirs
-if(APPLE)
-    set(WIZNOTE_ROOT_DIR ${CMAKE_BINARY_DIR}/bin/WizNote.app)
-    set(WIZNOTE_CONTENTS_DIR ${WIZNOTE_ROOT_DIR}/Contents)
-    set(WIZNOTE_RESOURCE_DIR ${WIZNOTE_ROOT_DIR}/Contents/Resources)
-else(APPLE)
-    set(WIZNOTE_ROOT_DIR ${CMAKE_BINARY_DIR}) # 根目录设置为CMake构建树的顶层路径
-    set(WIZNOTE_RESOURCE_DIR ${WIZNOTE_ROOT_DIR}/share) # 资源文件目录
-endif(APPLE)
-
 # when including QuaZip sources directly into a project, QUAZIP_STATIC should
 # be defined explicitly to avoid possible troubles with unnecessary importing/exporting.
 if (WIN32)
@@ -136,8 +150,8 @@ if (WIN32)
 endif()
 
 #============================================================================
-# 执行后续命令
+# Subfolders
 #============================================================================
 
-add_subdirectory(lib)
+#add_subdirectory(lib)
 add_subdirectory(src)
