@@ -10,6 +10,8 @@
 #include <QString>
 #include <QRegExp>
 #include <QAction>
+#include <QMenu>
+#include <QContextMenuEvent>
 #include <QPrinter>
 #include <QFileDialog>
 #include <QTextEdit>
@@ -383,13 +385,42 @@ void WizDocumentWebView::focusOutEvent(QFocusEvent *event)
     QWebEngineView::focusOutEvent(event);
 }
 
+/**
+ * @brief 处理右键菜单事件
+ * 
+ * @param event 
+ */
 void WizDocumentWebView::contextMenuEvent(QContextMenuEvent *event)
 {
     if (isEditing()) {
+        // Edit mode
         Q_EMIT showContextMenuRequest(mapToGlobal(event->pos()));
     } else {
-        WizWebEngineView::contextMenuEvent(event);
+        // Read mode
+        //WizWebEngineView::contextMenuEvent(event);
+        generateReadModeContextMenu(event);
     }
+}
+
+/**
+ * @brief 生成阅读模式下的右键菜单
+ * 
+ */
+void WizDocumentWebView::generateReadModeContextMenu(QContextMenuEvent *event)
+{
+    QMenu *menu = page()->createStandardContextMenu();
+    const QList<QAction *> actions = menu->actions();
+    // remove back & forward
+    auto backAction = std::find(actions.cbegin(), actions.cend(), page()->action(QWebEnginePage::Back));
+    if (backAction != actions.cend()) {
+        menu->removeAction(*backAction);
+    }
+    auto forwardAction = std::find(actions.cbegin(), actions.cend(), page()->action(QWebEnginePage::Forward));
+    if (forwardAction != actions.cend()) {
+        menu->removeAction(*forwardAction);
+    }
+    //
+    menu->popup(event->globalPos());
 }
 
 void WizDocumentWebView::dragEnterEvent(QDragEnterEvent *event)
