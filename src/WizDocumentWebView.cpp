@@ -397,8 +397,7 @@ void WizDocumentWebView::contextMenuEvent(QContextMenuEvent *event)
         Q_EMIT showContextMenuRequest(mapToGlobal(event->pos()));
     } else {
         // Read mode
-        //WizWebEngineView::contextMenuEvent(event);
-        generateReadModeContextMenu(event);
+        createReadModeContextMenu(event);
     }
 }
 
@@ -406,21 +405,45 @@ void WizDocumentWebView::contextMenuEvent(QContextMenuEvent *event)
  * @brief 生成阅读模式下的右键菜单
  * 
  */
-void WizDocumentWebView::generateReadModeContextMenu(QContextMenuEvent *event)
+void WizDocumentWebView::createReadModeContextMenu(QContextMenuEvent *event)
 {
-    QMenu *menu = page()->createStandardContextMenu();
+    QMenu *menu = createStandardContextMenu();
     const QList<QAction *> actions = menu->actions();
-    // remove back & forward
-    auto backAction = std::find(actions.cbegin(), actions.cend(), page()->action(QWebEnginePage::Back));
+    // remove back & forward actions
+    auto backAction = std::find_if(actions.cbegin(), actions.cend(), [=](QAction * ac){
+        return (ac->text() == "&Back" or ac->iconText() == "Back");
+    });
     if (backAction != actions.cend()) {
         menu->removeAction(*backAction);
     }
-    auto forwardAction = std::find(actions.cbegin(), actions.cend(), page()->action(QWebEnginePage::Forward));
+    auto forwardAction = std::find_if(actions.cbegin(), actions.cend(), [=](QAction * ac){
+        return (ac->text() == "&Forward" or ac->iconText() == "Forward");
+    });
     if (forwardAction != actions.cend()) {
         menu->removeAction(*forwardAction);
     }
+    // refresh new page's ViewSource action
+    disconnect(pageAction(QWebEnginePage::ViewSource), &QAction::triggered, this, &WizDocumentWebView::onViewSourceTriggered);
+    connect(pageAction(QWebEnginePage::ViewSource), &QAction::triggered, this, &WizDocumentWebView::onViewSourceTriggered);
+    // handle open location of document
+    if(page()->url().isLocalFile()) {
+        QAction *action = new QAction(menu);
+        action->setText("Open temporary file's location");
+        connect(action, &QAction::triggered, [this]() {
+            QUrl tmpfileFolder = page()->url().adjusted(QUrl::RemoveFilename);
+            QDesktopServices::openUrl(tmpfileFolder);
+        });
+        auto inspectElement = std::find(actions.cbegin(), actions.cend(), page()->action(QWebEnginePage::InspectElement));
+        QAction *before(inspectElement == actions.cend() ? nullptr : *inspectElement);
+        menu->insertAction(before, action);
+    }
     //
     menu->popup(event->globalPos());
+}
+
+void WizDocumentWebView::onViewSourceTriggered()
+{
+    emit viewSourceRequested(page()->url(), view()->note().strTitle);
 }
 
 void WizDocumentWebView::dragEnterEvent(QDragEnterEvent *event)

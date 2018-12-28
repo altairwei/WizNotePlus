@@ -8,6 +8,7 @@
 #include <QDialog>
 
 class QWebChannel;
+class QMenu;
 
 class WizWebEngineView;
 class WizDevToolsDialog;
@@ -43,12 +44,15 @@ public:
     WizWebEnginePage* getPage();
     void addToJavaScriptWindowObject(QString name, QObject* obj);
     void closeAll();
+    QMenu* createStandardContextMenu();
 public Q_SLOTS:
     void innerLoadFinished(bool);
     void openLinkInDefaultBrowser(QUrl url);
     void openDevTools();
+    void onViewSourceTriggered();
 Q_SIGNALS:
     void loadFinishedEx(bool);
+    void viewSourceRequested(QUrl url, QString title);
 private:
     QWebSocketServer* m_server;
     WebSocketClientWrapper* m_clientWrapper;
@@ -58,6 +62,7 @@ private:
     //WizWebEnginePage* m_page;
 protected:
     void wheelEvent(QWheelEvent *event);
+    void contextMenuEvent(QContextMenuEvent *event);
 };
 
 bool WizWebEngineViewProgressKeyEvents(QKeyEvent* ev);

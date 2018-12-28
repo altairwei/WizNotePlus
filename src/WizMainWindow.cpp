@@ -2214,7 +2214,7 @@ void WizMainWindow::initClient()
     // WizMainTab
     layoutDocument->addWidget(m_mainTab); // 将主标签栏放在文档板布局上
     connect(m_mainTab, SIGNAL(currentChanged(int)), SLOT(on_mainTabWidget_currentChanged(int)));
-    m_mainTab->createTab(QUrl::fromUserInput("www.wiz.cn")); // 默认打开Wiz主页
+    m_mainTab->createTab(QUrl::fromUserInput("https://www.wiz.cn")); // 默认打开Wiz主页
     //
     layoutDocument->addWidget(m_documentSelection);
     m_documentSelection->hide(); // 这个是什么东西？

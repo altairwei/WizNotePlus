@@ -3,6 +3,7 @@
 #include <QWebChannel>
 #include <QDesktopWidget>
 #include <QStyle>
+#include <QMenu>
 #include "WizWebEngineView.h"
 #include "WizMisc.h"
 #include "utils/WizPathResolve.h"
@@ -185,6 +186,46 @@ WizWebEngineView::~WizWebEngineView()
     closeAll();
 }
 
+/**
+ * @brief Create basic context menu for web view.
+ * @return
+ */
+QMenu* WizWebEngineView::createStandardContextMenu()
+{
+    QMenu *menu = page()->createStandardContextMenu();
+    const QList<QAction *> actions = menu->actions();
+    // add Open DevTools action
+    auto inspectElement = std::find(actions.cbegin(), actions.cend(), page()->action(QWebEnginePage::InspectElement));
+    if (inspectElement == actions.cend()) {
+        auto viewSource = std::find(actions.cbegin(), actions.cend(), page()->action(QWebEnginePage::ViewSource));
+        if (viewSource == actions.cend())
+            menu->addSeparator();
+
+        QAction *action = new QAction(menu);
+        action->setText(tr("Open DevTools"));
+        connect(action, &QAction::triggered, this, &WizWebEngineView::openDevTools);
+
+        QAction *before(inspectElement == actions.cend() ? nullptr : *inspectElement);
+        menu->insertAction(before, action);
+    } else {
+        (*inspectElement)->setText(tr("Inspect element"));
+        // refresh new page's InspectElement action
+        disconnect(*inspectElement, &QAction::triggered, this, &WizWebEngineView::openDevTools);
+        connect(*inspectElement, &QAction::triggered, this, &WizWebEngineView::openDevTools);
+    }
+    return menu;
+}
+
+void WizWebEngineView::contextMenuEvent(QContextMenuEvent *event)
+{
+    QMenu *menu = createStandardContextMenu();
+    // refresh new page's action
+    disconnect(pageAction(QWebEnginePage::ViewSource), &QAction::triggered, this, &WizWebEngineView::onViewSourceTriggered);
+    connect(pageAction(QWebEnginePage::ViewSource), &QAction::triggered, this, &WizWebEngineView::onViewSourceTriggered);
+    //
+    menu->popup(event->globalPos());
+}
+
 void WizWebEngineView::closeAll()
 {
     if (m_server)
@@ -272,18 +313,24 @@ void WizWebEngineView::openDevTools()
         m_devToolsWindow->setWindowTitle("DevTools - " + title);
         //
         m_devToolsWindow->web()->page()->setInspectedPage(this->page());
+        // align on center of the screen
+        m_devToolsWindow->setGeometry(
+            QStyle::alignedRect(
+                Qt::LeftToRight,
+                Qt::AlignCenter,
+                QSize(800, 500),
+                qApp->desktop()->availableGeometry()
+            )
+        );
     }
-    // align on center of the screen
-    m_devToolsWindow->setGeometry(
-        QStyle::alignedRect(
-            Qt::LeftToRight,
-            Qt::AlignCenter,
-            QSize(800, 500),
-            qApp->desktop()->availableGeometry()
-        )
-    );
     //
     m_devToolsWindow->show();
+    m_devToolsWindow->raise();
+}
+
+void WizWebEngineView::onViewSourceTriggered()
+{
+    emit viewSourceRequested(page()->url(), page()->url().url());
 }
 
 /**

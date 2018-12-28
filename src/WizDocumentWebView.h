@@ -267,7 +267,7 @@ private:
     void saveEditingViewDocument(const WIZDOCUMENTDATA& data, bool force, const std::function<void(const QVariant &)> callback);
     void saveReadingViewDocument(const WIZDOCUMENTDATA& data, bool force, std::function<void(const QVariant &)> callback);
 
-    void generateReadModeContextMenu(QContextMenuEvent *event);
+    void createReadModeContextMenu(QContextMenuEvent *event);
 
 protected:
     virtual void keyPressEvent(QKeyEvent* event);
@@ -331,6 +331,8 @@ public Q_SLOTS:
 
     void on_insertCodeHtml_requset(QString strOldHtml);
 
+    //
+    void onViewSourceTriggered();
     //void onWatchedFileChanged(const QString& path, int TextEditor, int UTF8Encoding);
     /* editor API */
 
@@ -405,6 +407,8 @@ Q_SIGNALS:
     //
     void externalEditorOpened();
     void externalEditorClosed(int exitCode, QProcess::ExitStatus exitStatus);
+
+    void devToolsRequested(QWebEnginePage* sourcePage);
 
 private slots:
     void on_insertCommentToNote_request(const QString& docGUID, const QString& comment);
