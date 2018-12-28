@@ -11,6 +11,7 @@
 #include <QApplication>
 #include <QDesktopServices>
 #include <QClipboard>
+#include <QFileDialog>
 #ifdef Q_OS_MAC
 #include "mac/WizMacHelper.h"
 #include <QTimer>
@@ -213,6 +214,14 @@ QMenu* WizWebEngineView::createStandardContextMenu()
         disconnect(*inspectElement, &QAction::triggered, this, &WizWebEngineView::openDevTools);
         connect(*inspectElement, &QAction::triggered, this, &WizWebEngineView::openDevTools);
     }
+    // save page action
+    disconnect(pageAction(QWebEnginePage::SavePage), &QAction::triggered, nullptr, nullptr);
+    connect(pageAction(QWebEnginePage::SavePage), &QAction::triggered, [this](){
+        QString fileName = QFileDialog::getSaveFileName(this, tr("Save Page"), 
+            QDir::home().absoluteFilePath(page()->title() + ".mhtml"),
+            tr("MIME HTML (*.mht *.mhtml)"));
+        page()->save(fileName);
+    });
     return menu;
 }
 
