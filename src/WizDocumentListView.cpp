@@ -189,6 +189,8 @@ WizDocumentListView::WizDocumentListView(WizExplorerApp& app, QWidget *parent /*
                               SLOT(on_action_selectTags()));
     m_menuDocument->addSeparator();
     //
+    m_menuDocument->addAction(tr("Open in new Tab"), this,
+                              SLOT(on_action_showDocumentInNewTab()));
     m_menuDocument->addAction(tr("Open in new Window"), this,
                               SLOT(on_action_showDocumentInFloatWindow()));
     m_menuDocument->addAction(WIZACTION_LIST_COPY_DOCUMENT_LINK, this,
@@ -1930,6 +1932,17 @@ void WizDocumentListView::on_action_copyWebClientLink()
     }
 
     WizCopyNotesAsWebClientLink(documents);
+}
+
+void WizDocumentListView::on_action_showDocumentInNewTab()
+{
+    ::WizGetAnalyzer().logAction("documentListMenuOpenInFloatWindow");
+    WizMainWindow* mainWindow = qobject_cast<WizMainWindow*>(m_app.mainWindow());
+    foreach(WizDocumentListViewDocumentItem* item, m_rightButtonFocusedItems)
+    {
+        const WIZDOCUMENTDATA& document = item->document();
+        mainWindow->viewDocument(document);
+    }
 }
 
 void WizDocumentListView::on_action_showDocumentInFloatWindow()

@@ -447,10 +447,9 @@ void WizMainWindow::trySaveCurrentNote(std::function<void(const QVariant &)> cal
     WizDocumentView* curDocView = qobject_cast<WizDocumentView*>(m_mainTab->currentWidget());
     if (curDocView && curDocView->noteLoaded()) {
         curDocView->web()->trySaveDocument(curDocView->note(), false, callback);
-        return;
+    } else {
+        callback(QVariant(true));
     }
-    //
-    callback(QVariant(true));
 }
 
 /**
@@ -462,17 +461,15 @@ void WizMainWindow::trySaveCurrentNote(std::function<void(const QVariant &)> cal
  * @param TextEditor
  * @param UTF8Encoding
  */
-void WizMainWindow::startExternalEditor(QString cacheFileName, QString Name,
-                                        QString ProgramFile, QString Arguments,
-                                        int TextEditor, int UTF8Encoding, const WIZDOCUMENTDATAEX& noteData)
+void WizMainWindow::startExternalEditor(QString cacheFileName, const WizExternalEditorData& editorData, const WIZDOCUMENTDATAEX& noteData)
 {
     // 准备进程参数
     //FIXME: split too many items
-    ProgramFile = "\"" + ProgramFile + "\"";
-    QString args = Arguments.arg("\"" + cacheFileName + "\"");
-    QString strCmd = ProgramFile + " " + args;
+    QString programFile = "\"" + editorData.ProgramFile + "\"";
+    QString args = editorData.Arguments.arg("\"" + cacheFileName + "\"");
+    QString strCmd = programFile + " " + args;
     // 创建并开启进程
-    qInfo() << "Use external editor: " + Name << strCmd;
+    qInfo() << "Use external editor: " + editorData.Name << strCmd;
     QProcess *extEditorProcess = new QProcess(this);
     extEditorProcess->startDetached(strCmd);
     // 设置文件监控器
@@ -480,7 +477,7 @@ void WizMainWindow::startExternalEditor(QString cacheFileName, QString Name,
     m_watchedFileData.insert(noteData.strGUID, noteData);
     //
     connect(m_extFileWatcher, &QFileSystemWatcher::fileChanged, [=](const QString& fileName){
-        saveWatchedFile(fileName, TextEditor, UTF8Encoding);
+        saveWatchedFile(fileName, editorData.TextEditor, editorData.UTF8Encoding);
         // watch file again, in order to avoid some editor from removing watched files.
         if (m_extFileWatcher)
         {
@@ -2214,7 +2211,7 @@ void WizMainWindow::initClient()
     // WizMainTab
     layoutDocument->addWidget(m_mainTab); // 将主标签栏放在文档板布局上
     connect(m_mainTab, SIGNAL(currentChanged(int)), SLOT(on_mainTabWidget_currentChanged(int)));
-    m_mainTab->createTab(QUrl::fromUserInput("www.wiz.cn")); // 默认打开Wiz主页
+    m_mainTab->createTab(QUrl::fromUserInput("https://www.wiz.cn")); // 默认打开Wiz主页
     //
     layoutDocument->addWidget(m_documentSelection);
     m_documentSelection->hide(); // 这个是什么东西？
@@ -3848,6 +3845,11 @@ WizDocumentView* WizMainWindow::currentDocumentView()
     return qobject_cast<WizDocumentView*>(m_mainTab->currentWidget());
 }
 
+WizMainTabWidget* WizMainWindow::mainTabView()
+{
+    return m_mainTab;
+}
+
 /**
  * @brief 创建文档视图并绑定各种信号
  * @return
@@ -4755,19 +4757,22 @@ void WizMainWindow::downloadAttachment(const WIZDOCUMENTATTACHMENTDATA& attachme
 
 void WizMainWindow::viewNoteInSeparateWindow(const WIZDOCUMENTDATA& data)
 {
-    //FIXME: non-docuView causes break!
     WizDocumentView* docView = currentDocumentView();
-    if (!docView)
-        return;
-    docView->web()->trySaveDocument(docView->note(), false, [=](const QVariant&){
+    if (docView && docView->note().strGUID == data.strGUID) {
+        docView->web()->trySaveDocument(docView->note(), false, [=](const QVariant&){
 
-        docView->setEditorMode(modeReader);
-        //
+            docView->setEditorMode(modeReader);
+            //
+            m_singleViewDelegate->viewDocument(data);
+            // update dock menu
+            resetDockMenu();
+            //
+        });
+    } else {
         m_singleViewDelegate->viewDocument(data);
-        // update dock menu
         resetDockMenu();
-        //
-    });
+    }
+
 }
 
 void WizMainWindow::viewCurrentNoteInSeparateWindow()

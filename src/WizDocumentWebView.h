@@ -28,6 +28,7 @@ class QNetworkDiskCache;
 class WizSearchReplaceWidget;
 
 struct WIZODUCMENTDATA;
+struct WizExternalEditorData;
 
 class WizDocumentView;
 
@@ -178,9 +179,9 @@ public:
 
     WizDocumentWebViewPage* getPage();
 
-    void viewDocumentInExternalEditor(QString& Name, QString& ProgramFile,
-                                        QString& Arguments, int TextEditor, int UTF8Encoding);
-    //void startExternalEditor(QString cacheFileName, QString Name, QString ProgramFile, QString Arguments, int TextEditor, int UTF8Encoding);
+    void viewDocumentInExternalEditor(const WizExternalEditorData &editorData);
+    void loadDocumentToExternalEditor(const WIZDOCUMENTDATA &docData, const WizExternalEditorData &editorData);
+    QString documentTitle();
     void queryHtmlNodeText(QString& strHtml, QString strSelector);
 
     // initialize editor style before render, only invoke once.
@@ -267,6 +268,8 @@ private:
     void saveEditingViewDocument(const WIZDOCUMENTDATA& data, bool force, const std::function<void(const QVariant &)> callback);
     void saveReadingViewDocument(const WIZDOCUMENTDATA& data, bool force, std::function<void(const QVariant &)> callback);
 
+    void createReadModeContextMenu(QContextMenuEvent *event);
+
 protected:
     virtual void keyPressEvent(QKeyEvent* event);
     virtual void mousePressEvent(QMouseEvent* event);
@@ -328,6 +331,9 @@ public Q_SLOTS:
     void on_editorCommandExecuteLinkInsert_accepted();
 
     void on_insertCodeHtml_requset(QString strOldHtml);
+
+    //
+    void onViewSourceTriggered();
 
     //void onWatchedFileChanged(const QString& path, int TextEditor, int UTF8Encoding);
     /* editor API */
@@ -403,6 +409,8 @@ Q_SIGNALS:
     //
     void externalEditorOpened();
     void externalEditorClosed(int exitCode, QProcess::ExitStatus exitStatus);
+
+    void devToolsRequested(QWebEnginePage* sourcePage);
 
 private slots:
     void on_insertCommentToNote_request(const QString& docGUID, const QString& comment);
