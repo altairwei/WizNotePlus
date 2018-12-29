@@ -28,6 +28,7 @@ class QNetworkDiskCache;
 class WizSearchReplaceWidget;
 
 struct WIZODUCMENTDATA;
+struct WizExternalEditorData;
 
 class WizDocumentView;
 
@@ -178,8 +179,8 @@ public:
 
     WizDocumentWebViewPage* getPage();
 
-    void viewDocumentInExternalEditor(QString& Name, QString& ProgramFile,
-                                        QString& Arguments, int TextEditor, int UTF8Encoding);
+    void viewDocumentInExternalEditor(const WizExternalEditorData &editorData);
+    void loadDocumentToExternalEditor(const WIZDOCUMENTDATA &docData, const WizExternalEditorData &editorData);
     //void startExternalEditor(QString cacheFileName, QString Name, QString ProgramFile, QString Arguments, int TextEditor, int UTF8Encoding);
     void queryHtmlNodeText(QString& strHtml, QString strSelector);
 
@@ -333,6 +334,7 @@ public Q_SLOTS:
 
     //
     void onViewSourceTriggered();
+
     //void onWatchedFileChanged(const QString& path, int TextEditor, int UTF8Encoding);
     /* editor API */
 

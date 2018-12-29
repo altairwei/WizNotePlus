@@ -992,7 +992,10 @@ void WizDocumentView::on_notifyBar_link_clicked(const QString& link)
 void WizDocumentView::on_viewNoteInExternalEditor_request(QString& Name, QString& ProgramFile,
                                                           QString& Arguments, int TextEditor, int UTF8Encoding)
 {
-    web()->viewDocumentInExternalEditor(Name, ProgramFile, Arguments, TextEditor, UTF8Encoding);
+    WizExternalEditorData editorData = {
+        Name, ProgramFile, Arguments, TextEditor, UTF8Encoding
+    };
+    web()->viewDocumentInExternalEditor(editorData);
 }
 
 

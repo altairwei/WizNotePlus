@@ -204,33 +204,33 @@ QMenu* WizWebEngineView::createStandardContextMenu()
 
         QAction *action = new QAction(menu);
         action->setText(tr("Open DevTools"));
-        connect(action, &QAction::triggered, this, &WizWebEngineView::openDevTools);
+        connect(action, &QAction::triggered, this, &WizWebEngineView::openDevTools, Qt::UniqueConnection);
 
         QAction *before(inspectElement == actions.cend() ? nullptr : *inspectElement);
         menu->insertAction(before, action);
     } else {
         (*inspectElement)->setText(tr("Inspect element"));
         // refresh new page's InspectElement action
-        disconnect(*inspectElement, &QAction::triggered, this, &WizWebEngineView::openDevTools);
-        connect(*inspectElement, &QAction::triggered, this, &WizWebEngineView::openDevTools);
+        //disconnect(*inspectElement, &QAction::triggered, this, &WizWebEngineView::openDevTools);
+        connect(*inspectElement, &QAction::triggered, this, &WizWebEngineView::openDevTools, Qt::UniqueConnection);
     }
-    // save page action
-    disconnect(pageAction(QWebEnginePage::SavePage), &QAction::triggered, nullptr, nullptr);
-    connect(pageAction(QWebEnginePage::SavePage), &QAction::triggered, [this](){
-        QString fileName = QFileDialog::getSaveFileName(this, tr("Save Page"), 
-            QDir::home().absoluteFilePath(page()->title() + ".mhtml"),
-            tr("MIME HTML (*.mht *.mhtml)"));
-        page()->save(fileName);
-    });
     return menu;
 }
 
 void WizWebEngineView::contextMenuEvent(QContextMenuEvent *event)
 {
     QMenu *menu = createStandardContextMenu();
-    // refresh new page's action
-    disconnect(pageAction(QWebEnginePage::ViewSource), &QAction::triggered, this, &WizWebEngineView::onViewSourceTriggered);
-    connect(pageAction(QWebEnginePage::ViewSource), &QAction::triggered, this, &WizWebEngineView::onViewSourceTriggered);
+    // refresh new page's ViewSource action
+    //disconnect(pageAction(QWebEnginePage::ViewSource), &QAction::triggered, this, &WizWebEngineView::onViewSourceTriggered);
+    connect(pageAction(QWebEnginePage::ViewSource), &QAction::triggered, this, &WizWebEngineView::onViewSourceTriggered, Qt::UniqueConnection);
+    // save page action
+    disconnect(pageAction(QWebEnginePage::SavePage), &QAction::triggered, nullptr, nullptr);
+    connect(pageAction(QWebEnginePage::SavePage), &QAction::triggered, this, [=](){
+        QString fileName = QFileDialog::getSaveFileName(this, tr("Save Page"),
+            QDir::home().absoluteFilePath(page()->title() + ".mhtml"),
+            tr("MIME HTML (*.mht *.mhtml)"));
+        page()->save(fileName);
+    }, Qt::UniqueConnection);
     //
     menu->popup(event->globalPos());
 }

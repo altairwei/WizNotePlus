@@ -121,7 +121,7 @@ public:
     //
     void trySaveCurrentNote(std::function<void(const QVariant &)> callback);
     //
-    void startExternalEditor(QString cacheFileName, QString Name, QString ProgramFile, QString Arguments, int TextEditor, int UTF8Encoding, const WIZDOCUMENTDATAEX& noteData);
+    void startExternalEditor(QString cacheFileName, const WizExternalEditorData& editorData, const WIZDOCUMENTDATAEX& noteData);
 
 protected:
     bool eventFilter(QObject* watched, QEvent* event);
