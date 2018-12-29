@@ -311,14 +311,18 @@ void WizWebEngineView::openLinkInDefaultBrowser(QUrl url)
     QDesktopServices::openUrl(url);
 }
 
+QString WizWebEngineView::documentTitle()
+{
+    return title();
+}
+
 void WizWebEngineView::openDevTools()
 {
     if (!m_devToolsWindow)
     {
         m_devToolsWindow = new WizDevToolsDialog(this);
         // 设置外观
-        WizDocumentView* docView =  qobject_cast<WizDocumentView*>(this);
-        QString title = docView ? docView->note().strTitle : this->title();
+        QString title = documentTitle();
         m_devToolsWindow->setWindowTitle("DevTools - " + title);
         //
         m_devToolsWindow->web()->page()->setInspectedPage(this->page());

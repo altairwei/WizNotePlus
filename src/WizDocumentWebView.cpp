@@ -806,64 +806,10 @@ void WizDocumentWebView::loadDocumentToExternalEditor(const WIZDOCUMENTDATA &doc
     }
 }
 
-/* move these two function to WizMainWindow
-void WizDocumentWebView::startExternalEditor(QString cacheFileName, QString Name, QString ProgramFile,
-                                                        QString Arguments, int TextEditor, int UTF8Encoding)
+QString WizDocumentWebView::documentTitle()
 {
-    // 准备进程参数
-    //FIXME: split too many items
-    ProgramFile = "\"" + ProgramFile + "\"";
-    QString args = Arguments.arg("\"" + cacheFileName + "\"");
-    QString strCmd = ProgramFile + " " + args;
-    // 创建并开启进程
-    qInfo() << "Use external editor: " + Name << strCmd;
-    QProcess *extEditorProcess = new QProcess(this);
-    extEditorProcess->startDetached(strCmd);
-    // 设置文件监控器
-    QFileSystemWatcher* extFileWatcher = new QFileSystemWatcher(this);
-    extFileWatcher->addPath(cacheFileName);
-    //
-    connect(extFileWatcher, &QFileSystemWatcher::fileChanged, [=](const QString& fileName){
-        //QFileSystemWatcher* watcher = qobject_cast<QFileSystemWatcher*>(sender());
-        onWatchedFileChanged(fileName, TextEditor, UTF8Encoding);
-        // watch file again, in order to avoid some editor remove watched files.
-        if (extFileWatcher)
-        {
-            QTimer::singleShot(300, [=](){
-                extFileWatcher->addPath(fileName);
-            });
-        }
-    });
+    return view()->note().strTitle;
 }
-
-void WizDocumentWebView::onWatchedFileChanged(const QString& fileName, int TextEditor, int UTF8Encoding)
-{
-    bool isUTF8 = UTF8Encoding == 0 ? false : true;
-    bool isPlainText = TextEditor == 0 ? false : true;
-    QFileInfo* changedFileInfo = new QFileInfo(fileName);
-    // 编辑器保存时首先删除文件再添加文件所有会收到两个信号，通过文件大小来判断写入信号
-    if ( changedFileInfo->size() == 0 )
-        return;
-    qDebug() << tr("Updating file: ") + fileName << changedFileInfo->size()
-             << changedFileInfo->lastModified() << changedFileInfo->lastRead();
-    //
-    WIZDOCUMENTDATA docData;
-    WizDatabase& db = m_dbMgr.db(view()->note().strKbGUID);
-    if (!db.documentFromGuid(view()->note().strGUID, docData))
-        return;
-    QString strHtml;
-    if (isPlainText) {
-        // Plain Text
-        strHtml = WizFileImporter::loadTextFileToHtml(fileName, isUTF8);
-    } else {
-        strHtml = WizFileImporter::loadHtmlFileToHtml(fileName, isUTF8);
-    }
-    //FIXME: Windows client has encoding problem.
-    QString indexFileName = Utils::WizMisc::extractFilePath(fileName);
-    db.updateDocumentData(docData, strHtml, indexFileName, 0);
-    //m_docSaverThread->save(docData, strHtml, fileName, 0); // cannot immediately update document view
-}
-*/
 
 void WizDocumentWebView::queryHtmlNodeText(QString& strHtml, QString strSelector)
 {

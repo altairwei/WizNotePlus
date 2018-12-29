@@ -68,6 +68,9 @@ public slots:
     int createTab(WizDocumentView *docView);
     int createTab(const QUrl &url);
     void closeTab(int index);
+    void closeOtherTabs(int index);
+    void closeLeftTabs(int index);
+    void closeRightTabs(int index);
     void lockTab(int index);
     void unlockTab(int index);
     void onViewNoteRequested(WizDocumentView* view, const WIZDOCUMENTDATAEX& doc, bool forceEditing);

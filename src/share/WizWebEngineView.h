@@ -45,6 +45,8 @@ public:
     void addToJavaScriptWindowObject(QString name, QObject* obj);
     void closeAll();
     QMenu* createStandardContextMenu();
+    QString documentTitle();
+
 public Q_SLOTS:
     void innerLoadFinished(bool);
     void openLinkInDefaultBrowser(QUrl url);

@@ -167,15 +167,35 @@ void WizMainTabWidget::handleContextMenuRequested(const QPoint &pos)
     int index = tabBar()->tabAt(pos);
     TabStatusData status = tabBar()->tabData(index).toMap();
     bool isLocked = status["Locked"].toBool();
-    // ensure click pos is in tab.
+    // ensure click pos is in tab not tabbar
     if (index != -1) {
+        // close actions
+        QAction *action = menu.addAction(tr("&Close Tab"));
+        action->setShortcut(QKeySequence::Close);
+        connect(action, &QAction::triggered, this, [this,index]() {
+            closeTab(index);
+        });
+        action = menu.addAction(tr("Close &Other Tabs"));
+        connect(action, &QAction::triggered, this, [this,index]() {
+            closeOtherTabs(index);
+        });
+        action = menu.addAction(tr("Close Left Tabs"));
+        connect(action, &QAction::triggered, this, [this,index]() {
+            closeLeftTabs(index);
+        });
+        action = menu.addAction(tr("Close Right Tabs"));
+        connect(action, &QAction::triggered, this, [this,index]() {
+            closeRightTabs(index);
+        });
+        menu.addSeparator();
+        // lock action
         if (isLocked) {
-            QAction* action = menu.addAction(tr("Unlock the tab"));
+            QAction* action = menu.addAction(tr("Unlock The Tab"));
             connect(action, &QAction::triggered, this, [this, index](){
                this->unlockTab(index);
             });
         } else {
-            QAction *action = menu.addAction(tr("Lock the tab"));
+            QAction *action = menu.addAction(tr("Lock The Tab"));
             connect(action, &QAction::triggered, this, [this, index](){
                this->lockTab(index);
             });
@@ -290,6 +310,26 @@ void WizMainTabWidget::closeTab(int index)
     }
     //
     p->deleteLater();
+}
+
+void WizMainTabWidget::closeOtherTabs(int index)
+{
+    for (int i = count() - 1; i > index; --i)
+        closeTab(i);
+    for (int i = index - 1; i >= 0; --i)
+        closeTab(i);
+}
+
+void WizMainTabWidget::closeLeftTabs(int index)
+{
+    for (int i = index - 1; i >= 0; --i)
+        closeTab(i);
+}
+
+void WizMainTabWidget::closeRightTabs(int index)
+{
+    for (int i = count() - 1; i > index; --i)
+        closeTab(i);
 }
 
 void WizMainTabWidget::lockTab(int index)
