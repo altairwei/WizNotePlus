@@ -447,10 +447,9 @@ void WizMainWindow::trySaveCurrentNote(std::function<void(const QVariant &)> cal
     WizDocumentView* curDocView = qobject_cast<WizDocumentView*>(m_mainTab->currentWidget());
     if (curDocView && curDocView->noteLoaded()) {
         curDocView->web()->trySaveDocument(curDocView->note(), false, callback);
-        return;
+    } else {
+        callback(QVariant(true));
     }
-    //
-    callback(QVariant(true));
 }
 
 /**
@@ -3846,6 +3845,11 @@ WizDocumentView* WizMainWindow::currentDocumentView()
     return qobject_cast<WizDocumentView*>(m_mainTab->currentWidget());
 }
 
+WizMainTabWidget* WizMainWindow::mainTabView()
+{
+    return m_mainTab;
+}
+
 /**
  * @brief 创建文档视图并绑定各种信号
  * @return
@@ -4753,19 +4757,22 @@ void WizMainWindow::downloadAttachment(const WIZDOCUMENTATTACHMENTDATA& attachme
 
 void WizMainWindow::viewNoteInSeparateWindow(const WIZDOCUMENTDATA& data)
 {
-    //FIXME: non-docuView causes break!
     WizDocumentView* docView = currentDocumentView();
-    if (!docView)
-        return;
-    docView->web()->trySaveDocument(docView->note(), false, [=](const QVariant&){
+    if (docView && docView->note().strGUID == data.strGUID) {
+        docView->web()->trySaveDocument(docView->note(), false, [=](const QVariant&){
 
-        docView->setEditorMode(modeReader);
-        //
+            docView->setEditorMode(modeReader);
+            //
+            m_singleViewDelegate->viewDocument(data);
+            // update dock menu
+            resetDockMenu();
+            //
+        });
+    } else {
         m_singleViewDelegate->viewDocument(data);
-        // update dock menu
         resetDockMenu();
-        //
-    });
+    }
+
 }
 
 void WizMainWindow::viewCurrentNoteInSeparateWindow()

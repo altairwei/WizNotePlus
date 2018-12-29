@@ -293,6 +293,9 @@ public:
 
     void createNoteByTemplateCore(const TemplateData& tmplData);
 
+    //
+    WizMainTabWidget* mainTabView();
+
 signals:
     void documentsViewTypeChanged(int);
     void documentsSortTypeChanged(int);
