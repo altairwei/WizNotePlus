@@ -2070,7 +2070,8 @@ void WizMainWindow::initToolBar()
     //
     m_searchWidget = m_toolBar->getSearchWidget();
     m_searchWidget->setUserSettings(m_settings);
-    m_searchWidget->setPopupWgtOffset(m_searchWidget->sizeHint().width(), QSize(isHighPix ? 217 : 230, 0));
+    //FIXME: should not hard code the Offset.
+    m_searchWidget->setPopupWgtOffset(m_searchWidget->sizeHint().width(), QSize(m_userInfoWidget->textWidth() + 160, 0));
 
 #else
     layoutTitleBar();
