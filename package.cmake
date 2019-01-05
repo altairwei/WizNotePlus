@@ -375,7 +375,6 @@ if(GENERATE_INSTALL_DIR AND GENERATE_PACKAGE)
     if(UNIX)
         if(APPLE)
             # MacOS platform
-
             find_file(create_dmg "create-dmg" "${WIZNOTE_SOURCE_DIR}/external/create-dmg")
             if (NOT create_dmg)
                 message(STATUS "Downloading dmg package tool...")
@@ -385,7 +384,13 @@ if(GENERATE_INSTALL_DIR AND GENERATE_PACKAGE)
                 if(NOT GIT_SUBMOD_RESULT EQUAL "0")
                     message(FATAL_ERROR "git submodule update --init failed with ${GIT_SUBMOD_RESULT}, please checkout submodules")
                 endif()
+                set(create_dmg "${WIZNOTE_SOURCE_DIR}/external/create-dmg/create-dmg")
             endif()
+
+            # change Info.plist version.
+            file(READ ${WIZNOTE_INSTALL_PREFIX}/Contents/Info.plist info_plist ENCODING UTF-8)
+            string(REGEX REPLACE "<string>2.7.0</string>" "<string>${WIZNOTEPLUS_VERSION}</string>" info_plist "${info_plist}")
+            file(WRITE ${WIZNOTE_INSTALL_PREFIX}/Contents/Info.plist "${info_plist}")
 
             # deploy 3rdpaty libraries
             message("\nStart deploy WizNotePlus project:\n")

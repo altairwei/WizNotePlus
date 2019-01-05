@@ -102,7 +102,7 @@ list(REMOVE_ITEM OpenSSL_LIBRARIES dl)
 if(NOT APPLE)
     install(FILES ${OpenSSL_LIBRARIES} DESTINATION lib)
 else()
-    install(FILES ${OpenSSL_LIBRARIES} DESTINATION WizNote/Contents/MacOS)
+    install(FILES ${OpenSSL_LIBRARIES} DESTINATION Contents/MacOS)
 endif()
 
 # set output path
