@@ -95,7 +95,7 @@ public:
     WizDocumentWebViewSaverThread(WizDatabaseManager& dbMgr, QObject* parent);
 
     void save(const WIZDOCUMENTDATA& doc, const QString& strHtml,
-              const QString& strHtmlFile, int nFlags);
+              const QString& strHtmlFile, int nFlags, bool bNotify = false);
 
     //
     void waitForDone();
@@ -107,6 +107,7 @@ private:
         QString html;
         QString htmlFile;
         int flags;
+        bool notify;
     };
     //
     std::vector<SAVEDATA> m_arrayData;
@@ -270,6 +271,9 @@ private:
 
     void createReadModeContextMenu(QContextMenuEvent *event);
 
+    void addExtEditorTask(const WizExternalEditorData& data);
+    void clearExtEditorTask();
+
 protected:
     virtual void keyPressEvent(QKeyEvent* event);
     virtual void mousePressEvent(QMouseEvent* event);
@@ -311,6 +315,8 @@ private:
 
     WizSearchReplaceWidget* m_searchReplaceWidget;
     IWizHtmlEditorApp* m_htmlEditorApp;
+
+    QList<WizExternalEditorData> m_extEditorTask;
 
 public:
     void onNoteLoadFinished(); // editor callback

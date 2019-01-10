@@ -70,6 +70,7 @@ class WizMessageSelector;
 class WizMessageListTitleBar;
 
 class WizDocumentView;
+class WizDocumentWebViewSaverThread;
 class WizSingleDocumentViewDelegate;
 class QWebEngineView;
 
@@ -148,6 +149,7 @@ private:
     WizUserSettings* m_settings;
     WizKMSyncThread* m_syncFull;
     WizKMSyncThread* m_syncQuick;
+    WizDocumentWebViewSaverThread* m_watchedDocSaver;
     WizUserVerifyDialog* m_userVerifyDialog;
     WizConsoleDialog* m_console;
     WizUpgradeChecker* m_upgrade;
@@ -230,7 +232,7 @@ private:
     IWizExplorerApp* m_IWizExplorerApp;
     //
     QFileSystemWatcher* m_extFileWatcher;
-    QMap<QString, WIZDOCUMENTDATAEX> m_watchedFileData;
+    QMap<QString, WizExternalEditTask> m_watchedFileData;
 
 private:
     void initQuitHandler();
@@ -255,7 +257,7 @@ private:
     //
     void promptServiceExpr(bool free, WIZGROUPDATA group);
     //
-    void saveWatchedFile(const QString& path, int TextEditor, int UTF8Encoding);
+    void saveWatchedFile(const QString& path);
 
 public:
     // CWizDocument passthrough methods
@@ -265,6 +267,7 @@ public:
     WizDocumentListView* documentList() const { return m_documents; }
     WizKMSyncThread* fullSync() const { return m_syncFull; }
     WizKMSyncThread* quickSync() const { return m_syncQuick; }
+    WizDocumentWebViewSaverThread* watchedDocSaver() { return m_watchedDocSaver; }
     void quickSyncKb(const QString& kbGuid);
     void setNeedResetGroups();
 
@@ -485,6 +488,8 @@ public Q_SLOTS:
 
     void setCurrentDocumentView(WizDocumentView* newDocView);
     void on_mainTabWidget_currentChanged(int pageIndex);
+
+    void onWatchedDocumentChanged(const QString& fileName);
 
 public:
     // WizExplorerApp pointer

@@ -763,6 +763,12 @@ struct WizExternalEditorData
     int UTF8Encoding;
 };
 
+struct WizExternalEditTask
+{
+    WizExternalEditorData editorData;
+    WIZDOCUMENTDATAEX docData;
+};
+
 typedef std::deque<WIZDOCUMENTLOCATIONDATA> CDocumentLocationArray;
 
 

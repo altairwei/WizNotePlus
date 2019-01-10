@@ -277,6 +277,12 @@ WizMainWindow::WizMainWindow(WizDatabaseManager& dbMgr, QWidget *parent)
         syncMessageTimer->setInterval(3 * 1000 * 60);
         syncMessageTimer->start(3 * 1000 * 60);
     }
+
+    // initialize document saver thread
+    m_watchedDocSaver = new WizDocumentWebViewSaverThread(dbMgr, this);
+    //
+    connect(m_extFileWatcher, &QFileSystemWatcher::fileChanged, 
+                    this, &WizMainWindow::onWatchedDocumentChanged);
 }
 
 /**
@@ -385,7 +391,11 @@ void WizMainWindow::cleanOnQuit()
     processAllDocumentViews([=](WizDocumentView* docView){
         docView->waitForDone();
     });
-
+    // Stop m_docSaver thread
+    auto saver = m_watchedDocSaver;
+    m_watchedDocSaver = nullptr;
+    saver->waitForDone();
+    //
     if (m_mobileFileReceiver)
     {
         m_mobileFileReceiver->waitForDone();
@@ -474,18 +484,22 @@ void WizMainWindow::startExternalEditor(QString cacheFileName, const WizExternal
     extEditorProcess->startDetached(strCmd);
     // 设置文件监控器
     m_extFileWatcher->addPath(cacheFileName);
-    m_watchedFileData.insert(noteData.strGUID, noteData);
-    //
-    connect(m_extFileWatcher, &QFileSystemWatcher::fileChanged, [=](const QString& fileName){
-        saveWatchedFile(fileName, editorData.TextEditor, editorData.UTF8Encoding);
-        // watch file again, in order to avoid some editor from removing watched files.
-        if (m_extFileWatcher)
-        {
-            QTimer::singleShot(300, [=](){
-                m_extFileWatcher->addPath(fileName);
-            });
-        }
-    });
+    WizExternalEditTask task = {
+        editorData, noteData
+    };
+    m_watchedFileData.insert(noteData.strGUID, task);
+}
+
+void WizMainWindow::onWatchedDocumentChanged(const QString& fileName)
+{
+    saveWatchedFile(fileName);
+    // watch file again, in order to avoid some editor from removing watched files.
+    if (m_extFileWatcher)
+    {
+        QTimer::singleShot(300, [=](){
+            m_extFileWatcher->addPath(fileName);
+        });
+    }
 }
 
 /**
@@ -494,23 +508,20 @@ void WizMainWindow::startExternalEditor(QString cacheFileName, const WizExternal
  * @param TextEditor
  * @param UTF8Encoding
  */
-void WizMainWindow::saveWatchedFile(const QString& fileName, int TextEditor, int UTF8Encoding)
+void WizMainWindow::saveWatchedFile(const QString& fileName)
 {
-    bool isUTF8 = UTF8Encoding == 0 ? false : true;
-    bool isPlainText = TextEditor == 0 ? false : true;
     QFileInfo* changedFileInfo = new QFileInfo(fileName);
     // 编辑器保存时首先删除文件再添加文件所有会收到两个信号，通过文件大小来判断写入信号
     if ( changedFileInfo->size() == 0 )
         return;
     qDebug() << tr("Updating file: ") + fileName << changedFileInfo->size()
              << changedFileInfo->lastModified() << changedFileInfo->lastRead();
-    //
+    // Get note's data
     QString noteGUID = changedFileInfo->absoluteDir().dirName();
-    const WIZDOCUMENTDATAEX& noteData = m_watchedFileData[noteGUID];
-    WIZDOCUMENTDATA docData;
-    WizDatabase& db = m_dbMgr.db(noteData.strKbGUID);
-    if (!db.documentFromGuid(noteGUID, docData))
-        return;
+    const WizExternalEditTask& task = m_watchedFileData[noteGUID];
+    bool isUTF8 = task.editorData.UTF8Encoding == 0 ? false : true;
+    bool isPlainText = task.editorData.TextEditor == 0 ? false : true;
+    // Get modified document's text
     QString strHtml;
     if (isPlainText) {
         // Plain Text
@@ -518,9 +529,11 @@ void WizMainWindow::saveWatchedFile(const QString& fileName, int TextEditor, int
     } else {
         strHtml = WizFileImporter::loadHtmlFileToHtml(fileName, isUTF8);
     }
+    // Get document's file name
     //FIXME: Windows client has encoding problem.
     QString indexFileName = Utils::WizMisc::extractFilePath(fileName);
-    db.updateDocumentData(docData, strHtml, indexFileName, 0);
+    // Start saver thread
+    m_watchedDocSaver->save(task.docData, strHtml, indexFileName, 0, true);
 }
 
 void WizMainWindow::closeEvent(QCloseEvent* event)
