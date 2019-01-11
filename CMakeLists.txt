@@ -24,7 +24,7 @@ option(CONAN_INSTALL_MANUALLY "Run Conan install command manually." OFF)
 # Set default build type to Release
 if(NOT CMAKE_BUILD_TYPE)
     set(CMAKE_BUILD_TYPE Release CACHE STRING
-      "Choose the type of build, options are: None Debug Release RelWithDebInfo MinSizeRel."
+      "Choose the type of build, options are: Debug Release."
       FORCE)
 endif()
 

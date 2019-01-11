@@ -411,13 +411,13 @@ void WizDocumentWebView::createReadModeContextMenu(QContextMenuEvent *event)
     const QList<QAction *> actions = menu->actions();
     // remove back & forward actions
     auto backAction = std::find_if(actions.cbegin(), actions.cend(), [=](QAction * ac){
-        return (ac->text() == "&Back" or ac->iconText() == "Back");
+        return (ac->text() == "&Back" || ac->iconText() == "Back");
     });
     if (backAction != actions.cend()) {
         menu->removeAction(*backAction);
     }
     auto forwardAction = std::find_if(actions.cbegin(), actions.cend(), [=](QAction * ac){
-        return (ac->text() == "&Forward" or ac->iconText() == "Forward");
+        return (ac->text() == "&Forward" || ac->iconText() == "Forward");
     });
     if (forwardAction != actions.cend()) {
         menu->removeAction(*forwardAction);
@@ -448,7 +448,7 @@ void WizDocumentWebView::createReadModeContextMenu(QContextMenuEvent *event)
     }
     // reload
     auto reloadAction = std::find_if(actions.cbegin(), actions.cend(), [=](QAction * ac){
-        return (ac->text() == "&Reload" or ac->iconText() == "Reload");
+        return (ac->text() == "&Reload" || ac->iconText() == "Reload");
     });
     if (reloadAction != actions.cend()) {
         //disconnect(*reloadAction, &QAction::triggered, nullptr, nullptr);
@@ -691,6 +691,9 @@ void WizDocumentWebView::onDocumentReady(const QString kbGUID, const QString str
 
     //
     loadDocumentInWeb(editorMode);
+    //
+    if (!m_extEditorTask.isEmpty())
+        loadDocumentToExternalEditor(doc, m_extEditorTask.first());
 }
 
 void WizDocumentWebView::onDocumentSaved(const QString kbGUID, const QString strGUID, bool ok)
@@ -758,6 +761,16 @@ bool WizDocumentWebView::isInSeperateWindow() const
     return m_bInSeperateWindow;
 }
 
+void WizDocumentWebView::addExtEditorTask(const WizExternalEditorData& data)
+{
+    m_extEditorTask.append(data);
+}
+
+void WizDocumentWebView::clearExtEditorTask()
+{
+    m_extEditorTask.clear();
+}
+
 /**
  * @brief 在外置编辑器中浏览和编辑文档
  *
@@ -770,10 +783,10 @@ void WizDocumentWebView::viewDocumentInExternalEditor(const WizExternalEditorDat
     WizDatabase& db = m_dbMgr.db(view()->note().strKbGUID);
     if (!db.documentFromGuid(view()->note().strGUID, docData))
         return;
-    //trySaveDocument(docData, false, [this, docData, editorData](const QVariant&){
-        //reloadNoteData(docData);
-        loadDocumentToExternalEditor(docData, editorData);
-    //});
+    trySaveDocument(docData, false, [this, docData, editorData](const QVariant&){
+        addExtEditorTask(editorData);
+        reloadNoteData(docData);
+    });
 }
 
 void WizDocumentWebView::loadDocumentToExternalEditor(const WIZDOCUMENTDATA &docData, const WizExternalEditorData &editorData) {
@@ -791,7 +804,6 @@ void WizDocumentWebView::loadDocumentToExternalEditor(const WIZDOCUMENTDATA &doc
         saveAsPlainText(cacheFileName, [=](QString fileName){
             WizGlobal::mainWindow()->startExternalEditor(fileName, editorData, view()->note());
         });
-        return;
     } else if (editorData.TextEditor == 0) {
         cacheFileName += ".html";
         if (noteTempDir.exists(cacheFileName))
@@ -800,10 +812,9 @@ void WizDocumentWebView::loadDocumentToExternalEditor(const WIZDOCUMENTDATA &doc
         saveAsRenderedHtml(cacheFileName, [=](QString fileName){
             WizGlobal::mainWindow()->startExternalEditor(fileName, editorData, view()->note());
         });
-    } else {
-        //
-        return;
     }
+    //
+    clearExtEditorTask();
 }
 
 QString WizDocumentWebView::documentTitle()
@@ -2662,18 +2673,19 @@ void WizDocumentWebViewLoaderThread::waitForDone()
 
 void WizDocumentWebViewLoaderThread::run()
 {
-    //FIXME:
+    //FIXME: Document needs to be loaded once at least.
+    //  So, two conditional m_stop-return within the loop were commented.
     while (!m_stop)
     {
-        if (m_stop)
-            return;
+        //if (m_stop)
+        //    return;
         //
         QString kbGuid;
         QString docGuid;
         WizEditorMode editorMode = modeReader;
         peekCurrentDocGuid(kbGuid, docGuid, editorMode);
-        if (m_stop)
-            return;
+        //if (m_stop)
+        //    return;
         //
         if (docGuid.isEmpty())
             continue;
@@ -2758,13 +2770,14 @@ WizDocumentWebViewSaverThread::WizDocumentWebViewSaverThread(WizDatabaseManager 
 }
 
 void WizDocumentWebViewSaverThread::save(const WIZDOCUMENTDATA& doc, const QString& strHtml,
-                                          const QString& strHtmlFile, int nFlags)
+                                          const QString& strHtmlFile, int nFlags, bool bNotify /*= fasle*/)
 {
     SAVEDATA data;
     data.doc = doc;
     data.html = strHtml;
     data.htmlFile = strHtmlFile;
     data.flags = nFlags;
+    data.notify = bNotify;
     //
     QMutexLocker locker(&m_mutex);
     Q_UNUSED(locker);
@@ -2861,8 +2874,7 @@ void WizDocumentWebViewSaverThread::run()
         //
         qDebug() << "Saving note: " << doc.strTitle;
 
-        bool notify = false;    //don't notify
-        bool ok = db.updateDocumentData(doc, data.html, data.htmlFile, data.flags, notify);
+        bool ok = db.updateDocumentData(doc, data.html, data.htmlFile, data.flags, data.notify);
 
         //
         if (ok)
