@@ -146,7 +146,7 @@ WizMainTabWidget::WizMainTabWidget(WizExplorerApp& app, QWidget *parent)
     //p->setText("Home");
     //setCornerWidget(p, Qt::TopLeftCorner);
     // 处理标签切换信号
-    //connect(this, &QTabWidget::currentChanged, this, &TabWidget::handleCurrentChanged);
+    connect(this, &QTabWidget::currentChanged, this, &WizMainTabWidget::handleCurrentChanged);
 }
 
 void WizMainTabWidget::handleCurrentChanged(int index)
@@ -154,7 +154,31 @@ void WizMainTabWidget::handleCurrentChanged(int index)
     // index 是新的当前标签
     // 发送各种信号
     // WizMainWindow 的m_doc需要更新
-    Q_UNUSED(index);
+    if (index != -1) {
+        WizDocumentWebView* docView = qobject_cast<WizDocumentWebView*>(getWebView(index));
+        if (docView) {
+            docView->setFocus();
+            docView->editorFocus();
+        }
+            
+        // emit titleChanged(view->title());
+        // emit loadProgress(view->loadProgress());
+        // emit urlChanged(view->url());
+        // emit favIconChanged(view->favIcon());
+        // emit webActionEnabledChanged(QWebEnginePage::Back, view->isWebActionEnabled(QWebEnginePage::Back));
+        // emit webActionEnabledChanged(QWebEnginePage::Forward, view->isWebActionEnabled(QWebEnginePage::Forward));
+        // emit webActionEnabledChanged(QWebEnginePage::Stop, view->isWebActionEnabled(QWebEnginePage::Stop));
+        // emit webActionEnabledChanged(QWebEnginePage::Reload,view->isWebActionEnabled(QWebEnginePage::Reload));
+    } else {
+        // emit titleChanged(QString());
+        // emit loadProgress(0);
+        // emit urlChanged(QUrl());
+        // emit favIconChanged(QIcon());
+        // emit webActionEnabledChanged(QWebEnginePage::Back, false);
+        // emit webActionEnabledChanged(QWebEnginePage::Forward, false);
+        // emit webActionEnabledChanged(QWebEnginePage::Stop, false);
+        // emit webActionEnabledChanged(QWebEnginePage::Reload, true);
+    }
 }
 
 /**

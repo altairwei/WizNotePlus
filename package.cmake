@@ -337,21 +337,19 @@ if(GENERATE_INSTALL_DIR)
 
             # copy fcitx-qt5 library
             if(USE_FCITX)
-                find_file(fcitx-qt5-lib libfcitxplatforminputcontextplugin.so 
+                set(fcitx_lib_paths
                     /usr/lib/x86_64-linux-gnu/qt5/plugins/platforminputcontexts/
                     /usr/lib64/qt5/plugins/platforminputcontexts/
                     /usr/lib/qt/plugins/platforminputcontexts/
                 )
-                find_file(fcitx5-qt5-lib libfcitx5platforminputcontextplugin.so 
-                    /usr/lib/x86_64-linux-gnu/qt5/plugins/platforminputcontexts/
-                    /usr/lib64/qt5/plugins/platforminputcontexts/
-                    /usr/lib/qt/plugins/platforminputcontexts/
-                )
-                if(NOT fcitx-qt5-lib AND NOT fcitx5-qt5-lib)
+                find_file(fcitx_qt5_lib libfcitxplatforminputcontextplugin.so ${fcitx_lib_paths})
+                find_file(fcitx5_qt5_lib libfcitx5platforminputcontextplugin.so ${fcitx_lib_paths})
+
+                if(NOT fcitx_qt5_lib AND NOT fcitx5_qt5_lib)
                     if(FCITX_QT5_LIB)
-                        set(fcitx-qt5-lib ${FCITX_QT5_LIB})
+                        set(fcitx_qt5_lib ${FCITX_QT5_LIB})
                     elseif(FCITX5_QT5_LIB)
-                        set(fcitx5-qt5-lib ${FCITX5_QT5_LIB})
+                        set(fcitx5_qt5_lib ${FCITX5_QT5_LIB})
                     else()
                         message(FATAL_ERROR "Fail to find fcitx-qt5 and fcitx5-qt5!"
                         " Please specify the path of fcitx-qt5 or fcitx5-qt5 library"
@@ -361,18 +359,18 @@ if(GENERATE_INSTALL_DIR)
                     endif()
                 endif()
 
-
                 file(MAKE_DIRECTORY 
                     ${WIZNOTE_PACKAGE_DIR}/WizNote/plugins/platforminputcontexts
                 )
-                if(fcitx-qt5-lib)
-                    file(COPY ${fcitx-qt5-lib} 
-                        DESTINATION ${WIZNOTE_PACKAGE_DIR}/WizNote/plugins/platforminputcontexts)
-                    endif()
-                if(fcitx5-qt5-lib)
-                    file(COPY ${fcitx5-qt5-lib} 
+                if(fcitx_qt5_lib)
+                    file(COPY ${fcitx_qt5_lib} 
                         DESTINATION ${WIZNOTE_PACKAGE_DIR}/WizNote/plugins/platforminputcontexts)
                 endif()
+                if(fcitx5_qt5_lib)
+                    file(COPY ${fcitx5_qt5_lib}
+                        DESTINATION ${WIZNOTE_PACKAGE_DIR}/WizNote/plugins/platforminputcontexts)
+                endif()
+                
             endif(USE_FCITX)
         endif(APPLE)
     elseif(WIN32)

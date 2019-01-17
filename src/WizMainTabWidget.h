@@ -75,6 +75,7 @@ public slots:
     void unlockTab(int index);
     void onViewNoteRequested(WizDocumentView* view, const WIZDOCUMENTDATAEX& doc, bool forceEditing);
     void on_document_deleted(const WIZDOCUMENTDATA&);
+
 private:
     void setupView(WizWebEngineView* view);
     void setupWebsiteView(WizWebsiteView *websiteView);

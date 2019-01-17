@@ -4217,12 +4217,14 @@ void WizMainWindow::reconnectServer()
 void WizMainWindow::setFocusForNewNote(WIZDOCUMENTDATA doc)
 {
     //FIXME: 因为当前标签非文档视图，引起空指针错误
-    //WizDocumentView* docView = currentDocumentView();
     m_documentForEditing = doc;
     m_documents->addAndSelectDocument(doc);
     m_documents->clearFocus();
-    //docView->web()->setFocus(Qt::MouseFocusReason);
-    //docView->web()->editorFocus();
+    WizDocumentView* docView = currentDocumentView();
+    if (docView) {
+        docView->web()->setFocus(Qt::MouseFocusReason);
+        docView->web()->editorFocus();
+    };
 }
 
 /**

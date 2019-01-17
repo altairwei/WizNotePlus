@@ -195,11 +195,23 @@ WizDocumentWebView::WizDocumentWebView(WizExplorerApp& app, QWidget* parent)
         profile->setSpellCheckEnabled(true);
         profile->setSpellCheckLanguages({"en-US"});
     }
+    //
+    initEditorActions();
 }
 
 WizDocumentWebView::~WizDocumentWebView()
 {
 }
+
+void WizDocumentWebView::initEditorActions()
+{
+    // Add "Save Note" action.
+    QAction* action = new QAction(tr("Save Note"), this);
+    action->setShortcut(QKeySequence::Save);
+    connect(action, &QAction::triggered, this, &WizDocumentWebView::onActionSaveTriggered);
+    addAction(action);
+}
+
 void WizDocumentWebView::waitForDone()
 {
     if (m_docLoadThread) {
@@ -286,8 +298,22 @@ void WizDocumentWebView::inputMethodEvent(QInputMethodEvent* event)
 #endif // Q_OS_MAC
 }
 
+/**
+ * @brief Save current note when action_save triggered.
+ * 
+ */
+void WizDocumentWebView::onActionSaveTriggered()
+{
+    trySaveDocument(view()->note(), false, [=](const QVariant&){});
+}
+
 void WizDocumentWebView::keyPressEvent(QKeyEvent* event)
 {
+    // WARNING!!
+    // Because of unknown bugs, QKeyEvent cannot be passed to the QWebEngineView 
+    // which is child of QTabWidget. This problem also appeared in official example:
+    // Qt5.11.1/Examples/Qt-5.11.1/webenginewidgets/simplebrowser
+
     // special cases process
     if (event->key() == Qt::Key_Escape)
     {

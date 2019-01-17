@@ -140,6 +140,7 @@ public:
 
 Q_SIGNALS:
     void actionTriggered(WebAction act);
+    
 private:
     WizDocumentWebView* m_engineView;
 };
@@ -254,6 +255,8 @@ public:
     void saveCurrentNote();
 
 private:
+    void initEditorActions();
+    //
     void loadDocumentInWeb(WizEditorMode editorMode);
     //
     void getAllEditorScriptAndStypeFileName(std::map<QString, QString>& arrayFile);
@@ -275,15 +278,15 @@ private:
     void clearExtEditorTask();
 
 protected:
-    virtual void keyPressEvent(QKeyEvent* event);
-    virtual void mousePressEvent(QMouseEvent* event);
-    virtual void inputMethodEvent(QInputMethodEvent* event);
-    virtual void focusInEvent(QFocusEvent* event);
-    virtual void focusOutEvent(QFocusEvent* event);
-    virtual void contextMenuEvent(QContextMenuEvent* event);
-    virtual void dragEnterEvent(QDragEnterEvent* event);
-    virtual void dragMoveEvent(QDragMoveEvent* event);
-    virtual void dropEvent(QDropEvent* event);
+    virtual void keyPressEvent(QKeyEvent* event) override;
+    virtual void mousePressEvent(QMouseEvent* event) override;
+    virtual void inputMethodEvent(QInputMethodEvent* event) override;
+    virtual void focusInEvent(QFocusEvent* event) override;
+    virtual void focusOutEvent(QFocusEvent* event) override;
+    virtual void contextMenuEvent(QContextMenuEvent* event) override;
+    virtual void dragEnterEvent(QDragEnterEvent* event) override;
+    virtual void dragMoveEvent(QDragMoveEvent* event) override;
+    virtual void dropEvent(QDropEvent* event) override;
 
 private:
     WizExplorerApp& m_app;
@@ -340,6 +343,7 @@ public Q_SLOTS:
 
     //
     void onViewSourceTriggered();
+    void onActionSaveTriggered();
 
     //void onWatchedFileChanged(const QString& path, int TextEditor, int UTF8Encoding);
     /* editor API */
