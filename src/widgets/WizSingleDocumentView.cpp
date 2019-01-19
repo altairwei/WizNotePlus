@@ -12,7 +12,7 @@
 #include "WizDocumentView.h"
 #include "WizDocumentWebView.h"
 #include "WizMainWindow.h"
-#include "WizMainTabWidget.h"
+#include "WizMainTabBrowser.h"
 #include "WizEditorToolBar.h"
 #include "WizDocumentWebEngine.h"
 

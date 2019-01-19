@@ -1,4 +1,4 @@
-﻿#include "WizMainTabWidget.h"
+﻿#include "WizMainTabBrowser.h"
 
 #include <QWidget>
 #include <QMessageBox>
@@ -23,7 +23,7 @@
 #include "WizWebsiteView.h"
 
 //-------------------------------------------------------------------
-// class WizMainTabWidget
+// class WizMainTabBrowser
 //-------------------------------------------------------------------
 
 TabButton::TabButton(QWidget *parent)
@@ -114,10 +114,10 @@ void TabButton::drawTabBtn(const QStyleOptionButton *opt, QPainter *p, const QWi
 }
 
 //-------------------------------------------------------------------
-// class WizMainTabWidget
+// class WizMainTabBrowser
 //-------------------------------------------------------------------
 
-WizMainTabWidget::WizMainTabWidget(WizExplorerApp& app, QWidget *parent)
+WizMainTabBrowser::WizMainTabBrowser(WizExplorerApp& app, QWidget *parent)
     : QTabWidget(parent)
     , m_app(app)
     , m_dbMgr(app.databaseManager())
@@ -136,9 +136,9 @@ WizMainTabWidget::WizMainTabWidget(WizExplorerApp& app, QWidget *parent)
     // 而非documentMode下，这些底线是tab widget frame。
     //
     connect(tabBar, &QTabBar::customContextMenuRequested,
-                    this, &WizMainTabWidget::handleContextMenuRequested);
-    connect(tabBar, &QTabBar::tabCloseRequested, this, &WizMainTabWidget::closeTab);
-    connect(&m_dbMgr, &WizDatabaseManager::documentDeleted, this, &WizMainTabWidget::on_document_deleted);
+                    this, &WizMainTabBrowser::handleContextMenuRequested);
+    connect(tabBar, &QTabBar::tabCloseRequested, this, &WizMainTabBrowser::closeTab);
+    connect(&m_dbMgr, &WizDatabaseManager::documentDeleted, this, &WizMainTabBrowser::on_document_deleted);
     //
     setDocumentMode(true); // 不渲染tab widget frame
     setElideMode(Qt::ElideRight);
@@ -146,10 +146,10 @@ WizMainTabWidget::WizMainTabWidget(WizExplorerApp& app, QWidget *parent)
     //p->setText("Home");
     //setCornerWidget(p, Qt::TopLeftCorner);
     // 处理标签切换信号
-    connect(this, &QTabWidget::currentChanged, this, &WizMainTabWidget::handleCurrentChanged);
+    connect(this, &QTabWidget::currentChanged, this, &WizMainTabBrowser::handleCurrentChanged);
 }
 
-void WizMainTabWidget::handleCurrentChanged(int index)
+void WizMainTabBrowser::handleCurrentChanged(int index)
 {
     // index 是新的当前标签
     // 发送各种信号
@@ -158,7 +158,6 @@ void WizMainTabWidget::handleCurrentChanged(int index)
         WizDocumentWebView* docView = qobject_cast<WizDocumentWebView*>(getWebView(index));
         if (docView) {
             docView->setFocus();
-            docView->editorFocus();
         }
             
         // emit titleChanged(view->title());
@@ -185,7 +184,7 @@ void WizMainTabWidget::handleCurrentChanged(int index)
  * @brief 选项卡右键弹出菜单
  * @param pos
  */
-void WizMainTabWidget::handleContextMenuRequested(const QPoint &pos)
+void WizMainTabBrowser::handleContextMenuRequested(const QPoint &pos)
 {
     QMenu menu;
     int index = tabBar()->tabAt(pos);
@@ -234,7 +233,7 @@ void WizMainTabWidget::handleContextMenuRequested(const QPoint &pos)
  * @param doc 文档数据
  * @param forceEditing 是否强制编辑
  */
-void WizMainTabWidget::onViewNoteRequested(WizDocumentView* view, const WIZDOCUMENTDATAEX& doc, bool forceEditing)
+void WizMainTabBrowser::onViewNoteRequested(WizDocumentView* view, const WIZDOCUMENTDATAEX& doc, bool forceEditing)
 {
     Q_UNUSED(forceEditing);
     Q_UNUSED(view);
@@ -245,7 +244,7 @@ void WizMainTabWidget::onViewNoteRequested(WizDocumentView* view, const WIZDOCUM
 /**
  * @brief Remove related tab page when recieve document deletion signal.
  */
-void WizMainTabWidget::on_document_deleted(const WIZDOCUMENTDATA& data)
+void WizMainTabBrowser::on_document_deleted(const WIZDOCUMENTDATA& data)
 {
     for (int i = 0; i < count(); ++i) {
         WizDocumentView* docView = qobject_cast<WizDocumentView*>(widget(i));
@@ -260,7 +259,7 @@ void WizMainTabWidget::on_document_deleted(const WIZDOCUMENTDATA& data)
     }
 }
 
-void WizMainTabWidget::setupTab(QWidget *wgt)
+void WizMainTabBrowser::setupTab(QWidget *wgt)
 {
     int index = indexOf(wgt);
     if (index != -1) {
@@ -283,7 +282,7 @@ void WizMainTabWidget::setupTab(QWidget *wgt)
  * @brief 浏览笔记文档
  * @param docView 已经构建好的文档视图
  */
-int WizMainTabWidget::createTab(WizDocumentView *docView)
+int WizMainTabBrowser::createTab(WizDocumentView *docView)
 {
     // 创建标签页
     int index = addTab(docView, docView->note().strTitle);
@@ -300,7 +299,7 @@ int WizMainTabWidget::createTab(WizDocumentView *docView)
  * @brief 通过地址来浏览页面
  * @param url 要浏览的地址，可以使本地文件地址;
  */
-int WizMainTabWidget::createTab(const QUrl &url)
+int WizMainTabBrowser::createTab(const QUrl &url)
 {
     // 创建网页视图组件
     WizWebsiteView* websiteView = new WizWebsiteView(m_app);
@@ -322,7 +321,7 @@ int WizMainTabWidget::createTab(const QUrl &url)
  * @brief 处理标签栏发出的关闭信号
  * @param index 标签编号
  */
-void WizMainTabWidget::closeTab(int index)
+void WizMainTabBrowser::closeTab(int index)
 {
     // process document view closing.
     QWidget* p = widget(index);
@@ -336,7 +335,7 @@ void WizMainTabWidget::closeTab(int index)
     p->deleteLater();
 }
 
-void WizMainTabWidget::closeOtherTabs(int index)
+void WizMainTabBrowser::closeOtherTabs(int index)
 {
     for (int i = count() - 1; i > index; --i)
         closeTab(i);
@@ -344,19 +343,19 @@ void WizMainTabWidget::closeOtherTabs(int index)
         closeTab(i);
 }
 
-void WizMainTabWidget::closeLeftTabs(int index)
+void WizMainTabBrowser::closeLeftTabs(int index)
 {
     for (int i = index - 1; i >= 0; --i)
         closeTab(i);
 }
 
-void WizMainTabWidget::closeRightTabs(int index)
+void WizMainTabBrowser::closeRightTabs(int index)
 {
     for (int i = count() - 1; i > index; --i)
         closeTab(i);
 }
 
-void WizMainTabWidget::lockTab(int index)
+void WizMainTabBrowser::lockTab(int index)
 {
     if (index != -1) {
         TabStatusData status = tabBar()->tabData(index).toMap();
@@ -371,7 +370,7 @@ void WizMainTabWidget::lockTab(int index)
     }
 }
 
-void WizMainTabWidget::unlockTab(int index)
+void WizMainTabBrowser::unlockTab(int index)
 {
     if (index != -1) {
         TabStatusData status = tabBar()->tabData(index).toMap();
@@ -394,7 +393,7 @@ void WizMainTabWidget::unlockTab(int index)
  * @param index 标签序号
  * @return
  */
-WizWebEngineView* WizMainTabWidget::getWebView(int index) const
+WizWebEngineView* WizMainTabBrowser::getWebView(int index) const
 {
     // 判断是文档视图还是页面视图
     WizDocumentView* docView = qobject_cast<WizDocumentView*>(widget(index));
@@ -416,7 +415,7 @@ WizWebEngineView* WizMainTabWidget::getWebView(int index) const
  * @brief 获取当前页面视图
  * @return
  */
-WizWebEngineView* WizMainTabWidget::currentWebView() const
+WizWebEngineView* WizMainTabBrowser::currentWebView() const
 {
     return getWebView(currentIndex());
 }
@@ -425,7 +424,7 @@ WizWebEngineView* WizMainTabWidget::currentWebView() const
  * @brief 初始化WizWebEngineView
  * @param view
  */
-void WizMainTabWidget::setupView(WizWebEngineView* view) {
+void WizMainTabBrowser::setupView(WizWebEngineView* view) {
     connect(view, &WizWebEngineView::viewSourceRequested, [=](QUrl url, QString title){
         int index = createTab("view-source:" + url.url());
         WizWebsiteView* webView = qobject_cast<WizWebsiteView*>(widget(index));
@@ -440,7 +439,7 @@ void WizMainTabWidget::setupView(WizWebEngineView* view) {
  * @brief 初始化文档阅读编辑器
  * @param docView
  */
-void WizMainTabWidget::setupDocView(WizDocumentView *docView) {
+void WizMainTabBrowser::setupDocView(WizDocumentView *docView) {
     // set tab text to document title
     connect(WizGlobal::instance(), &WizGlobal::viewNoteRequested, [this](WizDocumentView* view, const WIZDOCUMENTDATAEX& doc, bool forceEditing){
         Q_UNUSED(forceEditing);
@@ -470,7 +469,7 @@ void WizMainTabWidget::setupDocView(WizDocumentView *docView) {
  * @brief 初始化网页浏览器
  * @param webView 要初始化的页面视图;
  */
-void WizMainTabWidget::setupWebsiteView(WizWebsiteView *websiteView)
+void WizMainTabBrowser::setupWebsiteView(WizWebsiteView *websiteView)
 {
     WizWebEngineView *webView = websiteView->getWebView();
     WizWebEnginePage *webPage = webView->getPage();
@@ -502,7 +501,7 @@ void WizMainTabWidget::setupWebsiteView(WizWebsiteView *websiteView)
     setupView(webView);
 }
 
-void WizMainTabWidget::paintEvent(QPaintEvent *)
+void WizMainTabBrowser::paintEvent(QPaintEvent *)
 {
     //Q_D(QTabWidget);
     // 是否处于文档浏览模式
@@ -534,7 +533,7 @@ void WizMainTabWidget::paintEvent(QPaintEvent *)
     p.drawPrimitive(QStyle::PE_FrameTabWidget, opt);
 }
 
-void WizMainTabWidget::initStyleBaseOption(QStyleOptionTabBarBase *optTabBase, QTabBar *tabbar, QSize size)
+void WizMainTabBrowser::initStyleBaseOption(QStyleOptionTabBarBase *optTabBase, QTabBar *tabbar, QSize size)
 {
     QStyleOptionTab tabOverlap;
     tabOverlap.shape = tabbar->shape();

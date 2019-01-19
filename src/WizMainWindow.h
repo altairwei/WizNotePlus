@@ -63,7 +63,7 @@ class WizDocumentWebView;
 class WizTrayIcon;
 class WizMobileFileReceiver;
 class ICore;
-class WizMainTabWidget;
+class WizMainTabBrowser;
 
 class WizMessageListView;
 class WizMessageSelector;
@@ -201,7 +201,7 @@ private:
 
     WizDocumentSelectionView* m_documentSelection;
     WizDocumentView* m_doc; /**< 用于储存多标签浏览器里当前活动笔记文档视图。 */
-    WizMainTabWidget* m_mainTab; /**< 主标签部件，笔记文档视图储存在内部 */
+    WizMainTabBrowser* m_mainTabBrowser; /**< 主标签部件，笔记文档视图储存在内部 */
     std::shared_ptr<WizSplitter> m_splitter;
     QWidget* m_docListContainer;
     WizSingleDocumentViewDelegate* m_singleViewDelegate;
@@ -297,7 +297,7 @@ public:
     void createNoteByTemplateCore(const TemplateData& tmplData);
 
     //
-    WizMainTabWidget* mainTabView();
+    WizMainTabBrowser* mainTabView();
 
 signals:
     void documentsViewTypeChanged(int);

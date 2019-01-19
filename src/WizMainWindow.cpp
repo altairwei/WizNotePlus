@@ -38,7 +38,7 @@
 #include "WizUserCipherForm.h"
 #include "WizDocumentView.h"
 #include "WizTitleBar.h"
-#include "WizMainTabWidget.h"
+#include "WizMainTabBrowser.h"
 
 #include "WizDocumentWebEngine.h"
 #include "WizDocumentWebView.h"
@@ -162,7 +162,7 @@ WizMainWindow::WizMainWindow(WizDatabaseManager& dbMgr, QWidget *parent)
     , m_msgList(new WizMessageListView(dbMgr, this))
     , m_documentSelection(new WizDocumentSelectionView(*this, this))
     //, m_doc(new WizDocumentView(*this)) // 初始化文档视图，就把这个成员当成活动文档视图，QTabWidget说不要指定parent
-    , m_mainTab(new WizMainTabWidget(*this, this)) // 初始化主标签栏
+    , m_mainTabBrowser(new WizMainTabBrowser(*this, this)) // 初始化主标签栏
     , m_history(new WizDocumentViewHistory())
     , m_animateSync(new WizAnimateAction(this))
     , m_singleViewDelegate(new WizSingleDocumentViewDelegate(*this, this))
@@ -410,8 +410,8 @@ void WizMainWindow::cleanOnQuit()
  */
 void WizMainWindow::processAllDocumentViews(std::function<void(WizDocumentView*)> callback)
 {
-    for (int i = 0; i < m_mainTab->count(); ++i) {
-        WizDocumentView* docView = qobject_cast<WizDocumentView*>(m_mainTab->widget(i));
+    for (int i = 0; i < m_mainTabBrowser->count(); ++i) {
+        WizDocumentView* docView = qobject_cast<WizDocumentView*>(m_mainTabBrowser->widget(i));
         if ( docView == nullptr ) {
             continue;
         } else {
@@ -445,7 +445,7 @@ WizDocumentView* WizMainWindow::docView()
 {
 
     //return m_doc;
-    return qobject_cast<WizDocumentView*>(m_mainTab->currentWidget());
+    return qobject_cast<WizDocumentView*>(m_mainTabBrowser->currentWidget());
 }
 
 /**
@@ -454,7 +454,7 @@ WizDocumentView* WizMainWindow::docView()
  */
 void WizMainWindow::trySaveCurrentNote(std::function<void(const QVariant &)> callback)
 {
-    WizDocumentView* curDocView = qobject_cast<WizDocumentView*>(m_mainTab->currentWidget());
+    WizDocumentView* curDocView = qobject_cast<WizDocumentView*>(m_mainTabBrowser->currentWidget());
     if (curDocView && curDocView->noteLoaded()) {
         curDocView->web()->trySaveDocument(curDocView->note(), false, callback);
     } else {
@@ -503,7 +503,7 @@ void WizMainWindow::onWatchedDocumentChanged(const QString& fileName)
 }
 
 /**
- * @brief Save the watched external editor changed document file.
+ * @brief Save the watched document file which is changed by external editor.
  * @param fileName
  * @param TextEditor
  * @param UTF8Encoding
@@ -526,6 +526,8 @@ void WizMainWindow::saveWatchedFile(const QString& fileName)
     if (isPlainText) {
         // Plain Text
         strHtml = WizFileImporter::loadTextFileToHtml(fileName, isUTF8);
+        //TODO: add markdown img to <link rel="File-List" type="image/png" href="" /> elements in html head.
+        strHtml = QString("<!DOCTYPE html><html><head></head><body>%1</body></html>").arg(strHtml);
     } else {
         strHtml = WizFileImporter::loadHtmlFileToHtml(fileName, isUTF8);
     }
@@ -2223,9 +2225,9 @@ void WizMainWindow::initClient()
     layoutDocument->setSpacing(0);
     documentPanel->setLayout(layoutDocument);
     // WizMainTab
-    layoutDocument->addWidget(m_mainTab); // 将主标签栏放在文档板布局上
-    connect(m_mainTab, SIGNAL(currentChanged(int)), SLOT(on_mainTabWidget_currentChanged(int)));
-    m_mainTab->createTab(QUrl::fromUserInput("https://www.wiz.cn")); // 默认打开Wiz主页
+    layoutDocument->addWidget(m_mainTabBrowser); // 将主标签栏放在文档板布局上
+    connect(m_mainTabBrowser, SIGNAL(currentChanged(int)), SLOT(on_mainTabWidget_currentChanged(int)));
+    m_mainTabBrowser->createTab(QUrl::fromUserInput("https://www.wiz.cn")); // 默认打开Wiz主页
     //
     layoutDocument->addWidget(m_documentSelection);
     m_documentSelection->hide(); // 这个是什么东西？
@@ -2397,13 +2399,13 @@ QWidget*WizMainWindow::createMessageListView()
 
 QWidget*WizMainWindow::client() const
 {
-    WizDocumentView* docView = qobject_cast<WizDocumentView*>(m_mainTab->currentWidget());
+    WizDocumentView* docView = qobject_cast<WizDocumentView*>(m_mainTabBrowser->currentWidget());
     return docView->client();
 }
 
 WizDocumentView* WizMainWindow::documentView() const
 {
-    WizDocumentView* docView = qobject_cast<WizDocumentView*>(m_mainTab->currentWidget());
+    WizDocumentView* docView = qobject_cast<WizDocumentView*>(m_mainTabBrowser->currentWidget());
     return docView;
 }
 
@@ -2461,7 +2463,7 @@ QObject* WizMainWindow::componentInterface()
 void WizMainWindow::on_documents_lastDocumentDeleted()
 {
     //FIXME: 此处应该关闭标签页和释放当前视图的内存，在mainTab里添加一个槽函数用于关闭当前标签
-    WizDocumentView* curDocView = qobject_cast<WizDocumentView*>(m_mainTab->currentWidget());
+    WizDocumentView* curDocView = qobject_cast<WizDocumentView*>(m_mainTabBrowser->currentWidget());
     if (curDocView) {
         WizGlobal::instance()->emitCloseNoteRequested(curDocView);
     }
@@ -3592,7 +3594,7 @@ void WizMainWindow::on_actionGoForward_triggered()
  *  重现上一次的状态。
  */
 void WizMainWindow::on_actionOpenDevTools_triggered() {
-    WizWebEngineView* webView = m_mainTab->currentWebView();
+    WizWebEngineView* webView = m_mainTabBrowser->currentWebView();
     //
     if (webView)
         webView->openDevTools();
@@ -3840,7 +3842,7 @@ void WizMainWindow::setCurrentDocumentView(WizDocumentView* docView)
 
 void WizMainWindow::on_mainTabWidget_currentChanged(int pageIndex)
 {
-    WizDocumentView* docView = qobject_cast<WizDocumentView*>(m_mainTab->widget(pageIndex));
+    WizDocumentView* docView = qobject_cast<WizDocumentView*>(m_mainTabBrowser->widget(pageIndex));
     if ( docView ) {
         setCurrentDocumentView(docView);
         // check if some actions should get enabled.
@@ -3856,12 +3858,12 @@ void WizMainWindow::on_mainTabWidget_currentChanged(int pageIndex)
 
 WizDocumentView* WizMainWindow::currentDocumentView()
 {
-    return qobject_cast<WizDocumentView*>(m_mainTab->currentWidget());
+    return qobject_cast<WizDocumentView*>(m_mainTabBrowser->currentWidget());
 }
 
-WizMainTabWidget* WizMainWindow::mainTabView()
+WizMainTabBrowser* WizMainWindow::mainTabView()
 {
-    return m_mainTab;
+    return m_mainTabBrowser;
 }
 
 /**
@@ -3951,13 +3953,13 @@ void WizMainWindow::viewDocument(const WIZDOCUMENTDATAEX& data)
 {
     Q_ASSERT(!data.strGUID.isEmpty());
     // 遍历tab，查找已经打开的标签中是否有该文档
-    for (int i = 0; i < m_mainTab->count(); ++i) {
-        WizDocumentView* docView = qobject_cast<WizDocumentView*>(m_mainTab->widget(i));
+    for (int i = 0; i < m_mainTabBrowser->count(); ++i) {
+        WizDocumentView* docView = qobject_cast<WizDocumentView*>(m_mainTabBrowser->widget(i));
         if ( docView == nullptr ) {
             continue;
         } else {
             if ( data.strGUID == docView->note().strGUID ) {
-                m_mainTab->setCurrentWidget(docView);
+                m_mainTabBrowser->setCurrentWidget(docView);
                 return;
             }
         }
@@ -3973,7 +3975,7 @@ void WizMainWindow::viewDocument(const WIZDOCUMENTDATAEX& data)
         m_documentForEditing = WIZDOCUMENTDATA();
     }
     WizDocumentView* newDocView = createDocumentView();
-    m_mainTab->createTab(newDocView);
+    m_mainTabBrowser->createTab(newDocView);
     // 可以考虑直接调用newDocView->viewNote()方法，而不用发送信号
     WizGlobal::emitViewNoteRequested(newDocView, data, forceEditing);
     setCurrentDocumentView(newDocView); //FIXME: 如果放弃当前文档视图功能，则修改

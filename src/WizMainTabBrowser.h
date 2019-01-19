@@ -1,5 +1,5 @@
-#ifndef WIZMAINTABWIDGET_H
-#define WIZMAINTABWIDGET_H
+#ifndef WIZMAINTABBROWSER_H
+#define WIZMAINTABBROWSER_H
 
 #include <QTabWidget>
 #include <QAbstractButton>
@@ -37,7 +37,7 @@ private:
     void drawTabBtn(const QStyleOptionButton *option, QPainter *painter, const QWidget *widget = nullptr) const;
 };
 
-class WizMainTabWidget : public QTabWidget
+class WizMainTabBrowser : public QTabWidget
 {
     Q_OBJECT
 
@@ -45,7 +45,7 @@ public:
 
     typedef QMap<QString, QVariant> TabStatusData;
 
-    WizMainTabWidget(WizExplorerApp& app, QWidget *parent = nullptr);
+    WizMainTabBrowser(WizExplorerApp& app, QWidget *parent = nullptr);
 
     //WizDocumentView* currentDocView();
     WizWebEngineView* currentWebView() const;
