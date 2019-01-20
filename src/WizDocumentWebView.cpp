@@ -449,17 +449,11 @@ void WizDocumentWebView::createReadModeContextMenu(QContextMenuEvent *event)
         menu->removeAction(*forwardAction);
     }
     // save page action
-    //disconnect(pageAction(QWebEnginePage::SavePage), &QAction::triggered, nullptr, nullptr);
-    connect(pageAction(QWebEnginePage::SavePage), &QAction::triggered, this, [=](){
-        QString title = view()->note().strTitle;
-        QString fileName = QFileDialog::getSaveFileName(this, tr("Save Page"),
-            QDir::home().absoluteFilePath(title + ".mhtml"),
-            tr("MIME HTML (*.mht *.mhtml)"));
-        page()->save(fileName);
-    }, Qt::UniqueConnection);
+    connect(pageAction(QWebEnginePage::SavePage), &QAction::triggered, 
+                    this, &WizDocumentWebView::handleSavePageTriggered, Qt::UniqueConnection);
     // refresh new page's ViewSource action
-    //disconnect(pageAction(QWebEnginePage::ViewSource), &QAction::triggered, this, &WizDocumentWebView::onViewSourceTriggered);
-    connect(pageAction(QWebEnginePage::ViewSource), &QAction::triggered, this, &WizDocumentWebView::onViewSourceTriggered, Qt::UniqueConnection);
+    connect(pageAction(QWebEnginePage::ViewSource), &QAction::triggered, 
+                    this, &WizDocumentWebView::onViewSourceTriggered, Qt::UniqueConnection);
     // handle open location of document
     if(page()->url().isLocalFile()) {
         QAction *action = new QAction(menu);
@@ -477,10 +471,8 @@ void WizDocumentWebView::createReadModeContextMenu(QContextMenuEvent *event)
         return (ac->text() == "&Reload" || ac->iconText() == "Reload");
     });
     if (reloadAction != actions.cend()) {
-        //disconnect(*reloadAction, &QAction::triggered, nullptr, nullptr);
-        connect(*reloadAction, &QAction::triggered, this, [=](){
-            reloadNoteData(view()->note());
-        }, Qt::UniqueConnection);
+        connect(*reloadAction, &QAction::triggered, 
+                    this, &WizDocumentWebView::handleReloadTriggered, Qt::UniqueConnection);
     }
     //
     menu->popup(event->globalPos());
@@ -489,6 +481,21 @@ void WizDocumentWebView::createReadModeContextMenu(QContextMenuEvent *event)
 void WizDocumentWebView::onViewSourceTriggered()
 {
     emit viewSourceRequested(page()->url(), view()->note().strTitle);
+}
+
+void WizDocumentWebView::handleSavePageTriggered()
+{
+    QString title = view()->note().strTitle;
+    QString fileName = QFileDialog::getSaveFileName(this, tr("Save Page"),
+        QDir::home().absoluteFilePath(title + ".mhtml"),
+        tr("MIME HTML (*.mht *.mhtml)"));
+    if (!fileName.isEmpty())
+        page()->save(fileName);
+}
+
+void WizDocumentWebView::handleReloadTriggered()
+{
+    reloadNoteData(view()->note());
 }
 
 void WizDocumentWebView::dragEnterEvent(QDragEnterEvent *event)

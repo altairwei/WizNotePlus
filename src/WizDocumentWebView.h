@@ -344,6 +344,8 @@ public Q_SLOTS:
     //
     void onViewSourceTriggered();
     void onActionSaveTriggered();
+    void handleSavePageTriggered();
+    void handleReloadTriggered();
 
     //void onWatchedFileChanged(const QString& path, int TextEditor, int UTF8Encoding);
     /* editor API */

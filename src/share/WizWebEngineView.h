@@ -52,6 +52,8 @@ public Q_SLOTS:
     void openLinkInDefaultBrowser(QUrl url);
     void openDevTools();
     void onViewSourceTriggered();
+    void handleSavePageTriggered();
+    
 Q_SIGNALS:
     void loadFinishedEx(bool);
     void viewSourceRequested(QUrl url, QString title);

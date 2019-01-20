@@ -429,6 +429,7 @@ void WizMainTabBrowser::setupView(WizWebEngineView* view) {
         int index = createTab("view-source:" + url.url());
         WizWebsiteView* webView = qobject_cast<WizWebsiteView*>(widget(index));
         if (webView) {
+            // To avoid tabtext being changed when users view source of WizDocumentWebPage.
             disconnect(webView->getWebView(), &WizWebEngineView::titleChanged, nullptr, nullptr);
         }
         setTabText(index, "view-source:" + title);
