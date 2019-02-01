@@ -2,7 +2,7 @@
 
 forked from [WizTeam/WizQTClient](https://github.com/WizTeam/WizQTClient)
 
-README [中文](README.md) | English (in progress)
+README **中文** | [English](documents/README-en.md)
 
 **为知笔记+** 是一款基于云服务的跨平台个人知识与时间管理工具。
 
@@ -10,7 +10,7 @@ README [中文](README.md) | English (in progress)
 
 **为知笔记+** 项目致力于提高 [为知笔记跨平台客户端](https://github.com/WizTeam/WizQTClient) 的可用性，以达到或者超越 Windows 平台特有客户端的水平。这个目标要求 **为知笔记+** 实现对开发者友好的插件系统，并且促进氛围良好的第三方开发者社区的建成。本项目在遵循 GPLv3 协议的情况下由第三方开发者发起并维护，欢迎任何有意愿参与项目贡献的开发者或用户联系 altair_wei@outlook.com 。
 
-[![release](https://img.shields.io/badge/release-v2.7.0-green.svg)](https://github.com/altairwei/WizNotePlus/releases) [![license](https://img.shields.io/badge/license-GPLv3-green.svg)](https://github.com/altairwei/WizNotePlus/blob/master/LICENSE)
+[![release](https://img.shields.io/badge/release-v2.7.3-green.svg)](https://github.com/altairwei/WizNotePlus/releases) [![license](https://img.shields.io/badge/license-GPLv3-green.svg)](https://github.com/altairwei/WizNotePlus/blob/master/LICENSE)
 
 ## 特点
 
@@ -40,11 +40,11 @@ README [中文](README.md) | English (in progress)
 
 ### DMG
 
-macOS 平台下请双击 `WizNote-macOS.dmg` ，并在弹出窗口中拖动应用包安装到相应位置。
+macOS 平台下请双击 `WizNote-mac.dmg` ，并在弹出窗口中拖动应用包安装到相应位置。
 
 ### AppImage
 
-Linux 平台下为 `WizNote-x86_64.AppImage` 添加可执行权限后即可运行。如果想要将 AppImage 整合入桌面系统，请参考项目维基 [AppImage 整合入桌面环境](https://github.com/altairwei/WizNotePlus/wiki/AppImage%E6%95%B4%E5%90%88%E5%85%A5%E6%A1%8C%E9%9D%A2%E7%8E%AF%E5%A2%83) 。
+Linux 平台下为 `WizNote-linux-x86_64.AppImage` 添加可执行权限后即可运行。如果想要将 AppImage 整合入桌面系统，请参考项目维基 [AppImage 整合入桌面环境](https://github.com/altairwei/WizNotePlus/wiki/AppImage%E6%95%B4%E5%90%88%E5%85%A5%E6%A1%8C%E9%9D%A2%E7%8E%AF%E5%A2%83) 。
 
 ### 编译
 
