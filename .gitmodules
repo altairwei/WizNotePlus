@@ -1,18 +1,3 @@
-[submodule "lib/quazip"]
-	path = lib/quazip
-	url = https://github.com/altairwei/quazip.git
-[submodule "lib/cryptopp"]
-	path = lib/cryptopp
-	url = https://github.com/altairwei/cryptopp.git
-[submodule "lib/zlib"]
-	path = lib/zlib
-	url = https://github.com/altairwei/zlib.git
-[submodule "lib/gumbo-parser"]
-	path = lib/gumbo-parser
-	url = https://github.com/altairwei/gumbo-parser.git
-[submodule "lib/gumbo-query"]
-	path = lib/gumbo-query
-	url = https://github.com/altairwei/gumbo-query.git
 [submodule "external/create-dmg"]
 	path = external/create-dmg
 	url = https://github.com/andreyvit/create-dmg.git

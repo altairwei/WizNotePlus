@@ -1,4 +1,4 @@
-﻿#include "WizDocumentWebView.h"
+#include "WizDocumentWebView.h"
 
 #include <QRunnable>
 #include <QList>
@@ -10,6 +10,8 @@
 #include <QString>
 #include <QRegExp>
 #include <QAction>
+#include <QMenu>
+#include <QContextMenuEvent>
 #include <QPrinter>
 #include <QFileDialog>
 #include <QTextEdit>
@@ -73,8 +75,8 @@
 #include "WizTitleBar.h"
 #include "interface/IWizHtmlEditorApp.h"
 
-#include "Document.h"
-#include "Node.h"
+#include "gumbo-query/Document.h"
+#include "gumbo-query/Node.h"
 
 enum WizLinkType {
     WizLink_Doucment,
@@ -181,7 +183,7 @@ WizDocumentWebView::WizDocumentWebView(WizExplorerApp& app, QWidget* parent)
     // 向页面JS脚本空间注册对象
     //addToJavaScriptWindowObject("WizExplorerApp", m_app.object());
     WizMainWindow* mainWindow = qobject_cast<WizMainWindow*>(m_app.mainWindow());
-    addToJavaScriptWindowObject("WizExplorerApp", mainWindow->interface());
+    addToJavaScriptWindowObject("WizExplorerApp", mainWindow->componentInterface());
     //addToJavaScriptWindowObject("WizQtEditor", this);
     addToJavaScriptWindowObject("WizQtEditor", m_htmlEditorApp);
 
@@ -193,11 +195,23 @@ WizDocumentWebView::WizDocumentWebView(WizExplorerApp& app, QWidget* parent)
         profile->setSpellCheckEnabled(true);
         profile->setSpellCheckLanguages({"en-US"});
     }
+    //
+    initEditorActions();
 }
 
 WizDocumentWebView::~WizDocumentWebView()
 {
 }
+
+void WizDocumentWebView::initEditorActions()
+{
+    // Add "Save Note" action.
+    QAction* action = new QAction(tr("Save Note"), this);
+    action->setShortcut(QKeySequence::Save);
+    connect(action, &QAction::triggered, this, &WizDocumentWebView::onActionSaveTriggered);
+    addAction(action);
+}
+
 void WizDocumentWebView::waitForDone()
 {
     if (m_docLoadThread) {
@@ -284,8 +298,22 @@ void WizDocumentWebView::inputMethodEvent(QInputMethodEvent* event)
 #endif // Q_OS_MAC
 }
 
+/**
+ * @brief Save current note when action_save triggered.
+ * 
+ */
+void WizDocumentWebView::onActionSaveTriggered()
+{
+    trySaveDocument(view()->note(), false, [=](const QVariant&){});
+}
+
 void WizDocumentWebView::keyPressEvent(QKeyEvent* event)
 {
+    // WARNING!!
+    // Because of unknown bugs, QKeyEvent cannot be passed to the QWebEngineView 
+    // which is child of QTabWidget. This problem also appeared in official example:
+    // Qt5.11.1/Examples/Qt-5.11.1/webenginewidgets/simplebrowser
+
     // special cases process
     if (event->key() == Qt::Key_Escape)
     {
@@ -383,13 +411,91 @@ void WizDocumentWebView::focusOutEvent(QFocusEvent *event)
     QWebEngineView::focusOutEvent(event);
 }
 
+/**
+ * @brief 处理右键菜单事件
+ * 
+ * @param event 
+ */
 void WizDocumentWebView::contextMenuEvent(QContextMenuEvent *event)
 {
     if (isEditing()) {
+        // Edit mode
         Q_EMIT showContextMenuRequest(mapToGlobal(event->pos()));
     } else {
-        WizWebEngineView::contextMenuEvent(event);
+        // Read mode
+        createReadModeContextMenu(event);
     }
+}
+
+/**
+ * @brief 生成阅读模式下的右键菜单
+ * 
+ */
+void WizDocumentWebView::createReadModeContextMenu(QContextMenuEvent *event)
+{
+    QMenu *menu = createStandardContextMenu();
+    const QList<QAction *> actions = menu->actions();
+    // remove back & forward actions
+    auto backAction = std::find_if(actions.cbegin(), actions.cend(), [=](QAction * ac){
+        return (ac->text() == "&Back" || ac->iconText() == "Back");
+    });
+    if (backAction != actions.cend()) {
+        menu->removeAction(*backAction);
+    }
+    auto forwardAction = std::find_if(actions.cbegin(), actions.cend(), [=](QAction * ac){
+        return (ac->text() == "&Forward" || ac->iconText() == "Forward");
+    });
+    if (forwardAction != actions.cend()) {
+        menu->removeAction(*forwardAction);
+    }
+    // save page action
+    connect(pageAction(QWebEnginePage::SavePage), &QAction::triggered, 
+                    this, &WizDocumentWebView::handleSavePageTriggered, Qt::UniqueConnection);
+    // refresh new page's ViewSource action
+    connect(pageAction(QWebEnginePage::ViewSource), &QAction::triggered, 
+                    this, &WizDocumentWebView::onViewSourceTriggered, Qt::UniqueConnection);
+    // handle open location of document
+    if(page()->url().isLocalFile()) {
+        QAction *action = new QAction(menu);
+        action->setText("Open temporary file's location");
+        connect(action, &QAction::triggered, [this]() {
+            QUrl tmpfileFolder = page()->url().adjusted(QUrl::RemoveFilename);
+            QDesktopServices::openUrl(tmpfileFolder);
+        });
+        auto inspectElement = std::find(actions.cbegin(), actions.cend(), page()->action(QWebEnginePage::InspectElement));
+        QAction *before(inspectElement == actions.cend() ? nullptr : *inspectElement);
+        menu->insertAction(before, action);
+    }
+    // reload
+    auto reloadAction = std::find_if(actions.cbegin(), actions.cend(), [=](QAction * ac){
+        return (ac->text() == "&Reload" || ac->iconText() == "Reload");
+    });
+    if (reloadAction != actions.cend()) {
+        connect(*reloadAction, &QAction::triggered, 
+                    this, &WizDocumentWebView::handleReloadTriggered, Qt::UniqueConnection);
+    }
+    //
+    menu->popup(event->globalPos());
+}
+
+void WizDocumentWebView::onViewSourceTriggered()
+{
+    emit viewSourceRequested(page()->url(), view()->note().strTitle);
+}
+
+void WizDocumentWebView::handleSavePageTriggered()
+{
+    QString title = view()->note().strTitle;
+    QString fileName = QFileDialog::getSaveFileName(this, tr("Save Page"),
+        QDir::home().absoluteFilePath(title + ".mhtml"),
+        tr("MIME HTML (*.mht *.mhtml)"));
+    if (!fileName.isEmpty())
+        page()->save(fileName);
+}
+
+void WizDocumentWebView::handleReloadTriggered()
+{
+    reloadNoteData(view()->note());
 }
 
 void WizDocumentWebView::dragEnterEvent(QDragEnterEvent *event)
@@ -618,6 +724,9 @@ void WizDocumentWebView::onDocumentReady(const QString kbGUID, const QString str
 
     //
     loadDocumentInWeb(editorMode);
+    //
+    if (!m_extEditorTask.isEmpty())
+        loadDocumentToExternalEditor(doc, m_extEditorTask.first());
 }
 
 void WizDocumentWebView::onDocumentSaved(const QString kbGUID, const QString strGUID, bool ok)
@@ -638,7 +747,8 @@ void WizDocumentWebView::viewDocument(const WIZDOCUMENTDATA& doc, WizEditorMode 
     if (!m_docLoadThread)
         return;
     // set data
-    int seconds = doc.tCreated.secsTo(QDateTime::currentDateTime());
+    //FIXME: 通过创建时间的长短来判断是否为新文档根本就不稳健!!
+    qint64 seconds = doc.tCreated.secsTo(QDateTime::currentDateTime());
     m_bNewNote = (seconds >= 0 && seconds <= 1) ? true : false;
     m_bNewNoteTitleInited = m_bNewNote ? false : true;
     //
@@ -684,23 +794,35 @@ bool WizDocumentWebView::isInSeperateWindow() const
     return m_bInSeperateWindow;
 }
 
+void WizDocumentWebView::addExtEditorTask(const WizExternalEditorData& data)
+{
+    m_extEditorTask.append(data);
+}
+
+void WizDocumentWebView::clearExtEditorTask()
+{
+    m_extEditorTask.clear();
+}
+
 /**
  * @brief 在外置编辑器中浏览和编辑文档
  *
  * 编辑状态下不允许使用外置编辑器
  */
-void WizDocumentWebView::viewDocumentInExternalEditor(QString &Name, QString &ProgramFile,
-                                                        QString &Arguments, int TextEditor, int UTF8Encoding)
+void WizDocumentWebView::viewDocumentInExternalEditor(const WizExternalEditorData &editorData)
 {
     // 准备笔记数据
     WIZDOCUMENTDATA docData;
     WizDatabase& db = m_dbMgr.db(view()->note().strKbGUID);
     if (!db.documentFromGuid(view()->note().strGUID, docData))
         return;
-    trySaveDocument(docData, false, [=](const QVariant&){
-        //
-        //
+    trySaveDocument(docData, false, [this, docData, editorData](const QVariant&){
+        addExtEditorTask(editorData);
+        reloadNoteData(docData);
     });
+}
+
+void WizDocumentWebView::loadDocumentToExternalEditor(const WIZDOCUMENTDATA &docData, const WizExternalEditorData &editorData) {
     // 准备文件与目录
     QString strFileName = m_mapFile.value(docData.strGUID);
     QDir noteTempDir = QFileInfo(strFileName).absoluteDir();
@@ -708,87 +830,30 @@ void WizDocumentWebView::viewDocumentInExternalEditor(QString &Name, QString &Pr
     WizMakeValidFileNameNoPath(strTitle);
     QString cacheFileName = QFileInfo(noteTempDir.absolutePath() + "/" + strTitle).absoluteFilePath();
     // Export Note to file
-    if (TextEditor == 2) {
+    if (editorData.TextEditor == 2) {
         if (noteTempDir.exists(cacheFileName))
             noteTempDir.remove(cacheFileName);
         //
         saveAsPlainText(cacheFileName, [=](QString fileName){
-            WizGlobal::mainWindow()->startExternalEditor(fileName, Name, ProgramFile, Arguments, TextEditor, UTF8Encoding, view()->note());
+            WizGlobal::mainWindow()->startExternalEditor(fileName, editorData, view()->note());
         });
-        return;
-    } else if (TextEditor == 0) {
+    } else if (editorData.TextEditor == 0) {
         cacheFileName += ".html";
         if (noteTempDir.exists(cacheFileName))
             noteTempDir.remove(cacheFileName);
         //
         saveAsRenderedHtml(cacheFileName, [=](QString fileName){
-            WizGlobal::mainWindow()->startExternalEditor(fileName, Name, ProgramFile, Arguments, TextEditor, UTF8Encoding, view()->note());
+            WizGlobal::mainWindow()->startExternalEditor(fileName, editorData, view()->note());
         });
-    } else {
-        //
-        return;
     }
-
-}
-
-/* move these two function to WizMainWindow
-void WizDocumentWebView::startExternalEditor(QString cacheFileName, QString Name, QString ProgramFile,
-                                                        QString Arguments, int TextEditor, int UTF8Encoding)
-{
-    // 准备进程参数
-    //FIXME: split too many items
-    ProgramFile = "\"" + ProgramFile + "\"";
-    QString args = Arguments.arg("\"" + cacheFileName + "\"");
-    QString strCmd = ProgramFile + " " + args;
-    // 创建并开启进程
-    qInfo() << "Use external editor: " + Name << strCmd;
-    QProcess *extEditorProcess = new QProcess(this);
-    extEditorProcess->startDetached(strCmd);
-    // 设置文件监控器
-    QFileSystemWatcher* extFileWatcher = new QFileSystemWatcher(this);
-    extFileWatcher->addPath(cacheFileName);
     //
-    connect(extFileWatcher, &QFileSystemWatcher::fileChanged, [=](const QString& fileName){
-        //QFileSystemWatcher* watcher = qobject_cast<QFileSystemWatcher*>(sender());
-        onWatchedFileChanged(fileName, TextEditor, UTF8Encoding);
-        // watch file again, in order to avoid some editor remove watched files.
-        if (extFileWatcher)
-        {
-            QTimer::singleShot(300, [=](){
-                extFileWatcher->addPath(fileName);
-            });
-        }
-    });
+    clearExtEditorTask();
 }
 
-void WizDocumentWebView::onWatchedFileChanged(const QString& fileName, int TextEditor, int UTF8Encoding)
+QString WizDocumentWebView::documentTitle()
 {
-    bool isUTF8 = UTF8Encoding == 0 ? false : true;
-    bool isPlainText = TextEditor == 0 ? false : true;
-    QFileInfo* changedFileInfo = new QFileInfo(fileName);
-    // 编辑器保存时首先删除文件再添加文件所有会收到两个信号，通过文件大小来判断写入信号
-    if ( changedFileInfo->size() == 0 )
-        return;
-    qDebug() << tr("Updating file: ") + fileName << changedFileInfo->size()
-             << changedFileInfo->lastModified() << changedFileInfo->lastRead();
-    //
-    WIZDOCUMENTDATA docData;
-    WizDatabase& db = m_dbMgr.db(view()->note().strKbGUID);
-    if (!db.documentFromGuid(view()->note().strGUID, docData))
-        return;
-    QString strHtml;
-    if (isPlainText) {
-        // Plain Text
-        strHtml = WizFileImporter::loadTextFileToHtml(fileName, isUTF8);
-    } else {
-        strHtml = WizFileImporter::loadHtmlFileToHtml(fileName, isUTF8);
-    }
-    //FIXME: Windows client has encoding problem.
-    QString indexFileName = Utils::WizMisc::extractFilePath(fileName);
-    db.updateDocumentData(docData, strHtml, indexFileName, 0);
-    //m_docSaverThread->save(docData, strHtml, fileName, 0); // cannot immediately update document view
+    return view()->note().strTitle;
 }
-*/
 
 void WizDocumentWebView::queryHtmlNodeText(QString& strHtml, QString strSelector)
 {
@@ -1177,13 +1242,19 @@ void WizDocumentWebView::onEditorLoadFinished(bool ok)
     page()->runJavaScript(strCode);
 }
 
-
+/**
+ * @brief 处理笔记页面超链接点击事件
+ * @param url
+ * @param navigationType
+ * @param isMainFrame
+ * @param page
+ */
 void WizDocumentWebView::onEditorLinkClicked(QUrl url, QWebEnginePage::NavigationType navigationType, bool isMainFrame, WizWebEnginePage* page)
 {
     if (!isMainFrame)
         return;
     //
-    page->stopCurrentNavigation();
+    //page->stopCurrentNavigation(); // this will make document page become blank, so it was commented
     //
     if (isInternalUrl(url))
     {
@@ -1248,6 +1319,11 @@ void WizDocumentWebView::viewDocumentByUrl(const QString& strUrl)
     mainWindow->viewDocumentByWizKMURL(strUrl);
 }
 
+/**
+ * @brief 通过笔记页面内的wiz协议链接打开附件
+ * @param strKbGUID
+ * @param strUrl
+ */
 void WizDocumentWebView::viewAttachmentByUrl(const QString& strKbGUID, const QString& strUrl)
 {
     if (strUrl.isEmpty())
@@ -1346,7 +1422,6 @@ void WizDocumentWebView::saveEditingViewDocument(const WIZDOCUMENTDATA &data, bo
 void WizDocumentWebView::saveReadingViewDocument(const WIZDOCUMENTDATA &data, bool force, std::function<void(const QVariant &)> callback)
 {
     Q_UNUSED(force);
-    // 拷贝笔记信息
     const WIZDOCUMENTDATA doc = data;
 
     QString strScript = QString("WizReader.closeDocument();");
@@ -1361,7 +1436,6 @@ void WizDocumentWebView::saveReadingViewDocument(const WIZDOCUMENTDATA &data, bo
                 QString strFileName = m_mapFile.value(doc.strGUID);
                 if (!strFileName.isEmpty())
                 {
-                    // 调用保存器线程
                     m_docSaverThread->save(doc, strHtml, strFileName, 0);
                 }
             }
@@ -1498,6 +1572,10 @@ void WizDocumentWebView::insertScriptAndStyleCore(QString& strHtml, const std::m
     }
 }
 
+/**
+ * @brief 从笔记文件读取文本、插入样式表、插入富文本编辑器脚本，最后将修改好的HTML加载入页面
+ * @param editorMode
+ */
 void WizDocumentWebView::loadDocumentInWeb(WizEditorMode editorMode)
 {
     QString strGUID = view()->note().strGUID;
@@ -2302,7 +2380,7 @@ void WizDocumentWebView::saveAsPlainText(QString& destFileName, std::function<vo
         QTextDocument doc;
         doc.setHtml(strHtml);
         QString strText = doc.toPlainText(); //auto deHtmlEscaped
-        strText.replace("&nbsp", " ");
+        strText.replace("&nbsp", " "); // 旧版本中存在一些不规范的&nbsp无法被QTextDocument跳转
         // 写入文件
         if(WizSaveUnicodeTextToUtf8File(destFileName, strText, false))
         {
@@ -2628,17 +2706,19 @@ void WizDocumentWebViewLoaderThread::waitForDone()
 
 void WizDocumentWebViewLoaderThread::run()
 {
+    //FIXME: Document needs to be loaded once at least.
+    //  So, two conditional m_stop-return within the loop were commented.
     while (!m_stop)
     {
-        if (m_stop)
-            return;
+        //if (m_stop)
+        //    return;
         //
         QString kbGuid;
         QString docGuid;
         WizEditorMode editorMode = modeReader;
         peekCurrentDocGuid(kbGuid, docGuid, editorMode);
-        if (m_stop)
-            return;
+        //if (m_stop)
+        //    return;
         //
         if (docGuid.isEmpty())
             continue;
@@ -2723,13 +2803,14 @@ WizDocumentWebViewSaverThread::WizDocumentWebViewSaverThread(WizDatabaseManager 
 }
 
 void WizDocumentWebViewSaverThread::save(const WIZDOCUMENTDATA& doc, const QString& strHtml,
-                                          const QString& strHtmlFile, int nFlags)
+                                          const QString& strHtmlFile, int nFlags, bool bNotify /*= fasle*/)
 {
     SAVEDATA data;
     data.doc = doc;
     data.html = strHtml;
     data.htmlFile = strHtmlFile;
     data.flags = nFlags;
+    data.notify = bNotify;
     //
     QMutexLocker locker(&m_mutex);
     Q_UNUSED(locker);
@@ -2826,8 +2907,7 @@ void WizDocumentWebViewSaverThread::run()
         //
         qDebug() << "Saving note: " << doc.strTitle;
 
-        bool notify = false;    //don't notify
-        bool ok = db.updateDocumentData(doc, data.html, data.htmlFile, data.flags, notify);
+        bool ok = db.updateDocumentData(doc, data.html, data.htmlFile, data.flags, data.notify);
 
         //
         if (ok)

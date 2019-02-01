@@ -13,6 +13,7 @@
 #include <QNetworkProxy>
 #include <QtWebEngine>
 #include <QStyleFactory>
+#include <QWebEngineSettings>
 
 #include <sys/stat.h>
 
@@ -180,6 +181,9 @@ int mainCore(int argc, char *argv[])
     helper.validteReceiptOnLauch();
 #endif
 #endif
+
+    QWebEngineSettings::defaultSettings()->setAttribute(QWebEngineSettings::FocusOnNavigationEnabled, true);
+    QWebEngineSettings::defaultSettings()->setAttribute(QWebEngineSettings::AllowWindowActivationFromJavaScript, true);
 
     // 配置QtApp和Debug
     //-------------------------------------------------------------------
