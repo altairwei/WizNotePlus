@@ -38,7 +38,7 @@
 #include "WizUserCipherForm.h"
 #include "WizDocumentView.h"
 #include "WizTitleBar.h"
-#include "WizMainTabWidget.h"
+#include "WizMainTabBrowser.h"
 
 #include "WizDocumentWebEngine.h"
 #include "WizDocumentWebView.h"
@@ -162,7 +162,7 @@ WizMainWindow::WizMainWindow(WizDatabaseManager& dbMgr, QWidget *parent)
     , m_msgList(new WizMessageListView(dbMgr, this))
     , m_documentSelection(new WizDocumentSelectionView(*this, this))
     //, m_doc(new WizDocumentView(*this)) // 初始化文档视图，就把这个成员当成活动文档视图，QTabWidget说不要指定parent
-    , m_mainTab(new WizMainTabWidget(*this, this)) // 初始化主标签栏
+    , m_mainTabBrowser(new WizMainTabBrowser(*this, this)) // 初始化主标签栏
     , m_history(new WizDocumentViewHistory())
     , m_animateSync(new WizAnimateAction(this))
     , m_singleViewDelegate(new WizSingleDocumentViewDelegate(*this, this))
@@ -277,6 +277,12 @@ WizMainWindow::WizMainWindow(WizDatabaseManager& dbMgr, QWidget *parent)
         syncMessageTimer->setInterval(3 * 1000 * 60);
         syncMessageTimer->start(3 * 1000 * 60);
     }
+
+    // initialize document saver thread
+    m_watchedDocSaver = new WizDocumentWebViewSaverThread(dbMgr, this);
+    //
+    connect(m_extFileWatcher, &QFileSystemWatcher::fileChanged, 
+                    this, &WizMainWindow::onWatchedDocumentChanged);
 }
 
 /**
@@ -385,7 +391,11 @@ void WizMainWindow::cleanOnQuit()
     processAllDocumentViews([=](WizDocumentView* docView){
         docView->waitForDone();
     });
-
+    // Stop m_docSaver thread
+    auto saver = m_watchedDocSaver;
+    m_watchedDocSaver = nullptr;
+    saver->waitForDone();
+    //
     if (m_mobileFileReceiver)
     {
         m_mobileFileReceiver->waitForDone();
@@ -400,8 +410,8 @@ void WizMainWindow::cleanOnQuit()
  */
 void WizMainWindow::processAllDocumentViews(std::function<void(WizDocumentView*)> callback)
 {
-    for (int i = 0; i < m_mainTab->count(); ++i) {
-        WizDocumentView* docView = qobject_cast<WizDocumentView*>(m_mainTab->widget(i));
+    for (int i = 0; i < m_mainTabBrowser->count(); ++i) {
+        WizDocumentView* docView = qobject_cast<WizDocumentView*>(m_mainTabBrowser->widget(i));
         if ( docView == nullptr ) {
             continue;
         } else {
@@ -435,7 +445,7 @@ WizDocumentView* WizMainWindow::docView()
 {
 
     //return m_doc;
-    return qobject_cast<WizDocumentView*>(m_mainTab->currentWidget());
+    return qobject_cast<WizDocumentView*>(m_mainTabBrowser->currentWidget());
 }
 
 /**
@@ -444,13 +454,12 @@ WizDocumentView* WizMainWindow::docView()
  */
 void WizMainWindow::trySaveCurrentNote(std::function<void(const QVariant &)> callback)
 {
-    WizDocumentView* curDocView = qobject_cast<WizDocumentView*>(m_mainTab->currentWidget());
+    WizDocumentView* curDocView = qobject_cast<WizDocumentView*>(m_mainTabBrowser->currentWidget());
     if (curDocView && curDocView->noteLoaded()) {
         curDocView->web()->trySaveDocument(curDocView->note(), false, callback);
-        return;
+    } else {
+        callback(QVariant(true));
     }
-    //
-    callback(QVariant(true));
 }
 
 /**
@@ -462,68 +471,71 @@ void WizMainWindow::trySaveCurrentNote(std::function<void(const QVariant &)> cal
  * @param TextEditor
  * @param UTF8Encoding
  */
-void WizMainWindow::startExternalEditor(QString cacheFileName, QString Name,
-                                        QString ProgramFile, QString Arguments,
-                                        int TextEditor, int UTF8Encoding, const WIZDOCUMENTDATAEX& noteData)
+void WizMainWindow::startExternalEditor(QString cacheFileName, const WizExternalEditorData& editorData, const WIZDOCUMENTDATAEX& noteData)
 {
     // 准备进程参数
     //FIXME: split too many items
-    ProgramFile = "\"" + ProgramFile + "\"";
-    QString args = Arguments.arg("\"" + cacheFileName + "\"");
-    QString strCmd = ProgramFile + " " + args;
+    QString programFile = "\"" + editorData.ProgramFile + "\"";
+    QString args = editorData.Arguments.arg("\"" + cacheFileName + "\"");
+    QString strCmd = programFile + " " + args;
     // 创建并开启进程
-    qInfo() << "Use external editor: " + Name << strCmd;
+    qInfo() << "Use external editor: " + editorData.Name << strCmd;
     QProcess *extEditorProcess = new QProcess(this);
     extEditorProcess->startDetached(strCmd);
     // 设置文件监控器
     m_extFileWatcher->addPath(cacheFileName);
-    m_watchedFileData.insert(noteData.strGUID, noteData);
-    //
-    connect(m_extFileWatcher, &QFileSystemWatcher::fileChanged, [=](const QString& fileName){
-        saveWatchedFile(fileName, TextEditor, UTF8Encoding);
-        // watch file again, in order to avoid some editor from removing watched files.
-        if (m_extFileWatcher)
-        {
-            QTimer::singleShot(300, [=](){
-                m_extFileWatcher->addPath(fileName);
-            });
-        }
-    });
+    WizExternalEditTask task = {
+        editorData, noteData
+    };
+    m_watchedFileData.insert(noteData.strGUID, task);
+}
+
+void WizMainWindow::onWatchedDocumentChanged(const QString& fileName)
+{
+    saveWatchedFile(fileName);
+    // watch file again, in order to avoid some editor from removing watched files.
+    if (m_extFileWatcher)
+    {
+        QTimer::singleShot(300, [=](){
+            m_extFileWatcher->addPath(fileName);
+        });
+    }
 }
 
 /**
- * @brief Save the watched external editor changed document file.
+ * @brief Save the watched document file which is changed by external editor.
  * @param fileName
  * @param TextEditor
  * @param UTF8Encoding
  */
-void WizMainWindow::saveWatchedFile(const QString& fileName, int TextEditor, int UTF8Encoding)
+void WizMainWindow::saveWatchedFile(const QString& fileName)
 {
-    bool isUTF8 = UTF8Encoding == 0 ? false : true;
-    bool isPlainText = TextEditor == 0 ? false : true;
     QFileInfo* changedFileInfo = new QFileInfo(fileName);
     // 编辑器保存时首先删除文件再添加文件所有会收到两个信号，通过文件大小来判断写入信号
     if ( changedFileInfo->size() == 0 )
         return;
     qDebug() << tr("Updating file: ") + fileName << changedFileInfo->size()
              << changedFileInfo->lastModified() << changedFileInfo->lastRead();
-    //
+    // Get note's data
     QString noteGUID = changedFileInfo->absoluteDir().dirName();
-    const WIZDOCUMENTDATAEX& noteData = m_watchedFileData[noteGUID];
-    WIZDOCUMENTDATA docData;
-    WizDatabase& db = m_dbMgr.db(noteData.strKbGUID);
-    if (!db.documentFromGuid(noteGUID, docData))
-        return;
+    const WizExternalEditTask& task = m_watchedFileData[noteGUID];
+    bool isUTF8 = task.editorData.UTF8Encoding == 0 ? false : true;
+    bool isPlainText = task.editorData.TextEditor == 0 ? false : true;
+    // Get modified document's text
     QString strHtml;
     if (isPlainText) {
         // Plain Text
         strHtml = WizFileImporter::loadTextFileToHtml(fileName, isUTF8);
+        //TODO: add markdown img to <link rel="File-List" type="image/png" href="" /> elements in html head.
+        strHtml = QString("<!DOCTYPE html><html><head></head><body>%1</body></html>").arg(strHtml);
     } else {
         strHtml = WizFileImporter::loadHtmlFileToHtml(fileName, isUTF8);
     }
+    // Get document's file name
     //FIXME: Windows client has encoding problem.
     QString indexFileName = Utils::WizMisc::extractFilePath(fileName);
-    db.updateDocumentData(docData, strHtml, indexFileName, 0);
+    // Start saver thread
+    m_watchedDocSaver->save(task.docData, strHtml, indexFileName, 0, true);
 }
 
 void WizMainWindow::closeEvent(QCloseEvent* event)
@@ -2073,7 +2085,8 @@ void WizMainWindow::initToolBar()
     //
     m_searchWidget = m_toolBar->getSearchWidget();
     m_searchWidget->setUserSettings(m_settings);
-    m_searchWidget->setPopupWgtOffset(m_searchWidget->sizeHint().width(), QSize(isHighPix ? 217 : 230, 0));
+    //FIXME: should not hard code the Offset.
+    m_searchWidget->setPopupWgtOffset(m_searchWidget->sizeHint().width(), QSize(m_userInfoWidget->textWidth() + 160, 0));
 
 #else
     layoutTitleBar();
@@ -2212,9 +2225,9 @@ void WizMainWindow::initClient()
     layoutDocument->setSpacing(0);
     documentPanel->setLayout(layoutDocument);
     // WizMainTab
-    layoutDocument->addWidget(m_mainTab); // 将主标签栏放在文档板布局上
-    connect(m_mainTab, SIGNAL(currentChanged(int)), SLOT(on_mainTabWidget_currentChanged(int)));
-    m_mainTab->createTab(QUrl::fromUserInput("www.wiz.cn")); // 默认打开Wiz主页
+    layoutDocument->addWidget(m_mainTabBrowser); // 将主标签栏放在文档板布局上
+    connect(m_mainTabBrowser, SIGNAL(currentChanged(int)), SLOT(on_mainTabWidget_currentChanged(int)));
+    m_mainTabBrowser->createTab(QUrl::fromUserInput("https://www.wiz.cn")); // 默认打开Wiz主页
     //
     layoutDocument->addWidget(m_documentSelection);
     m_documentSelection->hide(); // 这个是什么东西？
@@ -2386,13 +2399,13 @@ QWidget*WizMainWindow::createMessageListView()
 
 QWidget*WizMainWindow::client() const
 {
-    WizDocumentView* docView = qobject_cast<WizDocumentView*>(m_mainTab->currentWidget());
+    WizDocumentView* docView = qobject_cast<WizDocumentView*>(m_mainTabBrowser->currentWidget());
     return docView->client();
 }
 
 WizDocumentView* WizMainWindow::documentView() const
 {
-    WizDocumentView* docView = qobject_cast<WizDocumentView*>(m_mainTab->currentWidget());
+    WizDocumentView* docView = qobject_cast<WizDocumentView*>(m_mainTabBrowser->currentWidget());
     return docView;
 }
 
@@ -2417,7 +2430,7 @@ WizIAPDialog*WizMainWindow::iapDialog()
  * @brief Get IWizExplorerApp for the main window.
  * @return
  */
-QObject* WizMainWindow::interface()
+QObject* WizMainWindow::componentInterface()
 {
     return m_IWizExplorerApp;
 }
@@ -2450,7 +2463,7 @@ QObject* WizMainWindow::interface()
 void WizMainWindow::on_documents_lastDocumentDeleted()
 {
     //FIXME: 此处应该关闭标签页和释放当前视图的内存，在mainTab里添加一个槽函数用于关闭当前标签
-    WizDocumentView* curDocView = qobject_cast<WizDocumentView*>(m_mainTab->currentWidget());
+    WizDocumentView* curDocView = qobject_cast<WizDocumentView*>(m_mainTabBrowser->currentWidget());
     if (curDocView) {
         WizGlobal::instance()->emitCloseNoteRequested(curDocView);
     }
@@ -3581,7 +3594,7 @@ void WizMainWindow::on_actionGoForward_triggered()
  *  重现上一次的状态。
  */
 void WizMainWindow::on_actionOpenDevTools_triggered() {
-    WizWebEngineView* webView = m_mainTab->currentWebView();
+    WizWebEngineView* webView = m_mainTabBrowser->currentWebView();
     //
     if (webView)
         webView->openDevTools();
@@ -3829,7 +3842,7 @@ void WizMainWindow::setCurrentDocumentView(WizDocumentView* docView)
 
 void WizMainWindow::on_mainTabWidget_currentChanged(int pageIndex)
 {
-    WizDocumentView* docView = qobject_cast<WizDocumentView*>(m_mainTab->widget(pageIndex));
+    WizDocumentView* docView = qobject_cast<WizDocumentView*>(m_mainTabBrowser->widget(pageIndex));
     if ( docView ) {
         setCurrentDocumentView(docView);
         // check if some actions should get enabled.
@@ -3845,7 +3858,12 @@ void WizMainWindow::on_mainTabWidget_currentChanged(int pageIndex)
 
 WizDocumentView* WizMainWindow::currentDocumentView()
 {
-    return qobject_cast<WizDocumentView*>(m_mainTab->currentWidget());
+    return qobject_cast<WizDocumentView*>(m_mainTabBrowser->currentWidget());
+}
+
+WizMainTabBrowser* WizMainWindow::mainTabView()
+{
+    return m_mainTabBrowser;
 }
 
 /**
@@ -3935,13 +3953,13 @@ void WizMainWindow::viewDocument(const WIZDOCUMENTDATAEX& data)
 {
     Q_ASSERT(!data.strGUID.isEmpty());
     // 遍历tab，查找已经打开的标签中是否有该文档
-    for (int i = 0; i < m_mainTab->count(); ++i) {
-        WizDocumentView* docView = qobject_cast<WizDocumentView*>(m_mainTab->widget(i));
+    for (int i = 0; i < m_mainTabBrowser->count(); ++i) {
+        WizDocumentView* docView = qobject_cast<WizDocumentView*>(m_mainTabBrowser->widget(i));
         if ( docView == nullptr ) {
             continue;
         } else {
             if ( data.strGUID == docView->note().strGUID ) {
-                m_mainTab->setCurrentWidget(docView);
+                m_mainTabBrowser->setCurrentWidget(docView);
                 return;
             }
         }
@@ -3957,7 +3975,7 @@ void WizMainWindow::viewDocument(const WIZDOCUMENTDATAEX& data)
         m_documentForEditing = WIZDOCUMENTDATA();
     }
     WizDocumentView* newDocView = createDocumentView();
-    m_mainTab->createTab(newDocView);
+    m_mainTabBrowser->createTab(newDocView);
     // 可以考虑直接调用newDocView->viewNote()方法，而不用发送信号
     WizGlobal::emitViewNoteRequested(newDocView, data, forceEditing);
     setCurrentDocumentView(newDocView); //FIXME: 如果放弃当前文档视图功能，则修改
@@ -4201,16 +4219,18 @@ void WizMainWindow::reconnectServer()
 void WizMainWindow::setFocusForNewNote(WIZDOCUMENTDATA doc)
 {
     //FIXME: 因为当前标签非文档视图，引起空指针错误
-    //WizDocumentView* docView = currentDocumentView();
     m_documentForEditing = doc;
     m_documents->addAndSelectDocument(doc);
     m_documents->clearFocus();
-    //docView->web()->setFocus(Qt::MouseFocusReason);
-    //docView->web()->editorFocus();
+    WizDocumentView* docView = currentDocumentView();
+    if (docView) {
+        docView->web()->setFocus(Qt::MouseFocusReason);
+        docView->web()->editorFocus();
+    };
 }
 
 /**
- * @brief 通过Wiz地址协议打开文档
+ * @brief 通过Wiz地址协议打开为知笔记文档
  * @param strKMURL
  */
 void WizMainWindow::viewDocumentByWizKMURL(const QString &strKMURL)
@@ -4236,6 +4256,11 @@ void WizMainWindow::viewDocumentByWizKMURL(const QString &strKMURL)
     }
 }
 
+/**
+ * @brief 通过Wiz地址协议打开为知附件
+ * @param strKbGUID
+ * @param strKMURL
+ */
 void WizMainWindow::viewAttachmentByWizKMURL(const QString& strKbGUID, const QString& strKMURL)
 {
 
@@ -4699,6 +4724,11 @@ void WizMainWindow::updateHistoryButtonStatus()
     m_actions->actionFromName(WIZACTION_GLOBAL_GOFORWARD)->setEnabled(canGoForward);
 }
 
+/**
+ * @brief 打开为知笔记附件
+ * @param attachment
+ * @param strFileName
+ */
 void WizMainWindow::openAttachment(const WIZDOCUMENTATTACHMENTDATA& attachment,
                                 const QString& strFileName)
 {
@@ -4745,19 +4775,22 @@ void WizMainWindow::downloadAttachment(const WIZDOCUMENTATTACHMENTDATA& attachme
 
 void WizMainWindow::viewNoteInSeparateWindow(const WIZDOCUMENTDATA& data)
 {
-    //FIXME: non-docuView causes break!
     WizDocumentView* docView = currentDocumentView();
-    if (!docView)
-        return;
-    docView->web()->trySaveDocument(docView->note(), false, [=](const QVariant&){
+    if (docView && docView->note().strGUID == data.strGUID) {
+        docView->web()->trySaveDocument(docView->note(), false, [=](const QVariant&){
 
-        docView->setEditorMode(modeReader);
-        //
+            docView->setEditorMode(modeReader);
+            //
+            m_singleViewDelegate->viewDocument(data);
+            // update dock menu
+            resetDockMenu();
+            //
+        });
+    } else {
         m_singleViewDelegate->viewDocument(data);
-        // update dock menu
         resetDockMenu();
-        //
-    });
+    }
+
 }
 
 void WizMainWindow::viewCurrentNoteInSeparateWindow()

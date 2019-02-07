@@ -1,5 +1,5 @@
-#ifndef WIZMAINTABWIDGET_H
-#define WIZMAINTABWIDGET_H
+#ifndef WIZMAINTABBROWSER_H
+#define WIZMAINTABBROWSER_H
 
 #include <QTabWidget>
 #include <QAbstractButton>
@@ -37,7 +37,7 @@ private:
     void drawTabBtn(const QStyleOptionButton *option, QPainter *painter, const QWidget *widget = nullptr) const;
 };
 
-class WizMainTabWidget : public QTabWidget
+class WizMainTabBrowser : public QTabWidget
 {
     Q_OBJECT
 
@@ -45,7 +45,7 @@ public:
 
     typedef QMap<QString, QVariant> TabStatusData;
 
-    WizMainTabWidget(WizExplorerApp& app, QWidget *parent = nullptr);
+    WizMainTabBrowser(WizExplorerApp& app, QWidget *parent = nullptr);
 
     //WizDocumentView* currentDocView();
     WizWebEngineView* currentWebView() const;
@@ -65,18 +65,21 @@ signals:
 public slots:
     void handleCurrentChanged(int index);
     void handleContextMenuRequested(const QPoint &pos);
-    void createTab(WizDocumentView *docView);
-    void createTab(const QUrl &url);
+    int createTab(WizDocumentView *docView);
+    int createTab(const QUrl &url);
     void closeTab(int index);
+    void closeOtherTabs(int index);
+    void closeLeftTabs(int index);
+    void closeRightTabs(int index);
     void lockTab(int index);
     void unlockTab(int index);
     void onViewNoteRequested(WizDocumentView* view, const WIZDOCUMENTDATAEX& doc, bool forceEditing);
-    void setTabTextToDocumentTitle(WizDocumentView* view, const WIZDOCUMENTDATAEX& doc, bool forceEditing);
-    void setTabTextToDocumentTitle(QString strGUID, WizDocumentView* view);
-    void setTabTextToDocumentTitle(WizDocumentView*, QString newTitle);
     void on_document_deleted(const WIZDOCUMENTDATA&);
+
 private:
-    void setupView(WizWebsiteView *websiteView);
+    void setupView(WizWebEngineView* view);
+    void setupWebsiteView(WizWebsiteView *websiteView);
+    void setupDocView(WizDocumentView *docView);
     void setupTab(QWidget* wgt);
     void paintEvent(QPaintEvent *);
     void initStyleBaseOption(QStyleOptionTabBarBase *optTabBase, QTabBar *tabbar, QSize size);

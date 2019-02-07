@@ -104,7 +104,7 @@ QString WizFileImporter::loadTextFileToHtml(const QString& strFileName)
     file.close();
     ret = ret.toHtmlEscaped();
     ret.replace("\n","<br>");
-    ret.replace(" ","&nbsp");
+    ret.replace(" ","&nbsp;");
 
     return ret;
 }
@@ -123,7 +123,7 @@ QString WizFileImporter::loadTextFileToHtml(const QString& strFileName, bool isU
     file.close();
     ret = ret.toHtmlEscaped();
     ret.replace("\n","<br>");
-    ret.replace(" ","&nbsp");
+    ret.replace(" ","&nbsp;");
 
     return ret;
 }

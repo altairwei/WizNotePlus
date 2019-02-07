@@ -1605,7 +1605,8 @@ void WizEditorToolBar::on_delegate_showContextMenuRequest(const QPoint& pos)
     if (!page)
         return;
     // create default context menu
-    QMenu *menu = page->createStandardContextMenu();
+    //QMenu *menu = page->createStandardContextMenu();
+    QMenu *menu = m_editor->createStandardContextMenu();
     if (!menu)
         return;
     //

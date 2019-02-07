@@ -754,6 +754,20 @@ struct WIZDOCUMENTLOCATIONDATA
     }
 };
 
+struct WizExternalEditorData
+{
+    QString Name;
+    QString ProgramFile;
+    QString Arguments;
+    int TextEditor;
+    int UTF8Encoding;
+};
+
+struct WizExternalEditTask
+{
+    WizExternalEditorData editorData;
+    WIZDOCUMENTDATAEX docData;
+};
 
 typedef std::deque<WIZDOCUMENTLOCATIONDATA> CDocumentLocationArray;
 

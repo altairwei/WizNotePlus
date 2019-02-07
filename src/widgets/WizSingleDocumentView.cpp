@@ -12,6 +12,7 @@
 #include "WizDocumentView.h"
 #include "WizDocumentWebView.h"
 #include "WizMainWindow.h"
+#include "WizMainTabBrowser.h"
 #include "WizEditorToolBar.h"
 #include "WizDocumentWebEngine.h"
 
@@ -222,7 +223,6 @@ void WizSingleDocumentViewDelegate::viewDocument(const WIZDOCUMENTDATA& doc)
 {
     if (m_viewerMap.find(doc.strGUID) != m_viewerMap.end())
     {
-        // 如果是已经打开的文档，则显示该窗口
         bringWidgetToFront(m_viewerMap.value(doc.strGUID));
         return;
     }
@@ -239,9 +239,9 @@ void WizSingleDocumentViewDelegate::viewDocument(const WIZDOCUMENTDATA& doc)
                 SLOT(on_editor_statusChanged(const QString&)));
         connect(wgt, SIGNAL(documentViewerDeleted(QString)), SLOT(onDocumentViewerDeleted(QString)));
         static int nOffset = 0;
-        wgt->setGeometry((mainWindow->width() - mainWindow->documentView()->width())  / 2 + nOffset,
+        wgt->setGeometry((mainWindow->width() - mainWindow->mainTabView()->width())  / 2 + nOffset,
                          (mainWindow->height() - wgt->height()) / 2 + nOffset,
-                         mainWindow->documentView()->width(), wgt->height());
+                         mainWindow->mainTabView()->width(), wgt->height());
         wgt->setWindowTitle(doc.strTitle);
         wgt->show();
         nOffset += 22;
