@@ -132,6 +132,18 @@ file(STRINGS ${WIZNOTE_SOURCE_DIR}/CMakeLists.txt project_command_str
 )
 string(REGEX MATCH "([0-9]+)\.([0-9]+)\.([0-9]+)" WIZNOTEPLUS_VERSION ${project_command_str})
 
+# Get build version
+execute_process(
+    COMMAND git describe --tags
+    WORKING_DIRECTORY ${WIZNOTE_SOURCE_DIR}
+    OUTPUT_VARIABLE WIZNOTEPLUS_BUILD_VERSION
+    RESULT_VARIABLE result
+)
+if(NOT result EQUAL "0")
+    message(FATAL_ERROR "Fail to get build version!")
+endif()
+string(STRIP ${WIZNOTEPLUS_BUILD_VERSION} WIZNOTEPLUS_BUILD_VERSION)
+
 #============================================================================
 # Construct directory tree 构建目录树
 #============================================================================
@@ -480,7 +492,7 @@ if(GENERATE_INSTALL_DIR AND GENERATE_PACKAGE)
                 --hide-extension "WizNote.app"
                 --app-drop-link 400 190
                 --format UDZO
-                ${package_output_path}/WizNotePlus-mac-v${WIZNOTEPLUS_VERSION}.dmg
+                ${package_output_path}/WizNotePlus-mac-${WIZNOTEPLUS_BUILD_VERSION}.dmg
                 ${WIZNOTE_PACKAGE_DIR}/
                 WORKING_DIRECTORY ${WIZNOTE_SOURCE_DIR}
                 RESULT_VARIABLE result
@@ -508,7 +520,7 @@ if(GENERATE_INSTALL_DIR AND GENERATE_PACKAGE)
                 ${OUTSIDE_DIR}/WizNote*.AppImage)
             list(GET wiznote_appimage_files 0 wiznote_appimage_file)
             string(REGEX REPLACE "WizNote\\-(.*)\\.AppImage"
-                "WizNotePlus-linux-\\1-v${WIZNOTEPLUS_VERSION}.AppImage" new_appimage_filename
+                "WizNotePlus-linux-\\1-${WIZNOTEPLUS_BUILD_VERSION}.AppImage" new_appimage_filename
                 ${wiznote_appimage_file})
             file(RENAME ${wiznote_appimage_file} ${new_appimage_filename})
         endif(APPLE)
