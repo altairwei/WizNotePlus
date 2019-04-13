@@ -69,6 +69,7 @@ public slots:
     int createTab(const QUrl &url);
     void closeTab(int index);
     void closeOtherTabs(int index);
+    void closeAllTabs();
     void closeLeftTabs(int index);
     void closeRightTabs(int index);
     void lockTab(int index);

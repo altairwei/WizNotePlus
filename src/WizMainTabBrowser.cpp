@@ -210,6 +210,10 @@ void WizMainTabBrowser::handleContextMenuRequested(const QPoint &pos)
         connect(action, &QAction::triggered, this, [this,index]() {
             closeRightTabs(index);
         });
+        action = menu.addAction(tr("Close All Tabs"));
+        connect(action, &QAction::triggered, this, [this]() {
+            closeAllTabs();
+        });
         menu.addSeparator();
         // lock action
         if (isLocked) {
@@ -340,6 +344,12 @@ void WizMainTabBrowser::closeOtherTabs(int index)
     for (int i = count() - 1; i > index; --i)
         closeTab(i);
     for (int i = index - 1; i >= 0; --i)
+        closeTab(i);
+}
+
+void WizMainTabBrowser::closeAllTabs()
+{
+    for (int i = count() - 1; i >= 0; --i)
         closeTab(i);
 }
 
