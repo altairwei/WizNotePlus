@@ -563,51 +563,31 @@ link_directories(
 #============================================================================
 
 if(UNIX)
-	if(APPLE)
-		if(APPSTORE_BUILD)
-			target_link_libraries(${PROJECT_NAME}
-                            Qt5::WebEngine
-                            Qt5::WebEngineWidgets
-                            ${CMAKE_DL_LIBS}
-                            ${cryptopp_LIBRARIES}
-                            ${quazip_LIBRARIES}
-                            ${zlib_LIBRARIES}
-                            ${GumboQuery_LIBRARIES}
-                            ${Gumbo_LIBRARIES}
-			)
-		else(APPSTORE_BUILD)
-			target_link_libraries(${PROJECT_NAME}
-                            Qt5::WebEngine
-                            Qt5::WebEngineWidgets
-                            ${CMAKE_DL_LIBS}
-                            ${cryptopp_LIBRARIES}
-                            ${quazip_LIBRARIES}
-                            ${zlib_LIBRARIES}
-                            ${GumboQuery_LIBRARIES}
-                            ${Gumbo_LIBRARIES}
-			)
-		endif(APPSTORE_BUILD)
-	else(APPLE) 
-                # Linux: linking order is important.
-		target_link_libraries(${PROJECT_NAME}
-                    -lpthread
-                    X11
-                    Qt5::WebEngine
-                    Qt5::WebEngineWidgets
-                    ${CMAKE_DL_LIBS}
-                    ${cryptopp_LIBRARIES}
-                    ${OpenSSL_LIBRARIES}
-                    ${quazip_LIBRARIES}
-                    ${zlib_LIBRARIES}
-                    ${GumboQuery_LIBRARIES}
-                    ${Gumbo_LIBRARIES}
-		)
-	endif(APPLE)
-else(NOT UNIX)
-	target_link_libraries(${PROJECT_NAME}
-            Qt5::WebEngine
-            Qt5::WebEngineWidgets
-            Qt5::WinMain
+    if(APPLE)
+        if(APPSTORE_BUILD)
+            target_link_libraries(${PROJECT_NAME}
+                ${CMAKE_DL_LIBS}
+                ${cryptopp_LIBRARIES}
+                ${quazip_LIBRARIES}
+                ${zlib_LIBRARIES}
+                ${GumboQuery_LIBRARIES}
+                ${Gumbo_LIBRARIES}
+            )
+        else(APPSTORE_BUILD)
+            target_link_libraries(${PROJECT_NAME}
+                ${CMAKE_DL_LIBS}
+                ${cryptopp_LIBRARIES}
+                ${quazip_LIBRARIES}
+                ${zlib_LIBRARIES}
+                ${GumboQuery_LIBRARIES}
+                ${Gumbo_LIBRARIES}
+            )
+        endif(APPSTORE_BUILD)
+    else(APPLE)
+        # Linux: linking order is important.
+        target_link_libraries(${PROJECT_NAME}
+            -lpthread
+            X11
             ${CMAKE_DL_LIBS}
             ${cryptopp_LIBRARIES}
             ${OpenSSL_LIBRARIES}
@@ -615,5 +595,16 @@ else(NOT UNIX)
             ${zlib_LIBRARIES}
             ${GumboQuery_LIBRARIES}
             ${Gumbo_LIBRARIES}
-	)
+        )
+    endif(APPLE)
+else(NOT UNIX)
+    target_link_libraries(${PROJECT_NAME}
+        ${CMAKE_DL_LIBS}
+        ${cryptopp_LIBRARIES}
+        ${OpenSSL_LIBRARIES}
+        ${quazip_LIBRARIES}
+        ${zlib_LIBRARIES}
+        ${GumboQuery_LIBRARIES}
+        ${Gumbo_LIBRARIES}
+    )
 endif()

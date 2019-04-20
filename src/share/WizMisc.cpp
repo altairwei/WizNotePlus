@@ -15,6 +15,7 @@
 #include <QThread>
 #include <QFileIconProvider>
 #include <QSettings>
+#include <QtSvg>
 
 #include <QtCore>
 #include <QNetworkConfigurationManager>
@@ -1680,8 +1681,25 @@ QString WizGetSystemCustomSkinPath(const QString& strSkinName)
         #endif
 }
 
+/**
+ * @brief Search for skin resource files according to given name.
+ * 
+ *      If you do not specify the suffixes of resource name, svg 
+ *      files will gain high priority.
+ * 
+ * @param strSkinName 
+ * @param strName 
+ * @return QString 
+ */
 QString WizGetSkinResourceFileName(const QString& strSkinName, const QString& strName)
 {
+    if (strSkinName.isEmpty()) {
+        if (strName.indexOf("/") != -1)
+            return strName;
+        if (strName.indexOf("\\") != -1)
+            return strName;
+    }
+    //
     QString arrayPath[] =
     {
         WizGetSystemCustomSkinPath(strSkinName),
@@ -1689,27 +1707,25 @@ QString WizGetSkinResourceFileName(const QString& strSkinName, const QString& st
     };
 
     QStringList suffixList;
-    suffixList << ".png" << ".tiff" << ".gif";
 
+    QString ext = Utils::WizMisc::extractFileExt(strName);
+    if (ext.isEmpty()) {
+        suffixList << ".svg" << ".png";
+    } else {
+        suffixList << "";
+    }
+    //
     for (size_t i = 0; i < sizeof(arrayPath) / sizeof(QString); i++)
     {
         QStringList::const_iterator it;
         for (it = suffixList.begin(); it != suffixList.end(); it++) {
             QString strFileName = arrayPath[i] + strName + *it;
-            //qDebug() << strFileName;
             if (::WizPathFileExists(strFileName)) {
                 return strFileName;
             }
         }
     }
-
     return QString();
-}
-
-QIcon WizLoadSkinIcon(const QString& strSkinName, const QString& strIconName,
-                      QIcon::Mode mode /* = QIcon::Normal */, QIcon::State state /* = QIcon::Off */)
-{
-    return WizLoadSkinIcon(strSkinName, strIconName, QSize(), mode, state);
 }
 
 QPixmap WizLoadPixmapIcon(const QString& strSkinName, const QString& strIconName, const QSize& iconSize)
@@ -1742,15 +1758,21 @@ QPixmap WizLoadPixmapIcon(const QString& strSkinName, const QString& strIconName
 
 }
 
-QIcon WizLoadSkinIcon(const QString& strSkinName, const QString& strIconName, const QSize& iconSize,
+/**
+ * @brief Create QIcon by loading icon files of specified skin name.
+ * 
+ * @param strSkinName 
+ * @param strIconName 
+ * @param iconSize 
+ * @param mode 
+ * @param state 
+ * @return QIcon 
+ */
+QIcon WizLoadSkinIconFiles(const QString& strSkinName, const QString& strIconName, const QSize& iconSize,
                       QIcon::Mode mode /* = QIcon::Normal */, QIcon::State state /* = QIcon::Off */)
 {
     Q_UNUSED(mode);
     Q_UNUSED(state);
-
-
- #ifdef Q_OS_MAC
-
     Q_UNUSED(iconSize);
 
     QString strIconNormal = WizGetSkinResourceFileName(strSkinName, strIconName);
@@ -1777,94 +1799,40 @@ QIcon WizLoadSkinIcon(const QString& strSkinName, const QString& strIconName, co
     }
 
     return icon;
-#else
-    QString strIconNormal = strIconName;
-    QString strIconActive1 = strIconName + "_on";
-    QString strIconActive2 = strIconName + "_selected";
-
-
-    if (!WizGetSkinResourceFileName(strSkinName, strIconNormal).isEmpty() && !QFile::exists(WizGetSkinResourceFileName(strSkinName, strIconNormal))) {
-        //TOLOG1("Can't load icon: ", strIconName);
-        return QIcon();
-    }
-
-    QPixmap pixmapNormal = WizLoadPixmapIcon(strSkinName, strIconNormal, iconSize);
-
-    QIcon icon;
-    icon.addPixmap(pixmapNormal, QIcon::Normal, QIcon::Off);
-
-    // used for check state
-    if (!WizGetSkinResourceFileName(strSkinName, strIconActive1).isEmpty() && QFile::exists(WizGetSkinResourceFileName(strSkinName, strIconActive1))) {
-        QPixmap pixmapActive1 = WizLoadPixmapIcon(strSkinName, strIconActive1, iconSize);
-        icon.addPixmap(pixmapActive1, QIcon::Active, QIcon::On);
-    }
-
-    // used for sunken state
-    if (!WizGetSkinResourceFileName(strSkinName, strIconActive2).isEmpty() && QFile::exists(WizGetSkinResourceFileName(strSkinName, strIconActive2))) {
-        QPixmap pixmapActive2 = WizLoadPixmapIcon(strSkinName, strIconActive2, iconSize);
-        icon.addPixmap(pixmapActive2, QIcon::Active, QIcon::Off);
-    }
-
-    return icon;
-#endif
 }
 
-QIcon WizLoadSkinIcon(const QString& strSkinName, QColor forceground, const QString& strIconName)
+QIcon WizLoadSkinIcon(const QString& strSkinName, const QString& strIconName)
 {
-    Q_UNUSED(forceground);
-
-    QString strFileName = WizGetSkinResourceFileName(strSkinName, strIconName);
-    if (strFileName.isEmpty())
-        return QIcon();
-
-    QPixmap pixmap(strFileName);
-
-    QIcon icon;
-    icon.addPixmap(pixmap);
-
-    return icon;
+    return WizLoadSkinIcon(strSkinName, strIconName, QSize());
 }
 
-QIcon WizLoadSkinIcon2(const QString& strSkinName, const QColor& blendColor, const QString& strIconName)
+/**
+ * @brief Create QIcon by specifying skin and icon name.
+ * 
+ *      The icon name is not the full name of icon file, please see
+ *      relevant icon file naming rules.
+ * 
+ * @param strSkinName 
+ * @param strIconName 
+ * @param iconSize 
+ * @param mode 
+ * @param state 
+ * @return QIcon 
+ */
+QIcon WizLoadSkinIcon(const QString& strSkinName, const QString& strIconName, const QSize& iconSize, 
+                        QIcon::Mode mode /*= QIcon::Normal*/, QIcon::State state /*= QIcon::Off*/)
 {
-    QString strFileName = WizGetSkinResourceFileName(strSkinName, strIconName);
-    if (!strFileName.isEmpty() && !QFile::exists(strFileName)) {
+    QSize size = iconSize;
+    if (size.isEmpty() || size.isNull() || !size.isValid()) {
+        size = QSize(WizSmartScaleUIEx(16), WizSmartScaleUIEx(16));
+    }
+    //
+    QString fileName = WizGetSkinResourceFileName(strSkinName, strIconName);
+    if (fileName.isEmpty() || !QFile::exists(fileName)) {
         return QIcon();
     }
 
-    QImage imgOrig(strFileName);
-
-    float factor_R = 0.6f;
-    float factor_G = 0.7f;
-    float factor_B = 1.0f;
-    QRgb blendColorBase = qRgb(blendColor.red() * factor_R, blendColor.green() * factor_G, blendColor.blue() * factor_B);
-
-    for (int i = 0; i < imgOrig.height(); i++) {
-        for (int j = 0; j < imgOrig.width(); j++) {
-            QRgb colorOld = imgOrig.pixel(i, j);
-            int alpha  = qAlpha(colorOld);
-
-            // alpha channel blending
-            int red = qRed(blendColorBase) * (255 - alpha) / 255;
-            int green = qGreen(blendColorBase) * (255 - alpha) / 255;
-            int blue = qBlue(blendColorBase) * (255 - alpha) / 255;
-
-            // optimize, shallow color deepth
-            if (alpha <= 192) {
-                imgOrig.setPixel(i, j, qRgba(red, green, blue, alpha));
-            } else if (alpha > 192) {
-                imgOrig.setPixel(i, j, qRgba(red, green, blue, alpha - 128));
-            }
-        }
-    }
-
-
-    // Test
-    QIcon icon;
-    QPixmap pixmap;
-    pixmap.convertFromImage(imgOrig);
-    icon.addPixmap(pixmap);
-    return icon;
+    return WizLoadSkinIconFiles(strSkinName, strIconName, size);
 }
 
 bool WizImageBlending(QImage& img, const QColor& blendColor, QIcon::Mode mode /* = QIcon::Normal */)

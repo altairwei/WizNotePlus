@@ -146,10 +146,9 @@ QString WizGetSkinResourcePath(const QString& strSkinName);
 QString WizGetSkinDisplayName(const QString& strSkinName, const QString& strLocale);
 QString WizGetSkinResourceFileName(const QString& strSkinName, const QString& strName);
 QPixmap WizLoadPixmap(const QString& strSkinName, const QString& strIconName, const QSize& iconSize);
-QIcon WizLoadSkinIcon(const QString& strSkinName, const QString& strIconName, QIcon::Mode mode = QIcon::Normal, QIcon::State state = QIcon::Off);
+QIcon WizLoadSkinIcon(const QString& strSkinName, const QString& strIconName);
 QIcon WizLoadSkinIcon(const QString& strSkinName, const QString& strIconName, const QSize& iconSize, QIcon::Mode mode = QIcon::Normal, QIcon::State state = QIcon::Off);
-QIcon WizLoadSkinIcon(const QString& strSkinName, QColor forceground, const QString& strIconName);
-QIcon WizLoadSkinIcon2(const QString& strSkinName, const QColor& blendColor, const QString& strIconName);
+QIcon WizLoadSkinIconFiles(const QString& strSkinName, const QString& strIconName, const QSize& iconSize, QIcon::Mode mode = QIcon::Normal, QIcon::State state = QIcon::Off);
 
 bool WizImageBlending(QImage& img, const QColor& blendColor, QIcon::Mode mode = QIcon::Normal);
 void WizLoadSkinIcon3(QIcon& icon, const QString& strSkinName, const QString& strIconName,
