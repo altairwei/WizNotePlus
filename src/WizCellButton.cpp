@@ -347,7 +347,7 @@ void WizToolButton::setCheckedIcon(const QIcon& icon, const QString& strTips)
     m_icon.addPixmap(pm, QIcon::Normal, QIcon::On);
     m_iconChecked = icon;
     m_strTipsChecked = strTips;
-
+    
     setToolTip(strTips);
 }
 
@@ -405,7 +405,6 @@ void WizToolButton::paintEvent(QPaintEvent* event)
     QStylePainter p(this);
     QStyleOptionToolButton opt;
     initStyleOption(&opt);
-    opt.iconSize = m_iconSize;
     if (m_buttonType == WithCountInfo)
     {
         opt.toolButtonStyle = Qt::ToolButtonTextBesideIcon;

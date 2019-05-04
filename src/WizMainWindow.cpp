@@ -2091,7 +2091,7 @@ void WizMainWindow::initToolBar()
 #else
     layoutTitleBar();
     // main button size
-    QSize iconSize = QSize(WizSmartScaleUI(24), WizSmartScaleUI(24));
+    QSize iconSize = QSize(WizSmartScaleUI(16), WizSmartScaleUI(16));
     m_toolBar->setIconSize(iconSize);
     m_toolBar->setContextMenuPolicy(Qt::PreventContextMenu);
     m_toolBar->setMovable(false);
@@ -2106,7 +2106,7 @@ void WizMainWindow::initToolBar()
     m_toolBar->addWidget(new WizFixedSpacer(QSize(5, 1), m_toolBar));
     // 同步按钮
     WizButton* buttonSync = new WizButton(m_toolBar);
-    buttonSync->setIconSize(iconSize);
+    buttonSync->setIconSize(QSize(16,16));
     buttonSync->setAction(m_actions->actionFromName(WIZACTION_GLOBAL_SYNC));
     m_toolBar->addWidget(buttonSync);
     //

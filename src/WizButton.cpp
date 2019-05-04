@@ -13,14 +13,12 @@ WizButton::WizButton(QWidget* parent)
 {
 }
 
+
 QSize WizButton::sizeHint() const
 {
-#ifdef Q_OS_LINUX
-    return QSize(32, 32);
-#else
-    return QSize(WizSmartScaleUI(24), WizSmartScaleUI(24));
-#endif
+    return QSize(16, 16);
 }
+
 
 void WizButton::setAction(QAction* action)
 {

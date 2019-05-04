@@ -16,6 +16,8 @@
 #include <QFileIconProvider>
 #include <QSettings>
 #include <QtSvg>
+#include <QSvgRenderer>
+#include <QGraphicsSvgItem>
 
 #include <QtCore>
 #include <QNetworkConfigurationManager>
@@ -1758,6 +1760,23 @@ QPixmap WizLoadPixmapIcon(const QString& strSkinName, const QString& strIconName
 
 }
 
+/** Render svg to pixmap */
+QPixmap svg2Pixmap(QString svgFile, const QSize& size)
+{
+    // Get svg content.
+    QFile file(svgFile);
+    file.open(QFile::ReadOnly);
+    QByteArray bytes = file.readAll();
+    // Render to pixmap.
+    QSvgRenderer rr(bytes);
+    QImage image(size.width(), size.height(), QImage::Format_ARGB32);
+    QPainter painter(&image);
+    painter.setCompositionMode(QPainter::CompositionMode_SourceOver);
+    image.fill(Qt::transparent);
+    rr.render(&painter);
+    return QPixmap::fromImage(image); 
+}
+
 /**
  * @brief Create QIcon by loading icon files of specified skin name.
  * 
@@ -1773,29 +1792,43 @@ QIcon WizLoadSkinIconFiles(const QString& strSkinName, const QString& strIconNam
 {
     Q_UNUSED(mode);
     Q_UNUSED(state);
-    Q_UNUSED(iconSize);
 
     QString strIconNormal = WizGetSkinResourceFileName(strSkinName, strIconName);
     QString strIconActive1 = WizGetSkinResourceFileName(strSkinName, strIconName + "_on");
     QString strIconActive2 = WizGetSkinResourceFileName(strSkinName, strIconName + "_selected");
-
 
     if (!strIconNormal.isEmpty() && !QFile::exists(strIconNormal)) {
         //TOLOG1("Can't load icon: ", strIconName);
         return QIcon();
     }
 
-    QIcon icon;
-    icon.addFile(strIconNormal, QSize(), QIcon::Normal, QIcon::Off);
+    bool bSvgExt = Utils::WizMisc::extractFileExt(strIconNormal) == ".svg";
 
-    // used for check state
+    QIcon icon(strIconNormal);
+
+    if (bSvgExt)
+        icon.addPixmap(svg2Pixmap(strIconNormal, iconSize), QIcon::Normal, QIcon::Off);
+    else
+        icon.addFile(strIconNormal, iconSize, QIcon::Normal, QIcon::Off);
+
+    // used for check state； "_on" suffix
     if (!strIconActive1.isEmpty() && QFile::exists(strIconActive1)) {
-        icon.addFile(strIconActive1, QSize(), QIcon::Active, QIcon::On);
+        if (bSvgExt)
+            icon.addPixmap(svg2Pixmap(strIconActive1, iconSize), QIcon::Active, QIcon::On);
+        else
+            icon.addFile(strIconActive1, iconSize, QIcon::Active, QIcon::On);
     }
 
-    // used for sunken state
+    // used for sunken state; "_selected" suffix
     if (!strIconActive2.isEmpty() && QFile::exists(strIconActive2)) {
-        icon.addFile(strIconActive2, QSize(), QIcon::Active, QIcon::Off);
+        if (bSvgExt) {
+            icon.addPixmap(svg2Pixmap(strIconActive2, iconSize), QIcon::Active, QIcon::Off);
+            icon.addPixmap(svg2Pixmap(strIconActive2, iconSize), QIcon::Selected, QIcon::Off);
+        } else {
+            icon.addFile(strIconActive2, iconSize, QIcon::Active, QIcon::Off);
+            icon.addFile(strIconActive2, iconSize, QIcon::Selected, QIcon::Off);
+        }
+            
     }
 
     return icon;
