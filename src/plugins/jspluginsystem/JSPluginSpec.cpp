@@ -2,6 +2,7 @@
 
 #include <QJsonObject>
 #include <QJsonDocument>
+#include <QDebug>
 
 struct LOCAL_LCID_DATA
 {

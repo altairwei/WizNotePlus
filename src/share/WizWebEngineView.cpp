@@ -7,11 +7,13 @@
 #include "WizWebEngineView.h"
 #include "WizMisc.h"
 #include "utils/WizPathResolve.h"
+
 #include <QKeyEvent>
 #include <QApplication>
 #include <QDesktopServices>
 #include <QClipboard>
 #include <QFileDialog>
+
 #ifdef Q_OS_MAC
 #include "mac/WizMacHelper.h"
 #include <QTimer>
@@ -72,7 +74,11 @@ WizWebEnginePage::WizWebEnginePage(const WizWebEngineInjectObjectCollection& obj
     : QWebEnginePage(parent)
     , m_continueNavigate(true)
 {
-
+    if (!objects.empty()) {
+        QWebChannel *channel = new QWebChannel(this);
+        channel->registerObjects(objects);
+        setWebChannel(channel);
+    }
 }
 
 void WizWebEnginePage::javaScriptConsoleMessage(JavaScriptConsoleMessageLevel level, const QString& message, int lineNumber, const QString& sourceID)
@@ -139,10 +145,6 @@ void WizWebEnginePage::triggerAction(WizWebEnginePage::WebAction action, bool ch
  */
 WizWebEngineView::WizWebEngineView(const WizWebEngineInjectObjectCollection& objects, QWidget* parent)
     : QWebEngineView(parent)
-    , m_server(nullptr)
-    , m_clientWrapper(nullptr)
-    , m_channel(nullptr)
-    //, m_page(new WizWebEnginePage(this))
 {
     WizWebEnginePage* p = new WizWebEnginePage(objects, this);
     setPage(p);
@@ -150,40 +152,11 @@ WizWebEngineView::WizWebEngineView(const WizWebEngineInjectObjectCollection& obj
     connect(p, SIGNAL(openLinkInNewWindow(QUrl)), this, SLOT(openLinkInDefaultBrowser(QUrl)));
     //
     connect(this, SIGNAL(loadFinished(bool)), this, SLOT(innerLoadFinished(bool)));
-    //
-    // setup the QWebSocketServer
-    m_server = new QWebSocketServer(QStringLiteral("WizNote QWebChannel Server"), QWebSocketServer::NonSecureMode, this);
-    //
-    if (!m_server->listen(QHostAddress::LocalHost)) {
-        qFatal("Failed to open web socket server.");
-        return;
-    }
-
-    // wrap WebSocket clients in QWebChannelAbstractTransport objects
-    m_clientWrapper = new WebSocketClientWrapper(m_server, this);
-    //
-    // setup the channel
-    m_channel = new QWebChannel();
-    QObject::connect(m_clientWrapper, &WebSocketClientWrapper::clientConnected, m_channel, &QWebChannel::connectTo);
-}
-
-void WizWebEngineView::addToJavaScriptWindowObject(QString name, QObject* obj)
-{
-    m_channel->registerObject(name, obj);
-    //
-    if (m_objectNames.isEmpty())
-    {
-        m_objectNames = QString("\"%1\"").arg(name);
-    }
-    else
-    {
-        m_objectNames = m_objectNames + ", " + QString("\"%1\"").arg(name);
-    }
 }
 
 WizWebEngineView::~WizWebEngineView()
 {
-    closeAll();
+    
 }
 
 /**
@@ -229,75 +202,10 @@ void WizWebEngineView::contextMenuEvent(QContextMenuEvent *event)
     menu->popup(event->globalPos());
 }
 
-void WizWebEngineView::closeAll()
-{
-    if (m_server)
-    {
-        m_server->disconnect();
-        m_server->close();
-        //m_server->deleteLater();
-        //m_server = NULL;
-    }
-    if (m_clientWrapper)
-    {
-        m_clientWrapper->disconnect();
-        //m_clientWrapper->deleteLater();
-        //m_clientWrapper = NULL;
-    }
-    if (m_channel)
-    {
-        m_channel->disconnect();
-        //m_channel->deleteLater();
-        //m_channel = NULL;
-    }
-}
-
 
 void WizWebEngineView::innerLoadFinished(bool ret)
 {
-    //
-    if (ret)
-    {
-        // 页面加载时设置合适的缩放比例
-        qreal zFactor = (1.0*WizSmartScaleUI(100)) / 100;
-        setZoomFactor(zFactor);
-        //
-
-        if (m_server && m_server->isListening()
-                && m_clientWrapper
-                && m_channel)
-        {
-            QString jsWebChannel ;
-            if (WizLoadTextFromResource(":/qtwebchannel/qwebchannel.js", jsWebChannel))
-            {
-                page()->runJavaScript(jsWebChannel, [=](const QVariant&){
-                    //
-                    QString initFileName = Utils::WizPathResolve::resourcesPath() + "files/webengine/wizwebengineviewinit.js";
-                    QString jsInit;
-                    WizLoadUnicodeTextFromFile(initFileName, jsInit);
-                    //
-                    QString port = QString::asprintf("%d", int(m_server->serverPort()));
-                    //
-                    jsInit.replace("__port__", port).replace("__objectNames__", m_objectNames);
-                    //
-                    page()->runJavaScript(jsInit, [=](const QVariant&){
-                        //
-                        emit loadFinishedEx(ret);
-                        //
-                    });
-                });
-            }
-            else
-            {
-                qDebug() << "Can't load wen channel.js";
-                emit loadFinishedEx(ret);
-            }
-        }
-    }
-    else
-    {
-        emit loadFinishedEx(ret);
-    }
+    emit loadFinishedEx(ret);
 }
 
 void WizWebEngineView::openLinkInDefaultBrowser(QUrl url)
@@ -308,6 +216,26 @@ void WizWebEngineView::openLinkInDefaultBrowser(QUrl url)
 QString WizWebEngineView::documentTitle()
 {
     return title();
+}
+
+/**
+ * @brief Publish C++ objects to javascript clients.
+ * 
+ * @param name 
+ * @param obj 
+ */
+void WizWebEngineView::addObjectToJavaScriptClient(QString name, QObject* obj)
+{
+    QWebEnginePage *webPage = page();
+    QWebChannel *channel = webPage->webChannel();
+    if (!channel) {
+        channel = new QWebChannel(webPage);
+        webPage->setWebChannel(channel);
+    }
+    
+    WizWebEngineInjectObjectCollection r_objs = channel->registeredObjects();
+    if (!r_objs.contains(name))
+        channel->registerObject(name, obj);
 }
 
 void WizWebEngineView::openDevTools()

@@ -31,9 +31,9 @@ WizShareLinkDialog::WizShareLinkDialog(WizUserSettings& settings, QWidget* paren
     m_view->settings()->setAttribute(QWebEngineSettings::LocalStorageEnabled, true);
     m_view->settings()->setAttribute(QWebEngineSettings::LocalContentCanAccessRemoteUrls, true);
     //
-    m_view->addToJavaScriptWindowObject("external", this); //FIXME: check the interface.
-    m_view->addToJavaScriptWindowObject("wizQt", this); //FIXME: check the interface.
-    //m_view->addToJavaScriptWindowObject("customObject", this);
+    m_view->addObjectToJavaScriptClient("external", this); //FIXME: check the interface.
+    m_view->addObjectToJavaScriptClient("wizQt", this); //FIXME: check the interface.
+    //m_view->addObjectToJavaScriptClient("customObject", this);
 
 }
 

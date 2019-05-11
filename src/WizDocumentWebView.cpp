@@ -181,11 +181,11 @@ WizDocumentWebView::WizDocumentWebView(WizExplorerApp& app, QWidget* parent)
     connect(&m_timerAutoSave, SIGNAL(timeout()), SLOT(onTimerAutoSaveTimout()));
     //
     // 向页面JS脚本空间注册对象
-    //addToJavaScriptWindowObject("WizExplorerApp", m_app.object());
+    //addObjectToJavaScriptClient("WizExplorerApp", m_app.object());
     WizMainWindow* mainWindow = qobject_cast<WizMainWindow*>(m_app.mainWindow());
-    addToJavaScriptWindowObject("WizExplorerApp", mainWindow->componentInterface());
-    //addToJavaScriptWindowObject("WizQtEditor", this);
-    addToJavaScriptWindowObject("WizQtEditor", m_htmlEditorApp);
+    addObjectToJavaScriptClient("WizExplorerApp", mainWindow->componentInterface());
+    //addObjectToJavaScriptClient("WizQtEditor", this);
+    addObjectToJavaScriptClient("WizQtEditor", m_htmlEditorApp);
 
     connect(this, SIGNAL(loadFinishedEx(bool)), SLOT(onEditorLoadFinished(bool)));
     //

@@ -5,6 +5,8 @@
 
 #include <QObject>
 
+class JSPluginModuleSpec;
+
 class JSPluginSpec : public QObject
 {
     Q_OBJECT

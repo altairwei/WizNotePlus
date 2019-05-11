@@ -39,7 +39,7 @@ WizWebSettingsDialog::WizWebSettingsDialog(QString url, QSize sz, QWidget *paren
     WizMainWindow* mainWindow = WizGlobal::mainWindow();
     if (mainWindow) {
         QObject* IWizExplorerApp = qobject_cast<QObject*>(mainWindow->componentInterface());
-        web->addToJavaScriptWindowObject("WizExplorerApp", IWizExplorerApp);
+        web->addObjectToJavaScriptClient("WizExplorerApp", IWizExplorerApp);
     }
     connect(web, SIGNAL(loadFinishedEx(bool)), SLOT(on_web_loaded(bool)));
 }

@@ -6,6 +6,7 @@
 #include <QWebEngineView>
 #include <QWebEnginePage>
 #include <QDialog>
+#include <QHash>
 
 class QWebChannel;
 class QMenu;
@@ -13,30 +14,29 @@ class QMenu;
 class WizWebEngineView;
 class WizDevToolsDialog;
 
-struct WizWebEngineInjectObject
-{
-    QString name;
-    QObject* object;
-};
-
-typedef std::vector<WizWebEngineInjectObject> WizWebEngineInjectObjectCollection;
+typedef QHash<QString, QObject *> WizWebEngineInjectObjectCollection;
 
 class WizWebEnginePage: public QWebEnginePage
 {
     Q_OBJECT
+
 public:
     explicit WizWebEnginePage(QObject* parent = nullptr): WizWebEnginePage({{}}, parent) { }
     WizWebEnginePage(const WizWebEngineInjectObjectCollection& objects, QObject* parent = nullptr);
     //
     void stopCurrentNavigation() { m_continueNavigate = false; }
+    void addObjectToJavaScriptClient(QString name, QObject* obj);
+
 protected:
     virtual void javaScriptConsoleMessage(JavaScriptConsoleMessageLevel level, const QString& message, int lineNumber, const QString& sourceID);
     virtual bool acceptNavigationRequest(const QUrl &url, QWebEnginePage::NavigationType type, bool isMainFrame);
     virtual QWebEnginePage *createWindow(WebWindowType type);
     virtual void triggerAction(WebAction action, bool checked = false);
+
 Q_SIGNALS:
     void linkClicked(QUrl url, QWebEnginePage::NavigationType type, bool isMainFrame, WizWebEnginePage* page);
     void openLinkInNewWindow(QUrl url);
+
 private:
     bool m_continueNavigate;
 };
@@ -52,10 +52,10 @@ public:
     virtual ~WizWebEngineView();
 public:
     WizWebEnginePage* getPage();
-    void addToJavaScriptWindowObject(QString name, QObject* obj);
-    void closeAll();
     QMenu* createStandardContextMenu();
     QString documentTitle();
+
+    void addObjectToJavaScriptClient(QString name, QObject* obj);
 
 public Q_SLOTS:
     void innerLoadFinished(bool);
@@ -67,13 +67,10 @@ public Q_SLOTS:
 Q_SIGNALS:
     void loadFinishedEx(bool);
     void viewSourceRequested(QUrl url, QString title);
+    
 private:
-    QWebSocketServer* m_server;
-    WebSocketClientWrapper* m_clientWrapper;
-    QWebChannel* m_channel;
-    QString m_objectNames;
     WizDevToolsDialog* m_devToolsWindow = nullptr;
-    //WizWebEnginePage* m_page;
+
 protected:
     void wheelEvent(QWheelEvent *event);
     void contextMenuEvent(QContextMenuEvent *event);
