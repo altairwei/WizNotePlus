@@ -31,10 +31,11 @@
 #include "WizWebsiteView.h"
 #include "WizMainTabBrowser.h"
 
-JSPluginManager::JSPluginManager(QStringList &pluginScanPathList, WizExplorerApp& app, QObject* parent)
-    : QObject(parent)
-    , m_app(app)
+JSPluginManager::JSPluginManager()
+    : QObject(nullptr)
+    , m_app(*WizMainWindow::instance())
 {
+    QStringList pluginScanPathList = Utils::WizPathResolve::pluginsAllPath();
     for (QString &path : pluginScanPathList) {
         loadPluginData(path);
     }

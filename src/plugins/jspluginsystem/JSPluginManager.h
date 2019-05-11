@@ -13,13 +13,23 @@ class JSPluginModuleSpec;
 class JSPluginSpec;
 class JSPluginHtmlDialog;
 
+/**
+ * @brief The manager for JavaScript plugins.
+ * 
+ *      This singleton is design according to 
+ *      https://stackoverflow.com/questions/1008019/c-singleton-design-pattern
+ *      It is lazy-evaluated, correctly-destroyed, and thread-safe.
+ * 
+ */
 class JSPluginManager : public QObject
 {
     Q_OBJECT
 
 public:
-    JSPluginManager(QStringList &pluginScanPathList, WizExplorerApp& app, QObject *parent = nullptr);
-    ~JSPluginManager();
+    static JSPluginManager& instance() {
+        static JSPluginManager instance;
+        return instance;
+    }
     //
     QList<JSPluginModuleSpec *> modulesByButtonLocation(QString buttonLocation) const;
     QList<JSPluginModuleSpec *> modulesByKeyValue(QString key, QString value) const;
@@ -37,7 +47,14 @@ public:
     void showPluginMainTabView(JSPluginModuleSpec *moduleData);
 
 private:
+    JSPluginManager();
+    ~JSPluginManager();
+
     void loadPluginData(QString &pluginScanPath);
+
+public:
+    JSPluginManager(JSPluginManager const &) = delete;
+    void operator=(JSPluginManager const &)  = delete;
 
 public slots:
     void handlePluginActionTriggered();

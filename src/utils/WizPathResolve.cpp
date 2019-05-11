@@ -38,6 +38,14 @@ QString WizPathResolve::themePath(const QString& strThemeName)
     return resourcesPath() + "skins/" + strThemeName + "/";
 }
 
+QStringList WizPathResolve::pluginsAllPath()
+{
+    return {
+        resourcesPath() + "plugins/",
+        dataStorePath() + "plugins/"
+    };
+}
+
 QString WizPathResolve::skinResourcesPath(const QString &strSkinName)
 {
     Q_ASSERT(!strSkinName.isEmpty());
