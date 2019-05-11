@@ -68,7 +68,7 @@ public:
     }
 };
 
-WizWebEnginePage::WizWebEnginePage(QObject* parent)
+WizWebEnginePage::WizWebEnginePage(const WizWebEngineInjectObjectCollection& objects, QObject* parent)
     : QWebEnginePage(parent)
     , m_continueNavigate(true)
 {
@@ -137,15 +137,14 @@ void WizWebEnginePage::triggerAction(WizWebEnginePage::WebAction action, bool ch
  *
  *  创建WizWebEnginePage
  */
-WizWebEngineView::WizWebEngineView(QWidget* parent)
+WizWebEngineView::WizWebEngineView(const WizWebEngineInjectObjectCollection& objects, QWidget* parent)
     : QWebEngineView(parent)
     , m_server(nullptr)
     , m_clientWrapper(nullptr)
     , m_channel(nullptr)
     //, m_page(new WizWebEnginePage(this))
 {
-    // 创建Page设置为到该View
-    WizWebEnginePage* p = new WizWebEnginePage(this);
+    WizWebEnginePage* p = new WizWebEnginePage(objects, this);
     setPage(p);
     //
     connect(p, SIGNAL(openLinkInNewWindow(QUrl)), this, SLOT(openLinkInDefaultBrowser(QUrl)));

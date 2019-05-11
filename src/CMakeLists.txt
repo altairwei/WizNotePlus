@@ -136,6 +136,11 @@ set(wiznote_SOURCES
     share/jsoncpp/jsoncpp.cpp
     share/WizRequest.cpp
 
+    plugins/jspluginsystem/JSPluginManager.cpp
+    plugins/jspluginsystem/JSPluginSpec.cpp
+    plugins/jspluginsystem/JSPluginSelectorWindow.cpp
+    plugins/jspluginsystem/JSPluginHtmlDialog.cpp
+
     WizCategoryView.cpp
     WizCategoryViewItem.cpp
     WizDevToolsDialog.cpp
@@ -270,6 +275,11 @@ set(wiznote_HEADERS
     share/jsoncpp/json/json.h
     share/jsoncpp/json/json-forwards.h
     share/WizRequest.h
+
+    plugins/jspluginsystem/JSPluginManager.h
+    plugins/jspluginsystem/JSPluginSpec.h
+    plugins/jspluginsystem/JSPluginSelectorWindow.h
+    plugins/jspluginsystem/JSPluginHtmlDialog.h
 
     WizDef.h
     WizActions.h

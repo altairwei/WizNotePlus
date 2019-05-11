@@ -13,11 +13,20 @@ class QMenu;
 class WizWebEngineView;
 class WizDevToolsDialog;
 
+struct WizWebEngineInjectObject
+{
+    QString name;
+    QObject* object;
+};
+
+typedef std::vector<WizWebEngineInjectObject> WizWebEngineInjectObjectCollection;
+
 class WizWebEnginePage: public QWebEnginePage
 {
     Q_OBJECT
 public:
-    explicit WizWebEnginePage(QObject* parent = nullptr);
+    explicit WizWebEnginePage(QObject* parent = nullptr): WizWebEnginePage({{}}, parent) { }
+    WizWebEnginePage(const WizWebEngineInjectObjectCollection& objects, QObject* parent = nullptr);
     //
     void stopCurrentNavigation() { m_continueNavigate = false; }
 protected:
@@ -38,7 +47,8 @@ class WizWebEngineView : public QWebEngineView
     Q_OBJECT
 
 public:
-    WizWebEngineView(QWidget* parent);
+    WizWebEngineView(QWidget* parent): WizWebEngineView({{}}, parent) { }
+    WizWebEngineView(const WizWebEngineInjectObjectCollection& objects, QWidget* parent);
     virtual ~WizWebEngineView();
 public:
     WizWebEnginePage* getPage();

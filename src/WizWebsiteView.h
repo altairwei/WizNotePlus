@@ -14,7 +14,8 @@ class WizWebsiteView  : public QWidget
     Q_OBJECT
 
 public:
-    WizWebsiteView(WizExplorerApp& app, QWidget* parent = nullptr);
+    WizWebsiteView(WizWebEngineView *webView, WizExplorerApp& app, QWidget* parent = nullptr);
+    WizWebsiteView(WizExplorerApp& app, QWidget* parent = nullptr) : WizWebsiteView(nullptr, app, parent) {};
     ~WizWebsiteView();
 
     virtual QSize sizeHint() const;
