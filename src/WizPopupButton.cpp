@@ -13,7 +13,7 @@
 WizPopupButton::WizPopupButton(WizExplorerApp& app, QWidget *parent)
     : QToolButton(parent)
     , m_app(app)
-    , m_iconSize(::WizSmartScaleUI(23), ::WizSmartScaleUI(14))
+    , m_iconSize(::WizSmartScaleUIEx(23), ::WizSmartScaleUIEx(14))
 {
     setPopupMode(QToolButton::InstantPopup);
 
@@ -111,8 +111,7 @@ WizViewTypePopupButton::WizViewTypePopupButton(WizExplorerApp& app, QWidget* par
 //    m_iconOneLine.addFile(strSkinPath + "view_one_line.png");
 //    m_iconTwoLine.addFile(strSkinPath + "view_two_line.png");
 //    m_iconThumbnail.addFile(strSkinPath + "view_thumbnail.png");
-    bool isHighPix = ::WizIsHighPixel();
-    QIcon icon = ::WizLoadSkinIcon(app.userSettings().skin(), "documents_view_type" + (isHighPix ? "@2x" : QString()));
+    QIcon icon = ::WizLoadSkinIcon(app.userSettings().skin(), "documents_view_type");
     setIcon(icon);
 
     int type = m_app.userSettings().get("VIEW_TYPE").toInt();
@@ -215,8 +214,7 @@ WizSortingPopupButton::WizSortingPopupButton(WizExplorerApp& app, QWidget *paren
         setActionChecked(menu, type);
         m_app.userSettings().set("SORT_TYPE", QString::number(type));
     }
-    bool isHighPix = ::WizIsHighPixel();
-    QIcon icon = ::WizLoadSkinIcon(app.userSettings().skin(), "documents_sort_type" + (isHighPix ? "@2x" : QString()));
+    QIcon icon = ::WizLoadSkinIcon(app.userSettings().skin(), "documents_sort_type");
     setIcon(icon);
 }
 
