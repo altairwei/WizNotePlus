@@ -73,7 +73,7 @@
 #include "html/WizHtmlReader.h"
 
 #include "WizTitleBar.h"
-#include "interface/IWizHtmlEditorApp.h"
+#include "plugins/public_apis_object/IWizHtmlEditorApp.h"
 
 #include "gumbo-query/Document.h"
 #include "gumbo-query/Node.h"

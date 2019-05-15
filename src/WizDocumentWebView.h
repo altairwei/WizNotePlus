@@ -15,7 +15,7 @@
 #include "WizDef.h"
 #include "share/WizObject.h"
 #include "share/WizWebEngineView.h"
-#include "interface/IWizHtmlEditorApp.h"
+#include "plugins/public_apis_object/IWizHtmlEditorApp.h"
 
 
 class WizObjectDownloaderHost;

@@ -104,7 +104,7 @@
 #include "share/jsoncpp/json/json.h"
 
 #include "WizCellButton.h"
-#include "interface/IWizExplorerApp.h"
+#include "plugins/public_apis_object/IWizExplorerApp.h"
 #include "WizFileImporter.h"
 
 #define MAINWINDOW  "MainWindow"
