@@ -2285,7 +2285,7 @@ QWidget* WizMainWindow::createNoteListView()
     noteButtonsContainer->setLayout(layoutButtonContainer);
 
     QHBoxLayout* layoutActions = new QHBoxLayout();
-    layoutActions->setContentsMargins(0, 0, 12, 0); // 设置布局内容右边界为12
+    layoutActions->setContentsMargins(0, 0, 0, 0); // 设置布局内容右边界为12
     layoutActions->setSpacing(0); // 设置按钮之间的间隔
 
     WizViewTypePopupButton* viewBtn = new WizViewTypePopupButton(*this, this);
@@ -2331,16 +2331,10 @@ QWidget* WizMainWindow::createNoteListView()
     m_btnMarkDocumentsReaded->setVisible(false);
 
     layoutButtonContainer->addLayout(layoutActions);
-
-    QWidget* wgtRightBorder = new QWidget(this);
-    wgtRightBorder->setFixedWidth(13);
-    wgtRightBorder->setFixedHeight(::WizSmartScaleUI(30));
-    wgtRightBorder->setStyleSheet(QString("border-left:1px solid #E7E7E7;"));
-    layoutButtonContainer->addWidget(wgtRightBorder);
-
+    
     QWidget* line2 = new QWidget(this);
     line2->setFixedHeight(1);
-    line2->setStyleSheet("margin-right:12px; border-top-width:1;border-top-style:solid;border-top-color:#DADAD9");
+    line2->setStyleSheet("border-top-width:1;border-top-style:solid;border-top-color:#DADAD9");
 
     layoutList->addWidget(noteButtonsContainer);
     layoutList->addWidget(line2);

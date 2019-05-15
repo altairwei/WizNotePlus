@@ -107,7 +107,6 @@ WizDocumentListView::WizDocumentListView(WizExplorerApp& app, QWidget *parent /*
     setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
     m_vScroll = new WizScrollBar(this);
     m_vScroll->syncWith(verticalScrollBar());
-    m_vScroll->applyStyle("#F5F5F5", "#C1C1C1", true);
 #endif
 
     // setup style
@@ -2267,7 +2266,7 @@ void WizDocumentListView::drawItem(QPainter* p, const QStyleOptionViewItem* vopt
         p->save();
         int nRightMargin = 12;
         QStyleOptionViewItem newVopt(*vopt);
-        newVopt.rect.setRight(newVopt.rect.right() - nRightMargin);
+        //newVopt.rect.setRight(newVopt.rect.right() - nRightMargin);
         pItem->draw(p, &newVopt, viewType());
 
         p->restore();
