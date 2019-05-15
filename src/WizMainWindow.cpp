@@ -2430,7 +2430,7 @@ WizIAPDialog*WizMainWindow::iapDialog()
  * @brief Get IWizExplorerApp for the main window.
  * @return
  */
-QObject* WizMainWindow::componentInterface()
+QObject* WizMainWindow::publicAPIsObject()
 {
     return m_IWizExplorerApp;
 }

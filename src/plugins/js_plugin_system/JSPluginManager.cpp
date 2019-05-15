@@ -141,7 +141,7 @@ WizWebsiteView *JSPluginManager::initPluginMainTabView(JSPluginModuleSpec *modul
     WizWebEngineInjectObjectCollection objects = {
         {"JSPluginSpec", moduleData->parentPlugin()},
         {"JSPluginModuleSpec", moduleData},
-        {"WizExplorerApp", WizMainWindow::instance()->componentInterface()}
+        {"WizExplorerApp", WizMainWindow::instance()->publicAPIsObject()}
     };
     WizWebEngineView *webView = new WizWebEngineView(objects, nullptr);
     QPointer<WizWebsiteView> websiteView = new WizWebsiteView(webView, m_app);

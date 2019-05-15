@@ -18,7 +18,7 @@ JSPluginHtmlDialog::JSPluginHtmlDialog(WizExplorerApp& app, JSPluginModuleSpec* 
     WizWebEngineInjectObjectCollection objects = {
         {"JSPluginSpec", data->parentPlugin()},
         {"JSPluginModuleSpec", data},
-        {"WizExplorerApp", mw->componentInterface()}
+        {"WizExplorerApp", mw->publicAPIsObject()}
     };
     m_web = new WizWebEngineView(objects, this);
     QVBoxLayout* layout = new QVBoxLayout();

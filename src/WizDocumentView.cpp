@@ -108,8 +108,7 @@ WizDocumentView::WizDocumentView(WizExplorerApp& app, QWidget* parent)
     connect(m_comments, SIGNAL(loadFinishedEx(bool)), m_title, SLOT(onCommentPageLoaded(bool)));
 
     WizMainWindow* mv = WizGlobal::mainWindow();
-    QObject* IWizExplorerApp = qobject_cast<QObject*>(mv->componentInterface());
-    m_comments->addObjectToJavaScriptClient("WizExplorerApp", IWizExplorerApp);
+    m_comments->addObjectToJavaScriptClient("WizExplorerApp", mv->publicAPIsObject());
     //
     connect(m_commentWidget, SIGNAL(widgetStatusChanged()), SLOT(on_commentWidget_statusChanged()));
 

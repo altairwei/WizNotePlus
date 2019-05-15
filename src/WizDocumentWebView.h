@@ -160,9 +160,6 @@ public:
     //
     void clear();
     //
-    friend class WizDocumentWebViewPage;
-    friend class IWizHtmlEditorApp;
-    //
     void waitForDone();
 
     // view and save
@@ -253,6 +250,8 @@ public:
     QString getLocalLanguage();
     void OnSelectionChange(const QString& currentStyle);
     void saveCurrentNote();
+
+    QObject *publicAPIsObject() { return m_htmlEditorApp; }
 
 private:
     void initEditorActions();
@@ -442,6 +441,9 @@ private:
     QString getHighlightKeywords();
     //
 //    bool shouldAddUserDefaultCSS();
+
+    friend class WizDocumentWebViewPage;
+    friend class IWizHtmlEditorApp;
 };
 
 
