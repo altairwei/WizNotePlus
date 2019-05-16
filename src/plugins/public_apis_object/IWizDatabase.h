@@ -4,6 +4,7 @@
 #include <QObject>
 
 class WizDatabaseManager;
+class WizDatabase;
 
 class IWizDatabase : public QObject
 {
@@ -14,6 +15,8 @@ private:
 
 public:
     IWizDatabase(WizDatabaseManager* dbManager, QObject* parent);
+
+    Q_INVOKABLE QObject *Database();
 };
 
 #endif // WIZDATABASE_H

@@ -115,10 +115,60 @@ public:
 };
 
 
-WizDocument::WizDocument(WizDatabase& db, const WIZDOCUMENTDATA& data)
-    : m_db(db)
+WizDocument::WizDocument(WizDatabase& db, const WIZDOCUMENTDATA& data, QObject *parent)
+    : QObject(parent)
+    , m_db(db)
     , m_data(data)
 {
+}
+
+void WizDocument::setTitle(const QString &strTitle)
+{
+    if (reloadDocumentInfo()) {
+        if (!m_db.canEditDocument(m_data))
+            return;
+        if (strTitle.isEmpty())
+            return;
+
+        QString strNewTitle = strTitle.left(255);
+        strNewTitle.replace("\n", " ");
+        strNewTitle.replace("\r", " ");
+        strNewTitle = strNewTitle.trimmed();
+        if (strNewTitle != m_data.strTitle) {
+            m_data.strTitle = strNewTitle;
+            m_data.tDataModified = WizGetCurrentTime();
+            m_db.modifyDocumentInfo(m_data);
+        }
+    }
+}
+
+/**
+ * @brief Should not be used to change DT_MODIFIED.
+ * 
+ * @param strDateModified 
+ */
+void WizDocument::setDateModified(const QString &strDateModified)
+{
+    if (strDateModified.isEmpty())
+        return;
+
+    if (!m_db.canEditDocument(m_data))
+        return;
+
+    QDateTime dm = QDateTime::fromString(strDateModified, Qt::ISODate);
+    if (!dm.isValid())
+        return;
+
+    if (reloadDocumentInfo()) {
+        WizOleDateTime dateModified(dm);
+        m_data.tDataModified = dateModified;
+        m_db.modifyDocumentInfo(m_data);
+    }
+}
+
+QObject *WizDocument::Database() const
+{
+    return &m_db;
 }
 
 void WizDocument::makeSureObjectDataExists()
@@ -140,6 +190,35 @@ bool WizDocument::UpdateDocument4(const QString& strHtml, const QString& strURL,
     return m_db.updateDocumentData(m_data, strHtml, strURL, nFlags);
 }
 
+/**
+ * @brief Update document data via html file name and url.
+ * 
+ * @param strHtmlFileName File must be unicode format.
+ * @param strURL 
+ * @param nFlags 
+ * @return true 
+ * @return false 
+ */
+bool WizDocument::UpdateDocument6(const QString &strHtmlFileName, const QString &strURL, int nFlags)
+{
+    if (strHtmlFileName.isEmpty())
+        return false;
+
+    if (!m_db.canEditDocument(m_data))
+        return false;
+
+    QString strHtml;
+    if (WizLoadUnicodeTextFromFile(strHtmlFileName, strHtml)) {
+        return m_db.updateDocumentData(m_data, strHtml, strURL, nFlags);
+    } else {
+        return false;
+    }
+}
+
+/**
+ * @brief Delete from server
+ * 
+ */
 void WizDocument::deleteToTrash()
 {
     // move document to trash
@@ -159,6 +238,10 @@ void WizDocument::deleteToTrash()
     m_db.logDeletedGuid(m_data.strGUID, wizobjectDocument);
 }
 
+/**
+ * @brief Delete local file
+ * 
+ */
 void WizDocument::deleteFromTrash()
 {
     CWizDocumentAttachmentDataArray arrayAttachment;
@@ -182,6 +265,55 @@ void WizDocument::deleteFromTrash()
     {
         WizDeleteFile(strZipFileName);
     }
+}
+
+/**
+ * @brief Reload this document information from database.
+ * 
+ */
+void WizDocument::Reload()
+{
+    reloadDocumentInfo();
+}
+
+QString WizDocument::GetParamValue(const QString &strParamName)
+{
+    WIZDOCUMENTPARAMDATA paramData;
+    if (m_db.getDocumentParam(m_data.strGUID, strParamName, paramData)) {
+        return paramData.strValue;
+    } else {
+        return "";
+    }
+}
+
+bool WizDocument::SetParamValue(const QString &strParamName, const QString &strNewValue)
+{
+    return m_db.setDocumentParam(m_data.strGUID, strParamName, strNewValue);
+}
+
+/**
+ * @brief Delete param-value pair.
+ * 
+ * @param strParamName 
+ * @return true 
+ * @return false 
+ */
+bool WizDocument::RemoveParam(const QString &strParamName)
+{
+    return m_db.removeDocumentParam(m_data.strGUID, strParamName);
+}
+
+/**
+ * @brief Delete WizDocument instance to release memories.
+ * 
+ *     This method should be called by javascrip client when
+ *     the WizDocument object of specific document would no 
+ *     longer be used.
+ * 
+ */
+void WizDocument::Close()
+{
+    deleteLater();
 }
 
 bool WizDocument::isInDeletedItemsFolder()
@@ -452,13 +584,24 @@ bool WizDocument::copyDocumentAttachment(const WIZDOCUMENTDATA& sourceDoc,
     return true;
 }
 
+/**
+ * @brief Used to sync document information holded by WizDocument with that of database.
+ * 
+ * @param data 
+ */
+bool WizDocument::reloadDocumentInfo()
+{
+    return m_db.documentFromGuid(m_data.strGUID, m_data);
+}
+
 
 /*
 * Class CWizFolder
 */
 
-WizFolder::WizFolder(WizDatabase& db, const QString& strLocation)
-    : m_db(db)
+WizFolder::WizFolder(WizDatabase& db, const QString& strLocation, QObject *parent)
+    : QObject(parent)
+    , m_db(db)
     , m_strLocation(strLocation)
 {
     Q_ASSERT(strLocation.right(1) == "/");
@@ -475,16 +618,22 @@ bool WizFolder::isInDeletedItems() const
     return !isDeletedItems() && location().startsWith(LOCATION_DELETED_ITEMS);
 }
 
-//QObject* CWizFolder::CreateDocument2(const QString& strTitle, const QString& strURL)
-//{
-//    WIZDOCUMENTDATA data;
-//    if (!m_db.CreateDocument(strTitle, "", m_strLocation, strURL, data))
-//        return NULL;
-//
-//    CWizDocument* pDoc = new CWizDocument(m_db, data);
-//
-//    return pDoc;
-//}
+QObject* WizFolder::CreateDocument2(const QString& strTitle, const QString& strURL)
+{
+   WIZDOCUMENTDATA data;
+   CString strHtml = "<!DOCTYPE html><html><head></head><body><p><br></p></body></html>";
+   if (!m_db.createDocumentAndInit(strHtml, "", 0, strTitle, "newnote", m_strLocation, strURL, data))
+       return nullptr;
+
+   WizDocument* pDoc = new WizDocument(m_db, data, this);
+
+   return pDoc;
+}
+
+void WizFolder::Close()
+{
+    deleteLater();
+}
 
 void WizFolder::Delete()
 {
@@ -4480,12 +4629,49 @@ bool WizDatabase::isFileAccessible(const WIZDOCUMENTDATA& document)
     return true;
 }
 
-
-QObject* WizDatabase::GetFolderByLocation(const QString& strLocation, bool create)
+/**
+ * @brief Get a WizFolder by location.
+ * 
+ * @param strLocation 
+ * @param bCreate If the location does not exist, create one.
+ * @return QObject* 
+ */
+QObject* WizDatabase::GetFolderByLocation(const QString& strLocation, bool bCreate)
 {
-    Q_UNUSED(create);
+    if (strLocation.right(1) != "/" || strLocation.left(1) != "/")
+        return nullptr;
+        
+    if (bCreate) {
+        addExtraFolder(strLocation);
+        //TODO: 通知 WizCategoryView 更新目录树
+    }
 
-    return new WizFolder(*this, strLocation);
+    return new WizFolder(*this, strLocation, this);
+}
+
+QObject *WizDatabase::DocumentFromGUID(const QString &strGUID)
+{
+    WIZDOCUMENTDATA data;
+    if (!documentFromGuid(strGUID, data))
+        return nullptr;
+    WizDocument* pDoc = new WizDocument(*this, data, this);
+    return pDoc;
+}
+
+QVariantList WizDatabase::DocumentsFromSQLWhere(const QString& strSQLWhere)
+{
+    CWizDocumentDataArray arrayDocument;
+    CString strSQL = formatQuerySQL(TABLE_NAME_WIZ_DOCUMENT, FIELD_LIST_WIZ_DOCUMENT, strSQLWhere);
+    sqlToDocumentDataArray(strSQL, arrayDocument);
+
+    QVariantList docList;
+    for (const WIZDOCUMENTDATA& data : arrayDocument) {
+        docList.push_back(
+            QVariant::fromValue<QObject *>(new WizDocument(*this, data, this))
+        );
+    }
+
+    return docList;
 }
 
 void WizDatabase::onAttachmentModified(const QString strKbGUID, const QString& strGUID,

@@ -4134,6 +4134,16 @@ QObject* WizMainWindow::DatabaseManager()
     return &m_dbMgr;
 }
 
+QObject* WizMainWindow::CurrentDocumentBrowserObject()
+{
+    WizDocumentView* docView = currentDocumentView();
+    if (docView) {
+        return currentDocumentView()->web();
+    } else {
+        return nullptr;
+    }
+}
+
 WizDatabaseManager* WizMainWindow::DatabaseManagerEx()
 {
     return &m_dbMgr;

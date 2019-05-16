@@ -250,6 +250,8 @@ public:
     QString getLocalLanguage();
     void OnSelectionChange(const QString& currentStyle);
     void saveCurrentNote();
+    void onReturn();
+    void doPaste();
 
     QObject *publicAPIsObject() { return m_htmlEditorApp; }
 

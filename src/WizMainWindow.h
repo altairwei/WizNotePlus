@@ -514,6 +514,9 @@ public:
     WizDatabaseManager* DatabaseManagerEx();
     Q_PROPERTY(QObject* DatabaseManager READ DatabaseManager)
 
+    QObject* CurrentDocumentBrowserObject();
+    Q_PROPERTY(QObject* CurrentDocumentBrowserObject READ CurrentDocumentBrowserObject)
+
     Q_INVOKABLE QObject* CreateWizObject(const QString& strObjectID);
     Q_INVOKABLE void SetSavingDocument(bool saving);
     Q_INVOKABLE void ProcessClipboardBeforePaste(const QVariantMap& data);
