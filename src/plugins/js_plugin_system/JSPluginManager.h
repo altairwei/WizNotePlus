@@ -58,6 +58,7 @@ public:
 
 public slots:
     void handlePluginActionTriggered();
+    void notifyDocumentChanged();
 
 private:
     WizExplorerApp &m_app;

@@ -12,7 +12,7 @@ JSPluginSelectorWindow::JSPluginSelectorWindow(WizExplorerApp& app, JSPluginModu
 {
     data->parentPlugin()->initStrings();
     //
-    WizMainWindow* mw = qobject_cast<WizMainWindow*>(app.mainWindow());
+    WizMainWindow *mw = WizMainWindow::instance();
     WizWebEngineInjectObjectCollection objects = {
         {"JSPluginSpec", data->parentPlugin()},
         {"JSPluginModuleSpec", data},

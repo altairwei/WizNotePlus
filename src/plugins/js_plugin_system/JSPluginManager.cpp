@@ -239,3 +239,10 @@ void JSPluginManager::handlePluginActionTriggered()
         showPluginMainTabView(moduleData);
     }
 }
+
+void JSPluginManager::notifyDocumentChanged()
+{
+    for (auto data : m_pluginDataCollection) {
+        data->emitDocumentChanged();
+    }
+}
