@@ -1,6 +1,6 @@
 #include "IWizExplorerApp.h"
 #include "WizMainWindow.h"
-
+#include "share/WizCommonUI.h"
 #include "IWizExplorerWindow.h"
 #include "IWizCategoryCtrl.h"
 #include "IWizDocumentListCtrl.h"
@@ -14,12 +14,13 @@ IWizExplorerApp::IWizExplorerApp(WizMainWindow* mw, QObject* parent)
     m_categoryCtrl = new IWizCategoryCtrl(m_mainWindow->CategoryView(), this);
     m_docListCtrl = new IWizDocumentListCtrl(m_mainWindow->documentList(),this);
     m_database = new IWizDatabase(m_mainWindow->DatabaseManagerEx(), this);
+    m_commonUI = new WizCommonUI(this);
 }
 
 /** now just return WizExplorerApp, but should return REAL WizExplorerWindow */
 QObject* IWizExplorerApp::Window()
 {
-    return this;
+    return m_window;
 }
 
 /** return WizCategoryView's interface */
@@ -33,9 +34,19 @@ QObject* IWizExplorerApp::DocumentsCtrl()
     return m_docListCtrl;
 }
 
+QObject* IWizExplorerApp::CommonUI()
+{
+    return m_commonUI;
+}
+
 QObject* IWizExplorerApp::DatabaseManager()
 {
     return m_database;
+}
+
+QObject* IWizExplorerApp::Database()
+{
+    return m_database->Database();
 }
 
 QObject* IWizExplorerApp::CreateWizObject(const QString& strObjectID)

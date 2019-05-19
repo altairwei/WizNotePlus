@@ -2,6 +2,7 @@
 #define UTILS_PATHRESOLVE_H
 
 class QString;
+class QStringList;
 
 namespace Utils {
 
@@ -27,6 +28,7 @@ public:
     static QString qtLocaleFileName(const QString& strLocale);
     static QString localeFileName(const QString& strLocale);
     static QString introductionNotePath();
+    static QStringList pluginsAllPath();
 
 
     // wiz template

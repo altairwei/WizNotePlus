@@ -2,6 +2,8 @@
 
 #include <QClipboard>
 #include <QApplication>
+#include <QUuid>
+#include <QDir>
 
 #include "WizMisc.h"
 #include "utils/WizPathResolve.h"
@@ -17,6 +19,18 @@ QString WizCommonUI::loadTextFromFile(const QString& strFileName)
     QString strText;
     ::WizLoadUnicodeTextFromFile(strFileName, strText);
     return strText;
+}
+
+void WizCommonUI::saveTextToFile(const QString &strFileName, const QString &strText, const QString &strCharset)
+{
+    QString charset =  strCharset.toLower();
+    if (charset == "unicode" || charset == "utf-8") {
+        ::WizSaveUnicodeTextToUtf8File(strFileName, strText, false);
+    } else if (charset == "utf-16") {
+        ::WizSaveUnicodeTextToUtf16File(strFileName, strText);
+    } else {
+        ::WizSaveUnicodeTextToUtf8File(strFileName, strText);
+    }
 }
 
 QString WizCommonUI::clipboardToImage(int hwnd, const QString& strOptions)
@@ -48,4 +62,36 @@ QString WizCommonUI::clipboardToImage(int hwnd, const QString& strOptions)
         return CString();
     //
     return strFileName;
+}
+
+QString WizCommonUI::LoadTextFromFile(const QString& strFileName)
+{
+    return loadTextFromFile(strFileName);
+}
+
+void WizCommonUI::SaveTextToFile(const QString &strFileName, const QString &strText, const QString &strCharset)
+{
+    saveTextToFile(strFileName, strText, strCharset);
+}
+
+QString WizCommonUI::ClipboardToImage(int hwnd, const QString& strOptions)
+{
+    return clipboardToImage(hwnd, strOptions);
+}
+
+QString WizCommonUI::GetSpecialFolder(const QString &bstrFolderName)
+{
+    if (bstrFolderName == "TemporaryFolder") {
+        return Utils::WizPathResolve::tempPath();
+    } else if (bstrFolderName == "AppPath") {
+        return Utils::WizPathResolve::appPath();
+    } else {
+        return "";
+    }
+}
+
+QString WizCommonUI::GetATempFileName(const QString &bstrFileExt)
+{
+    QString strTempFileName = QUuid::createUuid().toString() + bstrFileExt;
+    return QDir(GetSpecialFolder("TemporaryFolder")).absoluteFilePath(strTempFileName);
 }

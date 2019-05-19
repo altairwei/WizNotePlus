@@ -13,6 +13,11 @@ private:
 
 public:
     IWizExplorerWindow(WizMainWindow* mw, QObject* parent);
+
+    Q_INVOKABLE QObject *CurrentDocument();
+    Q_INVOKABLE QObject* CurrentDocumentBrowserObject();
+    Q_INVOKABLE void ViewDocument(QObject *pWizDocument, bool vbOpenInNewTab = true);
+
 };
 
 #endif // WIZEXPLORERWINDOW_H

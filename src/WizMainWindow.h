@@ -241,6 +241,7 @@ private:
     void initSyncQuick();
     void initActions();
     void initToolBar();
+    void initToolBarPluginButtons();
     void initClient();
     //
 #ifndef Q_OS_MAC
@@ -278,7 +279,7 @@ public:
     WizProgressDialog* progressDialog() const { return m_progress; }
     WizIAPDialog* iapDialog();
 
-    QObject* componentInterface();
+    QObject* publicAPIsObject();
 
     void resetPermission(const QString& strKbGUID, const QString& strDocumentOwner);
     void viewDocument(const WIZDOCUMENTDATAEX& data, bool addToHistory);
@@ -513,6 +514,9 @@ public:
     QObject* DatabaseManager();
     WizDatabaseManager* DatabaseManagerEx();
     Q_PROPERTY(QObject* DatabaseManager READ DatabaseManager)
+
+    QObject* CurrentDocumentBrowserObject();
+    Q_PROPERTY(QObject* CurrentDocumentBrowserObject READ CurrentDocumentBrowserObject)
 
     Q_INVOKABLE QObject* CreateWizObject(const QString& strObjectID);
     Q_INVOKABLE void SetSavingDocument(bool saving);

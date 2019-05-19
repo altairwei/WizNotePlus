@@ -73,7 +73,8 @@
 #include "html/WizHtmlReader.h"
 
 #include "WizTitleBar.h"
-#include "interface/IWizHtmlEditorApp.h"
+#include "plugins/public_apis_object/IWizHtmlEditorApp.h"
+#include "plugins/js_plugin_system/JSPluginManager.h"
 
 #include "gumbo-query/Document.h"
 #include "gumbo-query/Node.h"
@@ -180,12 +181,9 @@ WizDocumentWebView::WizDocumentWebView(WizExplorerApp& app, QWidget* parent)
     m_timerAutoSave.setInterval(1*60*1000); // 1 minutes
     connect(&m_timerAutoSave, SIGNAL(timeout()), SLOT(onTimerAutoSaveTimout()));
     //
-    // 向页面JS脚本空间注册对象
-    //addToJavaScriptWindowObject("WizExplorerApp", m_app.object());
     WizMainWindow* mainWindow = qobject_cast<WizMainWindow*>(m_app.mainWindow());
-    addToJavaScriptWindowObject("WizExplorerApp", mainWindow->componentInterface());
-    //addToJavaScriptWindowObject("WizQtEditor", this);
-    addToJavaScriptWindowObject("WizQtEditor", m_htmlEditorApp);
+    addObjectToJavaScriptClient("WizExplorerApp", mainWindow->publicAPIsObject());
+    addObjectToJavaScriptClient("WizQtEditor", m_htmlEditorApp);
 
     connect(this, SIGNAL(loadFinishedEx(bool)), SLOT(onEditorLoadFinished(bool)));
     //
@@ -1240,6 +1238,7 @@ void WizDocumentWebView::onEditorLoadFinished(bool ok)
     qDebug() << strCode;
     //
     page()->runJavaScript(strCode);
+    JSPluginManager::instance().notifyDocumentChanged();
 }
 
 /**
@@ -2664,6 +2663,24 @@ void WizDocumentWebView::saveCurrentNote()
     WizExecuteOnThread(WIZ_THREAD_MAIN, [=]{
         //
         onTimerAutoSaveTimout();
+        //
+    });
+}
+
+void WizDocumentWebView::onReturn()
+{
+    WizExecuteOnThread(WIZ_THREAD_MAIN, [=]{
+        //
+        tryResetTitle();
+        //
+    });
+}
+
+void WizDocumentWebView::doPaste()
+{
+    WizExecuteOnThread(WIZ_THREAD_MAIN, [=]{
+        //
+        onPasteCommand();
         //
     });
 }

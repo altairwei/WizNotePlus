@@ -300,25 +300,37 @@ int WizMainTabBrowser::createTab(WizDocumentView *docView)
 }
 
 /**
- * @brief 通过地址来浏览页面
- * @param url 要浏览的地址，可以使本地文件地址;
+ * @brief create a tab with website view.
+ * 
+ * @param websiteView 
+ * @return int 
  */
-int WizMainTabBrowser::createTab(const QUrl &url)
+int WizMainTabBrowser::createTab(WizWebsiteView *websiteView)
 {
-    // 创建网页视图组件
-    WizWebsiteView* websiteView = new WizWebsiteView(m_app);
+    WizWebEngineView *webView = websiteView->getWebView();
+    // create and int tab page
     setupWebsiteView(websiteView);
-    // 创建标签页
-    int index = addTab(websiteView, tr("Untitled"));
+    int index = addTab(websiteView, webView->title());
     setupTab(websiteView);
-    websiteView->getWebView()->resize(currentWidget()->size()); // Workaround for QTBUG-61770
-    // 设置地址并浏览
-    websiteView->viewHtml(url);
-    websiteView->getWebView()->setFocus();
-    // 设置成当前部件
+    // Workaround for QTBUG-61770
+    webView->resize(currentWidget()->size());
+    // focus on it
+    webView->setFocus();
     setCurrentWidget(websiteView);
     //
     return index;
+}
+
+/**
+ * @brief create a tab with url
+ * @param url The url can be local filename.
+ */
+int WizMainTabBrowser::createTab(const QUrl &url)
+{
+    // create default website view
+    WizWebsiteView* websiteView = new WizWebsiteView(m_app);
+    websiteView->viewHtml(url);
+    return createTab(websiteView);
 }
 
 /**

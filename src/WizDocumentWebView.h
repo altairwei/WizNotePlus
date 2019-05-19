@@ -15,7 +15,7 @@
 #include "WizDef.h"
 #include "share/WizObject.h"
 #include "share/WizWebEngineView.h"
-#include "interface/IWizHtmlEditorApp.h"
+#include "plugins/public_apis_object/IWizHtmlEditorApp.h"
 
 
 class WizObjectDownloaderHost;
@@ -160,9 +160,6 @@ public:
     //
     void clear();
     //
-    friend class WizDocumentWebViewPage;
-    friend class IWizHtmlEditorApp;
-    //
     void waitForDone();
 
     // view and save
@@ -253,6 +250,10 @@ public:
     QString getLocalLanguage();
     void OnSelectionChange(const QString& currentStyle);
     void saveCurrentNote();
+    void onReturn();
+    void doPaste();
+
+    QObject *publicAPIsObject() { return m_htmlEditorApp; }
 
 private:
     void initEditorActions();
@@ -442,6 +443,9 @@ private:
     QString getHighlightKeywords();
     //
 //    bool shouldAddUserDefaultCSS();
+
+    friend class WizDocumentWebViewPage;
+    friend class IWizHtmlEditorApp;
 };
 
 

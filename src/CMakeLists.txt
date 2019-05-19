@@ -136,6 +136,11 @@ set(wiznote_SOURCES
     share/jsoncpp/jsoncpp.cpp
     share/WizRequest.cpp
 
+    plugins/js_plugin_system/JSPluginManager.cpp
+    plugins/js_plugin_system/JSPluginSpec.cpp
+    plugins/js_plugin_system/JSPluginSelectorWindow.cpp
+    plugins/js_plugin_system/JSPluginHtmlDialog.cpp
+
     WizCategoryView.cpp
     WizCategoryViewItem.cpp
     WizDevToolsDialog.cpp
@@ -202,12 +207,12 @@ set(wiznote_SOURCES
     WizInitBizCertDialog.cpp
     share/WizDocumentStyle.cpp
 
-    interface/IWizHtmlEditorApp.cpp
-    interface/IWizExplorerWindow.cpp
-    interface/IWizCategoryCtrl.cpp
-    interface/IWizDocumentListCtrl.cpp
-    interface/IWizDatabase.cpp
-    interface/IWizExplorerApp.cpp
+    plugins/public_apis_object/IWizHtmlEditorApp.cpp
+    plugins/public_apis_object/IWizExplorerWindow.cpp
+    plugins/public_apis_object/IWizCategoryCtrl.cpp
+    plugins/public_apis_object/IWizDocumentListCtrl.cpp
+    plugins/public_apis_object/IWizDatabase.cpp
+    plugins/public_apis_object/IWizExplorerApp.cpp
 )
 
 set(wiznote_HEADERS
@@ -270,6 +275,11 @@ set(wiznote_HEADERS
     share/jsoncpp/json/json.h
     share/jsoncpp/json/json-forwards.h
     share/WizRequest.h
+
+    plugins/js_plugin_system/JSPluginManager.h
+    plugins/js_plugin_system/JSPluginSpec.h
+    plugins/js_plugin_system/JSPluginSelectorWindow.h
+    plugins/js_plugin_system/JSPluginHtmlDialog.h
 
     WizDef.h
     WizActions.h
@@ -376,12 +386,12 @@ set(wiznote_HEADERS
     share/WizDocumentStyle.h
     WizCombineNotesDialog.h
 
-    interface/IWizHtmlEditorApp.h
-    interface/IWizExplorerWindow.h
-    interface/IWizCategoryCtrl.h
-    interface/IWizDocumentListCtrl.h
-    interface/IWizDatabase.h
-    interface/IWizExplorerApp.h
+    plugins/public_apis_object/IWizHtmlEditorApp.h
+    plugins/public_apis_object/IWizExplorerWindow.h
+    plugins/public_apis_object/IWizCategoryCtrl.h
+    plugins/public_apis_object/IWizDocumentListCtrl.h
+    plugins/public_apis_object/IWizDatabase.h
+    plugins/public_apis_object/IWizExplorerApp.h
 )
 
 set(wiznote_FORMS

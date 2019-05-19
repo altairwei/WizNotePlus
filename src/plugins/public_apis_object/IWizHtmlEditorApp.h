@@ -48,6 +48,8 @@ public:
     Q_INVOKABLE void saveCurrentNote();
     Q_INVOKABLE void setModified(bool b);
     Q_INVOKABLE void onNoteLoadFinished();
+    Q_INVOKABLE void onReturn();
+    Q_INVOKABLE void doPaste();
 
 
 signals:

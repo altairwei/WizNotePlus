@@ -104,8 +104,11 @@
 #include "share/jsoncpp/json/json.h"
 
 #include "WizCellButton.h"
-#include "interface/IWizExplorerApp.h"
+#include "plugins/public_apis_object/IWizExplorerApp.h"
 #include "WizFileImporter.h"
+
+#include "plugins/js_plugin_system/JSPluginManager.h"
+#include "plugins/js_plugin_system/JSPluginSpec.h"
 
 #define MAINWINDOW  "MainWindow"
 
@@ -2151,6 +2154,8 @@ void WizMainWindow::initToolBar()
     buttonNew->setAutoRaise(true);
     //buttonNew->setAction(newNoteAction);
     m_toolBar->addWidget(buttonNew);
+    m_toolBar->addWidget(new WizFixedSpacer(QSize(5, 1), m_toolBar));
+    initToolBarPluginButtons();
     //
     m_toolBar->addWidget(new WizSpacer(m_toolBar));
 
@@ -2160,6 +2165,22 @@ void WizMainWindow::initToolBar()
 #endif
     //
     connect(m_searchWidget, SIGNAL(doSearch(const QString&)), SLOT(on_search_doSearch(const QString&)));
+}
+
+
+void WizMainWindow::initToolBarPluginButtons()
+{
+    JSPluginManager &jsPluginMgr = JSPluginManager::instance();
+    QList<JSPluginModuleSpec *> modules = jsPluginMgr.modulesByKeyValue("ModuleType", "Action");
+    for (auto moduleData : modules) {
+        if (moduleData->buttonLocation() != "Main")
+            continue;
+        QAction *ac = jsPluginMgr.createPluginAction(m_toolBar, moduleData);
+        connect(ac, &QAction::triggered, 
+            &jsPluginMgr, &JSPluginManager::handlePluginActionTriggered);
+
+        m_toolBar->addAction(ac);
+    }
 }
 
 /**
@@ -2424,7 +2445,7 @@ WizIAPDialog*WizMainWindow::iapDialog()
  * @brief Get IWizExplorerApp for the main window.
  * @return
  */
-QObject* WizMainWindow::componentInterface()
+QObject* WizMainWindow::publicAPIsObject()
 {
     return m_IWizExplorerApp;
 }
@@ -4126,6 +4147,16 @@ QObject* WizMainWindow::DocumentsCtrl()
 QObject* WizMainWindow::DatabaseManager()
 {
     return &m_dbMgr;
+}
+
+QObject* WizMainWindow::CurrentDocumentBrowserObject()
+{
+    WizDocumentView* docView = currentDocumentView();
+    if (docView) {
+        return currentDocumentView()->web();
+    } else {
+        return nullptr;
+    }
 }
 
 WizDatabaseManager* WizMainWindow::DatabaseManagerEx()

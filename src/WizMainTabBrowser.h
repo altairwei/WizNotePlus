@@ -66,6 +66,7 @@ public slots:
     void handleCurrentChanged(int index);
     void handleContextMenuRequested(const QPoint &pos);
     int createTab(WizDocumentView *docView);
+    int createTab(WizWebsiteView *websiteView);
     int createTab(const QUrl &url);
     void closeTab(int index);
     void closeOtherTabs(int index);

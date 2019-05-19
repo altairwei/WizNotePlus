@@ -111,6 +111,7 @@ private:
     void showInfoBar();
     void showEditorBar();
     void setTagBarVisible(bool visible);
+    void initPlugins(QToolBar* docToolbar);
     QMenu* createEditorMenu();
     //
     WizDocumentWebView* m_editor;
