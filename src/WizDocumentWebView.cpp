@@ -74,6 +74,7 @@
 
 #include "WizTitleBar.h"
 #include "plugins/public_apis_object/IWizHtmlEditorApp.h"
+#include "plugins/js_plugin_system/JSPluginManager.h"
 
 #include "gumbo-query/Document.h"
 #include "gumbo-query/Node.h"
@@ -1237,6 +1238,7 @@ void WizDocumentWebView::onEditorLoadFinished(bool ok)
     qDebug() << strCode;
     //
     page()->runJavaScript(strCode);
+    JSPluginManager::instance().notifyDocumentChanged();
 }
 
 /**

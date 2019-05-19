@@ -49,6 +49,9 @@
 
 #include "core/WizCommentManager.h"
 
+#include "plugins/js_plugin_system/JSPluginManager.h"
+#include "plugins/js_plugin_system/JSPluginSpec.h"
+
 #define WIZACTION_TITLEBAR_SHARE_DOCUMENT_BY_LINK QObject::tr("Share by Link")
 #define WIZACTION_TITLEBAR_SHARE_DOCUMENT_BY_EMAIL QObject::tr("Share by Email")
 
@@ -228,6 +231,8 @@ WizTitleBar::WizTitleBar(WizExplorerApp& app, QWidget *parent)
     layoutInfo2->addWidget(m_commentsBtn);
     */
 
+    initPlugins(m_documentToolBar);
+
     // 笔记状态信息布局
     QVBoxLayout* layoutInfo1 = new QVBoxLayout();
     layoutInfo1->setContentsMargins(Utils::WizStyleHelper::editorBarMargins());
@@ -251,6 +256,27 @@ WizTitleBar::WizTitleBar(WizExplorerApp& app, QWidget *parent)
             SLOT(on_commentTokenAcquired(QString)));
     connect(m_commentManager, SIGNAL(commentCountAcquired(QString,int)),
             SLOT(on_commentCountAcquired(QString,int)));
+}
+
+/**
+ * @brief Init plugins' tool button on document tool bar.
+ * 
+ * @param docToolbar 
+ */
+void WizTitleBar::initPlugins(QToolBar* docToolbar)
+{
+    int nTitleHeight = Utils::WizStyleHelper::titleEditorHeight();
+    JSPluginManager &jsPluginMgr = JSPluginManager::instance();
+    QList<JSPluginModuleSpec *> modules = jsPluginMgr.modulesByKeyValue("ModuleType", "Action");
+    for (auto moduleData : modules) {
+        if (moduleData->buttonLocation() != "Document")
+            continue;
+        QAction *ac = jsPluginMgr.createPluginAction(docToolbar, moduleData);
+        connect(ac, &QAction::triggered, 
+            &jsPluginMgr, &JSPluginManager::handlePluginActionTriggered);
+
+        docToolbar->addAction(ac);
+    }
 }
 
 /**

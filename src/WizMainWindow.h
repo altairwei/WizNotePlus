@@ -241,6 +241,7 @@ private:
     void initSyncQuick();
     void initActions();
     void initToolBar();
+    void initToolBarPluginButtons();
     void initClient();
     //
 #ifndef Q_OS_MAC
