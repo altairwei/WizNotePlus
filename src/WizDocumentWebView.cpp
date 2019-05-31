@@ -76,9 +76,6 @@
 #include "plugins/public_apis_object/IWizHtmlEditorApp.h"
 #include "plugins/js_plugin_system/JSPluginManager.h"
 
-#include "gumbo-query/Document.h"
-#include "gumbo-query/Node.h"
-
 enum WizLinkType {
     WizLink_Doucment,
     WizLink_Attachment
@@ -851,15 +848,6 @@ void WizDocumentWebView::loadDocumentToExternalEditor(const WIZDOCUMENTDATA &doc
 QString WizDocumentWebView::documentTitle()
 {
     return view()->note().strTitle;
-}
-
-void WizDocumentWebView::queryHtmlNodeText(QString& strHtml, QString strSelector)
-{
-    CDocument doc;
-    doc.parse(strHtml.toStdString().c_str());
-
-    CSelection c = doc.find(strSelector.toStdString().c_str());
-    qDebug() << QString::fromUtf8(c.nodeAt(0).text().c_str()); // some link
 }
 
 void WizDocumentWebView::replaceDefaultCss(QString& strHtml)
@@ -2452,13 +2440,6 @@ void WizDocumentWebView::saveAsRenderedHtml(QString& destFileName, std::function
     //Tags: wiz_tmp_tag
     // 现在不需要去除这些东西了，因为本就要渲染后的页面
     page()->toHtml([=](const QString& strHtml){
-        //
-        CDocument doc;
-        doc.parse(strHtml.toStdString().c_str());
-        size_t scriptNum = doc.find("script[name=\"wiz_inner_script\"]").nodeNum();
-        qDebug() << QString("There are %1 wiz_inner_script").arg(QString::number(scriptNum));
-        size_t styleNum = doc.find("style[name=\"wiz_tmp_editor_style\"]").nodeNum();
-        qDebug() << QString("There are %1 wiz_tmp_editor_style").arg(QString::number(styleNum));
         //
         if(::WizSaveUnicodeTextToUtf8File(destFileName, strHtml, false))
             callback(destFileName);

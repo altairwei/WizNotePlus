@@ -12,17 +12,14 @@ class WizNotePlusConan(ConanFile):
         "OpenSSL/1.0.2p@conan/stable",
         "cryptopp/5.6.5@bincrafters/stable",
         "zlib/1.2.11@conan/stable",
-        "quazip/0.7.6@altairwei/testing",
-        "Gumbo/0.10.1@altairwei/testing",
-        "GumboQuery/latest@altairwei/testing"
+        "quazip/0.7.6@altairwei/testing"
     )
     options = {}
     default_options = {
         "OpenSSL:shared": True,
         "cryptopp:shared": False,
         "zlib:shared": False,
-        "quazip:shared": False,
-        "GumboQuery:shared": False
+        "quazip:shared": False
     }
 
     def imports(self):

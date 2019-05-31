@@ -181,7 +181,6 @@ public:
     void viewDocumentInExternalEditor(const WizExternalEditorData &editorData);
     void loadDocumentToExternalEditor(const WIZDOCUMENTDATA &docData, const WizExternalEditorData &editorData);
     QString documentTitle();
-    void queryHtmlNodeText(QString& strHtml, QString strSelector);
 
     // initialize editor style before render, only invoke once.
     void replaceDefaultCss(QString& strHtml);
