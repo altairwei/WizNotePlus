@@ -212,7 +212,7 @@ bool WizFileImporter::importFile(const QString& strFile, const QString& strKbGUI
 
     WizNoteManager manager(m_dbMgr);
     WIZDOCUMENTDATA doc;
-    bool ret = manager.createNote(doc, strKbGUID, strTitle, strHtml, strLocation, tag);
+    bool ret = manager.createNote(doc, strKbGUID, strTitle, strHtml, strFile, strLocation, tag);
     if (!ret)
     {
         qCritical() << "create note faile : " << strTitle;

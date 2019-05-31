@@ -138,6 +138,35 @@ bool WizNoteManager::createNote(WIZDOCUMENTDATA& data, const QString& strKbGUID,
     return true;
 }
 
+bool WizNoteManager::createNote(WIZDOCUMENTDATA& data, const QString& strKbGUID, const QString& strTitle,
+                const QString& strHtml, const QString& strFileName, const QString& strLocation, const WIZTAGDATA& tag)
+{
+    QString location = strLocation;
+    if (location.isEmpty())
+    {
+        location = m_dbMgr.db(strKbGUID).getDefaultNoteLocation();
+    }
+
+    if (data.strType.isEmpty())
+    {
+        data.strType = WIZ_DOCUMENT_TYPE_NORMAL;
+    }
+
+    if (!m_dbMgr.db(strKbGUID).createDocumentAndInit(strHtml, strFileName, 0, strTitle, "newnote", location, "", data))
+    {
+        qCritical() << "Failed to new document!";
+        return false;
+    }
+
+    if (!tag.strGUID.isEmpty())
+    {
+        WizDocument doc(m_dbMgr.db(strKbGUID), data);
+        doc.addTag(tag);
+    }
+
+    return true;
+}
+
 bool WizNoteManager::createNoteByTemplate(WIZDOCUMENTDATA& data, const WIZTAGDATA& tag, const QString& strZiw)
 {
     //通过模板创建笔记时，如果模板文件不存在则创建一篇空笔记
