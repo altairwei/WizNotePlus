@@ -39,7 +39,6 @@
 #include "sync/WizAvatarHost.h"
 #include "WizThumbCache.h"
 #include "WizMainWindow.h"
-#include "WizDocumentWebEngine.h"
 #include "WizLoginDialog.h"
 
 #ifdef Q_OS_MAC

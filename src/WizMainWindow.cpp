@@ -40,7 +40,6 @@
 #include "WizTitleBar.h"
 #include "WizMainTabBrowser.h"
 
-#include "WizDocumentWebEngine.h"
 #include "WizDocumentWebView.h"
 #include "WizActions.h"
 #include "WizPreferenceDialog.h"

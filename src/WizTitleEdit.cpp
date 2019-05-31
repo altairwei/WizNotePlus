@@ -11,7 +11,6 @@
 #include "WizDocumentView.h"
 #include "WizMainWindow.h"
 #include "WizDocumentWebView.h"
-#include "WizDocumentWebEngine.h"
 #include "share/WizQtHelper.h"
 
 WizTitleEdit::WizTitleEdit(QWidget *parent)

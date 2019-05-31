@@ -14,7 +14,6 @@
 #include "WizMainWindow.h"
 #include "WizMainTabBrowser.h"
 #include "WizEditorToolBar.h"
-#include "WizDocumentWebEngine.h"
 
 #ifdef Q_OS_MAC
 #include "mac/WizMacHelper.h"

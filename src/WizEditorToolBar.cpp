@@ -25,7 +25,6 @@
 #include "share/WizMisc.h"
 #include "WizDef.h"
 #include "share/WizSettings.h"
-#include "WizDocumentWebEngine.h"
 #include "WizDocumentWebView.h"
 #include "WizActions.h"
 #include "utils/WizLogger.h"
