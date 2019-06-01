@@ -109,6 +109,8 @@
 #include "plugins/js_plugin_system/JSPluginManager.h"
 #include "plugins/js_plugin_system/JSPluginSpec.h"
 
+#include "plugins/public_apis_server/PublicAPIsServer.h"
+
 #define MAINWINDOW  "MainWindow"
 
 
@@ -285,6 +287,9 @@ WizMainWindow::WizMainWindow(WizDatabaseManager& dbMgr, QWidget *parent)
     //
     connect(m_extFileWatcher, &QFileSystemWatcher::fileChanged, 
                     this, &WizMainWindow::onWatchedDocumentChanged);
+    //
+    m_publicAPIsServer = new PublicAPIsServer(
+        {{"WizExplorerApp", m_IWizExplorerApp}}, this);
 }
 
 /**

@@ -61,7 +61,7 @@ QString WizDatabase::m_strUserId = QString();
  */
 QString GetResoucePathFromFile(const QString& strHtmlFileName)
 {
-    if (!strHtmlFileName.isEmpty() && !QFile::exists(strHtmlFileName))
+    if (strHtmlFileName.isEmpty() || !QFile::exists(strHtmlFileName))
         return QString();
 
     QString strTitle = Utils::WizMisc::extractFileTitle(strHtmlFileName);
@@ -3814,7 +3814,9 @@ bool WizDatabase::createDocumentAndInit(const CString& strHtml, \
         data.strOwner = getUserId();
         bRet = createDocument(strTitle, strName, strLocation, strHtmlUrl, data.nProtected, data);
         if (bRet)
-        {
+        { 
+            //FIXME: Why use strURL? strHtmlUrl is the real local file, which can be used to
+            //          collect files in index_files folder.
             bRet = updateDocumentData(data, strHtml, strURL, nFlags);
 
             Q_EMIT documentCreated(data);

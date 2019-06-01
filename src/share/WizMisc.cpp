@@ -2999,6 +2999,9 @@ bool WizURLDownloadToFile(const QString& url, const QString& fileName, bool isIm
     do
     {
         QNetworkRequest request(newUrl);
+        request.setAttribute(
+            QNetworkRequest::RedirectPolicyAttribute, 
+            QNetworkRequest::NoLessSafeRedirectPolicy);
         //
         reply = netCtrl.get(request);
         WizAutoTimeOutEventLoop loop(reply);

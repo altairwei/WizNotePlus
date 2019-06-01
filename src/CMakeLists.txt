@@ -127,8 +127,6 @@ set(wiznote_SOURCES
     widgets/WizEmailShareDialog.cpp
     widgets/WizTemplatePurchaseDialog.cpp
     widgets/WizExecutingActionDialog.cpp
-    share/WebSocketClientWrapper.cpp
-    share/WebSocketTransport.cpp
     share/WizWebEngineView.cpp
     widgets/WizTableSelector.cpp
     widgets/WizUserServiceExprDialog.cpp
@@ -140,6 +138,10 @@ set(wiznote_SOURCES
     plugins/js_plugin_system/JSPluginSpec.cpp
     plugins/js_plugin_system/JSPluginSelectorWindow.cpp
     plugins/js_plugin_system/JSPluginHtmlDialog.cpp
+
+    plugins/public_apis_server/PublicAPIsServer.cpp
+    plugins/public_apis_server/WebSocketClientWrapper.cpp
+    plugins/public_apis_server/WebSocketTransport.cpp
 
     WizCategoryView.cpp
     WizCategoryViewItem.cpp
@@ -281,6 +283,10 @@ set(wiznote_HEADERS
     plugins/js_plugin_system/JSPluginSelectorWindow.h
     plugins/js_plugin_system/JSPluginHtmlDialog.h
 
+    plugins/public_apis_server/PublicAPIsServer.h
+    plugins/public_apis_server/WebSocketClientWrapper.h
+    plugins/public_apis_server/WebSocketTransport.h
+
     WizDef.h
     WizActions.h
     WizNoteStyle.h
@@ -351,8 +357,6 @@ set(wiznote_HEADERS
     widgets/WizScreenShotWidget.h
     widgets/WizVerificationCodeDialog.h
     widgets/WizEmailShareDialog.h
-    share/WebSocketClientWrapper.h
-    share/WebSocketTransport.h
     share/WizWebEngineView.h
     WizWebEngineInjectObject.h
     widgets/WizShareLinkDialog.h

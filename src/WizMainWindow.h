@@ -74,7 +74,8 @@ class WizDocumentWebViewSaverThread;
 class WizSingleDocumentViewDelegate;
 class QWebEngineView;
 
-class IWizExplorerApp; // interface
+class IWizExplorerApp;
+class PublicAPIsServer;
 
 #ifdef Q_OS_MAC
 class WizMacToolBarButtonItem;
@@ -233,6 +234,8 @@ private:
     //
     QFileSystemWatcher* m_extFileWatcher;
     QMap<QString, WizExternalEditTask> m_watchedFileData;
+
+    PublicAPIsServer *m_publicAPIsServer;
 
 private:
     void initQuitHandler();

@@ -4,9 +4,11 @@
 #include <QApplication>
 #include <QUuid>
 #include <QDir>
+#include <QDebug>
 
 #include "WizMisc.h"
 #include "utils/WizPathResolve.h"
+#include "share/WizMisc.h"
 
 
 WizCommonUI::WizCommonUI(QObject* parent)
@@ -94,4 +96,31 @@ QString WizCommonUI::GetATempFileName(const QString &bstrFileExt)
 {
     QString strTempFileName = QUuid::createUuid().toString() + bstrFileExt;
     return QDir(GetSpecialFolder("TemporaryFolder")).absoluteFilePath(strTempFileName);
+}
+
+/**
+ * @brief Creates the directory path dirPath.
+ * 
+ *      The function will create all parent directories necessary to create the directory.
+ * 
+ * @param bstrPath 
+ * @return true 
+ * @return false 
+ */
+bool WizCommonUI::CreateDirectory(const QString &bstrPath)
+{
+    return QDir().mkpath(bstrPath);
+}
+
+/**
+ * @brief Download resource to file.
+ * 
+ * @param bstrURL 
+ * @param bstrFileName 
+ * @return true 
+ * @return false 
+ */
+bool WizCommonUI::URLDownloadToFile(const QString &bstrURL, const QString &bstrFileName, bool isImage)
+{
+    return WizURLDownloadToFile(bstrURL, bstrFileName, isImage);
 }
