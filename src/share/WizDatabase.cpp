@@ -3812,12 +3812,14 @@ bool WizDatabase::createDocumentAndInit(const CString& strHtml, \
 
         data.strKbGUID = kbGUID();
         data.strOwner = getUserId();
-        bRet = createDocument(strTitle, strName, strLocation, strHtmlUrl, data.nProtected, data);
+        //FIXME: Why did it use strHtmlUrl ? strURL is really an attribute of document.
+        //  So, I made a temporary correction.
+        bRet = createDocument(strTitle, strName, strLocation, strURL, data.nProtected, data);
         if (bRet)
         { 
-            //FIXME: Why use strURL? strHtmlUrl is the real local file, which can be used to
-            //          collect files in index_files folder.
-            bRet = updateDocumentData(data, strHtml, strURL, nFlags);
+            //FIXME: Why did it use strURL? strHtmlUrl is the real local file, which can be used to
+            //  collect files in index_files folder. So, I made a temporary correction.
+            bRet = updateDocumentData(data, strHtml, strHtmlUrl, nFlags);
 
             Q_EMIT documentCreated(data);
         }

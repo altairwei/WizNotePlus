@@ -368,8 +368,8 @@ bool WizHtmlCollector::downloadImage(const QString& strUrl, QString& strFileName
 }
 
 /**
- * @brief WizHtmlCollector::collect
- * @param strUrl
+ * @brief Collect html and it's assets.
+ * @param strUrl Can be local file or remote url.
  * @param strHtml
  * @param mainPage
  * @param strTempPath

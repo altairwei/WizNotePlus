@@ -28,7 +28,7 @@ bool IWizDatabase::CreateDocument(const QString &bstrIndexFileName, const QStrin
         location = db.getDefaultNoteLocation();
     // Create document
     bool bRet = db.createDocumentAndInit(
-        strHtml, bstrIndexFileName, 0, bstrTitle, "newnote", location, bstrIndexFileName, docData);
+        strHtml, bstrIndexFileName, 0, bstrTitle, "newnote", location, bstrURL, docData);
     if (!bRet)
         return bRet;
     // Add tags
