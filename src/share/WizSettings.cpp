@@ -652,11 +652,9 @@ QString WizUserSettings::defaultFontFamily()
     if (!strFont.isEmpty())
         return strFont;
 
-#ifdef Q_OS_MAC
-    return "Helvetica Neue";
-#else
-    return "Arial";
-#endif
+    return "Helvetica, \"Hiragino Sans GB\", \"微软雅黑\", \"Microsoft YaHei UI\", "
+                "SimSun, SimHei, \"Helvetica Neue\", Arial, sans-serif;";
+
 }
 
 void WizUserSettings::setDefaultFontFamily(const QString& strFont)
