@@ -167,7 +167,10 @@ if(UNIX)
     endif(APPLE)
 elseif(WIN32)
     #TODO: Windows platform
-
+    file(MAKE_DIRECTORY 
+        ${WIZNOTE_BUILD_DIR}
+        ${WIZNOTE_PACKAGE_DIR}
+    )
 else(UNIX)
     message(FATAL_ERROR "\nCan't detect which platform your are useing!")
 endif(UNIX)
@@ -263,15 +266,12 @@ if(GENERATE_INSTALL_DIR)
             message(FATAL_ERROR "Fail to install WizNotePlus project!")
         endif()
     elseif(WIN32)
-        # use NMake Makefiles generator
+        # Windows platform
         message("\nStart install WizNotePlus project:\n")
-        execute_process(COMMAND nmake install
-            WORKING_DIRECTORY ${WIZNOTE_BUILD_DIR}
-            RESULT_VARIABLE result
-        )
-        if(NOT result EQUAL "0")
-            message(FATAL_ERROR "Fail to install WizNotePlus project!")
-        endif()
+        file(GLOB all_bin ${WIZNOTE_BUILD_DIR}/bin/*)
+        file(COPY ${all_bin} DESTINATION ${WIZNOTE_PACKAGE_DIR}/WizNote/bin )
+        file(GLOB all_share ${WIZNOTE_BUILD_DIR}/share/*)
+        file(COPY ${all_share} DESTINATION ${WIZNOTE_PACKAGE_DIR}/WizNote/share )
     else()
         # unavailable platform
         message(FATAL_ERROR "\nCan't detect which platform your are useing!")
@@ -526,6 +526,14 @@ if(GENERATE_INSTALL_DIR AND GENERATE_PACKAGE)
         endif(APPLE)
     elseif(WIN32)
         # Windows platform
+        message("\nStart package WizNotePlus project:\n")
+        execute_process(COMMAND ${QTDIR}/bin/windeployqt ${WIZNOTE_PACKAGE_DIR}/WizNote/bin
+            WORKING_DIRECTORY ${WIZNOTE_PACKAGE_DIR}
+            RESULT_VARIABLE result
+        )
+        if(NOT result EQUAL "0")
+            message(FATAL_ERROR "Fail to package WizNotePlus project!")
+        endif()
 
     else(UNIX)
         message(FATAL_ERROR "\nCan't detect which platform your are useing!")
