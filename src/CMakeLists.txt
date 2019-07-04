@@ -538,7 +538,10 @@ else()
     add_definitions(-DUNICODE=TRUE)
     add_definitions(-D_UNICODE=TRUE)
     #add_compile_options("/utf-8") # UNICODE or _UNICODE may not work
-    add_executable(WizNote WIN32 ${wiznote_SOURCES} ${wiznote_HEADERS} ${wiznote_FORM_HEADERS} ${wiznote_QM} ${wiznote_RC})
+    add_executable(WizNote WIN32 ${wiznote_SOURCES} ${wiznote_HEADERS} 
+        ${wiznote_FORM_HEADERS} ${wiznote_QM} ${wiznote_RC} 
+        ${CMAKE_SOURCE_DIR}/resources/logo.rc
+    )
     set_target_properties(${PROJECT_NAME} PROPERTIES AUTOMOC_MOC_OPTIONS "-DQ_OS_WIN32")
 
     install(TARGETS ${PROJECT_NAME} RUNTIME DESTINATION bin)
