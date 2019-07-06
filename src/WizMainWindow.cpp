@@ -153,11 +153,7 @@ WizMainWindow::WizMainWindow(WizDatabaseManager& dbMgr, QWidget *parent)
     , m_toolBar(new QToolBar("Main", titleBar()))
     , m_menu(new QMenu(clientWidget()))
     , m_spacerForToolButtonAdjust(nullptr)
-    #ifdef Q_OS_WIN
-    , m_useSystemBasedStyle(false)
-    #else
     , m_useSystemBasedStyle(m_settings->useSystemBasedStyle())
-    #endif
 #endif
     , m_actions(new WizActions(*this, this))
     , m_category(new WizCategoryView(*this, this))
@@ -2045,10 +2041,9 @@ void WizMainWindow::initToolBar()
 #ifndef Q_OS_MAC
     // 将标题工具栏添加到布局
     clientLayout()->addWidget(m_toolBar);
-#ifdef Q_OS_LINUX
     // 根据是否使用系统标题栏样式来选择窗口样式
-    setWindowStyleForLinux(m_useSystemBasedStyle);
-#endif
+    setWindowStyle(m_useSystemBasedStyle);
+
 #endif
 
 #ifdef Q_OS_MAC
@@ -4452,8 +4447,7 @@ void WizMainWindow::initTrayIcon(QSystemTrayIcon* trayIcon)
 #endif
 }
 
-#ifdef Q_OS_LINUX
-void WizMainWindow::setWindowStyleForLinux(bool bUseSystemStyle)
+void WizMainWindow::setWindowStyle(bool bUseSystemStyle)
 {
     if (bUseSystemStyle)
     {
@@ -4470,7 +4464,6 @@ void WizMainWindow::setWindowStyleForLinux(bool bUseSystemStyle)
         titleBar()->closeButton()->setVisible(false);
     }
 }
-#endif
 
 void WizMainWindow::setMobileFileReceiverEnable(bool bEnable)
 {

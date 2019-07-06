@@ -543,9 +543,8 @@ private:
     //
     void initTrayIcon(QSystemTrayIcon* trayIcon);
 
-#ifdef Q_OS_LINUX
-    void setWindowStyleForLinux(bool bUseSystemStyle);
-#endif
+    void setWindowStyle(bool bUseSystemStyle);
+
     //
     void startSearchStatus();
     void quitSearchStatus();
