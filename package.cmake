@@ -527,7 +527,7 @@ if(GENERATE_INSTALL_DIR AND GENERATE_PACKAGE)
     elseif(WIN32)
         # Windows platform
         message("\nStart package WizNotePlus project:\n")
-        execute_process(COMMAND ${QTDIR}/bin/windeployqt ${WIZNOTE_PACKAGE_DIR}/WizNote/bin
+        execute_process(COMMAND ${QTDIR}/bin/windeployqt ${WIZNOTE_PACKAGE_DIR}/WizNote/bin/WizNote.exe
             WORKING_DIRECTORY ${WIZNOTE_PACKAGE_DIR}
             RESULT_VARIABLE result
         )
