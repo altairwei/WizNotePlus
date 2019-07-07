@@ -462,7 +462,7 @@ public Q_SLOTS:
     //
     void on_trayIcon_newDocument_clicked();
     void on_hideTrayIcon_clicked();
-    void on_trayIcon_actived(QSystemTrayIcon::ActivationReason reason);
+    void handleTrayIconActived(QSystemTrayIcon::ActivationReason reason);
     void showBubbleNotification(const QString& strTitle, const QString& strInfo);
     void showTrayIconMenu();
     void on_viewMessage_request(qint64 messageID);

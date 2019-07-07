@@ -948,28 +948,15 @@ void WizMainWindow::on_hideTrayIcon_clicked()
     userSettings().setShowSystemTrayIcon(false);
 }
 
-void WizMainWindow::on_trayIcon_actived(QSystemTrayIcon::ActivationReason reason)
+void WizMainWindow::handleTrayIconActived(QSystemTrayIcon::ActivationReason reason)
 {
-    static QTimer trayTimer;
-    trayTimer.setSingleShot(true);
-    connect(&trayTimer, SIGNAL(timeout()), SLOT(showTrayIconMenu()), Qt::UniqueConnection);
     switch (reason) {
-    case QSystemTrayIcon::DoubleClick:
-    {
-        trayTimer.stop();
-        qDebug() << "trayicon double clicked";
-    }
-        break;
-    case QSystemTrayIcon::Trigger:
-    {
-        trayTimer.stop();
-        trayTimer.start(400);
-        qDebug() << "trayicon triggered";
-    }
-        break;
-    default:
-        break;
-    }
+        case QSystemTrayIcon::Trigger:
+            shiftVisableStatus();
+            break;
+        default:
+            break;
+        }
 }
 
 void WizMainWindow::shiftVisableStatus()
@@ -997,27 +984,32 @@ void WizMainWindow::shiftVisableStatus()
     //
 
 #else
-//    setVisible(!isVisible());
-//    if (isVisible())
-//    {
-//        raise();
-//    }
-    if (Qt::WindowMinimized & windowState())
-    {
-        setWindowState(Qt::WindowActive);
-        raise();
-        showNormal();
+
+    //qDebug() << "windowState: " + QString::number(windowState(), 8);
+    switch(windowState()) {
+        case Qt::WindowNoState:
+            // Normal window, but de-activated
+            activateWindow();
+            raise();
+            break;
+        case Qt::WindowMinimized:
+            // Normal window, but minimized
+            showNormal();
+            break;
+        case Qt::WindowMaximized:
+            // Maximized window, but de-activated
+            activateWindow();
+            raise();
+            break;
+        case Qt::WindowMaximized | Qt::WindowMinimized:
+            // Maximized window, but minimized
+            showMaximized();
+            break;
+        default:
+            showNormal();
+            break;
     }
-    else if (!isActiveWindow())
-    {
-        setWindowState(Qt::WindowActive);
-        raise();
-        showNormal();
-    }
-    else
-    {
-        setWindowState(Qt::WindowMinimized);
-    }
+
 #endif
 
 }
@@ -4398,6 +4390,11 @@ void WizMainWindow::setDoNotShowMobileFileReceiverUserGuideAgain(bool bNotAgain)
 void WizMainWindow::initTrayIcon(QSystemTrayIcon* trayIcon)
 {
     Q_ASSERT(trayIcon);
+
+    // Show mainwindow when click tray
+    connect(trayIcon, &QSystemTrayIcon::activated, this, &WizMainWindow::handleTrayIconActived);
+
+    // Create context mennu
     m_trayMenu = new QMenu(this);
     QAction* actionShow = m_trayMenu->addAction(tr("Show/Hide MainWindow"));
     connect(actionShow, SIGNAL(triggered()), SLOT(shiftVisableStatus()));
