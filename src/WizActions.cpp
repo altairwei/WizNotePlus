@@ -145,7 +145,6 @@ WIZACTION* WizActions::actionsData()
         {WIZACTION_FORMAT_INSERT_IMAGE,         QObject::tr("Insert Image"),                "",                                     QKeySequence("Shift+Ctrl+I")},
         {WIZACTION_FORMAT_REMOVE_FORMAT,        QObject::tr("Remove Format"),               "",                                     QKeySequence()},
         {WIZACTION_FORMAT_SCREEN_SHOT,          QObject::tr("Screen Shot..."),              "",                                     QKeySequence()},
-        {"actionOpenDevTools",                  QObject::tr("Open DevTools"),               "",                                     QKeySequence("F12")},
 
         // 用于结束循环
         {"", "", "", QKeySequence()}

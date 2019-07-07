@@ -91,6 +91,7 @@ public Q_SLOTS:
     void openDevTools();
     void onViewSourceTriggered();
     void handleSavePageTriggered();
+    void handleOpenDevToolsTriggered();
     
 Q_SIGNALS:
     void loadFinishedEx(bool);

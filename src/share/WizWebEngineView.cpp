@@ -170,6 +170,12 @@ WizWebEngineView::WizWebEngineView(const WizWebEngineInjectObjectCollection& obj
     connect(p, SIGNAL(openLinkInNewWindow(QUrl)), this, SLOT(openLinkInDefaultBrowser(QUrl)));
     //
     connect(this, SIGNAL(loadFinished(bool)), this, SLOT(innerLoadFinished(bool)));
+
+    // Initialize actions
+    QAction* action = new QAction(tr("Open DevTools"), this);
+    action->setShortcut(QKeySequence("F12"));
+    connect(action, &QAction::triggered, this, &WizWebEngineView::handleOpenDevToolsTriggered);
+    addAction(action);
 }
 
 WizWebEngineView::~WizWebEngineView()
@@ -413,6 +419,11 @@ void WizWebEngineView::openDevTools()
     //
     m_devToolsWindow->show();
     m_devToolsWindow->raise();
+}
+
+void WizWebEngineView::handleOpenDevToolsTriggered()
+{
+    openDevTools();
 }
 
 void WizWebEngineView::onViewSourceTriggered()

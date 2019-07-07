@@ -3594,19 +3594,6 @@ void WizMainWindow::on_actionGoForward_triggered()
     docView->setFocus();
 }
 
-/**
- *  @brief 打开当前页面开发者工具
- *
- *  可以考虑把DevTools窗口绑定在m_doc上，这样重启DevTools窗口可以
- *  重现上一次的状态。
- */
-void WizMainWindow::on_actionOpenDevTools_triggered() {
-    WizWebEngineView* webView = m_mainTabBrowser->currentWebView();
-    //
-    if (webView)
-        webView->openDevTools();
-}
-
 void WizMainWindow::on_category_itemSelectionChanged()
 {
     WizCategoryBaseView* category = qobject_cast<WizCategoryBaseView *>(sender());
