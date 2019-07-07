@@ -985,10 +985,11 @@ void WizMainWindow::shiftVisableStatus()
 
 #else
 
-    //qDebug() << "windowState: " + QString::number(windowState(), 8);
+    qDebug() << "windowState: " + QString::number(windowState(), 8);
     switch(windowState()) {
         case Qt::WindowNoState:
             // Normal window, but de-activated
+            showNormal();
             activateWindow();
             raise();
             break;
