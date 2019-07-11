@@ -2416,6 +2416,11 @@ bool IsWizKMURL(const QString& strURL)
     return strURL.left(5) == "wiz:/";
 }
 
+bool IsHttpURL(const QString &strURL)
+{
+    return strURL.left(7) == "http://" || strURL.left(8) == "https://";
+}
+
 
 bool WizIsKMURLOpenDocument(const QString& strURL)
 {

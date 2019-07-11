@@ -3466,6 +3466,11 @@ void WizMainWindow::on_search_doSearch(const QString& keywords)
         strUrl.remove("\n");
         viewDocumentByWizKMURL(strUrl);
         return;
+    } else if (IsHttpURL(keywords)) {
+        QString strUrl = keywords;
+        strUrl.remove("\n");
+        m_mainTabBrowser->createTab(QUrl::fromUserInput(strUrl));
+        return;
     }
     //
     m_noteListWidget->show();
