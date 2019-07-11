@@ -143,6 +143,9 @@ set(wiznote_SOURCES
     plugins/public_apis_server/WebSocketClientWrapper.cpp
     plugins/public_apis_server/WebSocketTransport.cpp
 
+    plugins/tab_browser/FullScreenWindow.cpp
+    plugins/tab_browser/FullScreenNotification.cpp
+
     WizCategoryView.cpp
     WizCategoryViewItem.cpp
     WizDevToolsDialog.cpp
@@ -286,6 +289,9 @@ set(wiznote_HEADERS
     plugins/public_apis_server/PublicAPIsServer.h
     plugins/public_apis_server/WebSocketClientWrapper.h
     plugins/public_apis_server/WebSocketTransport.h
+
+    plugins/tab_browser/FullScreenWindow.h
+    plugins/tab_browser/FullScreenNotification.h
 
     WizDef.h
     WizActions.h

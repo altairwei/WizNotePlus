@@ -2909,6 +2909,10 @@ void WizMainWindow::on_actionViewToggleFullscreen_triggered()
 //        m_splitter->widget(0)->hide();
 //        m_splitter->widget(1)->hide();
 //    }
+#else
+
+    m_mainTabBrowser->triggeredFullScreen();
+
 #endif // Q_OS_MAC
 }
 

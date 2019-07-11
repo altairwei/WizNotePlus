@@ -263,6 +263,35 @@ void WizMainTabBrowser::on_document_deleted(const WIZDOCUMENTDATA& data)
     }
 }
 
+void WizMainTabBrowser::triggeredFullScreen()
+{
+    FullScreenWindow *fWindow = new FullScreenWindow(currentWebView());
+    connect(fWindow, &FullScreenWindow::ExitFullScreen,
+                    this, &WizMainTabBrowser::handleExitFullScreen);
+    m_fullScreenWindow.reset(fWindow);
+}
+
+void WizMainTabBrowser::handleExitFullScreen()
+{
+    if (!m_fullScreenWindow.isNull())
+        m_fullScreenWindow.reset();
+}
+
+void WizMainTabBrowser::fullScreenRequested(QWebEngineFullScreenRequest request)
+{
+    if (request.toggleOn()) {
+        if (m_fullScreenWindow)
+            return;
+        request.accept();
+        m_fullScreenWindow.reset(new FullScreenWindow(currentWebView()));
+    } else {
+        if (!m_fullScreenWindow)
+            return;
+        request.accept();
+        m_fullScreenWindow.reset();
+    }
+}
+
 void WizMainTabBrowser::setupTab(QWidget *wgt)
 {
     int index = indexOf(wgt);
@@ -447,6 +476,7 @@ WizWebEngineView* WizMainTabBrowser::currentWebView() const
  * @param view
  */
 void WizMainTabBrowser::setupView(WizWebEngineView* view) {
+    QWebEnginePage *webPage = view->page();
     connect(view, &WizWebEngineView::viewSourceRequested, [=](QUrl url, QString title){
         int index = createTab("view-source:" + url.url());
         WizWebsiteView* webView = qobject_cast<WizWebsiteView*>(widget(index));
@@ -456,6 +486,7 @@ void WizMainTabBrowser::setupView(WizWebEngineView* view) {
         }
         setTabText(index, "view-source:" + title);
     });
+    connect(webPage, &QWebEnginePage::fullScreenRequested, this, &WizMainTabBrowser::fullScreenRequested);
 }
 
 /**

@@ -3,8 +3,12 @@
 
 #include <QTabWidget>
 #include <QAbstractButton>
+#include <QScopedPointer>
+#include <QWebEngineFullScreenRequest>
+
 #include "share/WizWebEngineView.h"
 #include "WizDocumentWebView.h"
+#include "plugins/tab_browser/FullScreenWindow.h"
 
 QT_BEGIN_NAMESPACE
 class QUrl;
@@ -55,6 +59,7 @@ private:
     WizExplorerApp& m_app;
     WizDatabaseManager& m_dbMgr;
     QString m_strTheme;
+    QScopedPointer<FullScreenWindow> m_fullScreenWindow;
 
 signals:
     void titleChanged(const QString &title);
@@ -77,6 +82,10 @@ public slots:
     void unlockTab(int index);
     void onViewNoteRequested(WizDocumentView* view, const WIZDOCUMENTDATAEX& doc, bool forceEditing);
     void on_document_deleted(const WIZDOCUMENTDATA&);
+
+    void triggeredFullScreen();
+    void handleExitFullScreen();
+    void fullScreenRequested(QWebEngineFullScreenRequest request);
 
 private:
     void setupView(WizWebEngineView* view);

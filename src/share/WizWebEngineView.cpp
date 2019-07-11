@@ -170,7 +170,7 @@ WizWebEngineView::WizWebEngineView(const WizWebEngineInjectObjectCollection& obj
     connect(p, SIGNAL(openLinkInNewWindow(QUrl)), this, SLOT(openLinkInDefaultBrowser(QUrl)));
     //
     connect(this, SIGNAL(loadFinished(bool)), this, SLOT(innerLoadFinished(bool)));
-
+    
     // Initialize actions
     QAction* action = new QAction(tr("Open DevTools"), this);
     action->setShortcut(QKeySequence("F12"));

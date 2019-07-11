@@ -99,7 +99,7 @@ WIZACTION* WizActions::actionsData()
 
         // view
         {WIZACTION_GLOBAL_TOGGLE_CATEGORY,      QObject::tr("Hide Sidebar"),                QObject::tr("Show Sidebar"),            QKeySequence("Alt+Ctrl+S")},
-        {WIZACTION_GLOBAL_TOGGLE_FULLSCREEN,    QObject::tr("Enter Fullscreen"),            QObject::tr("Leave Fullscreen"),        QKeySequence("Ctrl+Meta+f")},
+        {WIZACTION_GLOBAL_TOGGLE_FULLSCREEN,    QObject::tr("Enter Fullscreen"),            QObject::tr("Leave Fullscreen"),        QKeySequence("F11")},
 
         {"actionViewMinimize",                  QObject::tr("Minimize"),                    QObject::tr(""),                        QKeySequence("Ctrl+M")},
         {"actionZoom",                          QObject::tr("Zoom"),                        QObject::tr(""),                        QKeySequence()},
@@ -303,14 +303,6 @@ void WizActions::buildMenu(QMenu* pMenu, WizSettings& settings, const QString& s
 
         if (strAction.isEmpty())
             break;
-
-        // no fullscreen mode menu
-#ifndef Q_OS_MAC
-        if (strAction == WIZACTION_GLOBAL_TOGGLE_FULLSCREEN) {
-            index++;
-            continue;
-        }
-#endif
 
         if (!bMenuBar && (strAction == "actionPreference" || strAction == "actionExit")) {
             index++;
