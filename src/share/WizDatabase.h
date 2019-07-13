@@ -599,6 +599,8 @@ public:
 public:
     Q_INVOKABLE QObject* GetDeletedItemsFolder();
     Q_INVOKABLE QObject* GetFolderByLocation(const QString& strLocation, bool bCreate);
+    Q_INVOKABLE QStringList GetAllLocations();
+    Q_INVOKABLE QStringList GetAllTags();
     Q_INVOKABLE QObject *DocumentFromGUID(const QString &strGUID);
     Q_INVOKABLE QVariantList DocumentsFromSQLWhere(const QString& strSQLWhere);
 

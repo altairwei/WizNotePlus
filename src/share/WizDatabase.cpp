@@ -4653,6 +4653,28 @@ QObject* WizDatabase::GetFolderByLocation(const QString& strLocation, bool bCrea
     return new WizFolder(*this, strLocation, this);
 }
 
+QStringList WizDatabase::GetAllLocations()
+{
+    CWizStdStringArray arrayLocation;
+    getAllLocationsWithExtra(arrayLocation);
+    QStringList locations;
+    for (CString location : arrayLocation) {
+        locations.append(location);
+    }
+    return locations;
+}
+
+Q_INVOKABLE QStringList WizDatabase::GetAllTags()
+{
+    CWizTagDataArray arrayAllTag;
+    getAllTags(arrayAllTag);
+    QStringList tags;
+    for (WIZTAGDATA tagData : arrayAllTag) {
+        tags.append(tagData.strName);
+    }
+    return tags;
+}
+
 QObject *WizDatabase::DocumentFromGUID(const QString &strGUID)
 {
     WIZDOCUMENTDATA data;
