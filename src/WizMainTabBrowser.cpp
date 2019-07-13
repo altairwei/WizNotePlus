@@ -265,7 +265,14 @@ void WizMainTabBrowser::on_document_deleted(const WIZDOCUMENTDATA& data)
 
 void WizMainTabBrowser::triggeredFullScreen()
 {
-    FullScreenWindow *fWindow = new FullScreenWindow(currentWebView());
+    WizWebEngineView *webView = currentWebView();
+    if (!webView)
+        // Avoid responsing to non-webpage widget
+        return;
+    FullScreenWindow *fWindow = new FullScreenWindow(webView);
+    // Only full screen action (F11) comes from outside of web page needed to 
+    // handle ExitFullScreen requests separately. Because there is no way to 
+    // emit QWebEngineFullScreenRequest by C++ side.
     connect(fWindow, &FullScreenWindow::ExitFullScreen,
                     this, &WizMainTabBrowser::handleExitFullScreen);
     m_fullScreenWindow.reset(fWindow);
@@ -283,6 +290,7 @@ void WizMainTabBrowser::fullScreenRequested(QWebEngineFullScreenRequest request)
         if (m_fullScreenWindow)
             return;
         request.accept();
+        // Request always comes from current web page.
         m_fullScreenWindow.reset(new FullScreenWindow(currentWebView()));
     } else {
         if (!m_fullScreenWindow)
