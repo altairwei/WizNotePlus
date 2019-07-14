@@ -3395,7 +3395,10 @@ void WizMainWindow::on_actionResetSearch_triggered()
 
 void WizMainWindow::on_actionFindReplace_triggered()
 {
-    getActiveEditor()->editorCommandExecuteFindReplace();
+    WizDocumentWebView *webView = getActiveEditor();
+    if (!webView)
+        return;
+    webView->editorCommandExecuteFindReplace();
     WizGetAnalyzer().logAction("MenuBarFindReplace");
 }
 
@@ -4559,6 +4562,8 @@ void WizMainWindow::showCommentWidget()
 WizDocumentWebView* WizMainWindow::getActiveEditor()
 {
     WizDocumentView* docView = currentDocumentView();
+    if (!docView)
+        return nullptr;
     WizDocumentWebView* editor = docView->web();
     QWidget* activeWgt = qApp->activeWindow();
     if (activeWgt != this)

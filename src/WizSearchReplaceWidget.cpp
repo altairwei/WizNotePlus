@@ -29,6 +29,7 @@ void WizSearchReplaceWidget::showInEditor(const QRect& rcEditor)
     setFixedSize(size());
     activateWindow();
     raise();
+    ui->lineEdit_source->setFocus();
 }
 
 void WizSearchReplaceWidget::closeEvent(QCloseEvent* event)

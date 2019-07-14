@@ -1198,6 +1198,7 @@ void WizDocumentWebView::onEditorLoadFinished(bool ok)
     bool ignoreTable = doc.strURL.startsWith("http");
     //
     QString noteType = getNoteType();
+    QString keywords = getHighlightKeywords();
     // Initialize rich text editor
     QString strCode = "(async function(){\n";
     strCode += WizFormatString6("await WizEditorInit(\"%1\", \"%2\", \"%3\", \"%4\", %5, \"%6\", false);",
@@ -1210,19 +1211,40 @@ void WizDocumentWebView::onEditorLoadFinished(bool ok)
         strCode += "WizEditor.on();";
     } else {
         // Close rich text editor when doc is in read mode
-        QString keywords = getHighlightKeywords();
         if (keywords.isEmpty()) {
             strCode += "WizEditor.off();";
         } else {
             // When user open document in search results, highlit key words
-            strCode += QString("WizEditor.off(null, function(){\n\
+            QString strCodeMarkdown = QString("WizEditor.off(null, function(){\n\
                 WizReader.highlight.on([%1]);\nconsole.log('highlight');\n\
             });").arg(keywords);
+            QString strCodeCommon = "await new Promise( (resolve, reject) => {"
+                "WizEditor.off(null, () => {"
+                    "resolve();"
+                "});"
+            "});";
+            // It's hard to determine when markdown document has rendered.
+            // So, keywords highlight in scroll bar is only available for 
+            // common document. 
+            if (noteType == "common") {
+                strCode += strCodeCommon;
+            } else {
+                strCode += strCodeMarkdown;
+            }
         }
     }
     strCode += "\n})()";
     qDebug() << strCode;
-    page()->runJavaScript(strCode);
+    page()->runJavaScript(strCode, [=](const QVariant &v) {
+        if (!keywords.isEmpty()) {
+            if (noteType == "common") {
+                //FIXME: This is not the best way, it needs the keyword in search line
+                QString word = keywords.split(",").first()
+                                    .section("'", 0, 0, QString::SectionSkipEmpty);
+                findText(word);
+            }
+        }
+    });
     // Notify all plugins
     JSPluginManager::instance().notifyDocumentChanged();
 }
@@ -1905,8 +1927,8 @@ void WizDocumentWebView::findPre(QString strTxt, bool bCasesensitive)
         options |= QWebEnginePage::FindCaseSensitively;
     }
     //
-    //findText(strTxt, options);
-    innerFindText(strTxt, false, bCasesensitive);
+    findText(strTxt, options);
+    //innerFindText(strTxt, false, bCasesensitive);
 }
 
 void WizDocumentWebView::findNext(QString strTxt, bool bCasesensitive)
@@ -1923,8 +1945,8 @@ void WizDocumentWebView::findNext(QString strTxt, bool bCasesensitive)
         options |= QWebEnginePage::FindCaseSensitively;
     }
     //
-    //findText(strTxt, options);
-    innerFindText(strTxt, true, bCasesensitive);
+    findText(strTxt, options);
+    //innerFindText(strTxt, true, bCasesensitive);
 }
 
 void WizDocumentWebView::replaceCurrent(QString strSource, QString strTarget)
