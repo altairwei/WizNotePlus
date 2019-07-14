@@ -615,9 +615,9 @@ void WizTitleBar::applyButtonStateForSeparateWindow(bool inSeparateWindow)
 }
 
 /**
- * @brief 点击编辑按钮后切换编辑模式
+ * @brief Switch editor mode when button clicked.
  *
- * FIXME: 为什么不使用信号槽而采用这么难看的调用方式？
+ * FIXME: use signal-slot instead.
  */
 void WizTitleBar::onEditButtonClicked()
 {

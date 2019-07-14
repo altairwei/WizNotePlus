@@ -4,6 +4,7 @@
 #include <QApplication>
 #include <QMenu>
 #include <QSet>
+#include <QInputDialog>
 
 #include "utils/WizStyleHelper.h"
 #include "utils/WizLogger.h"
@@ -39,6 +40,7 @@
 #define WIZACTION_LIST_COMBINE     QObject::tr("Combine notes...")
 #define WIZACTION_LIST_MOVE_DOCUMENT QObject::tr("Move to...")
 #define WIZACTION_LIST_COPY_DOCUMENT QObject::tr("Copy to...")
+#define WIZACTION_LIST_RENAME_DOCUMENT QObject::tr("Rename...")
 #define WIZACTION_LIST_DOCUMENT_HISTORY QObject::tr("Version History...")
 #define WIZACTION_LIST_COPY_DOCUMENT_LINK QObject::tr("Copy Internal Note Link")
 #define WIZACTION_LIST_COPY_WEB_GROUP_LINK  QObject::tr("Copy Web Client Link")
@@ -181,6 +183,12 @@ WizDocumentListView::WizDocumentListView(WizExplorerApp& app, QWidget *parent /*
 
     // document context menu
     m_menuDocument = new QMenu(this);
+    m_menuDocument->addAction(tr("Open in new Tab"), this,
+                              SLOT(on_action_showDocumentInNewTab()));
+    m_menuDocument->addAction(tr("Open in new Window"), this,
+                              SLOT(on_action_showDocumentInFloatWindow()));
+    m_menuDocument->addSeparator();
+    //
     m_menuDocument->addAction(WIZACTION_LIST_LOCATE, this,
                               SLOT(on_action_locate()));
 
@@ -188,10 +196,6 @@ WizDocumentListView::WizDocumentListView(WizExplorerApp& app, QWidget *parent /*
                               SLOT(on_action_selectTags()));
     m_menuDocument->addSeparator();
     //
-    m_menuDocument->addAction(tr("Open in new Tab"), this,
-                              SLOT(on_action_showDocumentInNewTab()));
-    m_menuDocument->addAction(tr("Open in new Window"), this,
-                              SLOT(on_action_showDocumentInFloatWindow()));
     m_menuDocument->addAction(WIZACTION_LIST_COPY_DOCUMENT_LINK, this,
                               SLOT(on_action_copyDocumentLink()));
     m_menuDocument->addAction(WIZACTION_LIST_DOCUMENT_HISTORY, this,
@@ -217,6 +221,9 @@ WizDocumentListView::WizDocumentListView(WizExplorerApp& app, QWidget *parent /*
                                                        this, SLOT(on_action_copyDocument()), QKeySequence("Ctrl+Shift+C"));
     QAction* actionMoveDoc = m_menuDocument->addAction(WIZACTION_LIST_MOVE_DOCUMENT,
                                                        this, SLOT(on_action_moveDocument()), QKeySequence("Ctrl+Shift+M"));
+    QAction *actionRenameDoc = m_menuDocument->addAction(WIZACTION_LIST_RENAME_DOCUMENT, 
+                                                        this, SLOT(on_action_renameDocument(), QKeySequence("Ctrl+Shift+R")));
+    //
     m_menuDocument->addAction(WIZACTION_LIST_ENCRYPT_DOCUMENT, this,
                               SLOT(on_action_encryptDocument()));
     m_menuDocument->addAction(WIZACTION_LIST_CANCEL_ENCRYPTION, this,
@@ -1898,6 +1905,40 @@ void WizDocumentListView::on_action_copyDocument_confirmed(int result)
     for (QString kbGuid : dbSet)
     {
         mainWindow->quickSyncKb(kbGuid);
+    }
+}
+
+void WizDocumentListView::on_action_renameDocument()
+{
+    if (m_rightButtonFocusedItems.isEmpty())
+        return;
+    //
+    m_menuDocument->hide();
+
+    WIZDOCUMENTDATA docData = m_rightButtonFocusedItems.first()->document();
+    ::WizGetAnalyzer().logAction("documentListMenuRenameDocument");
+
+    bool ok;
+    QString newTitle = QInputDialog::getText(
+        this, tr("Rename document"), tr("Document name: "), 
+        QLineEdit::Normal, docData.strTitle, &ok);
+
+    if (!ok || newTitle.isEmpty())
+        return;
+
+    WizDatabase& db = WizDatabaseManager::instance()->db(docData.strKbGUID);
+    if (db.documentFromGuid(docData.strGUID, docData)) {
+        if (!db.canEditDocument(docData))
+            return;
+        QString strNewTitle = newTitle.left(255);
+        strNewTitle.replace("\n", " ");
+        strNewTitle.replace("\r", " ");
+        strNewTitle = strNewTitle.trimmed();
+        if (strNewTitle != docData.strTitle) {
+            docData.strTitle = strNewTitle;
+            docData.tDataModified = WizGetCurrentTime();
+            db.modifyDocumentInfo(docData);
+        }
     }
 }
 

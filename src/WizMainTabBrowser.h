@@ -82,6 +82,7 @@ public slots:
     void unlockTab(int index);
     void onViewNoteRequested(WizDocumentView* view, const WIZDOCUMENTDATAEX& doc, bool forceEditing);
     void on_document_deleted(const WIZDOCUMENTDATA&);
+    void on_document_modified(const WIZDOCUMENTDATA& documentOld, const WIZDOCUMENTDATA& documentNew);
 
     void triggeredFullScreen();
     void handleExitFullScreen();

@@ -139,6 +139,7 @@ WizMainTabBrowser::WizMainTabBrowser(WizExplorerApp& app, QWidget *parent)
                     this, &WizMainTabBrowser::handleContextMenuRequested);
     connect(tabBar, &QTabBar::tabCloseRequested, this, &WizMainTabBrowser::closeTab);
     connect(&m_dbMgr, &WizDatabaseManager::documentDeleted, this, &WizMainTabBrowser::on_document_deleted);
+    connect(&m_dbMgr, &WizDatabaseManager::documentModified, this, &WizMainTabBrowser::on_document_modified);
     //
     setDocumentMode(true); // 不渲染tab widget frame
     setElideMode(Qt::ElideRight);
@@ -258,6 +259,23 @@ void WizMainTabBrowser::on_document_deleted(const WIZDOCUMENTDATA& data)
             QString noteGUID = data.strGUID;
             if (noteGUID == docView->note().strGUID)
                 closeTab(i);
+        }
+
+    }
+}
+
+void WizMainTabBrowser::on_document_modified(const WIZDOCUMENTDATA& documentOld, const WIZDOCUMENTDATA& documentNew)
+{
+    for (int i = 0; i < count(); ++i) {
+        WizDocumentView* docView = qobject_cast<WizDocumentView*>(widget(i));
+        if ( docView == nullptr ) {
+            continue;
+        } else {
+            QString noteGUID = documentOld.strGUID;
+            if (noteGUID == docView->note().strGUID) {
+                // Change tab text when document title changed
+                setTabText(i, documentNew.strTitle);
+            }
         }
 
     }
@@ -518,12 +536,14 @@ void WizMainTabBrowser::setupDocView(WizDocumentView *docView) {
             setTabText(index, doc.strTitle);
         }
     });
+    /* // WizMainTab has connected WizDatabaseManager::documentModified
     connect(docView->web(), &WizDocumentWebView::titleEdited, [this](WizDocumentView* view, QString newTitle){
         int index = indexOf(view);
         if (index != -1) {
             setTabText(index, newTitle);
         }
     });
+    */
     setupView(docView->web());
 }
 
