@@ -344,23 +344,29 @@ void WizTitleBar::setLocked(bool bReadOnly, int nReason, bool bIsGroup)
 QMenu* WizTitleBar::createEditorMenu()
 {
     QMenu* editorMenu = new QMenu(this);
-    // 添加编辑器选项
+    // Check mode
+    if (noteView()->editorMode() == modeEditor) {
+        // Editing mode only allow one action.
+        editorMenu->addAction(tr("Discard changes"), this, &WizTitleBar::handleDiscardChanges);
+        return editorMenu;
+    }
+    // External editor option
     editorMenu->addAction(tr("Editor Options"), this, SLOT(onEditorOptionSelected()));
     editorMenu->addSeparator();
-    // 读取设置
+    // Reading External editor settings
     QSettings* extEditorSettings = new QSettings(
                 Utils::WizPathResolve::dataStorePath() + "externalEditor.ini", QSettings::IniFormat);
     QStringList groups = extEditorSettings->childGroups();
     for (QString& editorIndex : groups) {
         extEditorSettings->beginGroup(editorIndex);
-        // 准备数据
+        // Prepare metadata of external editor
         QMap<QString, QVariant> data;
         data["Name"] = extEditorSettings->value("Name");
         data["ProgramFile"] = extEditorSettings->value("ProgramFile");
         data["Arguments"] = extEditorSettings->value("Arguments", "%1");
         data["TextEditor"] = extEditorSettings->value("TextEditor", 0);
         data["UTF8Encoding"] = extEditorSettings->value("UTF8Encoding", 0);
-        // 准备动作
+        // Create actions
         QAction* editorAction = editorMenu->addAction(data.value("Name").toString(), this, SLOT(onExternalEditorMenuSelected()));
         QVariant var(data);
         editorAction->setData(var);
@@ -513,6 +519,10 @@ void WizTitleBar::setEditorMode(WizEditorMode editorMode)
 {
     m_editTitle->setReadOnly(editorMode == modeReader);
     m_editBtn->setState(editorMode == modeEditor ? WizEditButton::Checked : WizEditButton::Normal);
+    // Refresh button side menu
+    m_editBtn->menu()->deleteLater();
+    QMenu* extEditorMenu = createEditorMenu();
+    m_editBtn->setMenu(extEditorMenu);
     //
     if (editorMode == modeReader)
     {
@@ -621,6 +631,7 @@ void WizTitleBar::applyButtonStateForSeparateWindow(bool inSeparateWindow)
  */
 void WizTitleBar::onEditButtonClicked()
 {
+    // Switch editor mode
     noteView()->setEditorMode(noteView()->editorMode() == modeEditor ? modeReader: modeEditor);
     //
     WizAnalyzer& analyzer = WizAnalyzer::getAnalyzer();
@@ -664,6 +675,18 @@ void WizTitleBar::onExternalEditorMenuSelected()
 
     emit viewNoteInExternalEditor_request(Name, ProgramFile, Arguments, TextEditor, UTF8Encoding);
 
+}
+
+void WizTitleBar::handleDiscardChanges()
+{
+    // Confirm
+    QMessageBox::StandardButton res = QMessageBox::question(this, 
+        tr("Discard changes"), tr("Do you really want to discard changes ?"));
+    if (res == QMessageBox::Yes) {
+        emit discardChangesRequest();
+    } else {
+        return;
+    }
 }
 
 void WizTitleBar::onSeparateButtonClicked()

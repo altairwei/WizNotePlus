@@ -493,6 +493,20 @@ void WizDocumentWebView::handleReloadTriggered()
     reloadNoteData(view()->note());
 }
 
+void WizDocumentWebView::discardChanges()
+{
+    isModified([=](bool modified){
+        // Close rich text editor
+        enableEditor(false);
+        m_currentEditorMode = modeReader;
+        // Stop auto save
+        m_timerAutoSave.stop();
+        // Reload document if necessary
+        if (modified)
+            reloadNoteData(view()->note());
+    });
+}
+
 void WizDocumentWebView::dragEnterEvent(QDragEnterEvent *event)
 {
     if (!isEditing())

@@ -222,7 +222,7 @@ WizDocumentListView::WizDocumentListView(WizExplorerApp& app, QWidget *parent /*
     QAction* actionMoveDoc = m_menuDocument->addAction(WIZACTION_LIST_MOVE_DOCUMENT,
                                                        this, SLOT(on_action_moveDocument()), QKeySequence("Ctrl+Shift+M"));
     QAction *actionRenameDoc = m_menuDocument->addAction(WIZACTION_LIST_RENAME_DOCUMENT, 
-                                                        this, SLOT(on_action_renameDocument(), QKeySequence("Ctrl+Shift+R")));
+                                                        this, SLOT(on_action_renameDocument()), QKeySequence("Ctrl+Shift+R"));
     //
     m_menuDocument->addAction(WIZACTION_LIST_ENCRYPT_DOCUMENT, this,
                               SLOT(on_action_encryptDocument()));

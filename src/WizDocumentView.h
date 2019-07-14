@@ -157,6 +157,7 @@ public Q_SLOTS:
 
     void on_viewNoteInExternalEditor_request(QString& Name, QString& ProgramFile,
                                                 QString& Arguments, int TextEditor, int UTF8Encoding);
+    void handleDiscardChangesRequest();
 
 private:
     void loadNote(const WIZDOCUMENTDATAEX &doc);

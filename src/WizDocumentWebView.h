@@ -323,6 +323,7 @@ private:
 
 public:
     void onNoteLoadFinished(); // editor callback
+    void discardChanges();
 
 public Q_SLOTS:
     void onActionTriggered(QWebEnginePage::WebAction act);
