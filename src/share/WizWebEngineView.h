@@ -38,11 +38,11 @@ class WizWebEnginePage: public QWebEnginePage
     Q_OBJECT
 
 public:
-    explicit WizWebEnginePage(QObject* parent = nullptr): WizWebEnginePage({{}}, parent) { }
+    // Do not use {{}} to initialize InjectObjectCollection.
+    explicit WizWebEnginePage(QObject* parent = nullptr): WizWebEnginePage({}, parent) { }
     WizWebEnginePage(const WizWebEngineInjectObjectCollection& objects, QObject* parent = nullptr);
     //
     void stopCurrentNavigation() { m_continueNavigate = false; }
-    void addObjectToJavaScriptClient(QString name, QObject* obj);
 
 protected:
     virtual void javaScriptConsoleMessage(JavaScriptConsoleMessageLevel level, const QString& message, int lineNumber, const QString& sourceID);
@@ -64,8 +64,9 @@ class WizWebEngineView : public QWebEngineView
     Q_OBJECT
 
 public:
-    WizWebEngineView(QWidget* parent): WizWebEngineView({{}}, parent) { }
     WizWebEngineView(const WizWebEngineInjectObjectCollection& objects, QWidget* parent);
+    // Do not use {{}} to initialize InjectObjectCollection.
+    WizWebEngineView(QWidget* parent): WizWebEngineView({}, parent) { }
     virtual ~WizWebEngineView();
 public:
     WizWebEnginePage* getPage();

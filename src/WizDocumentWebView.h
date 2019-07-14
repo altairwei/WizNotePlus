@@ -259,7 +259,7 @@ private:
     //
     void loadDocumentInWeb(WizEditorMode editorMode);
     //
-    void getAllEditorScriptAndStypeFileName(std::map<QString, QString>& arrayFile);
+    void getAllEditorScriptAndStyleFileName(std::map<QString, QString>& arrayFile);
     void insertScriptAndStyleCore(QString& strHtml, const std::map<QString, QString>& files);
     //
     void tryResetTitle();

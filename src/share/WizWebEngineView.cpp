@@ -92,7 +92,7 @@ WizWebEnginePage::WizWebEnginePage(const WizWebEngineInjectObjectCollection& obj
     : QWebEnginePage(parent)
     , m_continueNavigate(true)
 {
-    if (!objects.empty()) {
+    if (!objects.isEmpty()) {
         QWebChannel *channel = new QWebChannel(this);
         channel->registerObjects(objects);
         setWebChannel(channel);
@@ -390,9 +390,11 @@ void WizWebEngineView::addObjectToJavaScriptClient(QString name, QObject* obj)
         channel = new QWebChannel(webPage);
         webPage->setWebChannel(channel);
     }
-    
+    qDebug() << name;
     WizWebEngineInjectObjectCollection r_objs = channel->registeredObjects();
-    if (!r_objs.contains(name))
+    if (!obj)
+        return;
+    if (!r_objs.contains(name) && obj != nullptr)
         channel->registerObject(name, obj);
 }
 

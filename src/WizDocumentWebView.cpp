@@ -1198,34 +1198,32 @@ void WizDocumentWebView::onEditorLoadFinished(bool ok)
     bool ignoreTable = doc.strURL.startsWith("http");
     //
     QString noteType = getNoteType();
-    //
-    QString strCode = WizFormatString6("WizEditorInit(\"%1\", \"%2\", \"%3\", \"%4\", %5, \"%6\");",
+    // Initialize rich text editor
+    QString strCode = "(async function(){\n";
+    strCode += WizFormatString6("await WizEditorInit(\"%1\", \"%2\", \"%3\", \"%4\", %5, \"%6\", false);",
                                        editorPath, lang, userGUID, userAlias,
                                        ignoreTable ? "true" : "false",
                                        noteType);
     qDebug() << strCode;
-    if (m_currentEditorMode == modeEditor)
-    {
+    if (m_currentEditorMode == modeEditor) {
+        // Open rich text editor when doc is in edit mode
         strCode += "WizEditor.on();";
-    }
-    else
-    {
-
+    } else {
+        // Close rich text editor when doc is in read mode
         QString keywords = getHighlightKeywords();
         if (keywords.isEmpty()) {
-            //
             strCode += "WizEditor.off();";
-            //
         } else {
+            // When user open document in search results, highlit key words
             strCode += QString("WizEditor.off(null, function(){\n\
                 WizReader.highlight.on([%1]);\nconsole.log('highlight');\n\
             });").arg(keywords);
         }
     }
-    //
+    strCode += "\n})()";
     qDebug() << strCode;
-    //
     page()->runJavaScript(strCode);
+    // Notify all plugins
     JSPluginManager::instance().notifyDocumentChanged();
 }
 
@@ -1462,21 +1460,29 @@ void WizDocumentWebView::on_insertCodeHtml_requset(QString strOldHtml)
 
 //#define DEBUG_EDITOR
 
-void WizDocumentWebView::getAllEditorScriptAndStypeFileName(std::map<QString, QString>& files)
+/**
+ * @brief Get all scripts and style files needed for rich text editor
+ * 
+ * @param files 
+ */
+void WizDocumentWebView::getAllEditorScriptAndStyleFileName(std::map<QString, QString>& files)
 {
     QString strResourcePath = Utils::WizPathResolve::resourcesPath();
     QString strHtmlEditorPath = strResourcePath + "files/wizeditor/";
+    QString strWebEnginePath = strResourcePath + "files/webengine/";
     //
 #ifdef DEBUG_EDITOR
     QString strEditorJS = "http://192.168.1.73:8080/libs/wizEditor/wizEditorForMac.js";
     QString strInit = "file:///" + strHtmlEditorPath + "editorHelper.js";
 #else
     QString strEditorJS = "file:///" +  strHtmlEditorPath + "wizEditorForMac.js";
+    QString strWebChannelJS = "file:///" + strWebEnginePath + "wizwebchannel.js";
     QString strInit = "file:///" + strHtmlEditorPath + "editorHelper.js";
 #endif
     //
     files.clear();
     files[strEditorJS] = "";
+    files[strWebChannelJS] = "";
     files[strInit] = "";
     //
     /*
@@ -1595,7 +1601,7 @@ void WizDocumentWebView::loadDocumentInWeb(WizEditorMode editorMode)
     }
     //
     std::map<QString, QString> files;
-    getAllEditorScriptAndStypeFileName(files);
+    getAllEditorScriptAndStyleFileName(files);
     insertScriptAndStyleCore(strHtml, files);
     //
     replaceDefaultCss(strHtml);
