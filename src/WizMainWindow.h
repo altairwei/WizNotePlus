@@ -541,7 +541,9 @@ private:
     //
     void initTrayIcon(QSystemTrayIcon* trayIcon);
 
+#ifndef Q_OS_MAC
     void setWindowStyle(bool bUseSystemStyle);
+#endif
 
     //
     void startSearchStatus();

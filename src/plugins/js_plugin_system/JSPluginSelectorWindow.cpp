@@ -4,6 +4,8 @@
 #include "WizMainWindow.h"
 #include "share/WizWebEngineView.h"
 
+#include <QVBoxLayout>
+
 JSPluginSelectorWindow::JSPluginSelectorWindow(WizExplorerApp& app, JSPluginModuleSpec* data, QWidget* parent)
     : WizPopupWidget(parent)
     , m_data(data)

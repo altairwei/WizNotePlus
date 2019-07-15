@@ -4447,6 +4447,7 @@ void WizMainWindow::initTrayIcon(QSystemTrayIcon* trayIcon)
 #endif
 }
 
+#ifndef Q_OS_MAC
 void WizMainWindow::setWindowStyle(bool bUseSystemStyle)
 {
     if (bUseSystemStyle)
@@ -4464,6 +4465,7 @@ void WizMainWindow::setWindowStyle(bool bUseSystemStyle)
         titleBar()->closeButton()->setVisible(false);
     }
 }
+#endif
 
 void WizMainWindow::setMobileFileReceiverEnable(bool bEnable)
 {

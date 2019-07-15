@@ -9,7 +9,7 @@
 #include "WizSearchWidget_mm.h"
 
 
-
+#define ICON_SIZE QSize(16, 16)
 
 //@interface CWizToolBarActionItemView: NSView {
 //NSImage* m_image;
@@ -104,7 +104,7 @@ public:
         QIcon icon = m_action->icon();
         if (!icon.isNull())
         {
-            QPixmap pix = icon.pixmap(icon.availableSizes().first(), m_action->isEnabled() ? QIcon::Normal : QIcon::Disabled);
+            QPixmap pix = icon.pixmap(ICON_SIZE, m_action->isEnabled() ? QIcon::Normal : QIcon::Disabled);
             NSImage* image = WizToNSImage(pix);
             [item setImage:image];
         }
@@ -135,7 +135,7 @@ public:
             }
             //
 //            QIcon icon = m_action->icon();
-            QPixmap pix = m_action->icon().pixmap(m_action->icon().availableSizes().first(), newEnabled ? QIcon::Normal : QIcon::Disabled);
+            QPixmap pix = m_action->icon().pixmap(ICON_SIZE, newEnabled ? QIcon::Normal : QIcon::Disabled);
             //
             NSImage* img = WizToNSImage(pix);
             if (img)

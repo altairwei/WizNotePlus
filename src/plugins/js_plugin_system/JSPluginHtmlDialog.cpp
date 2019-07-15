@@ -4,6 +4,8 @@
 #include "WizMainWindow.h"
 #include "share/WizWebEngineView.h"
 
+#include <QVBoxLayout>
+
 JSPluginHtmlDialog::JSPluginHtmlDialog(WizExplorerApp& app, JSPluginModuleSpec* data, QWidget* parent)
     : QWidget(parent, Qt::Window)
     , m_data(data)
