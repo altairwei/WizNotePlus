@@ -325,7 +325,10 @@ bool WizMainWindow::eventFilter(QObject* watched, QEvent* event)
         }
         else if (event->type() == QEvent::ApplicationActivate)
         {
-            return processApplicationActiveEvent();
+            // It will cause bugs to full screen mode on Linux/KDE. 
+            // When WizMainWindow has been hidden, it will show again 
+            // if any other windows/dialogs is activated.
+            //return processApplicationActiveEvent();
         }
         else
         {
