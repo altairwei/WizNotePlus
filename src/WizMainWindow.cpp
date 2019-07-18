@@ -993,8 +993,6 @@ void WizMainWindow::shiftVisableStatus()
         case Qt::WindowNoState:
             // Normal window, but de-activated
             showNormal();
-            activateWindow();
-            raise();
             break;
         case Qt::WindowMinimized:
             // Normal window, but minimized
@@ -1002,8 +1000,7 @@ void WizMainWindow::shiftVisableStatus()
             break;
         case Qt::WindowMaximized:
             // Maximized window, but de-activated
-            activateWindow();
-            raise();
+            showMaximized();
             break;
         case Qt::WindowMaximized | Qt::WindowMinimized:
             // Maximized window, but minimized
@@ -1013,6 +1010,15 @@ void WizMainWindow::shiftVisableStatus()
             showNormal();
             break;
     }
+
+    if (isVisible()) {
+        // Actovate main window
+        activateWindow();
+        raise();
+    }
+
+    //FIXME: Click on tray icon will make mainwindow lose focus, so that
+    //  activate status of window can not be used to shift visibale status.
 
 #endif
 
