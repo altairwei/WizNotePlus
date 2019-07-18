@@ -21,9 +21,13 @@ private:
     QWebSocketServer *m_server;
     QWebChannel *m_channel;
     WebSocketClientWrapper *m_clientWrapper;
+    QStringList m_allowedOrigins;
 
 public slots:
     void handleAuthentication(QWebSocketCorsAuthenticator *authenticator);
+
+private:
+    void appendToAllowedOriginsFile(const QString &origin);
 };
 
 #endif // PUBLICAPISSERVER_H
