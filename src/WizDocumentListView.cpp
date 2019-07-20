@@ -27,6 +27,7 @@
 #include "WizTagListWidget.h"
 #include "WizCategoryView.h"
 #include "WizCombineNotesDialog.h"
+#include "WizLineInputDialog.h"
 
 #include "sync/WizKMSync.h"
 
@@ -1918,12 +1919,14 @@ void WizDocumentListView::on_action_renameDocument()
     WIZDOCUMENTDATA docData = m_rightButtonFocusedItems.first()->document();
     ::WizGetAnalyzer().logAction("documentListMenuRenameDocument");
 
-    bool ok;
-    QString newTitle = QInputDialog::getText(
-        this, tr("Rename document"), tr("Document name: "), 
-        QLineEdit::Normal, docData.strTitle, &ok);
-
-    if (!ok || newTitle.isEmpty())
+    int ok;
+    WizLineInputDialog dialog(
+        tr("Rename document"), 
+        tr("Please input document name: "), 
+        docData.strTitle, m_app.mainWindow());
+    ok = dialog.exec();
+    QString newTitle = dialog.input();
+    if (ok != QDialog::Accepted || newTitle.isEmpty())
         return;
 
     WizDatabase& db = WizDatabaseManager::instance()->db(docData.strKbGUID);
