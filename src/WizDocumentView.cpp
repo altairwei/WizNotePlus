@@ -99,16 +99,16 @@ WizDocumentView::WizDocumentView(WizExplorerApp& app, QWidget* parent)
     m_tab->addWidget(m_blankView);
     m_tab->setCurrentWidget(m_blankView);
     m_tab->setBackgroundRole(QPalette::HighlightedText);
-    // 设置评论部件
+    // Setup comment widget
     m_comments = m_commentWidget->web();
-    //m_comments->history()->setMaximumItemCount(0);
+    WizWebEngineInjectObjectCollection objects = {{"WizExplorerApp", WizGlobal::mainWindow()->publicAPIsObject()}};
+    auto profile = createWebEngineProfile(objects, this);
+    auto webPage = new WizWebEnginePage(objects, profile, m_comments);
+    m_comments->setPage(webPage);
     m_comments->settings()->setAttribute(QWebEngineSettings::LocalStorageEnabled, true);
-    //m_comments->page()->setScrollBarPolicy(Qt::Horizontal, Qt::ScrollBarAlwaysOff);
     m_comments->setAcceptDrops(false);
     connect(m_comments, SIGNAL(loadFinishedEx(bool)), m_title, SLOT(onCommentPageLoaded(bool)));
-
-    WizMainWindow* mv = WizGlobal::mainWindow();
-    m_comments->addObjectToJavaScriptClient("WizExplorerApp", mv->publicAPIsObject());
+    //m_comments->addObjectToJavaScriptClient("WizExplorerApp", WizGlobal::mainWindow()->publicAPIsObject());
     //
     connect(m_commentWidget, SIGNAL(widgetStatusChanged()), SLOT(on_commentWidget_statusChanged()));
 

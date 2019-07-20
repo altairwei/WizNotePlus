@@ -20,6 +20,7 @@ class WizCodeEditorDialog : public WizWebEngineViewContainerDialog
     Q_OBJECT
 public:
     explicit WizCodeEditorDialog(WizExplorerApp& app, WizDocumentWebView *external, QWidget *parent = 0);
+    ~WizCodeEditorDialog();
     void setCode(const QString& strCode);
     //
 

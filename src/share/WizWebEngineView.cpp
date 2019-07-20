@@ -1,13 +1,16 @@
-﻿#include <QWebEngineView>
-#include <QWebSocketServer>
-#include <QWebChannel>
-#include <QDesktopWidget>
-#include <QStyle>
-#include <QMenu>
-#include "WizWebEngineView.h"
+﻿#include "WizWebEngineView.h"
 #include "WizMisc.h"
 #include "utils/WizPathResolve.h"
 
+#include <QWebEngineView>
+#include <QWebSocketServer>
+#include <QWebChannel>
+#include <QWebEngineScript>
+#include <QWebEngineScriptCollection>
+#include <QWebEngineProfile>
+#include <QDesktopWidget>
+#include <QStyle>
+#include <QMenu>
 #include <QKeyEvent>
 #include <QApplication>
 #include <QDesktopServices>
@@ -88,8 +91,50 @@ void WizWebEngineAsyncMethodResultObject::setResult(const QVariant& result)
     emit resultAcquired(m_result);
 }
 
-WizWebEnginePage::WizWebEnginePage(const WizWebEngineInjectObjectCollection& objects, QObject* parent)
-    : QWebEnginePage(parent)
+
+QWebEngineProfile* createWebEngineProfile(const WizWebEngineInjectObjectCollection& objects, QObject* parent)
+{
+    if (objects.empty())
+        return nullptr;
+    // Create a new profile
+    QWebEngineProfile *profile = new QWebEngineProfile("WizNoteWebEngineProfile", parent);
+    // Read qtwebchannel library
+    QString jsWebChannelFileName = Utils::WizPathResolve::resourcesPath() + "files/webengine/wizwebchannel.js";
+    QString jsWebChannel;
+    WizLoadUnicodeTextFromFile(jsWebChannelFileName, jsWebChannel);
+    // Read javascript initialization script
+    QString initFileName = Utils::WizPathResolve::resourcesPath() + "files/webengine/wizwebengineviewinit.js";
+    QString jsInit;
+    WizLoadUnicodeTextFromFile(initFileName, jsInit);
+    // Get all names of published objects
+    CWizStdStringArray names;
+    WizWebEngineInjectObjectCollection::const_iterator inject = objects.constBegin();
+    while (inject != objects.constEnd()) {
+        names.push_back("\"" + inject.key() + "\"");
+        ++inject;
+    }
+    // 
+    CString objectNames;
+    WizStringArrayToText(names, objectNames, ", ");
+    jsInit.replace("__objectNames__", objectNames);
+    // Combine scripts
+    QString jsAll = jsWebChannel + "\n" + jsInit;
+    //
+    {
+        QWebEngineScript script;
+        script.setSourceCode(jsAll);
+        script.setName("webchannel.js");
+        script.setWorldId(QWebEngineScript::MainWorld);
+        script.setInjectionPoint(QWebEngineScript::DocumentCreation);
+        script.setRunsOnSubFrames(false); // if set True, it will cause some error in javascript.
+        profile->scripts()->insert(script);
+    }
+    //
+    return profile;
+}
+
+WizWebEnginePage::WizWebEnginePage(const WizWebEngineInjectObjectCollection& objects, QWebEngineProfile *profile, QObject* parent)
+    : QWebEnginePage(profile, parent)
     , m_continueNavigate(true)
 {
     if (!objects.isEmpty()) {

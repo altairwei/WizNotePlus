@@ -5,6 +5,7 @@
 #include <QWebEnginePage>
 #include <QDialog>
 #include <QHash>
+#include <QWebEngineProfile>
 
 class QWebChannel;
 class QMenu;
@@ -39,8 +40,13 @@ class WizWebEnginePage: public QWebEnginePage
 
 public:
     // Do not use {{}} to initialize InjectObjectCollection.
-    explicit WizWebEnginePage(QObject* parent = nullptr): WizWebEnginePage({}, parent) { }
-    WizWebEnginePage(const WizWebEngineInjectObjectCollection& objects, QObject* parent = nullptr);
+    explicit WizWebEnginePage(QObject* parent = nullptr): WizWebEnginePage({}, QWebEngineProfile::defaultProfile(), parent) { }
+    WizWebEnginePage(QWebEngineProfile *profile, 
+        QObject* parent = nullptr): WizWebEnginePage({}, profile, parent) { }
+    WizWebEnginePage(const WizWebEngineInjectObjectCollection& objects, 
+        QObject* parent = nullptr): WizWebEnginePage(objects, QWebEngineProfile::defaultProfile(), parent) { }
+    WizWebEnginePage(const WizWebEngineInjectObjectCollection& objects, 
+        QWebEngineProfile *profile, QObject* parent = nullptr);
     //
     void stopCurrentNavigation() { m_continueNavigate = false; }
 
@@ -115,5 +121,7 @@ public:
 protected:
     virtual void keyPressEvent(QKeyEvent* ev);
 };
+
+QWebEngineProfile* createWebEngineProfile(const WizWebEngineInjectObjectCollection& objects, QObject* parent);
 
 #endif // MAINWINDOW_H

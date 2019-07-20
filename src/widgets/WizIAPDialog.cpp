@@ -41,12 +41,17 @@ WizIAPDialog::WizIAPDialog(QWidget *parent)
     setPurchaseAvailable(false);
 
     initStyles();
-    //
+
+    // Publish C++ object
     WizMainWindow* mainWindow = qobject_cast<WizMainWindow *>(WizGlobal::mainWindow());
     if (mainWindow) {
-        ui->webView->addObjectToJavaScriptClient("WizExplorerApp", mainWindow->publicAPIsObject());
+        WizWebEngineInjectObjectCollection objects = {
+            {"WizExplorerApp", mainWindow->publicAPIsObject()}
+        };
+        auto profile = createWebEngineProfile(objects, this);
+        auto webPage = new WizWebEnginePage(objects, profile, ui->webView);
+        ui->webView->setPage(webPage);
     }
-
 
     connect(&m_timer, SIGNAL(timeout()), SLOT(onWaitingTimeOut()));
     connect(m_net, SIGNAL(finished(QNetworkReply*)), SLOT(checkReceiptFinished(QNetworkReply*)));

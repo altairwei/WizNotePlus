@@ -33,12 +33,14 @@ WizWebSettingsDialog::WizWebSettingsDialog(QString url, QSize sz, QWidget *paren
     layout->setSpacing(0);
     layout->addWidget(m_progressWebView);
     setLayout(layout);
-
+    // Publish C++ object
     WizWebEngineView* web = m_progressWebView->web();
-    //
     WizMainWindow* mainWindow = WizGlobal::mainWindow();
     if (mainWindow) {
-        web->addObjectToJavaScriptClient("WizExplorerApp", mainWindow->publicAPIsObject());
+        WizWebEngineInjectObjectCollection objects = {{"WizExplorerApp", mainWindow->publicAPIsObject()}};
+        auto profile = createWebEngineProfile(objects, this);
+        auto webPage = new WizWebEnginePage(objects, profile, web);
+        web->setPage(webPage);
     }
     connect(web, SIGNAL(loadFinishedEx(bool)), SLOT(on_web_loaded(bool)));
 }

@@ -136,18 +136,19 @@ WizTitleBar::WizTitleBar(WizExplorerApp& app, QWidget *parent)
     // 分享按钮
     m_shareBtn = new WizToolButton(this,  WizToolButton::ImageOnly | WizToolButton::WithMenu);
     m_shareBtn->setFixedHeight(nTitleHeight);
+    m_shareMenu = new QMenu(m_shareBtn);
+    QAction *defaultAc = m_shareMenu->addAction(WIZACTION_TITLEBAR_SHARE_DOCUMENT_BY_LINK, this, SLOT(onShareActionClicked()));
+    m_shareMenu->addAction(WIZACTION_TITLEBAR_SHARE_DOCUMENT_BY_EMAIL, this, SLOT(onEmailActionClicked()));
     QString shareShortcut = ::WizGetShortcut("EditShare", "Alt+4");
-    m_shareBtn->setShortcut(QKeySequence::fromString(shareShortcut));
-    m_shareBtn->setIcon(::WizLoadSkinIcon(strTheme, "document_share", iconSize));
-    m_shareBtn->setToolTip(tr("Share note  %1%2").arg(getOptionKey()).arg(4));
+    defaultAc->setShortcut(QKeySequence::fromString(shareShortcut));
+    defaultAc->setIcon(::WizLoadSkinIcon(strTheme, "document_share", iconSize));
+    defaultAc->setToolTip(tr("Share note  %1%2").arg(getOptionKey()).arg(4));
     connect(m_shareBtn, SIGNAL(clicked()), SLOT(onShareButtonClicked()));
     WizOEMSettings oemSettings(m_app.databaseManager().db().getAccountPath());
     m_shareBtn->setVisible(!oemSettings.isHideShare());
     m_shareBtn->setPopupMode(QToolButton::MenuButtonPopup);
-    m_shareMenu = new QMenu(m_shareBtn);
-    m_shareMenu->addAction(WIZACTION_TITLEBAR_SHARE_DOCUMENT_BY_LINK, this, SLOT(onShareActionClicked()));
-    m_shareMenu->addAction(WIZACTION_TITLEBAR_SHARE_DOCUMENT_BY_EMAIL, this, SLOT(onEmailActionClicked()));
     m_shareBtn->setMenu(m_shareMenu);
+    m_shareBtn->setDefaultAction(defaultAc);
 
     //隐藏历史版本按钮，给以后增加提醒按钮保留位置
 //    WizCellButton* historyBtn = new WizCellButton(WizCellButton::ImageOnly, this);
