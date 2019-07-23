@@ -2998,7 +2998,8 @@ bool WizURLDownloadToFile(const QString& url, const QString& fileName, bool isIm
     QString newUrl = url;
     QNetworkAccessManager netCtrl;
     QNetworkReply* reply;
-    //
+    
+    // Get data from URL
     bool redirect = false;
     QByteArray byData;
     do
@@ -3032,13 +3033,17 @@ bool WizURLDownloadToFile(const QString& url, const QString& fileName, bool isIm
 
     WizDeleteFile(fileName);
 
+    /*
+    // It's not necessary to treat image specially?
     if (isImage)
     {
         QPixmap pix;
         pix.loadFromData(byData);
         return pix.save(fileName);
     }
+    */
 
+    // Save data to file
     QFile file(fileName);
     if (!file.open(QIODevice::WriteOnly | QIODevice::Truncate))
         return false;
