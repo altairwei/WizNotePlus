@@ -446,9 +446,6 @@ void WizDocumentWebView::createReadModeContextMenu(QContextMenuEvent *event)
     // save page action
     connect(pageAction(QWebEnginePage::SavePage), &QAction::triggered, 
                     this, &WizDocumentWebView::handleSavePageTriggered, Qt::UniqueConnection);
-    // refresh new page's ViewSource action
-    connect(pageAction(QWebEnginePage::ViewSource), &QAction::triggered, 
-                    this, &WizDocumentWebView::onViewSourceTriggered, Qt::UniqueConnection);
     // handle open location of document
     if(page()->url().isLocalFile()) {
         QAction *action = new QAction(menu);
@@ -471,11 +468,6 @@ void WizDocumentWebView::createReadModeContextMenu(QContextMenuEvent *event)
     }
     //
     menu->popup(event->globalPos());
-}
-
-void WizDocumentWebView::onViewSourceTriggered()
-{
-    emit viewSourceRequested(page()->url(), view()->note().strTitle);
 }
 
 void WizDocumentWebView::handleSavePageTriggered()

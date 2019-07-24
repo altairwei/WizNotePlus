@@ -343,7 +343,6 @@ public Q_SLOTS:
     void on_insertCodeHtml_requset(QString strOldHtml);
 
     //
-    void onViewSourceTriggered();
     void onActionSaveTriggered();
     void handleSavePageTriggered();
     void handleReloadTriggered();

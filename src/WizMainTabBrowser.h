@@ -70,6 +70,8 @@ signals:
 public slots:
     void handleCurrentChanged(int index);
     void handleContextMenuRequested(const QPoint &pos);
+    WizWebEngineView *createTab();
+    WizWebEngineView *createBackgroundTab();
     int createTab(WizDocumentView *docView);
     int createTab(WizWebsiteView *websiteView);
     int createTab(const QUrl &url);

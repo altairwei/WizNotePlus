@@ -338,6 +338,38 @@ void WizMainTabBrowser::setupTab(QWidget *wgt)
 }
 
 /**
+ * @brief Create an empty web page with WizWebsiteView, but do not focus on new tab.
+ * 
+ * @return WizWebEngineView* 
+ */
+WizWebEngineView *WizMainTabBrowser::createBackgroundTab()
+{
+    // create default website view
+    WizWebsiteView* websiteView = new WizWebsiteView(m_app);
+    WizWebEngineView *webView = websiteView->webView();
+    // create and int tab page
+    setupWebsiteView(websiteView);
+    addTab(websiteView, tr("Untitled"));
+    setupTab(websiteView);
+    //
+    return webView;
+}
+
+/**
+ * @brief Create an empty web page, then focus on new tab page.
+ * 
+ * @return WizWebEngineView* 
+ */
+WizWebEngineView *WizMainTabBrowser::createTab()
+{
+    // create default website view
+    WizWebsiteView* websiteView = new WizWebsiteView(m_app);
+    createTab(websiteView);
+    //
+    return websiteView->webView();
+}
+
+/**
  * @brief 浏览笔记文档
  * @param docView 已经构建好的文档视图
  */
@@ -362,7 +394,7 @@ int WizMainTabBrowser::createTab(WizDocumentView *docView)
  */
 int WizMainTabBrowser::createTab(WizWebsiteView *websiteView)
 {
-    WizWebEngineView *webView = websiteView->getWebView();
+    WizWebEngineView *webView = websiteView->webView();
     // create and int tab page
     setupWebsiteView(websiteView);
     int index = addTab(websiteView, webView->title());
@@ -503,15 +535,6 @@ WizWebEngineView* WizMainTabBrowser::currentWebView() const
  */
 void WizMainTabBrowser::setupView(WizWebEngineView* view) {
     QWebEnginePage *webPage = view->page();
-    connect(view, &WizWebEngineView::viewSourceRequested, [=](QUrl url, QString title){
-        int index = createTab("view-source:" + url.url());
-        WizWebsiteView* webView = qobject_cast<WizWebsiteView*>(widget(index));
-        if (webView) {
-            // To avoid tabtext being changed when users view source of WizDocumentWebPage.
-            disconnect(webView->getWebView(), &WizWebEngineView::titleChanged, nullptr, nullptr);
-        }
-        setTabText(index, "view-source:" + title);
-    });
     connect(webPage, &QWebEnginePage::fullScreenRequested, this, &WizMainTabBrowser::fullScreenRequested);
 }
 

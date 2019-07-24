@@ -1,6 +1,8 @@
 ﻿#include "WizWebEngineView.h"
 #include "WizMisc.h"
 #include "utils/WizPathResolve.h"
+#include "WizMainWindow.h"
+#include "WizMainTabBrowser.h"
 
 #include <QWebEngineView>
 #include <QWebSocketServer>
@@ -27,6 +29,7 @@
 #include "WizDevToolsDialog.h"
 #include "WizDocumentView.h"
 
+/*
 class WizInvisibleWebEngineView : public QWebEngineView
 {
     class WizInvisibleWebEnginePage : public QWebEnginePage
@@ -73,6 +76,7 @@ public:
         return web->page();
     }
 };
+*/
 
 WizWebEngineAsyncMethodResultObject::WizWebEngineAsyncMethodResultObject(QObject* parent)
     : QObject(parent)
@@ -158,10 +162,6 @@ bool WizWebEnginePage::acceptNavigationRequest(const QUrl &url, QWebEnginePage::
     emit linkClicked(url, type, isMainFrame, this);
 
     return m_continueNavigate;
-}
-QWebEnginePage *WizWebEnginePage::createWindow(WebWindowType type)
-{
-    return WizInvisibleWebEngineView::create(this);
 }
 
 void WizWebEnginePage::triggerAction(WizWebEnginePage::WebAction action, bool checked /*= false*/)
@@ -395,9 +395,6 @@ QMenu* WizWebEngineView::createStandardContextMenu()
 void WizWebEngineView::contextMenuEvent(QContextMenuEvent *event)
 {
     QMenu *menu = createStandardContextMenu();
-    // refresh new page's ViewSource action
-    connect(pageAction(QWebEnginePage::ViewSource), &QAction::triggered, 
-                    this, &WizWebEngineView::onViewSourceTriggered, Qt::UniqueConnection);
     // save page action
     connect(pageAction(QWebEnginePage::SavePage), &QAction::triggered, 
                     this, &WizWebEngineView::handleSavePageTriggered, Qt::UniqueConnection);
@@ -448,7 +445,7 @@ void WizWebEngineView::openDevTools()
     if (!m_devToolsWindow)
     {
         m_devToolsWindow = new WizDevToolsDialog(this);
-        // 设置外观
+        //
         QString title = documentTitle();
         m_devToolsWindow->setWindowTitle("DevTools - " + title);
         //
@@ -464,6 +461,8 @@ void WizWebEngineView::openDevTools()
         );
     }
     //
+    page()->triggerAction(QWebEnginePage::InspectElement);
+    //
     m_devToolsWindow->show();
     m_devToolsWindow->raise();
 }
@@ -471,11 +470,6 @@ void WizWebEngineView::openDevTools()
 void WizWebEngineView::handleOpenDevToolsTriggered()
 {
     openDevTools();
-}
-
-void WizWebEngineView::onViewSourceTriggered()
-{
-    emit viewSourceRequested(page()->url(), page()->url().url());
 }
 
 void WizWebEngineView::handleSavePageTriggered()
@@ -496,15 +490,47 @@ WizWebEnginePage* WizWebEngineView::getPage() {
 }
 
 /**
- * @brief 重写基类setPage函数，重设m_page
- * @param page
-
-void WizWebEngineView::setPage(WizWebEnginePage* page)
-{
-    m_page = page;
-    QWebEngineView::setPage(page);
-}
+ * @brief Create new window according to the request triggered within web page.
+ * 
+ * @param type 
+ * @return QWebEngineView* 
  */
+QWebEngineView *WizWebEngineView::createWindow(QWebEnginePage::WebWindowType type)
+{
+    WizMainWindow *mainWindow = WizMainWindow::instance();
+    if (!mainWindow)
+        return nullptr;
+
+    switch (type) {
+        // A web browser tab.
+        case QWebEnginePage::WebBrowserTab:
+        {
+            return mainWindow->mainTabView()->createTab();
+        }
+        // A web browser tab without hiding the current visible WebEngineView.
+        case QWebEnginePage::WebBrowserBackgroundTab: 
+        {
+            return mainWindow->mainTabView()->createBackgroundTab();
+        }
+        // A complete web browser window.
+        case QWebEnginePage::WebBrowserWindow: 
+        {
+            //return mainWindow->browser()->createWindow()->currentTab();
+            return nullptr;
+        }
+        // A window without decoration.
+        case QWebEnginePage::WebDialog: 
+        {
+            /*
+            WebPopupWindow *popup = new WebPopupWindow(page()->profile());
+            connect(popup->view(), &WebView::devToolsRequested, this, &WebView::devToolsRequested);
+            return popup->view();
+            */
+            return nullptr;
+        }
+    }
+    return nullptr;
+}
 
 static QWebEngineView* getActiveWeb()
 {

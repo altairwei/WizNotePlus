@@ -22,6 +22,7 @@ public:
     void setSizeHint(QSize size);
 
     WizWebEngineView* getWebView() const { return m_webView; }
+    WizWebEngineView* webView() const { return m_webView; }
     void viewHtml(const QUrl &url);
 
 private:

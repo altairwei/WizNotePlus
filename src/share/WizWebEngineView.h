@@ -53,7 +53,6 @@ public:
 protected:
     virtual void javaScriptConsoleMessage(JavaScriptConsoleMessageLevel level, const QString& message, int lineNumber, const QString& sourceID);
     virtual bool acceptNavigationRequest(const QUrl &url, QWebEnginePage::NavigationType type, bool isMainFrame);
-    virtual QWebEnginePage *createWindow(WebWindowType type);
     virtual void triggerAction(WebAction action, bool checked = false);
 
 Q_SIGNALS:
@@ -96,18 +95,17 @@ public Q_SLOTS:
     void innerLoadFinished(bool);
     void openLinkInDefaultBrowser(QUrl url);
     void openDevTools();
-    void onViewSourceTriggered();
     void handleSavePageTriggered();
     void handleOpenDevToolsTriggered();
     
 Q_SIGNALS:
     void loadFinishedEx(bool);
-    void viewSourceRequested(QUrl url, QString title);
     
 private:
     WizDevToolsDialog* m_devToolsWindow = nullptr;
 
 protected:
+    QWebEngineView *createWindow(QWebEnginePage::WebWindowType type) override;
     void wheelEvent(QWheelEvent *event);
     void contextMenuEvent(QContextMenuEvent *event);
 };
