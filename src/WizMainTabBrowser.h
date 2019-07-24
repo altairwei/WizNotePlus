@@ -72,6 +72,7 @@ public slots:
     void handleContextMenuRequested(const QPoint &pos);
     WizWebEngineView *createTab();
     WizWebEngineView *createBackgroundTab();
+    WizWebEngineView *createWindow();
     int createTab(WizDocumentView *docView);
     int createTab(WizWebsiteView *websiteView);
     int createTab(const QUrl &url);

@@ -145,6 +145,7 @@ set(wiznote_SOURCES
 
     plugins/tab_browser/FullScreenWindow.cpp
     plugins/tab_browser/FullScreenNotification.cpp
+    plugins/tab_browser/WebEngineWindow.cpp
 
     WizCategoryView.cpp
     WizCategoryViewItem.cpp
@@ -292,6 +293,7 @@ set(wiznote_HEADERS
 
     plugins/tab_browser/FullScreenWindow.h
     plugins/tab_browser/FullScreenNotification.h
+    plugins/tab_browser/WebEngineWindow.h
 
     WizDef.h
     WizActions.h

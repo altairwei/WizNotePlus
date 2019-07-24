@@ -1,16 +1,5 @@
 ﻿#include "WizMainTabBrowser.h"
 
-#include <QWidget>
-#include <QMessageBox>
-#include <QStyle>
-#include <QStylePainter>
-#include <QStyleOption>
-#include <QStyleOptionTabBarBase>
-#include <QLabel>
-#include <QMenu>
-#include <QTabBar>
-#include <QLayout>
-
 #include "share/WizWebEngineView.h"
 #include "share/WizGlobal.h"
 #include "WizDef.h"
@@ -21,6 +10,18 @@
 #include "WizTitleBar.h"
 #include "WizDocumentView.h"
 #include "WizWebsiteView.h"
+#include "plugins/tab_browser/WebEngineWindow.h"
+
+#include <QWidget>
+#include <QMessageBox>
+#include <QStyle>
+#include <QStylePainter>
+#include <QStyleOption>
+#include <QStyleOptionTabBarBase>
+#include <QLabel>
+#include <QMenu>
+#include <QTabBar>
+#include <QLayout>
 
 //-------------------------------------------------------------------
 // class WizMainTabBrowser
@@ -353,6 +354,15 @@ WizWebEngineView *WizMainTabBrowser::createBackgroundTab()
     setupTab(websiteView);
     //
     return webView;
+}
+
+WizWebEngineView *WizMainTabBrowser::createWindow()
+{
+    WebEngineWindow *webWindow = new WebEngineWindow(this);
+    webWindow->setAttribute(Qt::WA_DeleteOnClose);
+    webWindow->show();
+    webWindow->raise();
+    return webWindow->webView();
 }
 
 /**

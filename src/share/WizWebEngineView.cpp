@@ -385,8 +385,6 @@ QMenu* WizWebEngineView::createStandardContextMenu()
         menu->insertAction(before, action);
     } else {
         (*inspectElement)->setText(tr("Inspect element"));
-        // refresh new page's InspectElement action
-        //disconnect(*inspectElement, &QAction::triggered, this, &WizWebEngineView::openDevTools);
         connect(*inspectElement, &QAction::triggered, this, &WizWebEngineView::openDevTools, Qt::UniqueConnection);
     }
     return menu;
@@ -512,21 +510,12 @@ QWebEngineView *WizWebEngineView::createWindow(QWebEnginePage::WebWindowType typ
         {
             return mainWindow->mainTabView()->createBackgroundTab();
         }
+        // A window without decoration.
+        case QWebEnginePage::WebDialog:
         // A complete web browser window.
         case QWebEnginePage::WebBrowserWindow: 
         {
-            //return mainWindow->browser()->createWindow()->currentTab();
-            return nullptr;
-        }
-        // A window without decoration.
-        case QWebEnginePage::WebDialog: 
-        {
-            /*
-            WebPopupWindow *popup = new WebPopupWindow(page()->profile());
-            connect(popup->view(), &WebView::devToolsRequested, this, &WebView::devToolsRequested);
-            return popup->view();
-            */
-            return nullptr;
+            return mainWindow->mainTabView()->createWindow();
         }
     }
     return nullptr;
