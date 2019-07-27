@@ -1,4 +1,5 @@
 ﻿#include "WizMainWindow.h"
+
 #include <typeinfo>
 #include <QToolBar>
 #include <QMenuBar>
@@ -3882,40 +3883,35 @@ WizMainTabBrowser* WizMainWindow::mainTabView()
 }
 
 /**
- * @brief 创建文档视图并绑定各种信号
+ * @brief Create document view and setup signal-slot connections.
  * @return
  */
 WizDocumentView* WizMainWindow::createDocumentView()
 {
-    // 在堆上创建视图
+    //FIXME: This function will take about 1200 milliseconds.
     WizDocumentView* newDocView = new WizDocumentView(*this);
 
-    // 绑定该文档视图发出的信号
+    // Binding signals
     //-------------------------------------------------------------------
 
     connect(newDocView->web(), SIGNAL(shareDocumentByLinkRequest(QString,QString)),
             SLOT(on_shareDocumentByLink_request(QString,QString)));
-    // 单窗口浏览信号转发？
     connect(newDocView, SIGNAL(documentSaved(QString,WizDocumentView*)),
             m_singleViewDelegate, SIGNAL(documentChanged(QString,WizDocumentView*)));
     connect(m_singleViewDelegate, SIGNAL(documentChanged(QString,WizDocumentView*)),
             newDocView, SLOT(on_document_data_changed(QString,WizDocumentView*)));
-    // 处理单窗口浏览请求
     connect(newDocView->titleBar(), SIGNAL(viewNoteInSeparateWindow_request()),
             SLOT(viewCurrentNoteInSeparateWindow()));
-    // 好像是槽函数是空
     connect(newDocView->web(), SIGNAL(statusChanged(const QString&)), SLOT(on_editor_statusChanged(const QString&)));
 
-    // 设置文档视图UI
+    // Setup document view UI
     //-------------------------------------------------------------------
 
     newDocView->web()->setInSeperateWindow(false);
-    bool isHighPix = WizIsHighPixel();
-    newDocView->commentWidget()->setMinimumWidth(isHighPix ? 170 : 195);
+    newDocView->commentWidget()->setMinimumWidth(195);
     newDocView->web()->setMinimumWidth(576);
 
     newDocView->setStyleSheet(QString("QLineEdit{border:1px solid #DDDDDD; border-radius:2px;}"));
-    //                             "QToolButton {border:0px; padding:0px; border-radius:0px;}"));
     newDocView->titleBar()->setStyleSheet(QString("QLineEdit{padding:0px; padding-left:-2px; padding-bottom:1px; border:0px; border-radius:0px;}"));
 
     //
@@ -3990,10 +3986,11 @@ void WizMainWindow::viewDocument(const WIZDOCUMENTDATAEX& data)
         m_documentForEditing = WIZDOCUMENTDATA();
     }
     WizDocumentView* newDocView = createDocumentView();
-    m_mainTabBrowser->createTab(newDocView);
-    // 可以考虑直接调用newDocView->viewNote()方法，而不用发送信号
+    int index = m_mainTabBrowser->createTab(newDocView);
+    m_mainTabBrowser->setTabText(index, data.strTitle);
+    //TODO: directly invoke newDocView->viewNote() instead of signaling.
     WizGlobal::emitViewNoteRequested(newDocView, data, forceEditing);
-    setCurrentDocumentView(newDocView); //FIXME: 如果放弃当前文档视图功能，则修改
+    setCurrentDocumentView(newDocView); //FIXME: do not keep m_doc
     //
     m_actions->actionFromName(WIZACTION_GLOBAL_SAVE_AS_MARKDOWN)->setEnabled(WizIsMarkdownNote(data));
     return;

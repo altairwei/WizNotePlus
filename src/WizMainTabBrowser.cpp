@@ -427,7 +427,9 @@ int WizMainTabBrowser::createTab(const QUrl &url)
     // create default website view
     WizWebsiteView* websiteView = new WizWebsiteView(m_app);
     websiteView->viewHtml(url);
-    return createTab(websiteView);
+    int index = createTab(websiteView);
+    setTabText(index, url.url());
+    return index;
 }
 
 /**
