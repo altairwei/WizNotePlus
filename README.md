@@ -2,7 +2,7 @@
 
 forked from [WizTeam/WizQTClient](https://github.com/WizTeam/WizQTClient)
 
-README **中文** | [English](documents/README-en.md)
+README **中文** | [English](doc/README-en.md)
 
 **为知笔记+** 是一款基于云服务的跨平台个人知识与时间管理工具。
 
@@ -24,13 +24,13 @@ README **中文** | [English](documents/README-en.md)
 
 ### 多标签浏览文档和网页
 
-![tabViewer](documents/images/tabViewer.png?raw=true)
+![tabViewer](doc/images/tabViewer.png?raw=true)
 
 ### 外部编辑器
 
 在编辑按钮右侧新增了一个菜单，用于添加和使用外部编辑器。
 
-![extenalEditor](documents/images/external_editor.png?raw=true)
+![extenalEditor](doc/images/external_editor.png?raw=true)
 
 ## 下载
 

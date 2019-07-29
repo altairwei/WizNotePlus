@@ -24,13 +24,13 @@ Add the `F12` shortcut to open the developer tools, which can be used to adjust 
 
 ### Multi-tab Documents and Websites Browser
 
-![tabViewer](../documents/images/tabViewer.png?raw=true)
+![tabViewer](../doc/images/tabViewer.png?raw=true)
 
 ### External Editor
 
 To add or make use of external editors, a menu has been added to the right side of the "edit button".
 
-![extenalEditor](../documents/images/external_editor.png?raw=true)
+![extenalEditor](../doc/images/external_editor.png?raw=true)
 
 ## Download
 
