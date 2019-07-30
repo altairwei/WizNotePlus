@@ -1,19 +1,16 @@
 ﻿#include "WizSearchWidget.h"
 
-#ifdef USECOCOATOOLBAR
-#include "mac/WizSearchWidget_mm.h"
-#else
-#include "share/WizSettings.h"
-#include "share/WizAnalyzer.h"
-#include "WizDef.h"
-#include "utils/WizStyleHelper.h"
-
 #include <QGraphicsDropShadowEffect>
 #include <QPainter>
 #include <QPixmap>
 #include <QMenu>
 #include <QMouseEvent>
 #include <QDebug>
+
+#include "share/WizSettings.h"
+#include "share/WizAnalyzer.h"
+#include "WizDef.h"
+#include "utils/WizStyleHelper.h"
 
 WizSearchView::WizSearchView(QWidget* parent /* = 0 */)
     : QWidget(parent)
@@ -188,5 +185,3 @@ void WizSearchEdit::mouseMoveEvent(QMouseEvent* event)
         }
     }
 }
-
-#endif

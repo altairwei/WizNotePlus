@@ -11,9 +11,7 @@
 #include "WizDef.h"
 #include "share/WizUIHelper.h"
 #include "share/WizSettings.h"
-#ifndef Q_OS_MAC
 #include "share/WizShadowWindow.h"
-#endif
 
 
 #define WIZ_SINGLE_APPLICATION "WIZ_SINGLE_APPLICATION"
@@ -82,20 +80,12 @@ class WizMacToolBarButtonItem;
 #endif
 
 class WizMainWindow
-#ifdef Q_OS_MAC
-    : public QMainWindow
-#else
     : public WizShadowWindow<QMainWindow>
-#endif
     , public WizExplorerApp
 {
     Q_OBJECT
 
-#ifdef Q_OS_MAC
-    typedef QMainWindow  _baseClass;
-#else
     typedef WizShadowWindow<QMainWindow> _baseClass;
-#endif
 
 public:
     explicit WizMainWindow(WizDatabaseManager& dbMgr, QWidget *parent = nullptr);
@@ -136,14 +126,6 @@ protected:
     void moveEvent(QMoveEvent* ev);
     void keyPressEvent(QKeyEvent* ev);
 
-#ifdef Q_OS_MAC
-    virtual void paintEvent(QPaintEvent* event);
-#endif
-
-#ifdef USECOCOATOOLBAR
-    virtual void showEvent(QShowEvent *event);
-#endif
-
 private:
     WizDatabaseManager& m_dbMgr;
     WizProgressDialog* m_progress;
@@ -163,14 +145,8 @@ private:
     WizTrayIcon* m_tray;
     QMenu* m_trayMenu;
 
-#ifdef USECOCOATOOLBAR
-    WizMacToolBar* m_toolBar;
-    WizMacFixedSpacer* m_spacerForToolButtonAdjust;
-    WizMacToolBarButtonItem* m_newNoteButton;
-#else
     QToolBar* m_toolBar;
     WizFixedSpacer* m_spacerForToolButtonAdjust;
-#endif
 
     QMenuBar* m_menuBar;
     QMenu* m_dockMenu;
@@ -178,10 +154,8 @@ private:
     QMenu* m_newNoteExtraMenu;
     QActionGroup* m_viewTypeActions;
     QActionGroup* m_sortTypeActions;
-#ifndef Q_OS_MAC
     QMenu* m_menu;
     QToolButton* m_menuButton;    
-#endif
     bool m_useSystemBasedStyle;
 
     QWidget* m_clienWgt;
@@ -541,9 +515,7 @@ private:
     //
     void initTrayIcon(QSystemTrayIcon* trayIcon);
 
-#ifndef Q_OS_MAC
     void setWindowStyle(bool bUseSystemStyle);
-#endif
 
     //
     void startSearchStatus();
@@ -603,9 +575,6 @@ private slots:
 
     void showVipUpgradePage();
 
-#ifdef Q_OS_MAC
-    void on_newNoteButton_extraMenuRequest();
-#endif
     void on_newNoteByExtraMenu_request();
 
 private:
