@@ -221,10 +221,8 @@ private:
     void initToolBarPluginButtons();
     void initClient();
     //
-#ifndef Q_OS_MAC
     virtual void layoutTitleBar();
     void initMenuList();
-#endif
     void initMenuBar();
     void initViewTypeActionGroup();
     void initSortTypeActionGroup();

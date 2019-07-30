@@ -1704,7 +1704,8 @@ QString WizGetSkinResourceFileName(const QString& strSkinName, const QString& st
     //
     QString arrayPath[] =
     {
-        WizGetSystemCustomSkinPath(strSkinName),
+        //FIXME: treat OS equally
+        //WizGetSystemCustomSkinPath(strSkinName),
         WizGetSkinResourcePath(strSkinName)
     };
 

@@ -207,12 +207,8 @@ WizMainWindow::WizMainWindow(WizDatabaseManager& dbMgr, QWidget *parent)
     initDockMenu();
 #else
     if (m_useSystemBasedStyle) {
-        // 使用系统菜单风格
-        // 在编译时因为定义了Q_OS_WIN系统变量，所以m_useSystemBasedStyle(false)被初始化为否。
         initMenuBar();
     } else {
-        // Wiz自定义菜单风格
-        // 执行此分支对菜单进行初始化，将会导致m_viewTypeActions和m_sortTypeActions为空，产生BUG
         initMenuList();
     }
 #endif
@@ -1875,8 +1871,6 @@ void WizMainWindow::onClickedImage(const QString& src, const QString& list)
     QDesktopServices::openUrl(url);
 }
 
-#ifndef Q_OS_MAC
-
 /**
  * @brief 布局标题栏
  */
@@ -1953,8 +1947,6 @@ void WizMainWindow::initMenuList()
     initViewTypeActionGroup();
     initSortTypeActionGroup();
 }
-
-#endif
 
 /**
  * @brief 初始化顶部主工具条
@@ -2060,31 +2052,13 @@ void WizMainWindow::initToolBarPluginButtons()
  */
 void WizMainWindow::initClient()
 {
-#ifdef Q_OS_MAC
 
-    m_clienWgt = new QWidget(this);
-    setCentralWidget(m_clienWgt);
-
-    if (systemWidgetBlurAvailable())
-    {
-        enableWidgetBehindBlur(m_clienWgt);
-    }
-    else
-    {
-        //WizDocumentView* docView = qobject_cast<WizDocumentView*>(m_mainTab->currentWidget());
-        //QPalette pal = docView->palette();
-        //pal.setColor(QPalette::Window, QColor("#F6F6F6"));
-        //docView->setPalette(pal);
-    }
-
-#else
     setCentralWidget(rootWidget());
     //
     QWidget* main = clientWidget();
     //
     m_clienWgt = new QWidget(main);
     clientLayout()->addWidget(m_clienWgt);
-#endif
 
     m_clienWgt->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Minimum);
 
@@ -3954,7 +3928,7 @@ void WizMainWindow::checkWizUpdate()
 }
 
 
-void WizMainWindow:: adjustToolBarLayout()
+void WizMainWindow::adjustToolBarLayout()
 {
     if (!m_toolBar)
         return;
