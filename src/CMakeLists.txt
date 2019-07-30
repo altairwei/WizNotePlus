@@ -7,13 +7,10 @@ add_subdirectory(test)
 #============================================================================
 
 set(wiznote_SOURCES_MAC
-    mac/WizSearchWidget.mm
     mac/WizMacHelper.mm
-    mac/WizMacToolBar.mm
-    mac/WizMacToolBarDelegate.mm
-    mac/WizMacActionHelper.cpp
     mac/WizUserInfoWidgetBaseMac.mm
     mac/WizUserInfoWidgetBaseMac_mm.cpp
+    widgets/WizUserInfoWidgetBase.cpp
     utils/WizNotify.mm
     mac/WizIAPHelper.mm
     mac/rmstore/RMAppReceipt.mm
@@ -26,11 +23,8 @@ set(wiznote_SOURCES_MAC
 set(wiznote_HEADERS_MAC
     mac/WizMacHelper.h
     mac/WizMacHelper_mm.h
-    mac/WizSearchWidget_mm.h
-    mac/WizMacToolBar.h
-    mac/WizMacToolBarDelegate.h
-    mac/WizMacActionHelper.h
     mac/WizUserInfoWidgetBaseMac_mm.h
+    widgets/WizUserInfoWidgetBase.h
     mac/WizIAPHelper.h
     mac/rmstore/RMAppReceipt.h
     mac/rmstore/RMStoreAppReceiptVerificator.h
@@ -203,7 +197,6 @@ set(wiznote_SOURCES
     WizCombineNotesDialog.cpp
 
     WizOEMSettings.cpp    
-    mac/WizSearchWidget_mm.cpp
     core/WizAccountManager.cpp
     core/WizCommentManager.cpp
     core/WizNoteManager.cpp

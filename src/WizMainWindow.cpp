@@ -21,8 +21,6 @@
 #ifdef Q_OS_MAC
 #include <Carbon/Carbon.h>
 #include "mac/WizMacHelper.h"
-#include "mac/WizMacToolBar.h"
-#include "mac/WizSearchWidget_mm.h"
 #else
 #endif
 #include "WizSearchWidget.h"
@@ -118,11 +116,7 @@
 static WizMainWindow* windowInstance = 0;
 
 WizMainWindow::WizMainWindow(WizDatabaseManager& dbMgr, QWidget *parent)
-#ifdef Q_OS_MAC
-    : _baseClass(parent)
-#else
     : _baseClass(parent, true)
-#endif
     , m_dbMgr(dbMgr)
     , m_progress(new WizProgressDialog(this))
     , m_settings(new WizUserSettings(dbMgr.db()))
@@ -141,21 +135,10 @@ WizMainWindow::WizMainWindow(WizDatabaseManager& dbMgr, QWidget *parent)
     , m_optionsAction(nullptr)
 #endif
     , m_newNoteExtraMenu(nullptr)
-#ifdef Q_OS_MAC
-    #ifdef USECOCOATOOLBAR
-    , m_toolBar(new WizMacToolBar(this))
-    , m_newNoteButton(NULL)
-    #else
-    , m_toolBar(new QToolBar(this))
-//    , m_toolBar(nullptr)
-    #endif
-    , m_useSystemBasedStyle(true)
-#else
     , m_toolBar(new QToolBar("Main", titleBar()))
     , m_menu(new QMenu(clientWidget()))
     , m_spacerForToolButtonAdjust(nullptr)
     , m_useSystemBasedStyle(m_settings->useSystemBasedStyle())
-#endif
     , m_actions(new WizActions(*this, this))
     , m_category(new WizCategoryView(*this, this))
     , m_documents(new WizDocumentListView(*this, this))
@@ -224,12 +207,8 @@ WizMainWindow::WizMainWindow(WizDatabaseManager& dbMgr, QWidget *parent)
     initDockMenu();
 #else
     if (m_useSystemBasedStyle) {
-        // 使用系统菜单风格
-        // 在编译时因为定义了Q_OS_WIN系统变量，所以m_useSystemBasedStyle(false)被初始化为否。
         initMenuBar();
     } else {
-        // Wiz自定义菜单风格
-        // 执行此分支对菜单进行初始化，将会导致m_viewTypeActions和m_sortTypeActions为空，产生BUG
         initMenuList();
     }
 #endif
@@ -336,32 +315,6 @@ bool WizMainWindow::eventFilter(QObject* watched, QEvent* event)
             return false;
         }
     }
-#ifdef Q_OS_MAC
-    else if (watched == this)
-    {
-        if (event->type() == QEvent::WindowStateChange)
-        {
-            if (QWindowStateChangeEvent* stateEvent = dynamic_cast<QWindowStateChangeEvent*>(event))
-            {
-                // 使用程序右上角按钮将窗口最大化时，需要修改按钮名称
-                static int state = -1;
-                int oldState = stateEvent->oldState();
-                if (state != oldState && (oldState & Qt::WindowFullScreen || windowState() & Qt::WindowFullScreen))
-                {
-                    state = oldState;
-                    m_actions->toggleActionText(WIZACTION_GLOBAL_TOGGLE_FULLSCREEN);
-                }
-
-                if (!(oldState & Qt::WindowFullScreen) && (windowState() & Qt::WindowFullScreen))
-                {
-                    //NOTE:全屏时隐藏搜索提示
-                    m_searchWidget->hideCompleter();
-                    m_searchWidget->setCompleterUsable(false);
-                }
-            }
-        }
-    }
-#endif
 
     //
     return _baseClass::eventFilter(watched, event);
@@ -639,30 +592,6 @@ void WizMainWindow::keyPressEvent(QKeyEvent* ev)
     //
     _baseClass::keyPressEvent(ev);
 }
-
-
-#ifdef Q_OS_MAC
-void WizMainWindow::paintEvent(QPaintEvent*event)
-{
-    if (systemWidgetBlurAvailable())
-    {
-        QPainter pt(this);
-
-        pt.setCompositionMode( QPainter::CompositionMode_Clear );
-        pt.fillRect(rect(), Qt::SolidPattern );
-    }
-
-    QMainWindow::paintEvent(event);
-}
-#endif
-
-#ifdef USECOCOATOOLBAR
-void WizMainWindow::showEvent(QShowEvent* event)
-{
-    m_toolBar->showInWindow(this);
-    QMainWindow::showEvent(event);
-}
-#endif
 
 void WizMainWindow::on_actionExit_triggered()
 {
@@ -1752,18 +1681,6 @@ void WizMainWindow::prepareNewNoteMenu()
     }
 }
 
-#ifdef Q_OS_MAC
-void WizMainWindow::on_newNoteButton_extraMenuRequest()
-{
-    prepareNewNoteMenu();
-    //
-    QRect rc = m_newNoteButton->geometry();
-    QPoint pt = rc.bottomLeft();
-    pt = mapToGlobal(pt);
-    //
-    m_newNoteExtraMenu->popup(QPoint(pt.x(), pt.y() - 92));
-}
-#endif
 
 /**
  * @brief 根据新建笔记菜单的选项来从模板创建笔记
@@ -1954,8 +1871,6 @@ void WizMainWindow::onClickedImage(const QString& src, const QString& list)
     QDesktopServices::openUrl(url);
 }
 
-#ifndef Q_OS_MAC
-
 /**
  * @brief 布局标题栏
  */
@@ -2033,67 +1948,17 @@ void WizMainWindow::initMenuList()
     initSortTypeActionGroup();
 }
 
-#endif
-
 /**
  * @brief 初始化顶部主工具条
  */
 void WizMainWindow::initToolBar()
 {
 
-#ifndef Q_OS_MAC
     // 将标题工具栏添加到布局
     clientLayout()->addWidget(m_toolBar);
     // 根据是否使用系统标题栏样式来选择窗口样式
     setWindowStyle(m_useSystemBasedStyle);
-
-#endif
-
-#ifdef Q_OS_MAC
-    m_toolBar->showInWindow(this);
-
-    //用户信息栏
-    m_userInfoWidget = new WizUserInfoWidget(*this, nullptr);
-    m_toolBar->addWidget(m_userInfoWidget, "", "");
-
-    // 同步按钮
-    m_toolBar->addAction(m_actions->actionFromName(WIZACTION_GLOBAL_SYNC));
-
-    bool isHighPix = WizIsHighPixel();
-    m_spacerForToolButtonAdjust = new WizMacFixedSpacer(QSize(isHighPix ? 20 : 34, 5), m_toolBar); //new CWizMacFixedSpacer(QSize(120, 5), m_toolBar);
-    m_toolBar->addWidget(m_spacerForToolButtonAdjust, "", "");
-
-    m_toolBar->addSearch(tr("Search"), "", isHighPix ? HIGHPIXSEARCHWIDGETWIDTH : NORMALSEARCHWIDGETWIDTH);
-    m_toolBar->addWidget(new WizMacFixedSpacer(QSize(28, 1), m_toolBar), "", "");
-
-    // 新建笔记按钮
-    int buttonWidth = WizIsChineseLanguage(userSettings().locale()) ? 116 : 124;
-    //WARNING:不能创建使用toolbar作为父类对象，会造成输入法偏移
-    QPixmap pixExtraMenu = Utils::WizStyleHelper::skinResourceFileName("actionNewNoteExtraMenu", true);
-    WizMacToolBarButtonItem* newNoteItem = new WizMacToolBarButtonItem(tr("New Note"), pixExtraMenu, buttonWidth, nullptr);
-    connect(newNoteItem, SIGNAL(triggered(bool)),
-            m_actions->actionFromName(WIZACTION_GLOBAL_NEW_DOCUMENT), SIGNAL(triggered(bool)));
-    connect(newNoteItem, SIGNAL(showExtraMenuRequest()), SLOT(on_newNoteButton_extraMenuRequest()));
-
-    m_toolBar->addWidget(newNoteItem, "", "");
     //
-    m_newNoteButton = newNoteItem;
-    /*
-    // 前进后退
-    m_actions->actionFromName(WIZACTION_GLOBAL_GOBACK)->setEnabled(false);
-    m_actions->actionFromName(WIZACTION_GLOBAL_GOFORWARD)->setEnabled(false);
-    m_toolBar->addAction(m_actions->actionFromName(WIZACTION_GLOBAL_GOBACK));
-    m_toolBar->addAction(m_actions->actionFromName(WIZACTION_GLOBAL_GOFORWARD));
-    */
-    //
-    m_toolBar->addStandardItem(WizMacToolBar::FlexibleSpace);
-    //
-    m_searchWidget = m_toolBar->getSearchWidget();
-    m_searchWidget->setUserSettings(m_settings);
-    //FIXME: should not hard code the Offset.
-    m_searchWidget->setPopupWgtOffset(m_searchWidget->sizeHint().width(), QSize(m_userInfoWidget->textWidth() + 160, 0));
-
-#else
     layoutTitleBar();
     // main button size
     QSize iconSize = QSize(WizSmartScaleUI(16), WizSmartScaleUI(16));
@@ -2162,9 +2027,6 @@ void WizMainWindow::initToolBar()
     m_toolBar->addWidget(new WizSpacer(m_toolBar));
 
     updateHistoryButtonStatus();
-
-    //
-#endif
     //
     connect(m_searchWidget, SIGNAL(doSearch(const QString&)), SLOT(on_search_doSearch(const QString&)));
 }
@@ -2190,31 +2052,13 @@ void WizMainWindow::initToolBarPluginButtons()
  */
 void WizMainWindow::initClient()
 {
-#ifdef Q_OS_MAC
 
-    m_clienWgt = new QWidget(this);
-    setCentralWidget(m_clienWgt);
-
-    if (systemWidgetBlurAvailable())
-    {
-        enableWidgetBehindBlur(m_clienWgt);
-    }
-    else
-    {
-        //WizDocumentView* docView = qobject_cast<WizDocumentView*>(m_mainTab->currentWidget());
-        //QPalette pal = docView->palette();
-        //pal.setColor(QPalette::Window, QColor("#F6F6F6"));
-        //docView->setPalette(pal);
-    }
-
-#else
     setCentralWidget(rootWidget());
     //
     QWidget* main = clientWidget();
     //
     m_clienWgt = new QWidget(main);
     clientLayout()->addWidget(m_clienWgt);
-#endif
 
     m_clienWgt->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Minimum);
 
@@ -4084,7 +3928,7 @@ void WizMainWindow::checkWizUpdate()
 }
 
 
-void WizMainWindow:: adjustToolBarLayout()
+void WizMainWindow::adjustToolBarLayout()
 {
     if (!m_toolBar)
         return;
@@ -4450,7 +4294,6 @@ void WizMainWindow::initTrayIcon(QSystemTrayIcon* trayIcon)
 #endif
 }
 
-#ifndef Q_OS_MAC
 void WizMainWindow::setWindowStyle(bool bUseSystemStyle)
 {
     if (bUseSystemStyle)
@@ -4468,7 +4311,6 @@ void WizMainWindow::setWindowStyle(bool bUseSystemStyle)
         titleBar()->closeButton()->setVisible(false);
     }
 }
-#endif
 
 void WizMainWindow::setMobileFileReceiverEnable(bool bEnable)
 {

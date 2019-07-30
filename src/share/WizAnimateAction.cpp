@@ -52,11 +52,8 @@ void WizAnimateAction::setSingleIcons(const QString& strIconBaseName)
 void WizAnimateAction::setTogetherIcon(const QString& strIconBaseName)
 {
     CString strFileName;
-    if (WizIsHighPixel()) {
-        strFileName  = ::WizGetSkinResourceFileName(Utils::WizStyleHelper::themeName(), strIconBaseName + "@2x");
-    } else {
-        strFileName  = ::WizGetSkinResourceFileName(Utils::WizStyleHelper::themeName(), strIconBaseName);
-    }
+
+    strFileName  = ::WizGetSkinResourceFileName(Utils::WizStyleHelper::themeName(), strIconBaseName);
 
     if (strFileName.isEmpty())
         return;

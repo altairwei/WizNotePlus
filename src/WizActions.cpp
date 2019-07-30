@@ -99,8 +99,11 @@ WIZACTION* WizActions::actionsData()
 
         // view
         {WIZACTION_GLOBAL_TOGGLE_CATEGORY,      QObject::tr("Hide Sidebar"),                QObject::tr("Show Sidebar"),            QKeySequence("Alt+Ctrl+S")},
+#ifdef Q_OS_MAC
+        {WIZACTION_GLOBAL_TOGGLE_FULLSCREEN,    QObject::tr("Enter Fullscreen"),            QObject::tr("Leave Fullscreen"),        QKeySequence("Ctrl+Meta+f")},
+#else
         {WIZACTION_GLOBAL_TOGGLE_FULLSCREEN,    QObject::tr("Enter Fullscreen"),            QObject::tr("Leave Fullscreen"),        QKeySequence("F11")},
-
+#endif
         {"actionViewMinimize",                  QObject::tr("Minimize"),                    QObject::tr(""),                        QKeySequence("Ctrl+M")},
         {"actionZoom",                          QObject::tr("Zoom"),                        QObject::tr(""),                        QKeySequence()},
         {"actionBringFront",                    QObject::tr("Bring All to Front"),          QObject::tr(""),                        QKeySequence()},
