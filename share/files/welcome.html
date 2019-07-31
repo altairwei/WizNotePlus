@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=unicode" />
+    <title>Welcome to Wiz</title>
+    <link type="text/css" href="css/ui-lightness/jquery-ui-1.8.19.custom.css" rel="stylesheet" />
+
+    <script type="text/javascript" src="js/jquery-1.7.2.min.js"></script>
+
+    <script type="text/javascript" src="js/jquery-ui-1.8.19.custom.min.js"></script>
+
+    <script type="text/javascript">
+        $(function() {
+
+            // Tabs
+            $('#tabs').tabs();
+
+            // Datepicker
+            $('#datepicker').datepicker({
+                inline: true,
+                dateFormat: 'yy-mm-dd',
+                onSelect: function(date) { viewDocumentsByDate(date); },
+                prevText: '',
+                nextText: ''
+            });
+
+            //hover states on the static widgets
+            $('#dialog_link, ul#icons li').hover(
+					function() { $(this).addClass('ui-state-hover'); },
+					function() { $(this).removeClass('ui-state-hover'); }
+				);
+
+        });
+
+
+    </script>
+
+    <style type="text/css">
+        /*demo page css*/body
+        {
+            font: 70% "Trebuchet MS" , sans-serif;
+            margin: 30px;
+        }
+    </style>
+</head>
+<body>
+    <!-- Tabs -->
+    <div id="tabs">
+        <ul>
+            <li><a href="#tabsRecent">
+                <label id="labelOverview">
+                    Overview</label></a></li>
+            <!--<li><a href="#tabsNews"><label id="labelNews">Wiz News</label></a></li>-->
+        </ul>
+        <div id="tabsRecent">
+            <table border="0" width="100%">
+                <tbody>
+                    <tr align="left">
+                        <td style="width: 90%">
+                            <h3 id="labelTodo">
+                                Todo</h3>
+                            <ul id="listTodo">
+                            </ul>
+                            <h3 id="labelRecentDocuments">
+                                Recent Documents</h3>
+                            <ul id="listRecent">
+                            </ul>
+                        </td>
+                        <td align="right" valign="top" style="width: 10%">
+                            <div id="datepicker">
+                            </div>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        <!--
+        <div id="tabsNews">
+        </div>
+        -->
+    </div>
+    <script src="webengine/wizwebchannel.js" language="javascript" type="text/javascript" ></script>
+    <script language="JavaScript" type="text/javascript">
+        var objApp = null;
+        var objDatabase = null;
+
+        // Initialize WizNote APIs
+        new QWebChannel(qt.webChannelTransport, function (channel) {
+            var objectNames = ["WizExplorerApp"];
+            for (var i = 0; i < objectNames.length; i++) {
+                var key = objectNames[i];
+                window[key] = channel.objects[key];
+            }
+            // Get APIs
+            objApp = WizExplorerApp;
+            objDatabase = WizExplorerApp.Database;
+            // 
+            listDocuments();
+            listEvents();
+        });
+
+        function dateToStr(dt) {
+            return "" + dt.getFullYear() + "-" + (dt.getMonth() + 1) + "-" + dt.getDate();
+        }
+
+        function strToDate(str) {
+            var timePos = str.indexOf(" ");
+            if (timePos != -1) {
+                str = str.substring(0, timePos);
+            }
+            var a = str.split('-');
+            if (a.length != 3)
+                return null;
+            //
+            var year = parseInt(a[0], 10);
+            var month = parseInt(a[1], 10);
+            var day = parseInt(a[2], 10);
+            //
+            var ret = new Date();
+            ret.setFullYear(year, month - 1, day);
+            return ret;
+        }
+
+        function viewDocument(doc_guid) {
+            var doc = objDatabase.DocumentFromGUID(doc_guid);
+            if (doc != null) {
+                objApp.Window.ViewDocument(doc, true);
+            }
+        }
+
+        function getMetaInt(objDatabase, metaName, metaKey, defVal) {
+            var value = objDatabase.Meta(metaName, metaKey);
+            if (value == null)
+                return defVal;
+            if (value == "")
+                return defVal;
+            try {
+                return parseInt(value, 10);
+            }
+            catch (e) {
+                return defVal;
+            }
+        }
+        //
+        function listDocuments() {
+            var documents = objDatabase.GetRecentDocuments("", 10);
+            for (var i = 0; i < documents.Count; i++) {
+                var doc = documents.Item(i);
+                var item = document.createElement("li");
+                //
+                var date = new Date(doc.DateModified);
+                //
+                var dateString = date.toLocaleDateString();
+                //
+                item.innerHTML = "<a href=\"javascript:void();\" onclick=\"viewDocument('" + doc.GUID + "');\" >" + doc.Title + "</a>&nbsp;(" + dateString + ")";
+                listRecent.appendChild(item);
+            }
+            //    
+        }
+        //
+
+        function listEvents() {
+            var begin = new Date();
+            var end = new Date();
+            end.setDate(end.getDate() + 7);
+            //
+            var events = objDatabase.GetCalendarEvents(dateToStr(begin) + " 00:00:00", dateToStr(end) + " 23:59:59");
+            if (events == null || events.Count == 0) {
+                var item = document.createElement("li");
+                item.innerHTML = "No events";
+                listTodo.appendChild(item);
+            }
+            else {
+                for (var i = 0; i < events.Count; i++) {
+                    var e = events.Item(i);
+                    var item = document.createElement("li");
+                    //
+                    var eventBegin = strToDate(e.ParamValue("Calendar_Start"));
+                    //
+                    var eventBeginString = eventBegin.toLocaleDateString();
+                    //
+                    item.innerHTML = "<a href=\"javascript:void();\" onclick=\"viewDocument('" + e.GUID + "');\" >" + e.Title + "</a>&nbsp;(" + eventBeginString + ")";
+                    listTodo.appendChild(item);
+                }
+            }
+        }
+        //
+        function formatInt(val) {
+            if (val < 10)
+                return "0" + val;
+            else
+                return "" + val;
+        }
+
+        function listDocumentsByDate(dt) {
+            if (typeof (objApp) == "undefined")
+                return 0;
+
+            var begin_date_string = dt.getFullYear() + "-" + formatInt(dt.getMonth() + 1) + "-" + formatInt(dt.getDate()) + " 00:00:00";
+            var end_date_string = dt.getFullYear() + "-" + formatInt(dt.getMonth() + 1) + "-" + formatInt(dt.getDate()) + " 23:59:59";
+            //
+            var sql = "DT_CREATED >='" + begin_date_string + "' and DT_CREATED <='" + end_date_string + "'"; //  and DOCUMENT_TYPE='journal'";
+            //
+            var documents = objDatabase.DocumentsFromSQL(sql);
+            //
+            if (documents == null)
+                return 0;
+            //
+            objApp.Window.DocumentsCtrl.SetDocuments(documents);
+            //
+            return 0;
+        }
+
+        function viewDocumentsByDate(dateText) {
+            var date = strToDate(dateText);
+            try {
+                listDocumentsByDate(date);
+            }
+            catch (err) {
+            }
+        }
+
+        /*TODO: Localize document
+        var languageFileName = null;
+
+        function getLanguageFileName(objApp) {
+            if (languageFileName == null || languageFileName == "") {
+                var path = objApp.GetHtmlDocumentPath(document);
+                languageFileName = path + "welcome.ini";
+            }
+            //
+            return languageFileName;
+        }
+        //TODO
+        function localizeCurrentDocument(objApp) {
+            objApp.LocalizeHtmlDocument(getLanguageFileName(objApp), document);
+        }
+        //
+        localizeCurrentDocument(objApp);
+        */
+    </script>
+
+</body>
+</html>
