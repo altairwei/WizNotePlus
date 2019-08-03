@@ -4696,20 +4696,51 @@ QObject *WizDatabase::DocumentFromGUID(const QString &strGUID)
     return pDoc;
 }
 
+/**
+ * @brief Wrap and pack documents to list.
+ * 
+ *      It is usually used to publish C++ Object to JavaScript array.
+ * 
+ * @param docDataArray 
+ * @return QVariantList 
+ */
+QVariantList WizDatabase::packDocumentsToList(const CWizDocumentDataArray &docDataArray)
+{
+    QVariantList docList;
+    for (const WIZDOCUMENTDATA& data : docDataArray) {
+        docList.push_back(
+            QVariant::fromValue<QObject *>(new WizDocument(*this, data, this))
+        );
+    }
+    return docList;
+}
+
+/**
+ * @brief Query documents by SQL where statement.
+ * 
+ * @param strSQLWhere 
+ * @return QVariantList 
+ */
 QVariantList WizDatabase::DocumentsFromSQLWhere(const QString& strSQLWhere)
 {
     CWizDocumentDataArray arrayDocument;
     CString strSQL = formatQuerySQL(TABLE_NAME_WIZ_DOCUMENT, FIELD_LIST_WIZ_DOCUMENT, strSQLWhere);
     sqlToDocumentDataArray(strSQL, arrayDocument);
+    return packDocumentsToList(arrayDocument);
+}
 
-    QVariantList docList;
-    for (const WIZDOCUMENTDATA& data : arrayDocument) {
-        docList.push_back(
-            QVariant::fromValue<QObject *>(new WizDocument(*this, data, this))
-        );
-    }
-
-    return docList;
+/**
+ * @brief Get recent modified documents.
+ * 
+ * @param documentType 
+ * @param count 
+ * @return QVariantList 
+ */
+QVariantList WizDatabase::GetRecentDocuments(const QString &documentType, int count)
+{
+    CWizDocumentDataArray arrayDocument;
+    getRecentDocuments(0, documentType, count, arrayDocument);
+    return packDocumentsToList(arrayDocument);
 }
 
 void WizDatabase::onAttachmentModified(const QString strKbGUID, const QString& strGUID,

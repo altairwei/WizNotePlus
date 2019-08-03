@@ -98,17 +98,16 @@
 #include "share/WizWebEngineView.h"
 #include "widgets/WizExecutingActionDialog.h"
 #include "widgets/WizUserServiceExprDialog.h"
-
 #include "share/jsoncpp/json/json.h"
-
 #include "WizCellButton.h"
-#include "plugins/public_apis_object/IWizExplorerApp.h"
 #include "WizFileImporter.h"
 
+#include "plugins/public_apis_object/IWizExplorerApp.h"
 #include "plugins/js_plugin_system/JSPluginManager.h"
 #include "plugins/js_plugin_system/JSPluginSpec.h"
-
 #include "plugins/public_apis_server/PublicAPIsServer.h"
+
+#include "WizWebsiteView.h"
 
 #define MAINWINDOW  "MainWindow"
 
@@ -2079,6 +2078,7 @@ void WizMainWindow::initClient()
     layoutDocument->addWidget(m_mainTabBrowser); // 将主标签栏放在文档板布局上
     connect(m_mainTabBrowser, SIGNAL(currentChanged(int)), SLOT(on_mainTabWidget_currentChanged(int)));
     //m_mainTabBrowser->createTab(QUrl::fromUserInput("https://www.wiz.cn")); // 默认打开Wiz主页
+    showHomePage();
     //
     layoutDocument->addWidget(m_documentSelection);
     m_documentSelection->hide(); // 这个是什么东西？
@@ -3698,6 +3698,19 @@ WizDocumentView* WizMainWindow::currentDocumentView()
 WizMainTabBrowser* WizMainWindow::mainTabView()
 {
     return m_mainTabBrowser;
+}
+
+void WizMainWindow::showHomePage()
+{
+    // Get welcome.html
+    QString welcomeHtml = Utils::WizPathResolve::resourcesPath() + "files/welcomepage/welcome.html";
+    // Setup WebEngine
+    WizWebEngineView *webView = new WizWebEngineView(
+        {{"WizExplorerApp", WizMainWindow::instance()->publicAPIsObject()}}, nullptr);
+    QPointer<WizWebsiteView> websiteView = new WizWebsiteView(webView, *this);
+    websiteView->viewHtml(welcomeHtml);
+    // Show in tab browser
+    m_mainTabBrowser->createTab(websiteView);
 }
 
 /**

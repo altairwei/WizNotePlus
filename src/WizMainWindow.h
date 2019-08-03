@@ -468,7 +468,8 @@ public Q_SLOTS:
     void on_mainTabWidget_currentChanged(int pageIndex);
 
     void onWatchedDocumentChanged(const QString& fileName);
-
+    void showHomePage();
+    
 public:
     // WizExplorerApp pointer
     virtual QWidget* mainWindow();

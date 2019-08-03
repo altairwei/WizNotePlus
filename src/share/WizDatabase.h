@@ -605,6 +605,7 @@ public:
     Q_INVOKABLE QStringList GetAllTags();
     Q_INVOKABLE QObject *DocumentFromGUID(const QString &strGUID);
     Q_INVOKABLE QVariantList DocumentsFromSQLWhere(const QString& strSQLWhere);
+    Q_INVOKABLE QVariantList GetRecentDocuments(const QString &documentType, int count);
 
     //using CWizIndexBase::DocumentFromGUID;
     //Q_INVOKABLE QObject* DocumentFromGUID(const QString& strGUID);
@@ -645,6 +646,7 @@ private:
     //
     bool getAllBizInfoCore(const CWizGroupDataArray& arrayGroup, CWizBizDataArray& arrayBiz);
     bool setAllBizInfoCore(const CWizBizDataArray& arrayBiz);
+    QVariantList packDocumentsToList(const CWizDocumentDataArray &docDataArray);
 };
 
 

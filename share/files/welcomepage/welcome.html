@@ -79,7 +79,7 @@
         </div>
         -->
     </div>
-    <script src="webengine/wizwebchannel.js" language="javascript" type="text/javascript" ></script>
+    <script src="../webengine/wizwebchannel.js" language="javascript" type="text/javascript" ></script>
     <script language="JavaScript" type="text/javascript">
         var objApp = null;
         var objDatabase = null;
@@ -121,11 +121,12 @@
             return ret;
         }
 
-        function viewDocument(doc_guid) {
-            var doc = objDatabase.DocumentFromGUID(doc_guid);
+        async function viewDocument(doc_guid) {
+            const doc = await objDatabase.DocumentFromGUID(doc_guid);
             if (doc != null) {
                 objApp.Window.ViewDocument(doc, true);
             }
+            doc.deleteLater();
         }
 
         function getMetaInt(objDatabase, metaName, metaKey, defVal) {
@@ -142,45 +143,48 @@
             }
         }
         //
-        function listDocuments() {
-            var documents = objDatabase.GetRecentDocuments("", 10);
-            for (var i = 0; i < documents.Count; i++) {
-                var doc = documents.Item(i);
-                var item = document.createElement("li");
-                //
-                var date = new Date(doc.DateModified);
-                //
-                var dateString = date.toLocaleDateString();
-                //
-                item.innerHTML = "<a href=\"javascript:void();\" onclick=\"viewDocument('" + doc.GUID + "');\" >" + doc.Title + "</a>&nbsp;(" + dateString + ")";
+        async function listDocuments() {
+            const documents = await objDatabase.GetRecentDocuments("", 10);
+            for (const doc of documents) {
+                const item = document.createElement("li");
+                const date = new Date(doc.DateModified);
+                const dateString = date.toLocaleDateString();
+                // Update UI
+                item.innerHTML = "<a href=\"javascript:void(0);\" onclick=\"viewDocument('" + doc.GUID + "');\" >" + doc.Title + "</a>&nbsp;(" + dateString + ")";
                 listRecent.appendChild(item);
+                // Free up memory space of C++ Object
+                doc.deleteLater();
             }
-            //    
         }
-        //
 
-        function listEvents() {
-            var begin = new Date();
-            var end = new Date();
+        async function listEvents() {
+            // Get query data
+            const begin = new Date();
+            const end = new Date();
             end.setDate(end.getDate() + 7);
-            //
-            var events = objDatabase.GetCalendarEvents(dateToStr(begin) + " 00:00:00", dateToStr(end) + " 23:59:59");
-            if (events == null || events.Count == 0) {
-                var item = document.createElement("li");
+            // Construct SQL
+            let sql = `DOCUMENT_LOCATION not like '/Deleted Items/%'`;
+            const and1 = ` and DOCUMENT_GUID in (select DOCUMENT_GUID from WIZ_DOCUMENT_PARAM where PARAM_NAME = 'CALENDAR_START'  and  PARAM_VALUE <= '${dateToStr(end) + " 23:59:59"}' )`;
+            const and2 = ` and DOCUMENT_GUID in (select DOCUMENT_GUID from WIZ_DOCUMENT_PARAM where PARAM_NAME = 'CALENDAR_END'  and  PARAM_VALUE >= '${dateToStr(begin) + " 00:00:00"}' )`;
+            sql += and2;
+            sql += and1;
+            // Get documents which contains events data
+            const events = await objDatabase.DocumentsFromSQLWhere(sql);
+            if (events == undefined || events.length == 0) {
+                const item = document.createElement("li");
                 item.innerHTML = "No events";
                 listTodo.appendChild(item);
-            }
-            else {
-                for (var i = 0; i < events.Count; i++) {
-                    var e = events.Item(i);
+            } else {
+                for (const doc of events) {
                     var item = document.createElement("li");
+                    // Get start date of event
+                    const eventBegin = strToDate(await doc.GetParamValue("CALENDAR_START"));
+                    const eventBeginString = eventBegin.toLocaleDateString();
                     //
-                    var eventBegin = strToDate(e.ParamValue("Calendar_Start"));
-                    //
-                    var eventBeginString = eventBegin.toLocaleDateString();
-                    //
-                    item.innerHTML = "<a href=\"javascript:void();\" onclick=\"viewDocument('" + e.GUID + "');\" >" + e.Title + "</a>&nbsp;(" + eventBeginString + ")";
+                    item.innerHTML = "<a href=\"javascript:void(0);\" onclick=\"viewDocument('" + doc.GUID + "');\" >" + doc.Title + "</a>&nbsp;(" + eventBeginString + ")";
                     listTodo.appendChild(item);
+                    //
+                    doc.deleteLater();
                 }
             }
         }
@@ -192,7 +196,7 @@
                 return "" + val;
         }
 
-        function listDocumentsByDate(dt) {
+        async function listDocumentsByDate(dt) {
             if (typeof (objApp) == "undefined")
                 return 0;
 
@@ -201,12 +205,12 @@
             //
             var sql = "DT_CREATED >='" + begin_date_string + "' and DT_CREATED <='" + end_date_string + "'"; //  and DOCUMENT_TYPE='journal'";
             //
-            var documents = objDatabase.DocumentsFromSQL(sql);
+            var documents = await objDatabase.DocumentsFromSQLWhere(sql);
             //
             if (documents == null)
                 return 0;
             //
-            objApp.Window.DocumentsCtrl.SetDocuments(documents);
+            objApp.DocumentsCtrl.SetDocuments(documents);
             //
             return 0;
         }
