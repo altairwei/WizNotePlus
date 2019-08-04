@@ -1,10 +1,13 @@
 var objApp = null;
 var objDatabase = null;
 
+const ITEM_LIMITS = 10;
+
 const en_US = {
     "labelOverview": "Overview",
     "labelNews": "News",
     "labelRecentDocuments": "Recent Documents",
+    "labelUnreadDocuments": "Unread Documents",
     "labelTodo": "Todo",
     "Title": "Welcome to Wiz"
 }
@@ -13,6 +16,7 @@ const zh_CN = {
     "labelOverview": "近期概况",
     "labelNews": "为知笔记动态",
     "labelRecentDocuments": "近期文档",
+    "labelUnreadDocuments": "未读文档",
     "labelTodo": "待办事宜",
     "Title": "欢迎使用为知笔记"
 }
@@ -21,6 +25,7 @@ const zh_TW = {
     "labelOverview": "近期概況",
     "labelNews": "為知動態",
     "labelRecentDocuments": "近期文檔",
+    "labelUnreadDocuments": "未讀文檔",
     "labelTodo": "待辦事宜",
     "Title": "歡迎使用為知筆記"
 }
@@ -70,7 +75,7 @@ function getMetaInt(objDatabase, metaName, metaKey, defVal) {
 }
 //
 async function listDocuments() {
-    const documents = await objDatabase.GetRecentDocuments("", 10);
+    const documents = await objDatabase.GetRecentDocuments("", ITEM_LIMITS);
     for (const doc of documents) {
         const item = document.createElement("li");
         const docDate = doc.DateModified == "1970-01-01T08:00:00" ? doc.DateCreated : doc.DateModified;
@@ -80,6 +85,35 @@ async function listDocuments() {
         item.innerHTML = "<a href=\"javascript:void(0);\" onclick=\"viewDocument('" + doc.GUID + "');\" >" + doc.Title + "</a>&nbsp;(" + dateString + ")";
         listRecent.appendChild(item);
         // Free up memory space of C++ Object
+        doc.deleteLater();
+    }
+}
+
+async function listUnreadDocuments() {
+    let sql = `DOCUMENT_LOCATION not like '/Deleted Items/%'` + 
+        // select zero read count documents
+        ` and DOCUMENT_READ_COUNT=0` + 
+        // Do not select calendar events
+        ` and DOCUMENT_GUID not in (select DOCUMENT_GUID from WIZ_DOCUMENT_PARAM where PARAM_NAME = 'CALENDAR_START')` +
+        // Random select
+        ` order by random() limit ${ITEM_LIMITS}`;
+
+    const documents = await objDatabase.DocumentsFromSQLWhere(sql);
+    if (documents.length == 0) {
+        const item = document.createElement("li");
+        item.innerHTML = "No documents";
+        listUnread.appendChild(item);
+        return;
+    }
+    for (const doc of documents) {
+        const item = document.createElement("li");
+        const docDate = doc.DateModified == "1970-01-01T08:00:00" ? doc.DateCreated : doc.DateModified;
+        const date = new Date(docDate);
+        const dateString = date.toLocaleDateString();
+        //
+        item.innerHTML = "<a href=\"javascript:void(0);\" onclick=\"viewDocument('" + doc.GUID + "');\" >" + doc.Title + "</a>&nbsp;(" + dateString + ")";
+        listUnread.appendChild(item);
+        //
         doc.deleteLater();
     }
 }
@@ -157,25 +191,6 @@ function viewDocumentsByDate(dateText) {
     }
 }
 
-/*TODO: Localize document
-var languageFileName = null;
-
-function getLanguageFileName(objApp) {
-    if (languageFileName == null || languageFileName == "") {
-        var path = objApp.GetHtmlDocumentPath(document);
-        languageFileName = path + "welcome.ini";
-    }
-    //
-    return languageFileName;
-}
-//TODO
-function localizeCurrentDocument(objApp) {
-    objApp.LocalizeHtmlDocument(getLanguageFileName(objApp), document);
-}
-//
-localizeCurrentDocument(objApp);
-*/
-
 $(document).ready(function() {
     // Initialize UI
     $('#tabs').tabs();
@@ -233,6 +248,7 @@ $(document).ready(function() {
         // 
         await listDocuments();
         await listEvents();
+        await listUnreadDocuments();
         // Display page
         $('body').css('visibility', 'visible');
     });
