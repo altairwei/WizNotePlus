@@ -13,28 +13,14 @@ IWizDocumentListCtrl::IWizDocumentListCtrl(WizDocumentListView* docListView, QOb
 
 }
 
-void IWizDocumentListCtrl::SetDocuments(QVariantList documents)
+/**
+ * @brief Show documents in list view.
+ * 
+ * @param documentGUIDs 
+ */
+void IWizDocumentListCtrl::SetDocuments(QStringList documentGUIDs)
 {
-    // Check WizDocument exists
-    if (documents.isEmpty())
+    if (documentGUIDs.isEmpty())
         return;
-    // Get document data
-    CWizDocumentDataArray arrayDocument;
-    for (const QVariant &docVar : documents) {
-        if (QObject *object = docVar.value<QObject *>()) {
-            WizDocument *doc = qobject_cast<WizDocument *>(object);
-            if (doc) {
-                arrayDocument.push_back(doc->data());
-            } else {
-                //TODO: Warning
-                qWarning() << "SetDocuments: Arguments can not be convert to WizDocument";
-            }
-        } else {
-            //TODO: Warning
-            // QObject of Array in JavaScript cant not be unwrapped in C++ side. 
-            qWarning() << "SetDocuments: No QObject in arguments";
-        }
-    }
-    // Show document in list
-    m_documentListView->setDocuments(arrayDocument);
+    m_documentListView->setDocuments(documentGUIDs);
 }

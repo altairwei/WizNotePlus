@@ -2,7 +2,7 @@
 #define IWIZDOCUMENTLISTCTRL_H
 
 #include <QObject>
-#include <QVariantList>
+#include <QStringList>
 
 class WizDocumentListView;
 
@@ -16,7 +16,7 @@ private:
 public:
     IWizDocumentListCtrl(WizDocumentListView* docListView, QObject* parent);
 
-    Q_INVOKABLE void SetDocuments(QVariantList documents);
+    Q_INVOKABLE void SetDocuments(QStringList documentGUIDs);
 };
 
 #endif // WIZDOCUMENTLISTCTRL_H

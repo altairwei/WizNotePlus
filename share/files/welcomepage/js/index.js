@@ -49,7 +49,8 @@ async function listDocuments() {
     const documents = await objDatabase.GetRecentDocuments("", 10);
     for (const doc of documents) {
         const item = document.createElement("li");
-        const date = new Date(doc.DateModified);
+        const docDate = doc.DateModified == "1970-01-01T08:00:00" ? doc.DateCreated : doc.DateModified;
+        const date = new Date(docDate);
         const dateString = date.toLocaleDateString();
         // Update UI
         item.innerHTML = "<a href=\"javascript:void(0);\" onclick=\"viewDocument('" + doc.GUID + "');\" >" + doc.Title + "</a>&nbsp;(" + dateString + ")";
@@ -66,8 +67,8 @@ async function listEvents() {
     end.setDate(end.getDate() + 7);
     // Construct SQL
     let sql = `DOCUMENT_LOCATION not like '/Deleted Items/%'`;
-    const and1 = ` and DOCUMENT_GUID in (select DOCUMENT_GUID from WIZ_DOCUMENT_PARAM where PARAM_NAME = 'CALENDAR_START'  and  PARAM_VALUE <= '${dateToStr(end) + " 23:59:59"}' )`;
-    const and2 = ` and DOCUMENT_GUID in (select DOCUMENT_GUID from WIZ_DOCUMENT_PARAM where PARAM_NAME = 'CALENDAR_END'  and  PARAM_VALUE >= '${dateToStr(begin) + " 00:00:00"}' )`;
+    const and1 = ` and DOCUMENT_GUID in (select DOCUMENT_GUID from WIZ_DOCUMENT_PARAM where PARAM_NAME = 'CALENDAR_START'  and  PARAM_VALUE <= '${end.toISOString().replace(/T.*/, "") + " 23:59:59"}' )`;
+    const and2 = ` and DOCUMENT_GUID in (select DOCUMENT_GUID from WIZ_DOCUMENT_PARAM where PARAM_NAME = 'CALENDAR_END'  and  PARAM_VALUE >= '${begin.toISOString().replace(/T.*/, "") + " 00:00:00"}' )`;
     sql += and2;
     sql += and1;
     // Get documents which contains events data
@@ -112,7 +113,13 @@ async function listDocumentsByDate(dt) {
     if (documents == null)
         return 0;
     //
-    objApp.DocumentsCtrl.SetDocuments(documents);
+    const guidList = new Array();
+    for (const doc of documents) {
+        guidList.push(doc.GUID);
+        doc.deleteLater();
+    }
+    //
+    objApp.DocumentsCtrl.SetDocuments(guidList);
     //
     return 0;
 }

@@ -313,6 +313,20 @@ void WizDocumentListView::setDocuments(const CWizDocumentDataArray& arrayDocumen
     }
 }
 
+void WizDocumentListView::setDocuments(const QStringList& documentGUIDList, bool searchResult)
+{
+    // Query documents data
+    CWizDocumentDataArray arrayDocument;
+    for (const QString &docGUID : documentGUIDList) {
+        WIZDOCUMENTDATA dataDocument;
+        if (m_dbMgr.db().documentFromGuid(docGUID, dataDocument)) {
+            arrayDocument.push_back(dataDocument);
+        }
+    }
+    // Show documents
+    setDocuments(arrayDocument, searchResult);
+}
+
 void WizDocumentListView::appendDocumentsNoSort(const CWizDocumentDataArray& arrayDocument)
 {
     CWizDocumentDataArray::const_iterator it;
