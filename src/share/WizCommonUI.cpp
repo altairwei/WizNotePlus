@@ -23,15 +23,15 @@ QString WizCommonUI::loadTextFromFile(const QString& strFileName)
     return strText;
 }
 
-void WizCommonUI::saveTextToFile(const QString &strFileName, const QString &strText, const QString &strCharset)
+bool WizCommonUI::saveTextToFile(const QString &strFileName, const QString &strText, const QString &strCharset)
 {
     QString charset =  strCharset.toLower();
     if (charset == "unicode" || charset == "utf-8") {
-        ::WizSaveUnicodeTextToUtf8File(strFileName, strText, false);
+        return ::WizSaveUnicodeTextToUtf8File(strFileName, strText, false);
     } else if (charset == "utf-16") {
-        ::WizSaveUnicodeTextToUtf16File(strFileName, strText);
+        return ::WizSaveUnicodeTextToUtf16File(strFileName, strText);
     } else {
-        ::WizSaveUnicodeTextToUtf8File(strFileName, strText);
+        return ::WizSaveUnicodeTextToUtf8File(strFileName, strText);
     }
 }
 
@@ -71,9 +71,9 @@ QString WizCommonUI::LoadTextFromFile(const QString& strFileName)
     return loadTextFromFile(strFileName);
 }
 
-void WizCommonUI::SaveTextToFile(const QString &strFileName, const QString &strText, const QString &strCharset)
+bool WizCommonUI::SaveTextToFile(const QString &strFileName, const QString &strText, const QString &strCharset)
 {
-    saveTextToFile(strFileName, strText, strCharset);
+    return saveTextToFile(strFileName, strText, strCharset);
 }
 
 QString WizCommonUI::ClipboardToImage(int hwnd, const QString& strOptions)
