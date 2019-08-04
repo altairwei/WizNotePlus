@@ -3703,7 +3703,7 @@ WizMainTabBrowser* WizMainWindow::mainTabView()
 void WizMainWindow::showHomePage()
 {
     // Get welcome.html
-    QString welcomeHtml = Utils::WizPathResolve::resourcesPath() + "files/welcomepage/welcome.html";
+    QString welcomeHtml = Utils::WizPathResolve::resourcesPath() + "files/welcomepage/index.html";
     // Setup WebEngine
     WizWebEngineView *webView = new WizWebEngineView(
         {{"WizExplorerApp", WizMainWindow::instance()->publicAPIsObject()}}, nullptr);

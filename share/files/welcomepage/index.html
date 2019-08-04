@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=unicode" />
+    <title>Welcome to Wiz</title>
+    <link type="text/css" href="css/Smoothness/jquery-ui.min.css" rel="stylesheet" />
+    <script type="text/javascript" src="js/jquery-1.11.3.min.js"></script>
+    <script type="text/javascript" src="js/jquery-ui-1.12.1.custom.js"></script>
+    <script type="text/javascript" src="../webengine/wizwebchannel.js"></script>
+    <script type="text/javascript" src="js/index.js"></script>
+    <style type="text/css">
+        body {
+            font-size: 70%;
+            font-family: sans-serif;
+        }
+    </style>
+</head>
+<body style="visibility: hidden">
+    <!-- Tabs -->
+    <div id="tabs">
+        <ul>
+            <li><a href="#tabsRecent">
+                <label id="labelOverview">
+                    Overview</label></a></li>
+            <!--<li><a href="#tabsNews"><label id="labelNews">Wiz News</label></a></li>-->
+        </ul>
+        <div id="tabsRecent">
+            <table border="0" width="100%">
+                <tbody>
+                    <tr align="left">
+                        <td style="width: 90%">
+                            <h3 id="labelTodo">
+                                Todo</h3>
+                            <ul id="listTodo">
+                            </ul>
+                            <h3 id="labelRecentDocuments">
+                                Recent Documents</h3>
+                            <ul id="listRecent">
+                            </ul>
+                        </td>
+                        <td align="right" valign="top" style="width: 10%">
+                            <div id="datepicker">
+                            </div>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        <!--
+        <div id="tabsNews">
+        </div>
+        -->
+    </div>
+</body>
+</html>
