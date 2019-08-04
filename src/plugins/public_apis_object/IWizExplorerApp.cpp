@@ -98,3 +98,8 @@ void IWizExplorerApp::onClickedImage(const QString& src, const QString& list)
 {
     m_mainWindow->onClickedImage(src, list);
 }
+
+QString IWizExplorerApp::Locale()
+{
+    return m_mainWindow->userSettings().locale();
+}

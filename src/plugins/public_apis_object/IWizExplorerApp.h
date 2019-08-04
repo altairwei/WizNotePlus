@@ -47,6 +47,7 @@ public:
     Q_INVOKABLE QObject* CreateWizObject(const QString& strObjectID);
     Q_INVOKABLE void SetSavingDocument(bool saving);
     Q_INVOKABLE void ProcessClipboardBeforePaste(const QVariantMap& data);
+    Q_INVOKABLE QString Locale();
 
     //NOTE: these functions would called by web page, do not delete
     Q_INVOKABLE QString TranslateString(const QString& string);
