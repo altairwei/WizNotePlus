@@ -72,7 +72,7 @@ QFont WizCreateWindowsUIFont(const QApplication& app)
         "Helvetica", "Hiragino Sans GB", "Microsoft YaHei UI",
         "SimSun", "SimHei", "Helvetica Neue", "Arial", "sans-serif"
     };
-    font.setFamilies(fontFamilies);
+    font.setFamily("Microsoft YaHei UI");
     return font;
 }
 
