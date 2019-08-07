@@ -445,7 +445,7 @@ void WizCategoryBaseView::dragLeaveEvent(QDragLeaveEvent* event)
 
 
 
-
+//FIXME: Can not detect position correctly.
 QAbstractItemView::DropIndicatorPosition WizCategoryBaseView::position(const QPoint &pos, const QRect &rect, const QModelIndex &index) const
 {
     QAbstractItemView::DropIndicatorPosition r = QAbstractItemView::OnViewport;
@@ -483,6 +483,16 @@ bool WizCategoryBaseView::droppingOnItself(QDropEvent *event, const QModelIndex 
     return false;
 }
 
+/**
+ * @brief Detect the position of drop indicator.
+ * 
+ * @param event 
+ * @param dropRow 
+ * @param dropCol 
+ * @param dropIndex 
+ * @return true 
+ * @return false 
+ */
 bool WizCategoryBaseView::dropOn(QDropEvent *event, int *dropRow, int *dropCol, QModelIndex *dropIndex)
 {
     if (event->isAccepted())
@@ -512,12 +522,12 @@ bool WizCategoryBaseView::dropOn(QDropEvent *event, int *dropRow, int *dropCol, 
         return false;
     }
 
-    QAbstractItemView::DropIndicatorPosition dropIndicatorPosition;
+    QAbstractItemView::DropIndicatorPosition indicatorPosition;
     int row = -1;
     int col = -1;
     if (index != rootIndex()) {
-        dropIndicatorPosition = position(event->pos(), visualRect(index), index);
-        switch (dropIndicatorPosition) {
+        indicatorPosition = dropIndicatorPosition();
+        switch (indicatorPosition) {
         case QAbstractItemView::AboveItem:
             row = index.row();
             col = index.column();
@@ -533,7 +543,7 @@ bool WizCategoryBaseView::dropOn(QDropEvent *event, int *dropRow, int *dropCol, 
             break;
         }
     } else {
-        dropIndicatorPosition = QAbstractItemView::OnViewport;
+        indicatorPosition = QAbstractItemView::OnViewport;
     }
     *dropIndex = index;
     *dropRow = row;
@@ -544,9 +554,11 @@ bool WizCategoryBaseView::dropOn(QDropEvent *event, int *dropRow, int *dropCol, 
     return false;
 }
 
-
-
-
+/**
+ * @brief Arrange the order of items that is affected by dropping.
+ * 
+ * @param event 
+ */
 void WizCategoryBaseView::dropEventCore(QDropEvent *event)
 {
     if (event->source() == this && (event->dropAction() == Qt::MoveAction ||
@@ -555,6 +567,7 @@ void WizCategoryBaseView::dropEventCore(QDropEvent *event)
         int col = -1;
         int row = -1;
         if (dropOn(event, &row, &col, &topIndex)) {
+            // Mark selected indexes
             const QList<QModelIndex> idxs = selectedIndexes();
             QList<QPersistentModelIndex> indexes;
             const int indexesCount = idxs.count();
@@ -565,10 +578,10 @@ void WizCategoryBaseView::dropEventCore(QDropEvent *event)
             if (indexes.contains(topIndex))
                 return;
 
-            // When removing items the drop location could shift
+            // After removing items, the drop location could shift
             QPersistentModelIndex dropRow = model()->index(row, col, topIndex);
 
-            // Remove the items
+            // Remove the items from view
             QList<QTreeWidgetItem *> taken;
             for (const auto &index : indexes) {
                 QTreeWidgetItem *parent = itemFromIndex(index);
@@ -584,14 +597,17 @@ void WizCategoryBaseView::dropEventCore(QDropEvent *event)
                 // Either at a specific point or appended
                 if (row == -1) {
                     if (topIndex.isValid()) {
+                        // Append to the item which is droppped on
                         QTreeWidgetItem *parent = itemFromIndex(topIndex);
                         parent->insertChild(parent->childCount(), taken.takeFirst());
                     } else {
+                        // Append to the root item
                         insertTopLevelItem(topLevelItemCount(), taken.takeFirst());
                     }
                 } else {
                     int r = dropRow.row() >= 0 ? dropRow.row() : row;
                     if (topIndex.isValid()) {
+                        // Move item to specific position
                         QTreeWidgetItem *parent = itemFromIndex(topIndex);
                         parent->insertChild(qMin(r, parent->childCount()), taken.takeFirst());
                     } else {
@@ -609,6 +625,11 @@ void WizCategoryBaseView::dropEventCore(QDropEvent *event)
     QTreeView::dropEvent(event);
 }
 
+/**
+ * @brief Used to handle movement of items whithin same databse.
+ * 
+ * @param event 
+ */
 void WizCategoryBaseView::dropEvent(QDropEvent * event)
 {
     m_bDragHovered = false;
@@ -621,6 +642,7 @@ void WizCategoryBaseView::dropEvent(QDropEvent * event)
         return;
 
     if (event->mimeData()->hasFormat(WIZNOTE_MIMEFORMAT_DOCUMENTS)) {
+    // Handle the movement of documents to folders
         ::WizGetAnalyzer().logAction("categoryDropDocument");
         CWizDocumentDataArray arrayDocument;
         WizMime2Note(event->mimeData()->data(WIZNOTE_MIMEFORMAT_DOCUMENTS), m_dbMgr, arrayDocument);
@@ -635,6 +657,7 @@ void WizCategoryBaseView::dropEvent(QDropEvent * event)
         pItem->drop(arrayDocument, forceCopy);
 
     } else if (event->mimeData()->hasUrls()) {
+    // Handle the movement of local files to folders
         ::WizGetAnalyzer().logAction("categoryDropFiles");
         if (!pItem->acceptDrop(""))
             return;
@@ -650,6 +673,7 @@ void WizCategoryBaseView::dropEvent(QDropEvent * event)
     }
     else
     {
+    // Handle the movement of folder themselves
         if (WizKMSyncThread::isBusy())
         {
             QString title = QObject::tr("Syncing");
@@ -6085,7 +6109,14 @@ void WizCategoryView::moveDocumentsToGroupFolder(const CWizDocumentDataArray& ar
     }
 }
 
-
+/**
+ * @brief Move item as a brother of another. This is used to handle the movement between personal item and group item.
+ * 
+ * @param targetItem 
+ * @param dragedItem 
+ * @param dropAtTop 
+ * @param deleteDragSource 
+ */
 void WizCategoryView::dropItemAsBrother(WizCategoryViewItemBase* targetItem,
                                          WizCategoryViewItemBase* dragedItem, bool dropAtTop, bool deleteDragSource)
 {
@@ -6100,6 +6131,13 @@ void WizCategoryView::dropItemAsBrother(WizCategoryViewItemBase* targetItem,
 //    }
 }
 
+/**
+ * @brief Move item as a child of another. This is used to handle the movement between personal item and group item.
+ * 
+ * @param targetItem 
+ * @param dragedItem 
+ * @param deleteDragSource 
+ */
 void WizCategoryView::dropItemAsChild(WizCategoryViewItemBase* targetItem, WizCategoryViewItemBase* dragedItem, bool deleteDragSource)
 {
     if (targetItem->kbGUID() == dragedItem->kbGUID())
