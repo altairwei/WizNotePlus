@@ -21,3 +21,4 @@ Bug fixes:
 * Fixed "Import Files" can not save resources when importing files.
 * Fixed font fallback error when reading documents.
 * Removed the behaviour of opening `www.wiz.cn` automatically.
+* Fixed the problem of arrange categories' order.
