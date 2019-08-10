@@ -493,7 +493,7 @@ void WizMainWindow::saveWatchedFile(const QString& fileName)
     }
     // Get document's file name
     //FIXME: Windows client has encoding problem.
-    QString indexFileName = Utils::WizMisc::extractFilePath(fileName);
+    QString indexFileName = Utils::WizMisc::extractFilePath(fileName) + "index.html";
     // Start saver thread
     m_watchedDocSaver->save(task.docData, strHtml, indexFileName, 0, true);
 }
