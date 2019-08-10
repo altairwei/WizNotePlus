@@ -89,6 +89,10 @@ if(NOT CONAN_INSTALL_MANUALLY)
     include(${CMAKE_BINARY_DIR}/conan_paths.cmake)
 endif()
 
+# set find_package search path
+# This is a workaround of conan-zlib bug https://github.com/conan-community/community/issues/259
+set(CMAKE_MODULE_PATH ${CMAKE_BINARY_DIR} ${CMAKE_MODULE_PATH})
+
 # setup 3rd-party package
 find_package(cryptopp REQUIRED)
 find_package(quazip REQUIRED)
