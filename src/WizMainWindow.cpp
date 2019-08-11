@@ -512,7 +512,7 @@ void WizMainWindow::closeEvent(QCloseEvent* event)
             QTimer::singleShot(1500, this, SLOT(hide()));
             return;
         }
-
+        
         setVisible(false);
         event->ignore();
         //
@@ -884,40 +884,23 @@ void WizMainWindow::on_hideTrayIcon_clicked()
 void WizMainWindow::handleTrayIconActived(QSystemTrayIcon::ActivationReason reason)
 {
     switch (reason) {
-        case QSystemTrayIcon::Trigger:
-            shiftVisableStatus();
-            break;
-        default:
-            break;
-        }
+#ifdef Q_OS_MAC
+// On macOS, the context menu opens on mouse press, so we use middle click to show main window.
+    case QSystemTrayIcon::MiddleClick:
+        shiftVisableStatus();
+        break;
+#else
+    case QSystemTrayIcon::Trigger:
+        shiftVisableStatus();
+        break;
+#endif
+    default:
+        break;
+    }
 }
 
 void WizMainWindow::shiftVisableStatus()
 {
-#ifdef Q_OS_MAC
-    bool appVisible = wizMacIsCurrentApplicationVisible();
-    //
-    if (appVisible && QApplication::activeWindow() != this)
-    {
-        raise();
-        return;
-    }
-    //
-    if (appVisible)
-    {
-        wizMacHideCurrentApplication();
-    }
-    else
-    {
-//        wizMacShowCurrentApplication();
-        // wait for process finished
-        QCoreApplication::processEvents(QEventLoop::AllEvents, 200);
-        raise();
-    }
-    //
-
-#else
-
     qDebug() << "windowState: " + QString::number(windowState(), 8);
     switch(windowState()) {
         case Qt::WindowNoState:
@@ -946,12 +929,6 @@ void WizMainWindow::shiftVisableStatus()
         activateWindow();
         raise();
     }
-
-    //FIXME: Click on tray icon will make mainwindow lose focus, so that
-    //  activate status of window can not be used to shift visibale status.
-
-#endif
-
 }
 
 #ifdef WIZ_OBOSOLETE
@@ -1028,12 +1005,9 @@ void WizMainWindow::restoreStatus()
 void WizMainWindow::initQuitHandler()
 {
 #ifndef Q_OS_MAC
-    // 当最后一个窗口关闭时，触发QApplication的退出
     connect(qApp, SIGNAL(lastWindowClosed()), qApp, SLOT(quit())); // Qt bug: Qt5 bug
 #endif
-    // 当QApplication将要退出时，触发清理工作
     connect(qApp, SIGNAL(aboutToQuit()), SLOT(on_application_aboutToQuit()));
-    // 这种行为会严重降低整个应用程序的事件分发效率
     qApp->installEventFilter(this);
 
 #ifdef Q_OS_MAC
@@ -2403,9 +2377,6 @@ void WizMainWindow::init()
     QTimer::singleShot(100, this, SLOT(adjustToolBarLayout()));
     //
     QTimer::singleShot(1000 * 3, this, SLOT(on_actionSync_triggered()));
-
-    //ESC键退出全屏
-    bindESCToQuitFullScreen(this);
 }
 
 void WizMainWindow::on_actionAutoSync_triggered()
@@ -2749,25 +2720,18 @@ void WizMainWindow::on_actionViewToggleCategory_triggered()
     m_actions->toggleActionText(WIZACTION_GLOBAL_TOGGLE_CATEGORY);
 }
 
+#ifdef Q_OS_MAC
+void WizMainWindow::on_actionViewToggleClientFullscreen_triggered()
+{
+    toggleFullScreenMode(this);
+}
+#endif // Q_OS_MAC
+
 void WizMainWindow::on_actionViewToggleFullscreen_triggered()
 {
     WizGetAnalyzer().logAction("MenuBarFullscreen");
 
-
-#ifdef Q_OS_MAC
-    //toggleFullScreenMode(this);
-    setWindowState(windowState() ^ Qt::WindowFullScreen);
-//    if (windowState() == Qt::WindowFullScreen)
-//    {
-//        m_toolBar->hide();
-//        m_splitter->widget(0)->hide();
-//        m_splitter->widget(1)->hide();
-//    }
-#else
-
     m_mainTabBrowser->triggeredFullScreen();
-
-#endif // Q_OS_MAC
 }
 
 void WizMainWindow::on_actionViewMinimize_triggered()

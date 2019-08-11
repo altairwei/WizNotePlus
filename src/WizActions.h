@@ -23,6 +23,9 @@ class QShortcut;
 #define WIZACTION_GLOBAL_IMPORT_FILE            "actionImportFile"
 #define WIZACTION_GLOBAL_PRINT_MARGIN        "actionPrintMargin"
 #define WIZACTION_GLOBAL_TOGGLE_CATEGORY    "actionViewToggleCategory"
+#ifdef Q_OS_MAC
+#   define WIZACTION_GLOBAL_CLIENT_FULLSCREEN  "actionViewToggleClientFullscreen"
+#endif // Q_OS_MAC
 #define WIZACTION_GLOBAL_TOGGLE_FULLSCREEN  "actionViewToggleFullscreen"
 
 #define WIZACTION_EDITOR_UNDO               "actionEditingUndo"

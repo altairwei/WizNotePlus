@@ -435,18 +435,18 @@ if(GENERATE_INSTALL_DIR AND GENERATE_PACKAGE)
                     "\n-- Exit Code: ${macdeployqt_result}"
                 )
             endif()
-            execute_process(COMMAND python ${WIZNOTE_SOURCE_DIR}/external/macdeployqtfix.py
-                ${WIZNOTE_INSTALL_PREFIX}/Contents/MacOS/WizNote ${QTDIR}
-                WORKING_DIRECTORY ${WIZNOTE_BUILD_DIR}
-                RESULT_VARIABLE macdeployqtfix_result
-            )
-            if(NOT macdeployqtfix_result EQUAL "0")
-                message(FATAL_ERROR
-                    "\nFail to package WizNotePlus project!"
-                    "\n-- Command: python ${WIZNOTE_SOURCE_DIR}/external/macdeployqtfix.py"
-                    "\n-- Exit Code: ${macdeployqtfix_result}"
-                )
-            endif()
+            # execute_process(COMMAND python ${WIZNOTE_SOURCE_DIR}/external/macdeployqtfix.py
+            #     ${WIZNOTE_INSTALL_PREFIX}/Contents/MacOS/WizNote ${QTDIR}
+            #     WORKING_DIRECTORY ${WIZNOTE_BUILD_DIR}
+            #     RESULT_VARIABLE macdeployqtfix_result
+            # )
+            # if(NOT macdeployqtfix_result EQUAL "0")
+            #     message(FATAL_ERROR
+            #         "\nFail to package WizNotePlus project!"
+            #         "\n-- Command: python ${WIZNOTE_SOURCE_DIR}/external/macdeployqtfix.py"
+            #         "\n-- Exit Code: ${macdeployqtfix_result}"
+            #     )
+            # endif()
             #FIXME: Should not add rpath by hand!
             execute_process(COMMAND install_name_tool
                 -add_rpath "@executable_path/../Frameworks"

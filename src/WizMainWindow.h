@@ -316,6 +316,9 @@ public Q_SLOTS:
     // menu view
     void on_actionViewToggleCategory_triggered();
     void on_actionViewToggleFullscreen_triggered();
+#ifdef Q_OS_MAC
+    void on_actionViewToggleClientFullscreen_triggered();
+#endif // Q_OS_MAC
     void on_actionViewMinimize_triggered();
     void on_actionZoom_triggered();
     void on_actionBringFront_triggered();
