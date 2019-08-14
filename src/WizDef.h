@@ -4,6 +4,10 @@
 #include <QtGlobal>
 
 #define WIZ_CLIENT_VERSION  "2.8.0"
+// Development stage could be "alpha", "beta", "rc" and "stable"
+#define WIZ_DEV_STAGE "beta"
+#define WIZ_DEV_STAGE_VERSION "1"
+
 #define WIZNOTE_FTS_VERSION "5"
 #define WIZNOTE_THUMB_VERSION "3"
 #define WIZ_NEW_FEATURE_GUIDE_VERSION "4"

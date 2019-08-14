@@ -415,9 +415,9 @@ if(GENERATE_INSTALL_DIR AND GENERATE_PACKAGE)
             endif()
 
             # change Info.plist version.
-            file(READ ${WIZNOTE_INSTALL_PREFIX}/Contents/Info.plist info_plist ENCODING UTF-8)
-            string(REGEX REPLACE "<string>2.7.0</string>" "<string>${WIZNOTEPLUS_VERSION}</string>" info_plist "${info_plist}")
-            file(WRITE ${WIZNOTE_INSTALL_PREFIX}/Contents/Info.plist "${info_plist}")
+            #file(READ ${WIZNOTE_INSTALL_PREFIX}/Contents/Info.plist info_plist ENCODING UTF-8)
+            #string(REGEX REPLACE "<string>2.7.0</string>" "<string>${WIZNOTEPLUS_VERSION}</string>" info_plist "${info_plist}")
+            #file(WRITE ${WIZNOTE_INSTALL_PREFIX}/Contents/Info.plist "${info_plist}")
 
             # deploy 3rdpaty libraries
             message("\nStart deploy WizNotePlus project:\n")

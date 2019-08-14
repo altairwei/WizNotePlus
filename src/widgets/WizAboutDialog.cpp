@@ -39,7 +39,7 @@ WizAboutDialog::WizAboutDialog(QWidget *parent)
             arg(t.time().hour()).\
             arg(t.time().minute());
 
-    QString strInfo = QString(tr("<span style=\"font-size:11px\">Version %2 %3</span>")).arg(WIZNOTEPLUS_VERSION, strBuildNumber);
+    QString strInfo = QString(tr("<span style=\"font-size:11px\">Version %2 %3</span>")).arg(WIZ_CLIENT_VERSION, strBuildNumber);
     QLabel* labelBuild = new QLabel(this);
     labelBuild->setText(strInfo);
 

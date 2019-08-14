@@ -1,7 +1,5 @@
 project(WizNote)
 
-add_subdirectory(test)
-
 #============================================================================
 # Sources
 #============================================================================
@@ -559,8 +557,6 @@ else()
             COMMAND ${CMAKE_COMMAND} -E copy ${_file} ${CMAKE_BINARY_DIR}/share/wiznote/locales/)
     endforeach()
 endif()
-
-add_definitions(-DWIZNOTEPLUS_VERSION="${WizNotePlus_VERSION}")
 
 qt_use_modules(WizNote)
 qt_suppress_warnings(WizNote)
