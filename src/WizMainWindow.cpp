@@ -651,24 +651,29 @@ void WizMainWindow::resizeEvent(QResizeEvent *event)
  * 
  * @param bUpgradeAvaliable 
  */
-void WizMainWindow::on_checkUpgrade_finished(bool bUpgradeAvaliable)
+void WizMainWindow::on_checkUpgrade_finished(QJsonObject latestStable, QJsonObject latestTest)
 {
-    if (!bUpgradeAvaliable)
+    if (latestStable.isEmpty() && latestTest.isEmpty())
         return;
 
-    QString strUrl = WizUpgradeChecker::getWhatsNewUrl();
-    WizUpgradeNotifyDialog notifyDialog(strUrl, this);
-    if (QDialog::Accepted == notifyDialog.exec()) {
-        QString url = WizApiEntry::standardCommandUrl("link");
-#if defined(Q_OS_MAC)
-        url += "&name=wiznote-mac.html";
-#elif defined(Q_OS_LINUX)
-        url += "&name=wiznote-linux.html";
-#else
-        Q_ASSERT(0);
-#endif
-        QDesktopServices::openUrl(QUrl(url));
+    QString strUrl, strMarkdown;
+    // Stable release is preferred
+    if (!latestStable.isEmpty()) {
+        strUrl = latestStable["html_url"].toString();
+        strMarkdown = latestStable["body"].toString();
+    } else if (!latestTest.isEmpty()) {
+        strUrl = latestTest["html_url"].toString();
+        strMarkdown = latestTest["body"].toString();
+    } else {
+        return;
     }
+
+    WizUpgradeNotifyDialog notifyDialog(this);
+    notifyDialog.showMarkdownContent(strMarkdown);
+    if (QDialog::Accepted == notifyDialog.exec()) {
+        QDesktopServices::openUrl(QUrl(strUrl));
+    }
+
 }
 
 bool isXMLRpcErrorCodeRelatedWithUserAccount(int nErrorCode)
@@ -3890,13 +3895,12 @@ void WizMainWindow::checkWizUpdate()
 #ifndef BUILD4APPSTORE
     WizExecuteOnThread(WIZ_THREAD_NETWORK, [=](){
         WizUpgradeChecker m_upgrade;
-        //TODO: set tag name
         QString currentTagName = QString("v%1-%2.%3")
                                             .arg(WIZ_CLIENT_VERSION)
                                             .arg(WIZ_DEV_STAGE)
                                             .arg(WIZ_DEV_STAGE_VERSION);
         m_upgrade.setTagName(currentTagName);
-        connect(&m_upgrade, SIGNAL(checkFinished(bool)), SLOT(on_checkUpgrade_finished(bool)));
+        connect(&m_upgrade, &WizUpgradeChecker::checkFinished, this, &WizMainWindow::on_checkUpgrade_finished);
         m_upgrade.checkUpgrade();
     });
 #endif

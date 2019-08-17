@@ -6,6 +6,7 @@
 #include <QPushButton>
 #include <QSystemTrayIcon>
 #include <QList>
+#include <QJsonObject>
 #include <memory>
 
 #include "WizDef.h"
@@ -426,7 +427,7 @@ public Q_SLOTS:
     void on_application_aboutToQuit();
     void on_application_messageAvailable(const QString& strMsg);
 
-    void on_checkUpgrade_finished(bool bUpgradeAvaliable);
+    void on_checkUpgrade_finished(QJsonObject latestStable, QJsonObject latestTest);
 
 #ifdef WIZ_OBOSOLETE
     void on_upgradeThread_finished();

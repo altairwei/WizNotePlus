@@ -27,13 +27,7 @@
     <number>5</number>
    </property>
    <item>
-    <widget class="QWebEngineView" name="webView">
-     <property name="url">
-      <url>
-       <string>about:blank</string>
-      </url>
-     </property>
-    </widget>
+    <layout class="QVBoxLayout" name="webViewLayout"/>
    </item>
    <item>
     <layout class="QHBoxLayout" name="horizontalLayout">
@@ -68,13 +62,6 @@
    </item>
   </layout>
  </widget>
- <customwidgets>
-  <customwidget>
-   <class>QWebEngineView</class>
-   <extends>QWidget</extends>
-   <header>QWebEngineView</header>
-  </customwidget>
- </customwidgets>
  <resources/>
  <connections/>
 </ui>
