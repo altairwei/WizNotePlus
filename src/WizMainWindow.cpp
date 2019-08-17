@@ -646,6 +646,11 @@ void WizMainWindow::resizeEvent(QResizeEvent *event)
     update();
 }
 
+/**
+ * @brief Show upgrade notification.
+ * 
+ * @param bUpgradeAvaliable 
+ */
 void WizMainWindow::on_checkUpgrade_finished(bool bUpgradeAvaliable)
 {
     if (!bUpgradeAvaliable)
@@ -3884,9 +3889,15 @@ void WizMainWindow::checkWizUpdate()
 {
 #ifndef BUILD4APPSTORE
     WizExecuteOnThread(WIZ_THREAD_NETWORK, [=](){
-       WizUpgradeChecker m_upgrade;
-       connect(&m_upgrade, SIGNAL(checkFinished(bool)), SLOT(on_checkUpgrade_finished(bool)));
-       m_upgrade.checkUpgrade();
+        WizUpgradeChecker m_upgrade;
+        //TODO: set tag name
+        QString currentTagName = QString("v%1-%2.%3")
+                                            .arg(WIZ_CLIENT_VERSION)
+                                            .arg(WIZ_DEV_STAGE)
+                                            .arg(WIZ_DEV_STAGE_VERSION);
+        m_upgrade.setTagName(currentTagName);
+        connect(&m_upgrade, SIGNAL(checkFinished(bool)), SLOT(on_checkUpgrade_finished(bool)));
+        m_upgrade.checkUpgrade();
     });
 #endif
 }

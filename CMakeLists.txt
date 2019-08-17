@@ -18,6 +18,8 @@ project(WizNotePlus VERSION 2.8.0)
 # Options and Variables
 #============================================================================
 
+option(BUILD_TESTING "Building the test target or not." OFF)
+
 # Excute conan outside or not.
 option(CONAN_INSTALL_MANUALLY "Run Conan install command manually." OFF)
 
@@ -157,3 +159,8 @@ endif()
 
 #add_subdirectory(lib)
 add_subdirectory(src)
+
+if(CMAKE_PROJECT_NAME STREQUAL PROJECT_NAME AND BUILD_TESTING)
+    enable_testing()
+    add_subdirectory(tests)
+endif()
