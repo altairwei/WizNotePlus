@@ -104,10 +104,11 @@ find_package(OpenSSL)
 # install 3rd-party package
 list(REMOVE_ITEM OpenSSL_LIBRARIES dl)
 if(NOT APPLE)
-    install(FILES ${OpenSSL_LIBRARIES} DESTINATION lib)
+    set(lib_install_dest lib)
 else()
-    install(FILES ${OpenSSL_LIBRARIES} DESTINATION Contents/MacOS)
+    set(lib_install_dest Contents/MacOS)
 endif()
+install(DIRECTORY ${CMAKE_BINARY_DIR}/lib/ DESTINATION ${lib_install_dest} )
 
 # set output path
 include(${CMAKE_BINARY_DIR}/conanbuildinfo.cmake)

@@ -17,10 +17,17 @@ class WizNotePlusConan(ConanFile):
     options = {}
     default_options = {
         "OpenSSL:shared": True,
-        "cryptopp:shared": False,
-        "zlib:shared": False,
-        "quazip:shared": False
+        "cryptopp:shared": True,
+        "zlib:shared": True,
+        "quazip:shared": True
     }
+
+    def config_options(self):
+        # This is a workaround of solving Error LNK2001: 
+        #   WizEnc.obj : error LNK2001: unresolved external symbol 
+        #   "class CryptoPP::NameValuePairs const & const CryptoPP::g_nullNameValuePairs"
+        if self.settings.os == "Windows":
+            self.options["cryptopp"].shared = False
 
     def imports(self):
         self.copy("*.dll", dst="bin", src="bin")
