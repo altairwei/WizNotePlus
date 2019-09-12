@@ -17,6 +17,9 @@ class WizNotePlusConan(ConanFile):
         "zlib/1.2.11@conan/stable",
         "quazip/0.7.6@altairwei/testing"
     )
+    build_requires = (
+        "cmake_installer/3.12.4@conan/stable"
+    )
     keep_imports=True
     options = {}
     default_options = {
@@ -35,6 +38,10 @@ class WizNotePlusConan(ConanFile):
         "cmake/*",
         "build/*"
     )
+
+    def requirements(self):
+        if self.settings.os == "Linux":
+            self.requires("linuxdeployqt/v6@altairwei/testing")
 
     def config_options(self):
         # This is a workaround of solving Error LNK2001: 
@@ -72,7 +79,7 @@ class WizNotePlusConan(ConanFile):
         # Packaging Qt or other runtime libraries
         #   such as windeployqt、macdeployqt、and linuxdeployqt
         deployqt, executable = self._configure_deployqt()
-        subprocess.run([deployqt, executable])
+        self.run("%s %s" % (deployqt, executable))
         # Create distribution
         dist_folder = os.path.join(self.install_folder, "dist")
         os.makedirs(dist_folder, exist_ok=True)
