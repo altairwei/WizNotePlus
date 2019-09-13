@@ -8,3 +8,4 @@ CMakeLists.txt.user*
 /.vs
 /.vscode
 tmp
+version_info.txt
