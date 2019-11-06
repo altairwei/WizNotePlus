@@ -122,4 +122,35 @@ protected:
 
 QWebEngineProfile* createWebEngineProfile(const WizWebEngineInjectObjectCollection& objects, QObject* parent);
 
+class WizNavigationForwarderPage : public QWebEnginePage
+{
+    Q_OBJECT
+
+public:
+    WizNavigationForwarderPage(QWebEngineView *ownerView, QObject *parent = nullptr);
+
+    void setWebWindowType(QWebEnginePage::WebWindowType type);
+
+protected:
+    virtual bool acceptNavigationRequest(const QUrl &url, QWebEnginePage::NavigationType type, bool isMainFrame);
+
+private:
+    QWebEngineView *m_ownerView;
+    QWebEnginePage::WebWindowType m_windowType;
+};
+
+
+class WizNavigationForwarderView : public QWebEngineView
+{
+    Q_OBJECT
+
+public:
+    WizNavigationForwarderView(QWebEngineView *ownerView, QWidget* parent = nullptr);
+
+    QWebEngineView *forward(QWebEnginePage::WebWindowType type);
+
+private:
+    WizNavigationForwarderPage *m_page;
+};
+
 #endif // MAINWINDOW_H

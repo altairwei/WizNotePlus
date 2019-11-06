@@ -495,30 +495,9 @@ WizWebEnginePage* WizWebEngineView::getPage() {
  */
 QWebEngineView *WizWebEngineView::createWindow(QWebEnginePage::WebWindowType type)
 {
-    WizMainWindow *mainWindow = WizMainWindow::instance();
-    if (!mainWindow)
-        return nullptr;
-
-    switch (type) {
-        // A web browser tab.
-        case QWebEnginePage::WebBrowserTab:
-        {
-            return mainWindow->mainTabView()->createTab();
-        }
-        // A web browser tab without hiding the current visible WebEngineView.
-        case QWebEnginePage::WebBrowserBackgroundTab: 
-        {
-            return mainWindow->mainTabView()->createBackgroundTab();
-        }
-        // A window without decoration.
-        case QWebEnginePage::WebDialog:
-        // A complete web browser window.
-        case QWebEnginePage::WebBrowserWindow: 
-        {
-            return mainWindow->mainTabView()->createWindow();
-        }
-    }
-    return nullptr;
+    WizNavigationForwarderView *forwarder = new WizNavigationForwarderView(this, this);
+    forwarder->setVisible(false);
+    return forwarder->forward(type);
 }
 
 static QWebEngineView* getActiveWeb()
@@ -627,4 +606,107 @@ void WizWebEngineView::wheelEvent(QWheelEvent *event)
     } else {
         event->ignore();
     }
+}
+
+/**
+ * @brief Construct a new WizNavigationForwarder.
+ * 
+ *      This is used to forward Url navigation request. If the url is WizNote internal one,
+ *      it will be passed to WizNote handler.
+ * 
+ * @param ownerView 
+ * @param parent 
+ */
+WizNavigationForwarderView::WizNavigationForwarderView(QWebEngineView *ownerView, QWidget* parent)
+    : QWebEngineView(parent)
+{
+    WizNavigationForwarderPage *page = new WizNavigationForwarderPage(ownerView, this);
+    m_page = page;
+    setPage(page);
+}
+
+
+QWebEngineView *WizNavigationForwarderView::forward(QWebEnginePage::WebWindowType type)
+{
+    m_page->setWebWindowType(type);
+    return this;
+}
+
+WizNavigationForwarderPage::WizNavigationForwarderPage(QWebEngineView *ownerView, QObject *parent)
+    : QWebEnginePage(parent)
+    , m_ownerView(ownerView)
+{
+
+}
+
+bool WizNavigationForwarderPage::acceptNavigationRequest(const QUrl &url, QWebEnginePage::NavigationType type, bool isMainFrame)
+{
+    if (!isMainFrame)
+        return false;
+
+    QString protocol = url.scheme().toLower();
+    QString strUrl = url.toString();
+    if (strUrl.isEmpty())
+        return false;
+
+    WizMainWindow *mainWindow = WizMainWindow::instance();
+    if (!mainWindow)
+        return false;
+
+    if (protocol == "wiz") {
+        // WizNote internal url
+        switch (GetWizUrlType(strUrl)) {
+        case WizUrl_Document:
+            mainWindow->viewDocumentByWizKMURL(strUrl);
+            break;
+        case WizUrl_Attachment:
+        {
+            WizDocumentWebView *docWebView = qobject_cast<WizDocumentWebView *>(m_ownerView);
+            if (docWebView) {
+                if (!docWebView->isEditing()) {
+                    QString strGUID = docWebView->view()->note().strKbGUID;
+                    mainWindow->viewAttachmentByWizKMURL(strGUID, strUrl);
+                }
+            }
+            break;
+        }
+        default:
+            qDebug() << QString("%1 is a wiz internal url , but we can not identify it");
+        }
+    } else {
+        // http or file url
+        switch (m_windowType) {
+            // A web browser tab.
+            case QWebEnginePage::WebBrowserTab:
+            {
+                mainWindow->mainTabView()->createTab(url);
+                break;
+            }
+            // A web browser tab without hiding the current visible WebEngineView.
+            case QWebEnginePage::WebBrowserBackgroundTab: 
+            {
+                WizWebEngineView * view = mainWindow->mainTabView()->createBackgroundTab();
+                view->load(url);
+                break;
+            }
+            // A window without decoration.
+            case QWebEnginePage::WebDialog:
+            // A complete web browser window.
+            case QWebEnginePage::WebBrowserWindow: 
+            {
+                WizWebEngineView * view = mainWindow->mainTabView()->createWindow();
+                view->load(url);
+                break;
+            }
+        }
+    }
+
+    parent()->deleteLater();
+
+    return false;
+}
+
+void WizNavigationForwarderPage::setWebWindowType(QWebEnginePage::WebWindowType type)
+{
+    m_windowType = type;
 }

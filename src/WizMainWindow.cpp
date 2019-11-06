@@ -4094,7 +4094,7 @@ void WizMainWindow::viewDocumentByWizKMURL(const QString &strKMURL)
         m_documents->blockSignals(true);
         m_documents->setCurrentItem(0);
         m_documents->blockSignals(false);
-        viewDocument(document, true);
+        viewDocument(document);
         locateDocument(document);
         activateWindow();
         raise();
