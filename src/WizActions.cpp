@@ -313,6 +313,15 @@ void WizActions::buildMenu(QMenu* pMenu, WizSettings& settings, const QString& s
             continue;
         }
 
+#ifndef Q_OS_MAC
+        // Remove needless action on Windows or Linux
+        // TODO: refactor menu building process
+        if (strAction == "actionViewToggleClientFullscreen") {
+            index++;
+            continue;
+        }
+#endif
+
         if (strAction.startsWith("-"))
         {
             pMenu->addSeparator();
