@@ -370,19 +370,17 @@ QMenu* WizWebEngineView::createStandardContextMenu()
 {
     QMenu *menu = page()->createStandardContextMenu();
     const QList<QAction *> actions = menu->actions();
+    // remove ViewSource
+    auto viewSource = std::find(actions.cbegin(), actions.cend(), page()->action(QWebEnginePage::ViewSource));
+    if (viewSource != actions.cend())
+        menu->removeAction(*viewSource);
     // add Open DevTools action
     auto inspectElement = std::find(actions.cbegin(), actions.cend(), page()->action(QWebEnginePage::InspectElement));
     if (inspectElement == actions.cend()) {
-        auto viewSource = std::find(actions.cbegin(), actions.cend(), page()->action(QWebEnginePage::ViewSource));
-        if (viewSource == actions.cend())
-            menu->addSeparator();
-
         QAction *action = new QAction(menu);
         action->setText(tr("Open DevTools"));
         connect(action, &QAction::triggered, this, &WizWebEngineView::openDevTools, Qt::UniqueConnection);
-
-        QAction *before(inspectElement == actions.cend() ? nullptr : *inspectElement);
-        menu->insertAction(before, action);
+        menu->addAction(action);
     } else {
         (*inspectElement)->setText(tr("Inspect element"));
         connect(*inspectElement, &QAction::triggered, this, &WizWebEngineView::openDevTools, Qt::UniqueConnection);
