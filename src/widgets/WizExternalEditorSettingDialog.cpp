@@ -17,6 +17,7 @@
 #include <QRegExp>
 #include <QFileDialog>
 #include <QMessageBox>
+#include <QFileInfo>
 
 #include "utils/WizPathResolve.h"
 
@@ -35,16 +36,9 @@ WizExternalEditorInfoDialog::WizExternalEditorInfoDialog(QWidget *parent) :
     m_editArguments = ui->editArguments;
     m_checkTextEditor = ui->checkTextEditor;
     m_checkUTF8 = ui->checkUTF8;
-    // Program File LineEdit
-    QRegExp path("^([a-zA-Z]:|)((\\\\|\\/)[a-zA-Z0-9\\s_@\\-^!#$%&+={}\\[\\]\\.]+)+$");
-    QRegExpValidator* pathValidator = new QRegExpValidator(path, this);
-    m_editProgram->setValidator(pathValidator);
+    // Program File line
     connect(ui->pushBrowse, SIGNAL(clicked()), this, SLOT(setSelectedProgramFile()));
-    // Name LineEdit
-    QRegExp name(".+");
-    QRegExpValidator* nameValidator = new QRegExpValidator(name, this);
-    m_editName->setValidator(nameValidator);
-    // Arguments LineEdit
+    // Arguments line
     m_editArguments->setText(QString("%1"));
 
 }
@@ -75,16 +69,19 @@ void WizExternalEditorInfoDialog::initForm(SettingMap& data)
 
 void WizExternalEditorInfoDialog::accept()
 {
-    if (!m_editProgram->hasAcceptableInput())
+    // Check program file existance
+    QFileInfo program(m_editProgram->text());
+    if (!program.exists())
     {
         QMessageBox msgBox;
-        msgBox.setText(tr("Please specify a program file."));
+        msgBox.setText(tr("Please specify a valid program file."));
         msgBox.exec();
         m_editProgram->setFocus();
         return;
     }
-    //
-    if (!m_editName->hasAcceptableInput())
+    // Check name existance
+    QString name(m_editName->text());
+    if (name.isEmpty())
     {
         QMessageBox msgBox;
         msgBox.setText(tr("Please specify a Name for this editor."));
@@ -93,23 +90,20 @@ void WizExternalEditorInfoDialog::accept()
         return;
     }
     // send signal and data
-    if (m_editProgram->hasAcceptableInput() && m_editName->hasAcceptableInput())
-    {
-        SettingMap data;
-        data["Name"] = m_editName->text();
-        data["ProgramFile"] = m_editProgram->text();
-        data["Arguments"] = m_editArguments->text();
-        data["TextEditor"] = QString::number(static_cast<int>(m_checkTextEditor->checkState()));
-        data["UTF8Encoding"] = QString::number(static_cast<int>(m_checkUTF8->checkState()));
+    SettingMap data;
+    data["Name"] = m_editName->text();
+    data["ProgramFile"] = m_editProgram->text();
+    data["Arguments"] = m_editArguments->text();
+    data["TextEditor"] = QString::number(static_cast<int>(m_checkTextEditor->checkState()));
+    data["UTF8Encoding"] = QString::number(static_cast<int>(m_checkUTF8->checkState()));
 
-        if (m_isEditing) {
-            emit dataEdited(m_dataRow, data);
-        } else {
-            emit dataAdded(data);
-        }
-
-        QDialog::accept();
+    if (m_isEditing) {
+        emit dataEdited(m_dataRow, data);
+    } else {
+        emit dataAdded(data);
     }
+
+    QDialog::accept();
 }
 
 void WizExternalEditorInfoDialog::setSelectedProgramFile()
