@@ -6,7 +6,13 @@ WizSearchReplaceWidget::WizSearchReplaceWidget(QWidget* parent) :
     ui(new Ui::WizSearchReplaceWidget)
 {
     ui->setupUi(this);
-
+    
+    // Disable auto default button
+    ui->btn_pre->setAutoDefault(false);
+    ui->btn_next->setAutoDefault(false);
+    ui->btn_replace->setAutoDefault(false);
+    ui->btn_replaceAll->setAutoDefault(false);
+    
     //setWindowFlags(Qt::WindowStaysOnTopHint);  //could cause window fullscreen on mac
 }
 
@@ -29,7 +35,7 @@ void WizSearchReplaceWidget::showInEditor(const QRect& rcEditor)
     setFixedSize(size());
     activateWindow();
     raise();
-    ui->lineEdit_source->setFocus();
+    //ui->lineEdit_source->setFocus();
 }
 
 void WizSearchReplaceWidget::closeEvent(QCloseEvent* event)
