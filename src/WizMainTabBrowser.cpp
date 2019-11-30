@@ -195,12 +195,12 @@ void WizMainTabBrowser::handleContextMenuRequested(const QPoint &pos)
     // ensure click pos is in tab not tabbar
     if (index != -1) {
         // close actions
-        QAction *action = menu.addAction(tr("&Close Tab"));
+        QAction *action = menu.addAction(tr("Close Tab"));
         action->setShortcut(QKeySequence::Close);
         connect(action, &QAction::triggered, this, [this,index]() {
             closeTab(index);
         });
-        action = menu.addAction(tr("Close &Other Tabs"));
+        action = menu.addAction(tr("Close Other Tabs"));
         connect(action, &QAction::triggered, this, [this,index]() {
             closeOtherTabs(index);
         });

@@ -449,7 +449,7 @@ void WizDocumentWebView::createReadModeContextMenu(QContextMenuEvent *event)
     // handle open location of document
     if(page()->url().isLocalFile()) {
         QAction *action = new QAction(menu);
-        action->setText("Open temporary file's location");
+        action->setText(tr("Open temporary file's location"));
         connect(action, &QAction::triggered, [this]() {
             QUrl tmpfileFolder = page()->url().adjusted(QUrl::RemoveFilename);
             QDesktopServices::openUrl(tmpfileFolder);
