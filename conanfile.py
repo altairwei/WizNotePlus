@@ -57,11 +57,28 @@ class WizNotePlusConan(ConanFile):
         "cmake_installer/3.12.4@conan/stable"
     )
     keep_imports = True
-    options = {}
+    options = {
+        "qtdir": "ANY"
+    }
     default_options = {
+        "qtdir": None,
         "OpenSSL:shared": True,
         "cryptopp:shared": True,
         "zlib:shared": True,
+        "qt:qtsvg": True,
+        "qt:qtwebsockets": True,
+        "qt:qtwebchannel": True,
+        "qt:qtdeclarative": True,
+        "qt:qtwebengine": True,
+        "qt:qttools": True,
+        "qt:qtxmlpatterns": True,
+        "qt:qttranslations": True,
+        "qt:qtimageformats": True,
+        "qt:qtgraphicaleffects": True,
+        "qt:qtx11extras": True,
+        "qt:qtmacextras": True,
+        "qt:qtwinextras": True,
+
     }
     exports_sources = (
         "CMakeLists.txt",
@@ -78,12 +95,12 @@ class WizNotePlusConan(ConanFile):
 
     def requirements(self):
         if self.settings.os == "Linux":
-            self.requires("linuxdeployqt/v6@altairwei/testing")
-            self.requires("appimagetool/v12@altairwei/testing")
             self.requires("fcitx-qt5/1.1.1@altairwei/testing")
             self.requires("fcitx5-qt/0.0.0@altairwei/testing")
         if self.settings.os == "Macos":
             self.requires("create-dmg/1.0.0.5@altairwei/testing")
+        if not self.options.qtdir:
+            self.requires("qt/5.14.0@bincrafters/testing")
 
     def config_options(self):
         # This is a workaround of solving Error LNK2001: 
@@ -91,6 +108,8 @@ class WizNotePlusConan(ConanFile):
         #   "class CryptoPP::NameValuePairs const & const CryptoPP::g_nullNameValuePairs"
         if self.settings.os == "Windows":
             self.options["cryptopp"].shared = False
+        if self.options.qtdir:
+            self.options["quazip"].qtdir = self.options.qtdir
 
     def imports(self):
         self.copy("*.dll", dst="bin", src="bin")
@@ -216,7 +235,8 @@ class WizNotePlusConan(ConanFile):
 
     def _configure_cmake(self):
         cmake = CMake(self)
-        cmake.definitions["CMAKE_PREFIX_PATH"] = get_qt_dir()
+        if self.options.qtdir:
+            cmake.definitions["CMAKE_PREFIX_PATH"] = self.options.qtdir
         # CMakeLists.txt can be an entry point of a complete build pipline,
         #   because it will invoke conan.cmake automatically when
         #   CONAN_INSTALL_MANUALLY is OFF.

@@ -1,0 +1,46 @@
+name: Build by using conan
+on:
+  push:
+    branches:
+      - master
+      - release-*
+      - feat-GithubActions
+
+jobs:
+  build_linux:
+    name: WizNotePlus-linux
+    runs-on: ubuntu-16.04
+    steps:
+      - uses: actions/checkout@v1
+      - uses: actions/setup-python@v1
+        with:
+          python-version: '3.8'
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y -qq --no-install-recommends git make cmake g++ wget
+          sudo apt-get install -y -qq --no-install-recommends xvfb libgl-dev fcitx fcitx-frontend-qt5
+      - name: Install Qt library
+        working-directory: .github/workflows
+        run: |
+          wget http://download.qt.io/archive/qt/5.14/5.14.1/qt-opensource-linux-x64-5.14.1.run
+          mv qt-opensource-linux-x64-5.14.1.run qt.run && sudo chmod a+x qt.run
+          ./qt.run --verbose --script qt-auto-install.qs --platform minimal
+      - name: Download deploy tool
+        run: |
+          wget https://github.com/probonopd/linuxdeployqt/releases/download/continuous/linuxdeployqt-continuous-x86_64.AppImage
+          mv linuxdeployqt-continuous-x86_64.AppImage linuxdeployqt
+          sudo chmod a+x linuxdeployqt
+      - name: Install and config conan
+        run: |
+          pip install conan
+          conan remote add bincrafters https://api.bintray.com/conan/bincrafters/public-conan
+          conan remote add conan-community https://api.bintray.com/conan/conan-community/conan
+          conan remote add wiznoteplus https://api.bintray.com/conan/altairwei/conan
+          conan profile new default --detect
+          conan profile update settings.compiler.libcxx=libstdc++11 default
+      - name: Build project
+        run: |
+          mkdir -p .tmp && cd .tmp
+          conan install ../ --build missing -o qtdir=~/Qt/5.14.1/gcc_64
+          conan build ../

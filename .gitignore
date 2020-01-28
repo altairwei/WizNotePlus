@@ -9,3 +9,4 @@ CMakeLists.txt.user*
 /.vscode
 tmp
 version_info.txt
+.tmp
