@@ -1,12 +1,13 @@
 var QT_VERSION_MAJOR = installer.environmentVariable("QT_VERSION_MAJOR");
 var QT_VERSION_MINOR = installer.environmentVariable("QT_VERSION_MINOR");
 var QT_VERSION_PATCH = installer.environmentVariable("QT_VERSION_PATCH");
+var QT_INSTALL_ARCH = installer.environmentVariable("QT_INSTALL_TARGET_ARCH");
 var qt_id = "qt." + "qt" + QT_VERSION_MAJOR + "." + QT_VERSION_MAJOR + QT_VERSION_MINOR + QT_VERSION_PATCH
 
 var INSTALL_COMPONENTS = [
-    qt_id + ".gcc_64",
+    qt_id + "." + QT_INSTALL_ARCH,
     qt_id + ".qtwebengine",
-    qt_id + ".qtwebengine.gcc_64",
+    qt_id + ".qtwebengine." + QT_INSTALL_ARCH,
 ];
 
 function Controller() {
@@ -33,7 +34,7 @@ Controller.prototype.DynamicTelemetryPluginFormCallback = function() {
 Controller.prototype.WelcomePageCallback = function() {
     // click delay here because the next button is initially disabled for ~1 second
     console.log("Control Script: Enter 'Welcome Page'")
-    gui.clickButton(buttons.NextButton, 3000);
+    gui.clickButton(buttons.NextButton, 7000);
 }
 
 Controller.prototype.CredentialsPageCallback = function() {
@@ -81,6 +82,7 @@ Controller.prototype.ComponentSelectionPageCallback = function() {
     var widget = gui.currentPageWidget();
     widget.deselectAll();
     INSTALL_COMPONENTS.forEach(function(comp_name) {
+        console.log("Control Script: Select " + comp_name)
         widget.selectComponent(comp_name);
     })
     gui.clickButton(buttons.NextButton);

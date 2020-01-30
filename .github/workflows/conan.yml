@@ -6,15 +6,20 @@ on:
       - release-*
       - feat-GithubActions
 
+env:
+  QT_VERSION_MAJOR: 5
+  QT_VERSION_MINOR: 14
+  QT_VERSION_PATCH: 1
+  QT_VERSION: 5.14.1
+
 jobs:
+  
   build_linux:
-    name: build-WizNotePlus-linux
+    name: Linux
     runs-on: ubuntu-16.04
     env:
-      QT_VERSION_MAJOR: 5
-      QT_VERSION_MINOR: 14
-      QT_VERSION_PATCH: 1
-      QT_VERSION: 5.14.1
+      QT_INSTALL_TARGET_ARCH: gcc_64
+      QT_INSTALL_TARGET_DIR_PREFIX: /opt
     steps:
       - uses: actions/checkout@v1
       - uses: actions/setup-python@v1
@@ -25,19 +30,18 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y -qq --no-install-recommends git make cmake g++ wget
           sudo apt-get install -y -qq --no-install-recommends xvfb libgl-dev fcitx fcitx-frontend-qt5
-      - name: Install Qt library
-        env: 
-          QT_INSTALL_TARGET_DIR: /opt/Qt
-          QT_INSTALL_PREFIX: /opt/Qt/${{ env.QT_VERSION }}/gcc_64
-        run: |
-          echo "Qt will be installed at " $QT_INSTALL_PREFIX
-          wget http://download.qt.io/archive/qt/5.14/5.14.1/qt-opensource-linux-x64-5.14.1.run
-          mv qt-opensource-linux-x64-5.14.1.run qt.run && sudo chmod a+x qt.run
-          ./qt.run --verbose --script .ci/qt-auto-install.qs --platform minimal
+      - name: Install Qt
+        uses: jurplel/install-qt-action@v2
+        with:
+          version: ${{ env.QT_VERSION }}
+          host: linux
+          target: desktop
+          arch: ${{ env.QT_INSTALL_TARGET_ARCH }}
+          dir: ${{ env.QT_INSTALL_TARGET_DIR_PREFIX }}
+          modules: qtwebengine
       - name: Download deploy tool
         run: |
-          wget https://github.com/probonopd/linuxdeployqt/releases/download/continuous/linuxdeployqt-continuous-x86_64.AppImage
-          sudo mv linuxdeployqt-continuous-x86_64.AppImage /usr/bin/linuxdeployqt
+          sudo wget -q -O /usr/bin/linuxdeployqt https://github.com/probonopd/linuxdeployqt/releases/download/continuous/linuxdeployqt-continuous-x86_64.AppImage
           sudo chmod a+x /usr/bin/linuxdeployqt
       - name: Install and config conan
         run: |
@@ -49,13 +53,55 @@ jobs:
           conan profile update settings.compiler.libcxx=libstdc++11 default
       - name: Build project
         env:
-          QT_INSTALL_PREFIX: /opt/Qt/${{ env.QT_VERSION }}/gcc_64
+          QT_INSTALL_PREFIX: ${{ env.QT_INSTALL_TARGET_DIR_PREFIX }}/Qt/${{ env.QT_VERSION }}/${{ env.QT_INSTALL_TARGET_ARCH }}
         run: |
-          echo "CWD: " $(pwd)
-          echo "QT_INSTALL_PREFIX: " $QT_INSTALL_PREFIX
           mkdir -p _build
           ./.ci/build.sh $(pwd) $(pwd)/_build
       - uses: actions/upload-artifact@v1
         with:
           name: Linux_Dist
+          path: _build/package/dist
+
+  build_windows:
+    name: Windows
+    runs-on: windows-2016
+    env:
+      QT_INSTALL_TARGET_ARCH: msvc2017_64
+      QT_INSTALL_TARGET_DIR_PREFIX: "C:"
+    steps:
+      - uses: actions/checkout@v1
+      - uses: actions/setup-python@v1
+        with:
+          python-version: '3.8'
+      - name: Install dependencies
+        shell: powershell
+        run: |
+          choco install wget
+      - name: Install and config conan
+        shell: powershell
+        run: |
+          python -m pip install conan
+          conan remote add bincrafters https://api.bintray.com/conan/bincrafters/public-conan
+          conan remote add conan-community https://api.bintray.com/conan/conan-community/conan
+          conan remote add wiznoteplus https://api.bintray.com/conan/altairwei/conan
+          conan profile new default --detect
+      - name: Install Qt
+        uses: jurplel/install-qt-action@v2
+        with:
+          version: ${{ env.QT_VERSION }}
+          host: windows
+          target: desktop
+          arch: win64_${{ env.QT_INSTALL_TARGET_ARCH }}
+          dir: ${{ env.QT_INSTALL_TARGET_DIR_PREFIX }}
+          modules: qtwebengine
+      - name: Build project
+        env:
+          QT_INSTALL_PREFIX: ${{ env.QT_INSTALL_TARGET_DIR_PREFIX }}\Qt\${{ env.QT_VERSION }}\${{ env.QT_INSTALL_TARGET_ARCH }}
+        shell: powershell
+        run: |
+          mkdir -Force _build
+          .\.ci\build.ps1 "$($PWD.Path)" "$($PWD.Path)\_build"
+      - uses: actions/upload-artifact@v1
+        with:
+          name: Windows_Dist
           path: _build/package/dist

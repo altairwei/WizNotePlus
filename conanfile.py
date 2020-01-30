@@ -184,12 +184,12 @@ class WizNotePlusConan(ConanFile):
         with zipfile.ZipFile(dist_file_name, 'w', zipfile.ZIP_DEFLATED) as zipf:
             # Archive "bin" and "share" into "WizNote" prefix
             for folder in ("bin", "share"):
-                path = os.path.join(self.install_folder, folder)
+                path = os.path.join(self.package_folder, folder)
                 for root, dirs, files in os.walk(path):
                     for file in files:
                         source_filename = os.path.join(root, file)
                         archive_filename = os.path.join(
-                            root.replace(self.install_folder, "WizNote"), file)
+                            root.replace(self.package_folder, "WizNote"), file)
                         zipf.write(source_filename, archive_filename)
 
     def _create_dist_dmg(self, dist_folder):
