@@ -1,5 +1,12 @@
 FROM ubuntu:16.04
 
+ENV QT_VERSION_MAJOR 5
+ENV QT_VERSION_MINOR 14
+ENV QT_VERSION_PATCH 1
+ENV QT_VERSION $QT_VERSION_MAJOR.$QT_VERSION_MINOR.$QT_VERSION_PATCH
+ENV QT_INSTALL_TARGET_DIR /opt/Qt
+ENV QT_INSTALL_PREFIX $QT_INSTALL_TARGET_DIR/$QT_VERSION/gcc_64
+
 # Enable the "Source code" option
 RUN cp /etc/apt/sources.list /etc/apt/sources.list~ \
     && sed -Ei 's/^# deb-src /deb-src /' /etc/apt/sources.list \
@@ -36,17 +43,17 @@ RUN apt-get install -y -qq --no-install-recommends \
     libudev-dev libpci-dev libnss3-dev libasound2-dev libxss-dev \
     libegl1-mesa-dev gperf bison
 
-#RUN wget http://download.qt.io/archive/qt/5.14/5.14.1/single/qt-everywhere-src-5.14.1.tar.xz \
-#    && mkdir -p qt5 && tar -xv -f qt-everywhere-src-5.14.1.tar.xz -C qt5 && cd qt5 && ls
-
-RUN wget http://download.qt.io/archive/qt/5.14/5.14.1/qt-opensource-linux-x64-5.14.1.run \
-    && mv qt-opensource-linux-x64-5.14.1.run qt.run && chmod a+x qt.run
+RUN wget http://download.qt.io/archive/qt/$QT_VERSION_MAJOR.$QT_VERSION_MINOR/$QT_VERSION/qt-opensource-linux-x64-$QT_VERSION.run \
+    && mv qt-opensource-linux-x64-$QT_VERSION.run qt.run && chmod a+x qt.run
 COPY qt-auto-install.qs .
 RUN ./qt.run --verbose --script qt-auto-install.qs --platform minimal
 
-# Download deploy tool
-#RUN wget https://github.com/probonopd/linuxdeployqt/releases/download/continuous/linuxdeployqt-continuous-x86_64.AppImage \
-#    && mv linuxdeployqt-continuous-x86_64.AppImage linuxdeployqt \
-#    && chmod a+x linuxdeployqt
+# Download linuxdeployqt
+RUN wget https://github.com/probonopd/linuxdeployqt/releases/download/continuous/linuxdeployqt-continuous-x86_64.AppImage \
+    && mv linuxdeployqt-continuous-x86_64.AppImage /usr/bin/linuxdeployqt \
+    && chmod a+x /usr/bin/linuxdeployqt
+RUN wget https://github.com/AppImage/AppImageKit/releases/download/12/appimagetool-x86_64.AppImage \
+    && mv appimagetool-x86_64.AppImage /usr/bin/appimagetool \
+    && chmod a+x /usr/bin/appimagetool
 
 ENTRYPOINT ["/bin/bash"]

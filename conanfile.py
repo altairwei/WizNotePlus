@@ -2,6 +2,7 @@ import subprocess
 import os
 import zipfile
 import shutil
+import glob
 from conans import ConanFile, CMake
 
 def get_qt_dir():
@@ -9,7 +10,7 @@ def get_qt_dir():
     Use qmake in $PATH to locate Qt library.
     """
     qt_dir = subprocess.check_output(
-        ["qmake", "-query", "QT_INSTALL_PREFIX"], encoding="utf-8")
+        ["qmake", "-query", "QT_INSTALL_PREFIX"]).decode("utf-8")
     return qt_dir.strip()
 
 def get_qt_bin():
@@ -17,7 +18,7 @@ def get_qt_bin():
     Use qmake in $PATH to locate deployqt tools.
     """
     qt_bin = subprocess.check_output(
-        ["qmake", "-query", "QT_INSTALL_BINS"], encoding="utf-8")
+        ["qmake", "-query", "QT_INSTALL_BINS"]).decode("utf-8")
     return qt_bin.strip()
 
 def parse_version():
@@ -27,7 +28,7 @@ def parse_version():
     wiznoteplus_version = "2.8.0-beta.1"
     if os.path.exists(".git"):
         wiznoteplus_version = subprocess.check_output(
-            ["git", "describe", "--tags"], encoding="utf-8").strip()
+            ["git", "describe", "--tags"]).decode("utf-8").strip()
         # Remove 'v' prefix
         wiznoteplus_version = wiznoteplus_version[1:]
         with open("version_info.txt", "w") as file:
@@ -48,6 +49,7 @@ class WizNotePlusConan(ConanFile):
     settings = "os", "compiler", "build_type", "arch"
     generators = "cmake_find_package", "cmake_paths", "cmake"
     requires = (
+        #TODO: Qt 5.12.1 requires OpenSSL 1.1.1 version on Linux and Windows
         "OpenSSL/1.0.2p@conan/stable",
         "cryptopp/5.6.5@bincrafters/stable",
         "zlib/1.2.11@conan/stable",
@@ -96,9 +98,10 @@ class WizNotePlusConan(ConanFile):
     def requirements(self):
         if self.settings.os == "Linux":
             self.requires("fcitx-qt5/1.1.1@altairwei/testing")
-            self.requires("fcitx5-qt/0.0.0@altairwei/testing")
+            #self.requires("fcitx5-qt/0.0.0@altairwei/testing")
         if self.settings.os == "Macos":
             self.requires("create-dmg/1.0.0.5@altairwei/testing")
+        #TODO: Current conan-qt was not ready for building QtWebEngine module
         if not self.options.qtdir:
             self.requires("qt/5.14.0@bincrafters/testing")
 
@@ -108,6 +111,7 @@ class WizNotePlusConan(ConanFile):
         #   "class CryptoPP::NameValuePairs const & const CryptoPP::g_nullNameValuePairs"
         if self.settings.os == "Windows":
             self.options["cryptopp"].shared = False
+        # QuaZIP should depend on the same Qt library with WizNotePlus
         if self.options.qtdir:
             self.options["quazip"].qtdir = self.options.qtdir
 
@@ -123,49 +127,54 @@ class WizNotePlusConan(ConanFile):
             src="lib/x86_64-linux-gnu/qt5/plugins/platforminputcontexts",
             dst="plugins/platforminputcontexts",
             root_package="fcitx-qt5", keep_path=False)
-        self.copy("libfcitx5platforminputcontextplugin.so", 
-            src="lib/qt/plugins/platforminputcontexts",
-            dst="plugins/platforminputcontexts",
-            root_package="fcitx5-qt", keep_path=False)
+        # self.copy("libfcitx5platforminputcontextplugin.so", 
+        #     src="lib/qt/plugins/platforminputcontexts",
+        #     dst="plugins/platforminputcontexts",
+        #     root_package="fcitx5-qt", keep_path=False)
 
     def build(self):
         cmake = self._configure_cmake()
         cmake.build()
 
     def package(self):
-        # Packaging internal install tagers defined by CMakeLists.txt
+        # Internal install targets defined by CMakeLists.txt
         cmake = self._configure_cmake()
         cmake.install()
-        # Packaging dynamic libraries imported by conan
+        # Dynamic libraries imported by conan
         self.copy("*WizNote*", src="bin", dst="bin", keep_path=True)
         self.copy("*.dll", src="bin", dst="bin", keep_path=True)
         self.copy("*.dylib", src="bin", dst="bin", keep_path=True)
         self.copy("*.so*", src="lib", dst="lib", keep_path=True)
         self.copy("*", src="plugins", dst="plugins", keep_path=True)
+        # Other files
+        self.copy("*.bdic", src=os.path.join("share", "wiznote", "qtwebengine_dictionaries"),
+                  dst=os.path.join("bin", "qtwebengine_dictionaries"), keep_path=False)
+        # Deploy
+        self._deploy()
 
-    def deploy(self):
+    def _deploy(self):
         """
         This method is mainly used to deploy and package WizNotePlus.
         """
-        self.copy("*", dst="bin", src="bin")
-        self.copy("*", dst="lib", src="lib")
-        self.copy("*", dst="share", src="share")
+        # Create distribution
+        dist_folder = os.path.join(self.package_folder, "dist")
+        os.makedirs(dist_folder, exist_ok=True)
+        appdir = self._create_app_dir(dist_folder)
         # Packaging Qt or other runtime libraries
         #   such as windeployqt、macdeployqt、and linuxdeployqt
-        deployqt, executable, options = self._configure_deployqt()
-        self.run("%s %s %s" % (deployqt, executable, options))
-        #TODO: This is a workaround.
-        self.copy("*", dst="plugins", src="plugins")
-        # Create distribution
-        dist_folder = os.path.join(self.install_folder, "dist")
-        os.makedirs(dist_folder, exist_ok=True)
+        deployqt, executable, options = self._configure_deployqt(dist_folder, appdir)
+        self.run("%s %s %s" % (deployqt, executable, options), cwd=dist_folder)
+        # Create package
         if self.settings.os == "Windows":
             self._create_dist_archive(dist_folder)
         elif self.settings.os == "Macos":
             self._create_dist_dmg(dist_folder)
         elif self.settings.os == "Linux":
             # TODO: create AppImage or other type, such as Snap and Flatpak
-            self._create_dist_appimage(dist_folder)
+            shutil.rmtree(appdir, ignore_errors=True)
+            appimages = glob.glob(os.path.join(dist_folder, 'WizNote*.AppImage'))
+            shutil.move(appimages.pop(),
+                os.path.join(dist_folder, "WizNotePlus-linux-%s.AppImage" % self.version))
         else:
             raise Exception("Unsupported platforms: %s" % self.settings.os)
 
@@ -204,16 +213,38 @@ class WizNotePlusConan(ConanFile):
             )
         )
 
+    def _create_app_dir(self, dist_folder):
+        if self.settings.os == "Linux":
+            # Create AppDir in dist_folder temporarily
+            appdir = os.path.join(dist_folder, "WizNote.AppDir")
+            usrdir = os.path.join(appdir, "usr")
+            os.mkdir(appdir)
+            os.mkdir(usrdir)
+            # hard link all files in to AppDir
+            for folder in ("bin", "lib", "plugins", "share"):
+                path = os.path.join(self.package_folder, folder)
+                dest_root = os.path.join(self.package_folder, usrdir)
+                for root, dirs, files in os.walk(path):
+                    for file in files:
+                        source_filename = os.path.join(root, file)
+                        dest_prefix = root.replace(self.package_folder, dest_root)
+                        dest_filename = os.path.join(dest_prefix, file)
+                        os.makedirs(dest_prefix, exist_ok = True)
+                        os.link(source_filename, dest_filename)
+            return appdir
+        else:
+            return None
+
     def _create_dist_appimage(self, dist_folder):
         # Create AppDir in dist_folder temporarily
         appdir = os.path.join(dist_folder, "WizNote.AppDir")
         usrdir = os.path.join(appdir, "usr")
         os.mkdir(appdir)
         os.mkdir(usrdir)
-        for file in ("wiznote.desktop", "wiznote.png"):
+        for file in ("wiznote.desktop", "wiznote.png", ".DirIcon"):
             shutil.move(os.path.join(self.install_folder, "..", file), os.path.join(appdir, file))
         os.remove(os.path.join(self.install_folder, "..", "AppRun"))
-        # hadr lonk all files in to AppDir
+        # hard link all files in to AppDir
         for folder in ("bin", "lib", "libexec", "plugins", "resources", "share", "translations"):
             path = os.path.join(self.install_folder, folder)
             dest_root = os.path.join(self.install_folder, usrdir)
@@ -227,7 +258,8 @@ class WizNotePlusConan(ConanFile):
         os.symlink(os.path.join("usr", "bin", "WizNote"), os.path.join(appdir, "AppRun"))
         # Use appimagetool to create AppImage
         self.run(
-            "appimagetool {source} WizNotePlus-linux-v{version}.AppImage".format(
+            "appimagetool --appimage-extract-and-run {source} " 
+            " WizNotePlus-linux-v{version}.AppImage".format(
                 source = appdir, version = self.version
             ), cwd=dist_folder)
         # Remove temporary links
@@ -244,9 +276,12 @@ class WizNotePlusConan(ConanFile):
         cmake.configure()
         return cmake
 
-    def _configure_deployqt(self):
+    def _configure_deployqt(self, dist_folder, appdir):
         # TODO: use conan-qt instead of checking system installed qmake.
-        qt_bin = get_qt_bin()
+        if self.options.qtdir:
+            qt_bin = os.path.join(str(self.options.qtdir), "bin")
+        else:
+            qt_bin = get_qt_bin()
         if self.settings.os == "Windows":
             deployqt = os.path.join(qt_bin, "windeployqt")
             executable = os.path.join("bin", "WizNote.exe")
@@ -257,10 +292,13 @@ class WizNotePlusConan(ConanFile):
             options = ""
         elif self.settings.os == "Linux":
             deployqt = "linuxdeployqt"
-            #executable = os.path.join("bin", "WizNote")
-            executable = os.path.join("share", "applications", "wiznote.desktop")
-            options = "-unsupported-allow-new-glibc"
+            shutil.copy(
+                os.path.join(self.source_folder, "build", "common", "wiznote2.desktop"),
+                os.path.join(appdir, "wiznote.desktop"))
+            executable = os.path.join(appdir, "usr", "share", "applications", "wiznote.desktop")
+            options = " ".join(["--appimage-extract-and-run", "-verbose=1", "-appimage",
+                "-qmake=%s" % os.path.join(qt_bin, "qmake")])
         else:
             raise Exception("Unsupported platforms: %s" % self.settings.os)
 
-        return (deployqt, os.path.join(self.install_folder, executable), options)
+        return (deployqt, os.path.join(self.package_folder, executable), options)

@@ -1,7 +1,12 @@
+var QT_VERSION_MAJOR = installer.environmentVariable("QT_VERSION_MAJOR");
+var QT_VERSION_MINOR = installer.environmentVariable("QT_VERSION_MINOR");
+var QT_VERSION_PATCH = installer.environmentVariable("QT_VERSION_PATCH");
+var qt_id = "qt." + "qt" + QT_VERSION_MAJOR + "." + QT_VERSION_MAJOR + QT_VERSION_MINOR + QT_VERSION_PATCH
+
 var INSTALL_COMPONENTS = [
-    "qt.qt5.5141.gcc_64",
-    "qt.qt5.5141.qtwebengine",
-    "qt.qt5.5141.qtwebengine.gcc_64",
+    qt_id + ".gcc_64",
+    qt_id + ".qtwebengine",
+    qt_id + ".qtwebengine.gcc_64",
 ];
 
 function Controller() {
@@ -60,8 +65,14 @@ Controller.prototype.IntroductionPageCallback = function() {
 
 Controller.prototype.TargetDirectoryPageCallback = function()
 {
-    console.log("Control Script: Enter 'Target Directory Page'")
-    gui.currentPageWidget().TargetDirectoryLineEdit.setText(installer.value("HomeDir") + "/Qt");
+    console.log("Control Script: Enter 'Target Directory Page'");
+    var qtdir = installer.environmentVariable("QT_INSTALL_TARGET_DIR");
+    if (!qtdir) {
+        console.log("Control Script: QT_INSTALL_TARGET_DIR not set");
+        qtdir = installer.value("HomeDir") + "/Qt";
+    }
+    console.log("Control Script: Qt will be installed to " + qtdir);
+    gui.currentPageWidget().TargetDirectoryLineEdit.setText(qtdir);
     gui.clickButton(buttons.NextButton);
 }
 

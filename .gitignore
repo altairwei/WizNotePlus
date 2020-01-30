@@ -10,3 +10,5 @@ CMakeLists.txt.user*
 tmp
 version_info.txt
 .tmp
+.build
+_build
