@@ -1,0 +1,11 @@
+dist: xenial
+language: minimal
+
+services:
+  - docker
+
+before_install:
+  - docker pull altairwei/wiznoteplus-build:0.0.4
+
+script:
+  - docker run -v $PWD:/WizNotePlus -v $PWD/.build:/build-WizNotePlus altairwei/wiznoteplus-build:0.0.4 /WizNotePlus/.ci/build.sh /WizNotePlus /build-WizNotePlus

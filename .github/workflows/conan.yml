@@ -1,4 +1,4 @@
-name: Build by using conan
+name: Conan Build
 on:
   push:
     branches:
@@ -8,8 +8,13 @@ on:
 
 jobs:
   build_linux:
-    name: WizNotePlus-linux
+    name: build-WizNotePlus-linux
     runs-on: ubuntu-16.04
+    env:
+      QT_VERSION_MAJOR: 5
+      QT_VERSION_MINOR: 14
+      QT_VERSION_PATCH: 1
+      QT_VERSION: 5.14.1
     steps:
       - uses: actions/checkout@v1
       - uses: actions/setup-python@v1
@@ -21,16 +26,19 @@ jobs:
           sudo apt-get install -y -qq --no-install-recommends git make cmake g++ wget
           sudo apt-get install -y -qq --no-install-recommends xvfb libgl-dev fcitx fcitx-frontend-qt5
       - name: Install Qt library
-        working-directory: .github/workflows
+        env: 
+          QT_INSTALL_TARGET_DIR: /opt/Qt
+          QT_INSTALL_PREFIX: /opt/Qt/${{ env.QT_VERSION }}/gcc_64
         run: |
+          echo "Qt will be installed at " $QT_INSTALL_PREFIX
           wget http://download.qt.io/archive/qt/5.14/5.14.1/qt-opensource-linux-x64-5.14.1.run
           mv qt-opensource-linux-x64-5.14.1.run qt.run && sudo chmod a+x qt.run
-          ./qt.run --verbose --script qt-auto-install.qs --platform minimal
+          ./qt.run --verbose --script .ci/qt-auto-install.qs --platform minimal
       - name: Download deploy tool
         run: |
           wget https://github.com/probonopd/linuxdeployqt/releases/download/continuous/linuxdeployqt-continuous-x86_64.AppImage
-          mv linuxdeployqt-continuous-x86_64.AppImage linuxdeployqt
-          sudo chmod a+x linuxdeployqt
+          sudo mv linuxdeployqt-continuous-x86_64.AppImage /usr/bin/linuxdeployqt
+          sudo chmod a+x /usr/bin/linuxdeployqt
       - name: Install and config conan
         run: |
           pip install conan
@@ -40,7 +48,14 @@ jobs:
           conan profile new default --detect
           conan profile update settings.compiler.libcxx=libstdc++11 default
       - name: Build project
+        env:
+          QT_INSTALL_PREFIX: /opt/Qt/${{ env.QT_VERSION }}/gcc_64
         run: |
-          mkdir -p .tmp && cd .tmp
-          conan install ../ --build missing -o qtdir=~/Qt/5.14.1/gcc_64
-          conan build ../
+          echo "CWD: " $(pwd)
+          echo "QT_INSTALL_PREFIX: " $QT_INSTALL_PREFIX
+          mkdir -p _build
+          ./.ci/build.sh $(pwd) $(pwd)/_build
+      - uses: actions/upload-artifact@v1
+        with:
+          name: Linux_Dist
+          path: _build/package/dist
