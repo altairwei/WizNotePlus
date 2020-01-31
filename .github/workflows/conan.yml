@@ -100,7 +100,7 @@ jobs:
         shell: powershell
         run: |
           mkdir -Force _build
-          .\.ci\build.ps1 "$($PWD.Path)" "$($PWD.Path)\_build"
+          .\.ci\build.ps1 "$PWD" "$PWD\_build"
       - uses: actions/upload-artifact@v1
         with:
           name: Windows_Dist

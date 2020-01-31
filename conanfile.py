@@ -3,7 +3,8 @@ import os
 import zipfile
 import shutil
 import glob
-from conans import ConanFile, CMake
+from conans import ConanFile, CMake, tools
+from conans.errors import ConanInvalidConfiguration
 
 def get_qt_dir():
     """
@@ -49,8 +50,7 @@ class WizNotePlusConan(ConanFile):
     settings = "os", "compiler", "build_type", "arch"
     generators = "cmake_find_package", "cmake_paths", "cmake"
     requires = (
-        #TODO: Qt 5.12.1 requires OpenSSL 1.1.1 version on Linux and Windows
-        "OpenSSL/1.0.2p@conan/stable",
+        "openssl/1.1.1d",
         "cryptopp/5.6.5@bincrafters/stable",
         "zlib/1.2.11@conan/stable",
         "quazip/0.7.6@altairwei/testing"
@@ -101,9 +101,15 @@ class WizNotePlusConan(ConanFile):
             #self.requires("fcitx5-qt/0.0.0@altairwei/testing")
         if self.settings.os == "Macos":
             self.requires("create-dmg/1.0.0.5@altairwei/testing")
-        #TODO: Current conan-qt was not ready for building QtWebEngine module
         if not self.options.qtdir:
-            self.requires("qt/5.14.0@bincrafters/testing")
+            #TODO: Current conan-qt was not ready for building QtWebEngine module
+            # QtWebEngine requires python >= 2.7.5 & < 3.0.0
+            #self.requires("qt/5.14.1@bincrafters/stable")
+            pass
+
+    def build_requirements(self):
+        if tools.os_info.is_windows and self.settings.compiler == "Visual Studio":
+            self.build_requires("jom/1.1.3")
 
     def config_options(self):
         # This is a workaround of solving Error LNK2001: 
@@ -111,9 +117,15 @@ class WizNotePlusConan(ConanFile):
         #   "class CryptoPP::NameValuePairs const & const CryptoPP::g_nullNameValuePairs"
         if self.settings.os == "Windows":
             self.options["cryptopp"].shared = False
+        if not self.options.qtdir:
+            if tools.which("qmake"):
+                self.options.qtdir = get_qt_dir()
+            else:
+                raise ConanInvalidConfiguration("Qt library is required !")
         # QuaZIP should depend on the same Qt library with WizNotePlus
         if self.options.qtdir:
             self.options["quazip"].qtdir = self.options.qtdir
+
 
     def imports(self):
         self.copy("*.dll", dst="bin", src="bin")
@@ -135,6 +147,23 @@ class WizNotePlusConan(ConanFile):
     def build(self):
         cmake = self._configure_cmake()
         cmake.build()
+
+    def _configure_cmake(self):
+        # Decide CMake Generateor
+        if tools.os_info.is_windows and self.settings.compiler == "Visual Studio":
+            gen = "NMake Makefiles JOM"
+        else:
+            gen = None
+        # Configure CMake build system
+        cmake = CMake(self, generator = gen)
+        if self.options.qtdir:
+            cmake.definitions["CMAKE_PREFIX_PATH"] = self.options.qtdir
+        # CMakeLists.txt can be an entry point of a complete build pipline,
+        #   because it will invoke conan.cmake automatically when
+        #   CONAN_INSTALL_MANUALLY is OFF.
+        cmake.definitions["CONAN_INSTALL_MANUALLY"] = "ON"
+        cmake.configure()
+        return cmake
 
     def package(self):
         # Internal install targets defined by CMakeLists.txt
@@ -264,17 +293,6 @@ class WizNotePlusConan(ConanFile):
             ), cwd=dist_folder)
         # Remove temporary links
         shutil.rmtree(appdir, ignore_errors=True)
-
-    def _configure_cmake(self):
-        cmake = CMake(self)
-        if self.options.qtdir:
-            cmake.definitions["CMAKE_PREFIX_PATH"] = self.options.qtdir
-        # CMakeLists.txt can be an entry point of a complete build pipline,
-        #   because it will invoke conan.cmake automatically when
-        #   CONAN_INSTALL_MANUALLY is OFF.
-        cmake.definitions["CONAN_INSTALL_MANUALLY"] = "ON"
-        cmake.configure()
-        return cmake
 
     def _configure_deployqt(self, dist_folder, appdir):
         # TODO: use conan-qt instead of checking system installed qmake.
