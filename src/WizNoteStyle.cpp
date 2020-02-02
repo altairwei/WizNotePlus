@@ -458,9 +458,10 @@ void CWizNoteStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption *opt, 
                     return;
                 }
 
-                if (opt->state & State_Selected) {
+                if (pItemBase->isSelected()) {
                     // 选区背景
                     QRect rc(vopt->rect);
+                    rc.moveLeft(0);
                     rc.setWidth(p->window().width());
                     int nMargin = (opt->rect.height() - WizSmartScaleUI(20)) / 2;
                     rc.adjust(0, nMargin, 0, -nMargin);
