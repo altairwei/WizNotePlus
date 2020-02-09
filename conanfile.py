@@ -3,6 +3,10 @@ import os
 import zipfile
 import shutil
 import glob
+import re
+import json
+import contextlib
+import warnings
 from conans import ConanFile, CMake, tools
 from conans.errors import ConanInvalidConfiguration
 
@@ -99,8 +103,6 @@ class WizNotePlusConan(ConanFile):
         if self.settings.os == "Linux":
             self.requires("fcitx-qt5/1.1.1@altairwei/testing")
             #self.requires("fcitx5-qt/0.0.0@altairwei/testing")
-        if self.settings.os == "Macos":
-            self.requires("create-dmg/1.0.0.5@altairwei/testing")
         if not self.options.qtdir:
             #TODO: Current conan-qt was not ready for building QtWebEngine module
             # QtWebEngine requires python >= 2.7.5 & < 3.0.0
@@ -167,8 +169,14 @@ class WizNotePlusConan(ConanFile):
 
     def package(self):
         # Internal install targets defined by CMakeLists.txt
-        cmake = self._configure_cmake()
-        cmake.install()
+        if tools.os_info.is_macos:
+            old_appdir = os.path.join(self.build_folder, "bin", "WizNote.app")
+            new_appdir = os.path.join(self.package_folder, "bin", "WizNote.app")
+            shutil.rmtree(new_appdir, ignore_errors=True)
+            shutil.copytree(old_appdir, new_appdir)
+        else:
+            cmake = self._configure_cmake()
+            cmake.install()
         # Dynamic libraries imported by conan
         self.copy("*WizNote*", src="bin", dst="bin", keep_path=True)
         self.copy("*.dll", src="bin", dst="bin", keep_path=True)
@@ -203,7 +211,7 @@ class WizNotePlusConan(ConanFile):
             shutil.rmtree(appdir, ignore_errors=True)
             appimages = glob.glob(os.path.join(dist_folder, 'WizNote*.AppImage'))
             shutil.move(appimages.pop(),
-                os.path.join(dist_folder, "WizNotePlus-linux-%s.AppImage" % self.version))
+                os.path.join(dist_folder, "WizNotePlus-linux-v%s.AppImage" % self.version))
         else:
             raise Exception("Unsupported platforms: %s" % self.settings.os)
 
@@ -222,23 +230,52 @@ class WizNotePlusConan(ConanFile):
                         zipf.write(source_filename, archive_filename)
 
     def _create_dist_dmg(self, dist_folder):
-        output_dmg = "%s/WizNotePlus-mac-v%s.dmg" %  dist_folder, self.version
+        app_dir = os.path.join(self.package_folder, "bin", "WizNote.app")
+        dmg_json = os.path.join(self.package_folder, "bin", "dmg.json")
+        self._fix_macdeployqt()
+        #Change build version
+        self.run(" plutil -replace CFBundleVersion "
+                " -string {build_version} {info_plist} ".format(
+                    build_version = self.version.split("-").pop(),
+                    info_plist = os.path.join(app_dir, "Contents", "Info.plist")
+                ))
+        #Change RPATH
         self.run(
-            " create-dmg "
-            " --volname wiznote-disk "
-            " --background {source}/resources/wiznote-disk-cover.jpg "
-            " --window-pos 200 120 "
-            " --window-size 522 350 "
-            " --icon-size 100 "
-            " --icon 'WizNote.app' 100 190 "
-            " --hide-extension 'WizNote.app' "
-            " --app-drop-link 400 190 "
-            " --format UDZO "
-            " {output} "
-            " {input} ".format(
-                source = self.source_folder,
-                output = output_dmg,
-                input = self.install_folder
+            "install_name_tool -add_rpath "
+            "'@executable_path/../Frameworks' {ex}".format(
+            ex = os.path.join(self.package_folder, 
+                "bin", "WizNote.app", "Contents", "MacOS", "WizNote")
+        ))
+        # Create dmg
+        with open(dmg_json, 'w') as f:
+            json.dump({
+                "title": "Install WizNotePlus",
+                "icon": os.path.join(self.source_folder, "build", "common", "logo", "wiznote.icns"),
+                "icon-size": 100,
+                "background": os.path.join(self.source_folder, "resources", "wiznote-disk-cover.jpg"),
+                "window": {
+                    "position": {
+                        "x": 200,
+                        "y": 120
+                    },
+                    "size": {
+                        "width": 522,
+                        "height": 350
+                    }
+                },
+                "contents": [
+                    { "x": 400, "y": 190, "type": "link", "path": "/Applications" },
+                    { "x": 120, "y": 190, "type": "file", "path": app_dir }
+                ],
+                "format": "UDZO"
+            }, f)
+        output_dmg = "%s/WizNotePlus-mac-v%s.dmg" %  (dist_folder, self.version)
+        with contextlib.suppress(FileNotFoundError):
+            os.remove(output_dmg)
+        self.run(
+            " appdmg {input} {output} ".format(
+                input = dmg_json,
+                output = output_dmg
             )
         )
 
@@ -294,6 +331,50 @@ class WizNotePlusConan(ConanFile):
         # Remove temporary links
         shutil.rmtree(appdir, ignore_errors=True)
 
+    def _fix_dependencies_name(self, target, libs):
+        deps = subprocess.check_output(["otool", "-L", target]).decode("utf-8")
+        for libname in libs:
+            lib_basename = os.path.basename(libname)
+            matched = re.search(r'\n\t(.*%s)' % lib_basename, deps)
+            if matched:
+                old_id = matched.group(1)
+                new_id = "@executable_path/../Frameworks/%s" % os.path.basename(libname)
+                self.run("install_name_tool -change {old_id} {new_id} {target}".format(
+                    old_id = old_id, new_id = new_id, target = target))
+            else:
+                warnings.warn("%s not found in dependencies of %s" % (lib_basename, target))
+
+    def _fix_install_name(self, libs):
+        #TODO: Trim dirname of dylib, and prepend @executable_path/../Frameworks
+        for libname in libs:
+            new_id = "@executable_path/../Frameworks/%s" % os.path.basename(libname)
+            self.run("install_name_tool -id %s %s" % (new_id, libname))
+
+    def _fix_macdeployqt(self):
+        app_dir = os.path.join(self.package_folder, "bin", "WizNote.app")
+        fram_dir = os.path.join(app_dir, "Contents", "Frameworks")
+        # Copy libs to bundle
+        shutil.copy(
+            os.path.join(self.package_folder, "bin", "libcryptopp.5.6.dylib"),
+            os.path.join(fram_dir, "libcryptopp.5.6.dylib")
+        )
+        shutil.copy(
+            os.path.join(self.package_folder, "bin", "libz.1.dylib"),
+            os.path.join(fram_dir, "libz.1.dylib")
+        )
+        # Change install name
+        self._fix_install_name([
+            os.path.join(fram_dir, "libcryptopp.5.6.dylib"),
+            os.path.join(fram_dir, "libz.1.dylib")
+        ])
+        # Change dependencis list
+        self._fix_dependencies_name(
+            os.path.join(app_dir, "Contents", "MacOS", "WizNote"), 
+            ["libcryptopp.5.6.dylib"])
+        self._fix_dependencies_name(
+            os.path.join(fram_dir, "libquazip5.1.dylib"), 
+            ["libz.1.dylib"])
+
     def _configure_deployqt(self, dist_folder, appdir):
         # TODO: use conan-qt instead of checking system installed qmake.
         if self.options.qtdir:
@@ -306,8 +387,10 @@ class WizNotePlusConan(ConanFile):
             options = ""
         elif self.settings.os == "Macos":
             deployqt = os.path.join(qt_bin, "macdeployqt")
-            executable = os.path.join("Contents", "MacOS", "WizNote")
-            options = ""
+            executable = os.path.join(self.package_folder, "bin", "WizNote.app")
+            options = "-verbose=1 -executable={ex} -libpath={lib}".format(
+                ex = os.path.join(executable, "Contents", "MacOS", "WizNote"),
+                lib = str(self.options.qtdir))
         elif self.settings.os == "Linux":
             deployqt = "linuxdeployqt"
             shutil.copy(
