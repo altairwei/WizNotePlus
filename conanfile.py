@@ -68,7 +68,7 @@ class WizNotePlusConan(ConanFile):
     }
     default_options = {
         "qtdir": None,
-        "OpenSSL:shared": True,
+        "openssl:shared": True,
         "cryptopp:shared": True,
         "zlib:shared": True,
         "qt:qtsvg": True,
@@ -284,8 +284,8 @@ class WizNotePlusConan(ConanFile):
             # Create AppDir in dist_folder temporarily
             appdir = os.path.join(dist_folder, "WizNote.AppDir")
             usrdir = os.path.join(appdir, "usr")
-            os.mkdir(appdir)
-            os.mkdir(usrdir)
+            os.makedirs(appdir, exist_ok=True)
+            os.makedirs(usrdir, exist_ok=True)
             # hard link all files in to AppDir
             for folder in ("bin", "lib", "plugins", "share"):
                 path = os.path.join(self.package_folder, folder)
@@ -305,8 +305,8 @@ class WizNotePlusConan(ConanFile):
         # Create AppDir in dist_folder temporarily
         appdir = os.path.join(dist_folder, "WizNote.AppDir")
         usrdir = os.path.join(appdir, "usr")
-        os.mkdir(appdir)
-        os.mkdir(usrdir)
+        os.makedirs(appdir, exist_ok=True)
+        os.makedirs(usrdir, exist_ok=True)
         for file in ("wiznote.desktop", "wiznote.png", ".DirIcon"):
             shutil.move(os.path.join(self.install_folder, "..", file), os.path.join(appdir, file))
         os.remove(os.path.join(self.install_folder, "..", "AppRun"))
