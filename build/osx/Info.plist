@@ -48,6 +48,8 @@
 	</array>
 	<key>NSPrincipalClass</key>
 	<string>NSApplication</string>
+	<key>NSRequiresAquaSystemAppearance</key>
+	<true/>
 	<key>CFBundleURLTypes</key>
 	<array>
 		<dict>
