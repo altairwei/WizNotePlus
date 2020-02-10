@@ -397,7 +397,10 @@ class WizNotePlusConan(ConanFile):
                 os.path.join(self.source_folder, "build", "common", "wiznote2.desktop"),
                 os.path.join(appdir, "wiznote.desktop"))
             executable = os.path.join(appdir, "usr", "share", "applications", "wiznote.desktop")
-            options = " ".join(["--appimage-extract-and-run", "-verbose=1", "-appimage",
+            options = " ".join([
+                "--appimage-extract-and-run", "-verbose=1", "-appimage",
+                # Workaround for https://github.com/probonopd/linuxdeployqt/issues/35
+                "-exclude-libs=libnss3.so,libnssutil3.so",
                 "-qmake=%s" % os.path.join(qt_bin, "qmake")])
         else:
             raise Exception("Unsupported platforms: %s" % self.settings.os)
