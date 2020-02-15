@@ -4,6 +4,27 @@ set -e -o pipefail
 shopt -s failglob
 export LC_ALL=C
 
+# Check Qt installation
+if [[ -z "${QT_INSTALL_PREFIX}" ]]; then
+	command -v qmake >/dev/null 2>&1 || { echo >&2 "[Error] Qt is required."; exit 1; }
+fi
+
+# Check requirements
+command -v git >/dev/null 2>&1 || { echo >&2 "[Error] git is required."; exit 1; }
+command -v conan >/dev/null 2>&1 || { echo >&2 "[Error] conan is required."; exit 1; }
+
+# Check package tool
+unameOut="$(uname -s)"
+case "${unameOut}" in
+    Linux*)
+		command -v linuxdeployqt >/dev/null 2>&1 || { echo >&2 "[Error] linuxdeployqt is required."; exit 1; }
+		;;
+    Darwin*)
+		command -v appdmg >/dev/null 2>&1 || { echo >&2 "[Error] appdmg is required."; exit 1; }
+		;;
+esac
+
+# Setup work folder
 SRC_DIR=$1
 WORK_DIR=$2
 WORK_DIR_SOURCE=${WORK_DIR}/source

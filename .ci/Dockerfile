@@ -43,17 +43,12 @@ RUN apt-get install -y -qq --no-install-recommends \
     libudev-dev libpci-dev libnss3-dev libasound2-dev libxss-dev \
     libegl1-mesa-dev gperf bison
 
-RUN wget http://download.qt.io/archive/qt/$QT_VERSION_MAJOR.$QT_VERSION_MINOR/$QT_VERSION/qt-opensource-linux-x64-$QT_VERSION.run \
-    && mv qt-opensource-linux-x64-$QT_VERSION.run qt.run && chmod a+x qt.run
-COPY qt-auto-install.qs .
-RUN ./qt.run --verbose --script qt-auto-install.qs --platform minimal
+RUN pip3 install aqtinstall==0.7.1
+RUN aqt install -O $QT_INSTALL_TARGET_DIR $QT_VERSION linux desktop gcc_64 -m qtwebengine
 
 # Download linuxdeployqt
 RUN wget https://github.com/probonopd/linuxdeployqt/releases/download/continuous/linuxdeployqt-continuous-x86_64.AppImage \
     && mv linuxdeployqt-continuous-x86_64.AppImage /usr/bin/linuxdeployqt \
     && chmod a+x /usr/bin/linuxdeployqt
-RUN wget https://github.com/AppImage/AppImageKit/releases/download/12/appimagetool-x86_64.AppImage \
-    && mv appimagetool-x86_64.AppImage /usr/bin/appimagetool \
-    && chmod a+x /usr/bin/appimagetool
 
 ENTRYPOINT ["/bin/bash"]

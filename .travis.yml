@@ -5,7 +5,7 @@ services:
   - docker
 
 before_install:
-  - docker pull altairwei/wiznoteplus-build:0.0.4
+  - docker pull altairwei/wiznoteplus-build
 
 script:
-  - docker run -v $PWD:/WizNotePlus -v $PWD/.build:/build-WizNotePlus altairwei/wiznoteplus-build:0.0.4 /WizNotePlus/.ci/build.sh /WizNotePlus /build-WizNotePlus
+  - docker run -v $PWD:/WizNotePlus -v $PWD/.build:/build-WizNotePlus altairwei/wiznoteplus-build /WizNotePlus/.ci/build.sh /WizNotePlus /build-WizNotePlus

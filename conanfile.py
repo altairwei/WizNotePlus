@@ -7,8 +7,9 @@ import re
 import json
 import contextlib
 import warnings
-from conans import ConanFile, CMake, tools
+from conans import ConanFile, CMake, tools, __version__ as conan_version
 from conans.errors import ConanInvalidConfiguration
+from conans.model.version import Version
 
 def get_qt_dir():
     """
@@ -112,6 +113,12 @@ class WizNotePlusConan(ConanFile):
     def build_requirements(self):
         if tools.os_info.is_windows and self.settings.compiler == "Visual Studio":
             self.build_requires("jom/1.1.3")
+
+    def configure(self):
+        if conan_version < Version("1.21.0"):
+            raise ConanInvalidConfiguration(
+                "Conan version is lower than 1.21.0")
+            
 
     def config_options(self):
         # This is a workaround of solving Error LNK2001: 
