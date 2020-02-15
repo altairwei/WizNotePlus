@@ -485,11 +485,11 @@ void WizMainWindow::saveWatchedFile(const QString& fileName)
     QString strHtml;
     if (isPlainText) {
         // Plain Text
-        strHtml = WizFileImporter::loadTextFileToHtml(fileName, isUTF8);
+        strHtml = WizFileImporter::loadTextFileToHtml(fileName, "UTF-8");
         //TODO: add markdown img to <link rel="File-List" type="image/png" href="" /> elements in html head.
         strHtml = QString("<!DOCTYPE html><html><head></head><body>%1</body></html>").arg(strHtml);
     } else {
-        strHtml = WizFileImporter::loadHtmlFileToHtml(fileName, isUTF8);
+        strHtml = WizFileImporter::loadHtmlFileToHtml(fileName, "UTF-8");
     }
     // Get document's file name
     //FIXME: Windows client has encoding problem.

@@ -3,8 +3,9 @@ on:
   push:
     branches:
       - master
+      - develop
       - release-*
-      - feat-GithubActions
+      - feat-*
 
 env:
   QT_VERSION_MAJOR: 5

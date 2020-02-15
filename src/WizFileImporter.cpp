@@ -33,11 +33,11 @@ void WizFileImporter::importFiles(const QStringList& strFiles, const QString& st
 }
 
 /**
- * @brief 批量导入文件
- * @param strFiles 要导入的文件路径列表
+ * @brief Import files in bulk
+ * @param strFiles List of file paths to import
  * @param strKbGUID
- * @param strTargetFolderLocation 文件夹路径
- * @param tag 标签
+ * @param strTargetFolderLocation Path of target category
+ * @param tag Tag for document
  */
 void WizFileImporter::importFiles(const QStringList& strFiles, const QString& strKbGUID,
                                    const QString& strTargetFolderLocation, const WIZTAGDATA& tag)
@@ -61,6 +61,12 @@ void WizFileImporter::importFiles(const QStringList& strFiles, const QString& st
     emit importFinished(nFailed == 0, text, m_strKbGuid);
 }
 
+/**
+ * @brief Load pure html file with local text encodings
+ * 
+ * @param strFileName 
+ * @return QString 
+ */
 QString WizFileImporter::loadHtmlFileToHtml(const QString& strFileName)
 {
     QFile file(strFileName);
@@ -73,16 +79,20 @@ QString WizFileImporter::loadHtmlFileToHtml(const QString& strFileName)
     return ret;
 }
 
-QString WizFileImporter::loadHtmlFileToHtml(const QString& strFileName, bool isUTF8)
+/**
+ * @brief Load UTF-8 encoded html file.
+ * 
+ * @param strFileName 
+ * @param isUTF8 
+ * @return QString 
+ */
+QString WizFileImporter::loadHtmlFileToHtml(const QString& strFileName, const char *encoding)
 {
     QFile file(strFileName);
     if(!file.open(QIODevice::ReadOnly|QIODevice::Text))
         return "";
     QTextStream in(&file);
-    if (isUTF8)
-    {
-        in.setCodec("UTF-8");
-    }
+    in.setCodec(encoding);
     QString ret = in.readAll();
     file.close();
 
@@ -109,16 +119,13 @@ QString WizFileImporter::loadTextFileToHtml(const QString& strFileName)
     return ret;
 }
 
-QString WizFileImporter::loadTextFileToHtml(const QString& strFileName, bool isUTF8)
+QString WizFileImporter::loadTextFileToHtml(const QString& strFileName, const char *encoding)
 {
     QFile file(strFileName);
     if(!file.open(QIODevice::ReadOnly|QIODevice::Text))
         return "";
     QTextStream in(&file);
-    if (isUTF8)
-    {
-        in.setCodec("UTF-8");
-    }
+    in.setCodec(encoding);
     QString ret = in.readAll();
     file.close();
     ret = ret.toHtmlEscaped();
@@ -134,8 +141,8 @@ QString WizFileImporter::loadImageFileToHtml(const QString& strFileName)
 }
 
 /**
- * @brief 导入文件
- * @param strFile 文件地址
+ * @brief Import file into WizNote database.
+ * @param strFile File path
  * @param strKbGUID
  * @param strLocation
  * @param tag
@@ -166,7 +173,7 @@ bool WizFileImporter::importFile(const QString& strFile, const QString& strKbGUI
     //
     if (textExtList.contains(docType,Qt::CaseInsensitive))
     {
-        strHtml = loadTextFileToHtml(strFile);
+        strHtml = loadTextFileToHtml(strFile, "UTF-8");
         addAttach = true;
     }
     else if (imageExtList.contains(docType,Qt::CaseInsensitive))
@@ -176,7 +183,7 @@ bool WizFileImporter::importFile(const QString& strFile, const QString& strKbGUI
     }
     else if (htmlExtList.contains(docType, Qt::CaseInsensitive))
     {
-        strHtml = loadHtmlFileToHtml(strFile);
+        strHtml = loadHtmlFileToHtml(strFile, "UTF-8");
         containsImage = true;
         addAttach = true;
     }

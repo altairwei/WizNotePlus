@@ -22,7 +22,7 @@ bool IWizDatabase::CreateDocument(const QString &bstrIndexFileName, const QStrin
     WizDatabase &db = m_dbManager->db();
     // Process meta data
     WIZDOCUMENTDATA docData;
-    QString strHtml = WizFileImporter::loadHtmlFileToHtml(bstrIndexFileName, true);
+    QString strHtml = WizFileImporter::loadHtmlFileToHtml(bstrIndexFileName, "UTF-8");
     QString location = bstrLocation;
     if (location.isEmpty())
         location = db.getDefaultNoteLocation();

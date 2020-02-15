@@ -61,6 +61,7 @@ void WizHtmlCollector::startTag(WizHtmlTag *pTag, DWORD dwAppData, bool &bAbort)
     QString strName = pTag->getTagName().toLower();
     if (strName == "script")
     {
+        // Collect javascript file
         processTagValue(pTag, "src", WIZHTMLFILEDATA::typeResource);
     }
     else if (strName == "img")
@@ -70,7 +71,9 @@ void WizHtmlCollector::startTag(WizHtmlTag *pTag, DWORD dwAppData, bool &bAbort)
     }
     else if (strName == "link")
     {
-        if (pTag->getValueFromName("type") == "text/css")
+        // Collect stylesheet file
+        if (pTag->getValueFromName("type") == "text/css"
+                || pTag->getValueFromName("rel") == "stylesheet")
         {
             processTagValue(pTag, "href", WIZHTMLFILEDATA::typeResource);
             processTagValue(pTag, "src", WIZHTMLFILEDATA::typeResource);
@@ -336,7 +339,7 @@ bool WizHtmlCollector::downloadImage(const QString& strUrl, QString& strFileName
     //
     QFile fileObj(file);
     QString ext;
-    //
+    //FIXME: forget to deal with svg format, this may cause file to be lost
     WIZIMAGEFORMAT format = WizGetImageFormatFromFile(file);
     switch (format)
     {
@@ -406,7 +409,7 @@ bool WizHtmlCollector::collect(const QString& strUrl, \
 }
 
 /**
- * @brief 将笔记所有内容包括资源文件压缩成zip
+ * @brief Compress all files together
  * @param strExtResourcePath
  * @param strZipFileName
  * @return
@@ -458,7 +461,7 @@ bool WizHtmlCollector::html2Zip(const QString& strExtResourcePath, \
             }
         }
     }
-    //
+    // Images will be removed if reference gone
     std::set<QString> retFiles;
     for (auto file: files)
     {
@@ -471,6 +474,7 @@ bool WizHtmlCollector::html2Zip(const QString& strExtResourcePath, \
                 || ext == ".jpeg"
                 || ext == ".webp")
         {
+            //FIXME: check again, images may be lost
             QString imageName = Utils::WizMisc::extractFileName(file);
             if (allText.contains(imageName, Qt::CaseInsensitive))
             {

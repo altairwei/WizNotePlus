@@ -149,8 +149,10 @@ int mainCore(int argc, char *argv[])
     //QApplication::setAttribute(Qt::AA_Use96Dpi);
 #endif
 
-    // 初始化主进程和QtWebEngine
+    // Init Application and QtWebEngine
     //-------------------------------------------------------------------
+
+    QtWebEngine::initialize();
 
 #ifdef Q_OS_LINUX
     // create single application for linux
@@ -160,8 +162,6 @@ int mainCore(int argc, char *argv[])
         app.sendMessage(WIZ_SINGLE_APPLICATION);
         return 0;
     }
-    // 初始化Chrome内核
-    QtWebEngine::initialize();
 #else
     // 创建Win和Mac端 Qt主进程
     QApplication app(argc, argv);
@@ -172,8 +172,6 @@ int mainCore(int argc, char *argv[])
     dir.cd("PlugIns");
     QApplication::setLibraryPaths(QStringList(dir.absolutePath())); //设置库路径
 #endif
-    // 初始化Win和Mac端Chrome内核
-    QtWebEngine::initialize();
 
 #ifdef BUILD4APPSTORE
     WizIAPHelper helper;
