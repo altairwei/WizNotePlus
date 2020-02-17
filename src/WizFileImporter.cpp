@@ -210,11 +210,12 @@ bool WizFileImporter::importFile(const QString& strFile, const QString& strKbGUI
         containsImage = true;
         addAttach = false;
     }
+#endif
     else
     {
         addAttach = true;
     }
-#endif
+
     QString strTitle = Utils::WizMisc::extractFileName(strFile);
 
     WizNoteManager manager(m_dbMgr);
