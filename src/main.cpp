@@ -152,8 +152,6 @@ int mainCore(int argc, char *argv[])
     // Init Application and QtWebEngine
     //-------------------------------------------------------------------
 
-    QtWebEngine::initialize();
-
 #ifdef Q_OS_LINUX
     // create single application for linux
     WizSingleApplication app(argc, argv, "Special-Message-for-WizNote-SingleApplication");
@@ -163,14 +161,14 @@ int mainCore(int argc, char *argv[])
         return 0;
     }
 #else
-    // 创建Win和Mac端 Qt主进程
+    // create application for Windows and MacOS
     QApplication app(argc, argv);
     //
 #ifdef BUILD4APPSTORE
-    QDir dir(QApplication::applicationDirPath()); //进入exe文件所在的绝对路径
+    QDir dir(QApplication::applicationDirPath());
     dir.cdUp();
     dir.cd("PlugIns");
-    QApplication::setLibraryPaths(QStringList(dir.absolutePath())); //设置库路径
+    QApplication::setLibraryPaths(QStringList(dir.absolutePath()));
 #endif
 
 #ifdef BUILD4APPSTORE
@@ -179,6 +177,7 @@ int mainCore(int argc, char *argv[])
 #endif
 #endif
 
+    QtWebEngine::initialize();
     QWebEngineSettings::defaultSettings()->setAttribute(QWebEngineSettings::FocusOnNavigationEnabled, true);
     QWebEngineSettings::defaultSettings()->setAttribute(QWebEngineSettings::AllowWindowActivationFromJavaScript, true);
     QWebEngineSettings::defaultSettings()->setAttribute(QWebEngineSettings::LocalContentCanAccessRemoteUrls, true);
