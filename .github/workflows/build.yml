@@ -33,9 +33,16 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y -qq --no-install-recommends git make cmake g++ wget
           sudo apt-get install -y -qq --no-install-recommends xvfb libgl-dev fcitx fcitx-frontend-qt5
+      - name: Cache Qt
+        id: cache-qt
+        uses: actions/cache@v1
+        with:
+          path: ${{ env.QT_INSTALL_TARGET_DIR_PREFIX }}/Qt
+          key: QtCache-Linux
       - name: Install Qt
         uses: jurplel/install-qt-action@v2
         with:
+          cached: ${{ steps.cache-qt.outputs.cache-hit }}
           version: ${{ env.QT_VERSION }}
           host: linux
           target: desktop
@@ -70,7 +77,7 @@ jobs:
     runs-on: windows-2016
     env:
       QT_INSTALL_TARGET_ARCH: msvc2017_64
-      QT_INSTALL_TARGET_DIR_PREFIX: "C:"
+      QT_INSTALL_TARGET_DIR_PREFIX: ${{ github.workspace }}
     steps:
       - uses: actions/checkout@v1
       - uses: actions/setup-python@v1
@@ -88,9 +95,16 @@ jobs:
           conan remote add conan-community https://api.bintray.com/conan/conan-community/conan
           conan remote add wiznoteplus https://api.bintray.com/conan/altairwei/conan
           conan profile new default --detect
+      - name: Cache Qt
+        id: cache-qt
+        uses: actions/cache@v1
+        with:
+          path: ${{ env.QT_INSTALL_TARGET_DIR_PREFIX }}\Qt
+          key: QtCache-Windows
       - name: Install Qt
         uses: jurplel/install-qt-action@v2
         with:
+          cached: ${{ steps.cache-qt.outputs.cache-hit }}
           version: ${{ env.QT_VERSION }}
           host: windows
           target: desktop
@@ -114,7 +128,7 @@ jobs:
     runs-on: macos-latest
     env:
       QT_INSTALL_TARGET_ARCH: clang_64
-      QT_INSTALL_TARGET_DIR_PREFIX: "/Applications"
+      QT_INSTALL_TARGET_DIR_PREFIX: /Applications
     steps:
       - uses: actions/checkout@v1
       - uses: actions/setup-python@v1
@@ -134,9 +148,16 @@ jobs:
           conan remote add conan-community https://api.bintray.com/conan/conan-community/conan
           conan remote add wiznoteplus https://api.bintray.com/conan/altairwei/conan
           conan profile new default --detect
+      - name: Cache Qt
+        id: cache-qt
+        uses: actions/cache@v1
+        with:
+          path: ${{ env.QT_INSTALL_TARGET_DIR_PREFIX }}/Qt
+          key: QtCache-MacOS
       - name: Install Qt
         uses: jurplel/install-qt-action@v2
         with:
+          cached: ${{ steps.cache-qt.outputs.cache-hit }}
           version: ${{ env.QT_VERSION }}
           host: mac
           target: desktop
