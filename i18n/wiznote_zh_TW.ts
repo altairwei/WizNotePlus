@@ -484,17 +484,17 @@
     <message>
         <location filename="../src/main.cpp" line="84"/>
         <location filename="../src/main.cpp" line="85"/>
-        <location filename="../src/main.cpp" line="202"/>
+        <location filename="../src/main.cpp" line="199"/>
         <source>WizNote</source>
         <translation>為知筆記</translation>
     </message>
     <message>
-        <location filename="../src/main.cpp" line="203"/>
+        <location filename="../src/main.cpp" line="200"/>
         <source>cn.wiz.wiznoteformac</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../src/main.cpp" line="396"/>
+        <location filename="../src/main.cpp" line="393"/>
         <source>Can not open database</source>
         <translation>無法開啟資料庫</translation>
     </message>

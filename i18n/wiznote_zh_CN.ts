@@ -397,7 +397,7 @@
     <message>
         <location filename="../src/WizActions.cpp" line="34"/>
         <source>&amp;Edit</source>
-        <translation>编辑(&amp;E）</translation>
+        <translation>编辑(&amp;E)</translation>
     </message>
     <message>
         <location filename="../src/WizActions.cpp" line="35"/>
@@ -484,17 +484,17 @@
     <message>
         <location filename="../src/main.cpp" line="84"/>
         <location filename="../src/main.cpp" line="85"/>
-        <location filename="../src/main.cpp" line="202"/>
+        <location filename="../src/main.cpp" line="199"/>
         <source>WizNote</source>
         <translation>为知笔记</translation>
     </message>
     <message>
-        <location filename="../src/main.cpp" line="203"/>
+        <location filename="../src/main.cpp" line="200"/>
         <source>cn.wiz.wiznoteformac</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../src/main.cpp" line="396"/>
+        <location filename="../src/main.cpp" line="393"/>
         <source>Can not open database</source>
         <translation>无法打开数据库</translation>
     </message>
