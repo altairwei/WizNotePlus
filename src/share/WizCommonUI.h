@@ -18,6 +18,7 @@ public:
     Q_INVOKABLE QString GetATempFileName(const QString &bstrFileExt);
     Q_INVOKABLE bool CreateDirectory(const QString &bstrPath);
     Q_INVOKABLE bool URLDownloadToFile(const QString &bstrURL, const QString &bstrFileName,  bool isImage);
+    Q_INVOKABLE bool Base64ToFile(const QString &base64, const QString &fileName);
 
 private:
     //interface WizKMControls.WizCommonUI;

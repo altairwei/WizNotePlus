@@ -5,6 +5,8 @@
 #include <QUuid>
 #include <QDir>
 #include <QDebug>
+#include <QByteArray>
+#include <QSaveFile>
 
 #include "WizMisc.h"
 #include "utils/WizPathResolve.h"
@@ -123,4 +125,15 @@ bool WizCommonUI::CreateDirectory(const QString &bstrPath)
 bool WizCommonUI::URLDownloadToFile(const QString &bstrURL, const QString &bstrFileName, bool isImage)
 {
     return WizURLDownloadToFile(bstrURL, bstrFileName, isImage);
+}
+
+
+bool WizCommonUI::Base64ToFile(const QString &base64, const QString &fileName)
+{
+    QByteArray buffer = QByteArray::fromBase64(base64.toUtf8());
+    QSaveFile file(fileName);
+    file.open(QIODevice::WriteOnly);
+    file.write(buffer);
+    file.commit();
+    return true;
 }
