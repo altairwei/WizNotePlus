@@ -10,6 +10,11 @@
 #include <QFileDialog>
 #include <QNetworkAccessManager>
 #include <QNetworkReply>
+#include <QJsonDocument>
+#include <QJsonParseError>
+#include <QJsonObject>
+#include <QJsonValue>
+#include <QJsonArray>
 
 #include "share/jsoncpp/json/json.h"
 #include "utils/WizPathResolve.h"
@@ -117,12 +122,10 @@ void WizDocTemplateDialog::initTemplateFileTreeWidget()
     QString jsonFile = Utils::WizPathResolve::wizTemplateJsonFilePath();
     if (!jsonFile.isEmpty() && QFile::exists(jsonFile))
     {
-        QFile file(jsonFile);
-        if (!file.open(QFile::ReadOnly))
+        QString jsonData;
+        if (!WizLoadUnicodeTextFromFile(jsonFile, jsonData, "UTF-8"))
             return;
 
-        QTextStream stream(&file);
-        QString jsonData = stream.readAll();
         if (jsonData.isEmpty())
             return;
         //
@@ -456,67 +459,51 @@ void WizDocTemplateDialog::checkUnfinishedTransation()
 
 void getTemplatesFromJsonData(const QByteArray& ba, QMap<int, TemplateData>& tmplMap)
 {
-    Json::Value d;
-    Json::Reader reader;
-    if (!reader.parse(ba.constData(), d))
+    QJsonParseError err;
+    QJsonDocument templs = QJsonDocument::fromJson(ba, &err);
+    if (templs.isNull()) {
+        qDebug() << "Templates json records parse error: " << err.errorString();
         return;
-    if (!d.isMember("templates"))
-        return;
-
-    QString demoUrl;
-    if (d.isMember("preview_link"))
-    {
-        //  http://sandbox.wiz.cn/libs/templates/demo/{file_name}/index.html
-        demoUrl = QString::fromUtf8(d["preview_link"].asString().c_str());
     }
 
-    QString thumbUrl;
-    if (d.isMember("thumb_link"))
-    {
-        thumbUrl = QString::fromUtf8(d["thumb_link"].asString().c_str());
+    // wiz_templates.json is a http response from wiz server.
+    QJsonObject resp = templs.object();
+    if(resp.isEmpty()) {
+        qDebug() << "Templates json response is empty.";
+        return;
     }
 
-    const Json::Value templates = d["templates"];
-    for(Json::ArrayIndex i = 0; i < templates.size(); i++)
-    {
-        const Json::Value& templateObj = templates[i];
+    QJsonArray templates = resp["templates"].toArray();
+    if (templates.isEmpty()) {
+        qDebug() << "Templates object array not exist.";
+        return;
+    }
+
+    // If type() is not String, a null QString will be returned.
+    QString demoUrl = resp["preview_link"].toString();
+    QString thumbUrl = resp["thumb_link"].toString();
+
+    for(auto val : templates) {
+        QJsonObject elem = val.toObject();
+        if(elem.isEmpty())
+            continue;
 
         TemplateData data;
         data.strThumbUrl = thumbUrl;
         data.strDemoUrl = demoUrl;
         data.type = WizServerTemplate;
 
-        if (templateObj.isMember("fileName"))
-        {
-            data.strFileName = QString::fromStdString(templateObj["fileName"].asString());
-            data.strThumbUrl.replace("{file_name}", data.strFileName);
-            data.strDemoUrl.replace("{file_name}",data.strFileName);
-            data.strFileName = Utils::WizPathResolve::customNoteTemplatesPath() + data.strFileName + ".ziw";
-        }
-        if (templateObj.isMember("folder"))
-        {
-            data.strFolder = QString::fromStdString(templateObj["folder"].asString());
-        }
-        if (templateObj.isMember("id"))
-        {
-            data.id = templateObj["id"].asInt();
-        }
-        if (templateObj.isMember("name"))
-        {
-            data.strName = QString::fromStdString(templateObj["name"].asString());
-        }
-        if (templateObj.isMember("title"))
-        {
-            data.strTitle = QString::fromStdString(templateObj["title"].asString());
-        }
-        if (templateObj.isMember("version"))
-        {
-            data.strVersion = QString::fromStdString(templateObj["version"].asString());
-        }
-        if (templateObj.isMember("isFree"))
-        {
-            data.isFree = templateObj["isFree"].asBool();
-        }        
+        data.strFileName = elem["fileName"].toString();
+        data.strThumbUrl.replace("{file_name}", data.strFileName);
+        data.strDemoUrl.replace("{file_name}",data.strFileName);
+        data.strFileName = Utils::WizPathResolve::customNoteTemplatesPath() + data.strFileName + ".ziw";
+
+        data.strFolder = elem["folder"].toString();
+        data.id = elem["id"].toInt();
+        data.strName = elem["name"].toString();
+        data.strTitle = elem["title"].toString();
+        data.strVersion = elem["version"].toString();
+        data.isFree = elem["isFree"].toBool();
 
         tmplMap.insert(data.id, data);
     }
@@ -592,12 +579,10 @@ bool getTemplateListFroNewNoteMenu(QList<TemplateData>& tmplList)
     QString jsonFile = Utils::WizPathResolve::wizTemplateJsonFilePath();
     if (!jsonFile.isEmpty() && QFile::exists(jsonFile))
     {
-        QFile file(jsonFile);
-        if (!file.open(QFile::ReadOnly))
+        QString jsonData;
+        if (!WizLoadUnicodeTextFromFile(jsonFile, jsonData, "UTF-8"))
             return false;
 
-        QTextStream stream(&file);
-        QString jsonData = stream.readAll();
         if (jsonData.isEmpty())
             return false;
         //

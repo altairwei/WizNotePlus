@@ -1109,27 +1109,14 @@ BOOL WizLoadUnicodeTextFromBuffer(const char* pBuffer, size_t nLen, CString& str
 }
 
 
-bool WizLoadUnicodeTextFromFile(const QString& strFileName, QString& strText)
+bool WizLoadUnicodeTextFromFile(const QString& strFileName, QString& strText, const char *encoding /*= "UTF-8"*/)
 {
     QFile file(strFileName);
     if (!file.open(QIODevice::ReadOnly | QIODevice::Text))
         return false;
 
     QTextStream stream(&file);
-    strText = stream.readAll();
-    file.close();
-
-    return true;
-}
-
-bool WizLoadUtf8TextFromFile(const QString& strFileName, QString& strText)
-{
-    QFile file(strFileName);
-    if (!file.open(QIODevice::ReadOnly | QIODevice::Text))
-        return false;
-
-    QTextStream stream(&file);
-    stream.setCodec("UTF-8");
+    stream.setCodec(encoding);
     strText = stream.readAll();
     file.close();
 

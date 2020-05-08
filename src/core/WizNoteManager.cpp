@@ -236,7 +236,6 @@ void WizNoteManager::downloadTemplatePurchaseRecord()
         //
         QNetworkAccessManager manager;
         QString url = WizCommonApiEntry::asServerUrl() + "/a/templates/record?token=" + WizToken::token();
-//        qDebug() << "get templates record from url : " << url;
         //
         QByteArray ba;
         {
@@ -262,25 +261,25 @@ bool WizNoteManager::updateLocalTemplates(const QByteArray& newJsonData, QNetwor
     if (!reader.parse(newJsonData.constData(), d))
         return false;
 
-    QString localFile = Utils::WizPathResolve::wizTemplateJsonFilePath();
     bool needUpdateJs = true;
     QMap<int, TemplateData> localTmplMap;
-    QFile file(localFile);
-    if (file.open(QFile::ReadOnly))
-    {
-        QTextStream stream(&file);
-        QString jsonData = stream.readAll();
-        Json::Value localD;
-        if (reader.parse(jsonData.toUtf8().constData(), localD))
-        {
-            if (localD.isMember("template_js_version") && d.isMember("template_js_version"))
-            {
-                needUpdateJs = (localD["template_js_version"].asString() !=
-                        d["template_js_version"].asString());
-            }
-        }
 
-        getTemplatesFromJsonData(jsonData.toUtf8(), localTmplMap);
+    QString jsonFile = Utils::WizPathResolve::wizTemplateJsonFilePath();
+    if (!jsonFile.isEmpty() && QFile::exists(jsonFile)) {
+        QString jsonData;
+        if(WizLoadUnicodeTextFromFile(jsonFile, jsonData, "UTF-8")) {
+            Json::Value localD;
+            if (reader.parse(jsonData.toUtf8().constData(), localD))
+            {
+                if (localD.isMember("template_js_version") && d.isMember("template_js_version"))
+                {
+                    needUpdateJs = (localD["template_js_version"].asString() !=
+                            d["template_js_version"].asString());
+                }
+            }
+
+            getTemplatesFromJsonData(jsonData.toUtf8(), localTmplMap);
+        }
     }
 
     //

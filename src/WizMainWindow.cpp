@@ -1250,8 +1250,8 @@ void WizMainWindow::createNoteByTemplate(const TemplateData& tmplData)
 }
 
 /**
- * @brief 从模板创建笔记
- * @param tmplData 模板数据
+ * @brief Create document from template.
+ * @param tmplData Template information.
  */
 void WizMainWindow::createNoteByTemplateCore(const TemplateData& tmplData)
 {
@@ -1330,7 +1330,7 @@ void WizMainWindow::createNoteByTemplateCore(const TemplateData& tmplData)
     }
     else
     {
-        viewDocument(data, true);
+        viewDocument(data);
     }
 
     quickSyncKb(kbGUID);
