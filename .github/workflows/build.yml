@@ -11,9 +11,9 @@ on:
 
 env:
   QT_VERSION_MAJOR: 5
-  QT_VERSION_MINOR: 14
-  QT_VERSION_PATCH: 1
-  QT_VERSION: 5.14.1
+  QT_VERSION_MINOR: 12
+  QT_VERSION_PATCH: 8
+  QT_VERSION: 5.12.8
 
 jobs:
   
@@ -38,7 +38,7 @@ jobs:
         uses: actions/cache@v1
         with:
           path: ${{ env.QT_INSTALL_TARGET_DIR_PREFIX }}/Qt
-          key: QtCache-Linux
+          key: QtCache-Linux-${{ env.QT_VERSION }}
       - name: Install Qt
         uses: jurplel/install-qt-action@v2
         with:
@@ -100,7 +100,7 @@ jobs:
         uses: actions/cache@v1
         with:
           path: ${{ env.QT_INSTALL_TARGET_DIR_PREFIX }}\Qt
-          key: QtCache-Windows
+          key: QtCache-Windows-${{ env.QT_VERSION }}
       - name: Install Qt
         uses: jurplel/install-qt-action@v2
         with:
@@ -153,7 +153,7 @@ jobs:
         uses: actions/cache@v1
         with:
           path: ${{ env.QT_INSTALL_TARGET_DIR_PREFIX }}/Qt
-          key: QtCache-MacOS
+          key: QtCache-MacOS-${{ env.QT_VERSION }}
       - name: Install Qt
         uses: jurplel/install-qt-action@v2
         with:
