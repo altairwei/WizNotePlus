@@ -5,6 +5,7 @@
 #include <fstream>
 #include <stdlib.h>
 #include <string.h>
+
 #include <QApplication>
 #include <QTextDocument>
 #include <QClipboard>
@@ -18,12 +19,12 @@
 #include <QtSvg>
 #include <QSvgRenderer>
 #include <QGraphicsSvgItem>
-
 #include <QtCore>
 #include <QNetworkConfigurationManager>
 #include <QNetworkAccessManager>
 #include <QNetworkRequest>
 #include <QNetworkReply>
+
 #include "utils/WizLogger.h"
 #include "utils/WizPathResolve.h"
 #include "utils/WizStyleHelper.h"
@@ -2104,12 +2105,12 @@ QString WizText2Html(const QString& text)
 
 QString getImageHtmlLabelByFile(const QString& strImageFile)
 {
-    return QString("<div><img border=\"0\" src=\"file://%1\" /></div>").arg(strImageFile);
+    return QString("<div><img border=\"0\" src=\"file:///%1\" /></div>").arg(strImageFile);
 }
 
 QString WizGetImageHtmlLabelWithLink(const QString& imageFile, const QSize& imgSize, const QString& linkHref)
 {
-    return QString("<div><a href=\"%1\"><img border=\"0\" width=\"%2px\" height=\"%3px\" src=\"file://%4\" /></a></div>")
+    return QString("<div><a href=\"%1\"><img border=\"0\" width=\"%2px\" height=\"%3px\" src=\"file:///%4\" /></a></div>")
             .arg(linkHref).arg(imgSize.width()).arg(imgSize.height()).arg(imageFile);
 }
 

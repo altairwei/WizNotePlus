@@ -3290,10 +3290,10 @@ bool WizDatabase::setDocumentFlags(const QString& strDocumentGuid, const QString
 }
 
 /**
- * @brief 用HTML更新笔记数据
- * @param data 笔记数据
- * @param strHtml HTML内容字符串
- * @param strURL 笔记<index.html>文件地址
+ * @brief Update document data by HTML text.
+ * @param data Document metadata.
+ * @param strHtml HTML text.
+ * @param strURL Path to index.html of the document.
  * @param nFlags
  * @param notifyDataModify
  * @return
@@ -3306,11 +3306,12 @@ bool WizDatabase::updateDocumentData(WIZDOCUMENTDATA& data,
 {
     m_mtxTempFile.lock();
     QString strProcessedHtml(strHtml);
-    // resources path
-    QString strResourcePath = GetResoucePathFromFile(strURL); // HTML文件对应的资源文件夹index_files路径
+    // resources path "index_files"
+    QString strResourcePath = GetResoucePathFromFile(strURL);
     if (!strResourcePath.isEmpty()) {
-        QUrl urlResource = QUrl::fromLocalFile(strResourcePath); // 将平台特异性路径转变成统一的QUrl
-        strProcessedHtml.replace(urlResource.toString(), "index_files/"); // 将HTML字符串内所有绝对路径转换成相对路径
+        // Replace all absolute URL with relative URL.
+        QUrl urlResource = QUrl::fromLocalFile(strResourcePath);
+        strProcessedHtml.replace(urlResource.toString(), "index_files/");
     }
     m_mtxTempFile.unlock();
     // check if note is encrypted or not

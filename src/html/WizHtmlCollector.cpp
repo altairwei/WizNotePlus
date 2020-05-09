@@ -221,7 +221,7 @@ void WizHtmlCollector::processImgTagValue(WizHtmlTag* pTag, const QString& strAt
         if (!strFile.isEmpty() && QFile::exists(strFile))
         {
             qDebug() <<"[Save] change to local image : " << strFile;
-            QString strAbsFile = "file://" + strFile;
+            QString strAbsFile = "file:///" + strFile;
             m_files.add(strAbsFile, strFile, eType, false);
             pTag->setValueToName(strAttributeName, toResourceFileName(strFile));
             return;

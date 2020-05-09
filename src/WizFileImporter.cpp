@@ -137,7 +137,7 @@ QString WizFileImporter::loadTextFileToHtml(const QString& strFileName, const ch
 
 QString WizFileImporter::loadImageFileToHtml(const QString& strFileName)
 {
-    return QString("<img border=\"0\" src=\"file://%1\" />").arg(strFileName);
+    return QString("<img border=\"0\" src=\"file:///%1\" />").arg(strFileName);
 }
 
 /**

@@ -2155,7 +2155,7 @@ void WizDocumentWebView::editorCommandExecuteInsertImage()
         //
         if (QFile::copy(strImgFile, destImageFileName))
         {
-            files.push_back(destImageFileName);
+            files.push_back(QUrl::fromLocalFile(destImageFileName).toString());
         }
         //
         initPath = Utils::WizMisc::extractFilePath(strImgFile);
