@@ -316,6 +316,17 @@ void WizDocument::Close()
     deleteLater();
 }
 
+/**
+ * @brief Extract document content to a folder.
+ * 
+ * @param folderName 
+ * @return true 
+ * @return false 
+ */
+bool WizDocument::SaveToFolder(const QString &folderName) {
+    return m_db.documentToHtmlFile(this->data(), folderName + "/");
+}
+
 bool WizDocument::isInDeletedItemsFolder()
 {
     QString strDeletedItemsFolderLocation = m_db.getDeletedItemsLocation();

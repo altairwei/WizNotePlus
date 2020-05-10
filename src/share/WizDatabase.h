@@ -126,6 +126,8 @@ public:
     Q_INVOKABLE void deleteToTrash();
     Q_INVOKABLE void deleteFromTrash();
 
+    Q_INVOKABLE bool SaveToFolder(const QString &htmlFileName);
+
     Q_INVOKABLE void Reload();
 
     Q_INVOKABLE QString GetParamValue(const QString &strParamName);
