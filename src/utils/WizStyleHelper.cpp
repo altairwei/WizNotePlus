@@ -10,6 +10,9 @@
 #include <QDebug>
 #include <QApplication>
 #include <QTextDocument>
+#include <QtSvg>
+#include <QSvgRenderer>
+#include <QGraphicsSvgItem>
 
 #include "WizPathResolve.h"
 #include "../share/WizMisc.h"
@@ -25,6 +28,7 @@
 namespace Utils {
 
 WizSettings* WizStyleHelper::m_settings = 0;
+#define BADGE_SIZE QSize(14, 14)
 
 void WizStyleHelper::initPainterByDevice(QPainter* p)
 {
@@ -82,30 +86,7 @@ QString WizStyleHelper::skinResourceFileName(const QString& strName, bool need2x
 
 QIcon WizStyleHelper::loadIcon(const QString& strName)
 {
-    QString strThemeName = themeName();
-    QString strIconNormal = ::WizGetSkinResourceFileName(strThemeName, strName);
-    QString strIconActive1 = ::WizGetSkinResourceFileName(strThemeName, strName+ "_on");
-    QString strIconActive2 = ::WizGetSkinResourceFileName(strThemeName, strName+ "_selected");
-
-    if (!strIconNormal.isEmpty() && !QFile::exists(strIconNormal)) {
-        qWarning() << "load icon failed, filePath:" << strIconNormal << " name : " << strName;
-        return QIcon();
-    }
-    //FIXME: Always warning "Empty filename passed to function"
-    QIcon icon;
-    icon.addFile(strIconNormal, QSize(), QIcon::Normal, QIcon::Off);
-
-    // used for check state
-    if (!strIconActive1.isEmpty() && QFile::exists(strIconActive1)) {
-        icon.addFile(strIconActive1, QSize(), QIcon::Active, QIcon::On);
-    }
-
-    // used for sunken state
-    if (!strIconActive2.isEmpty() && QFile::exists(strIconActive2)) {
-        icon.addFile(strIconActive2, QSize(), QIcon::Active, QIcon::Off);
-    }
-
-    return icon;
+    return WizLoadSkinIconFiles(themeName(), strName, QSize(16,16));
 }
 
 QRegion WizStyleHelper::borderRadiusRegion(const QRect& rect)
@@ -854,15 +835,7 @@ QRect WizStyleHelper::drawBadgeIcon(QPainter* p, const QRect& rc, int height, in
 QRect WizStyleHelper::drawBadgeIcon(QPainter* p, const QRect& rc, BadgeType nType,  bool bFocus, bool bSelect)
 {
     QIcon attachIcon(listViewBadge(nType));
-    QList<QSize> sizes = attachIcon.availableSizes();
-    QSize iconSize = sizes.first();
-    if (WizIsHighPixel() && sizes.count() >=2)
-    {
-        iconSize = QSize(sizes.last().width() / 2, sizes.last().height() / 2);
-    }
-//    int nLeftMargin = 2;
-//    QRect rcb(rc.x() + (rc.width() - iconSize.width()) / 2, rc.y() + (rc.height() - iconSize.height()) / 2,
-//              iconSize.width(), iconSize.height());//
+    QSize iconSize = BADGE_SIZE;
     QRect rcb = rc.adjusted(0, margin(), 0, 0);
     rcb.setSize(iconSize);
     if (bSelect && bFocus) {

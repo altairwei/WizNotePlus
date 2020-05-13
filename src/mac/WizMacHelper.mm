@@ -604,7 +604,7 @@ bool processWebarchiveImageUrl(const QString& strFileName, QString& strHtml, con
             if (value.startsWith("file:///"))
             {
                 value.remove(0, 8);
-                value = "file://" + m_strResourcePath + value;
+                value = QUrl::fromLocalFile(m_strResourcePath + value).toString();
                 //
                 qDebug() << "value result: " << value;
                 //

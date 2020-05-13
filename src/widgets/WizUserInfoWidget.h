@@ -1,13 +1,9 @@
 ﻿#ifndef WIZUSERINFOWIDGET_H
 #define WIZUSERINFOWIDGET_H
 
-#ifdef USECOCOATOOLBAR
-#include "mac/WizUserInfoWidgetBaseMac_mm.h"
-#define WIZUSERINFOWIDGETBASE WizUserInfoWidgetBaseMac
-#else
 #include "widgets/WizUserInfoWidgetBase.h"
 #define WIZUSERINFOWIDGETBASE WizUserInfoWidgetBase
-#endif
+
 
 class WizExplorerApp;
 class WizDatabase;

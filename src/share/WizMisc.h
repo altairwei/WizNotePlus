@@ -106,8 +106,7 @@ QString WizEncryptPassword(const QString& strPassword);
 QString WizDecryptPassword(const QString& strEncryptedText);
 
 
-bool WizLoadUnicodeTextFromFile(const QString& strFileName, QString& strText);
-bool WizLoadUtf8TextFromFile(const QString& strFileName, QString& strText);
+bool WizLoadUnicodeTextFromFile(const QString& strFileName, QString& strText, const char *encoding = "UTF-8");
 bool WizLoadTextFromResource(const QString& resourceName, QString& text);
 
 bool WizSaveUnicodeTextToUtf16File(const QString& strFileName, const QString& strText);
@@ -146,10 +145,9 @@ QString WizGetSkinResourcePath(const QString& strSkinName);
 QString WizGetSkinDisplayName(const QString& strSkinName, const QString& strLocale);
 QString WizGetSkinResourceFileName(const QString& strSkinName, const QString& strName);
 QPixmap WizLoadPixmap(const QString& strSkinName, const QString& strIconName, const QSize& iconSize);
-QIcon WizLoadSkinIcon(const QString& strSkinName, const QString& strIconName, QIcon::Mode mode = QIcon::Normal, QIcon::State state = QIcon::Off);
+QIcon WizLoadSkinIcon(const QString& strSkinName, const QString& strIconName);
 QIcon WizLoadSkinIcon(const QString& strSkinName, const QString& strIconName, const QSize& iconSize, QIcon::Mode mode = QIcon::Normal, QIcon::State state = QIcon::Off);
-QIcon WizLoadSkinIcon(const QString& strSkinName, QColor forceground, const QString& strIconName);
-QIcon WizLoadSkinIcon2(const QString& strSkinName, const QColor& blendColor, const QString& strIconName);
+QIcon WizLoadSkinIconFiles(const QString& strSkinName, const QString& strIconName, const QSize& iconSize, QIcon::Mode mode = QIcon::Normal, QIcon::State state = QIcon::Off);
 
 bool WizImageBlending(QImage& img, const QColor& blendColor, QIcon::Mode mode = QIcon::Normal);
 void WizLoadSkinIcon3(QIcon& icon, const QString& strSkinName, const QString& strIconName,
@@ -229,6 +227,7 @@ enum WizKMUrlType
 };
 
 bool IsWizKMURL(const QString& strURL);
+bool IsHttpURL(const QString &strURL);
 bool WizIsKMURLOpenDocument(const QString& strURL);
 WizKMUrlType GetWizUrlType(const QString& strURL);
 QString GetParamFromWizKMURL(const QString& strURL, const QString& strParamName);

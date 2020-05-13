@@ -23,7 +23,6 @@
 #include "WizDocumentView.h"
 #include "WizTagListWidget.h"
 #include "WizAttachmentListWidget.h"
-#include "WizDocumentWebEngine.h"
 #include "WizDocumentWebView.h"
 #include "WizNoteInfoForm.h"
 #include "WizNoteStyle.h"
@@ -48,6 +47,9 @@
 #include "share/WizWebEngineView.h"
 
 #include "core/WizCommentManager.h"
+
+#include "plugins/js_plugin_system/JSPluginManager.h"
+#include "plugins/js_plugin_system/JSPluginSpec.h"
 
 #define WIZACTION_TITLEBAR_SHARE_DOCUMENT_BY_LINK QObject::tr("Share by Link")
 #define WIZACTION_TITLEBAR_SHARE_DOCUMENT_BY_EMAIL QObject::tr("Share by Email")
@@ -134,18 +136,19 @@ WizTitleBar::WizTitleBar(WizExplorerApp& app, QWidget *parent)
     // 分享按钮
     m_shareBtn = new WizToolButton(this,  WizToolButton::ImageOnly | WizToolButton::WithMenu);
     m_shareBtn->setFixedHeight(nTitleHeight);
+    m_shareMenu = new QMenu(m_shareBtn);
+    QAction *defaultAc = m_shareMenu->addAction(WIZACTION_TITLEBAR_SHARE_DOCUMENT_BY_LINK, this, SLOT(onShareActionClicked()));
+    m_shareMenu->addAction(WIZACTION_TITLEBAR_SHARE_DOCUMENT_BY_EMAIL, this, SLOT(onEmailActionClicked()));
     QString shareShortcut = ::WizGetShortcut("EditShare", "Alt+4");
-    m_shareBtn->setShortcut(QKeySequence::fromString(shareShortcut));
-    m_shareBtn->setIcon(::WizLoadSkinIcon(strTheme, "document_share", iconSize));
-    m_shareBtn->setToolTip(tr("Share note  %1%2").arg(getOptionKey()).arg(4));
+    defaultAc->setShortcut(QKeySequence::fromString(shareShortcut));
+    defaultAc->setIcon(::WizLoadSkinIcon(strTheme, "document_share", iconSize));
+    defaultAc->setToolTip(tr("Share note  %1%2").arg(getOptionKey()).arg(4));
     connect(m_shareBtn, SIGNAL(clicked()), SLOT(onShareButtonClicked()));
     WizOEMSettings oemSettings(m_app.databaseManager().db().getAccountPath());
     m_shareBtn->setVisible(!oemSettings.isHideShare());
     m_shareBtn->setPopupMode(QToolButton::MenuButtonPopup);
-    m_shareMenu = new QMenu(m_shareBtn);
-    m_shareMenu->addAction(WIZACTION_TITLEBAR_SHARE_DOCUMENT_BY_LINK, this, SLOT(onShareActionClicked()));
-    m_shareMenu->addAction(WIZACTION_TITLEBAR_SHARE_DOCUMENT_BY_EMAIL, this, SLOT(onEmailActionClicked()));
     m_shareBtn->setMenu(m_shareMenu);
+    m_shareBtn->setDefaultAction(defaultAc);
 
     //隐藏历史版本按钮，给以后增加提醒按钮保留位置
 //    WizCellButton* historyBtn = new WizCellButton(WizCellButton::ImageOnly, this);
@@ -228,6 +231,8 @@ WizTitleBar::WizTitleBar(WizExplorerApp& app, QWidget *parent)
     layoutInfo2->addWidget(m_commentsBtn);
     */
 
+    initPlugins(m_documentToolBar);
+
     // 笔记状态信息布局
     QVBoxLayout* layoutInfo1 = new QVBoxLayout();
     layoutInfo1->setContentsMargins(Utils::WizStyleHelper::editorBarMargins());
@@ -251,6 +256,27 @@ WizTitleBar::WizTitleBar(WizExplorerApp& app, QWidget *parent)
             SLOT(on_commentTokenAcquired(QString)));
     connect(m_commentManager, SIGNAL(commentCountAcquired(QString,int)),
             SLOT(on_commentCountAcquired(QString,int)));
+}
+
+/**
+ * @brief Init plugins' tool button on document tool bar.
+ * 
+ * @param docToolbar 
+ */
+void WizTitleBar::initPlugins(QToolBar* docToolbar)
+{
+    int nTitleHeight = Utils::WizStyleHelper::titleEditorHeight();
+    JSPluginManager &jsPluginMgr = JSPluginManager::instance();
+    QList<JSPluginModuleSpec *> modules = jsPluginMgr.modulesByKeyValue("ModuleType", "Action");
+    for (auto moduleData : modules) {
+        if (moduleData->buttonLocation() != "Document")
+            continue;
+        QAction *ac = jsPluginMgr.createPluginAction(docToolbar, moduleData);
+        connect(ac, &QAction::triggered, 
+            &jsPluginMgr, &JSPluginManager::handlePluginActionTriggered);
+
+        docToolbar->addAction(ac);
+    }
 }
 
 /**
@@ -319,23 +345,29 @@ void WizTitleBar::setLocked(bool bReadOnly, int nReason, bool bIsGroup)
 QMenu* WizTitleBar::createEditorMenu()
 {
     QMenu* editorMenu = new QMenu(this);
-    // 添加编辑器选项
+    // Check mode
+    if (noteView()->editorMode() == modeEditor) {
+        // Editing mode only allow one action.
+        editorMenu->addAction(tr("Discard changes"), this, &WizTitleBar::handleDiscardChanges);
+        return editorMenu;
+    }
+    // External editor option
     editorMenu->addAction(tr("Editor Options"), this, SLOT(onEditorOptionSelected()));
     editorMenu->addSeparator();
-    // 读取设置
+    // Reading External editor settings
     QSettings* extEditorSettings = new QSettings(
                 Utils::WizPathResolve::dataStorePath() + "externalEditor.ini", QSettings::IniFormat);
     QStringList groups = extEditorSettings->childGroups();
     for (QString& editorIndex : groups) {
         extEditorSettings->beginGroup(editorIndex);
-        // 准备数据
+        // Prepare metadata of external editor
         QMap<QString, QVariant> data;
         data["Name"] = extEditorSettings->value("Name");
         data["ProgramFile"] = extEditorSettings->value("ProgramFile");
         data["Arguments"] = extEditorSettings->value("Arguments", "%1");
         data["TextEditor"] = extEditorSettings->value("TextEditor", 0);
         data["UTF8Encoding"] = extEditorSettings->value("UTF8Encoding", 0);
-        // 准备动作
+        // Create actions
         QAction* editorAction = editorMenu->addAction(data.value("Name").toString(), this, SLOT(onExternalEditorMenuSelected()));
         QVariant var(data);
         editorAction->setData(var);
@@ -488,6 +520,10 @@ void WizTitleBar::setEditorMode(WizEditorMode editorMode)
 {
     m_editTitle->setReadOnly(editorMode == modeReader);
     m_editBtn->setState(editorMode == modeEditor ? WizEditButton::Checked : WizEditButton::Normal);
+    // Refresh button side menu
+    m_editBtn->menu()->deleteLater();
+    QMenu* extEditorMenu = createEditorMenu();
+    m_editBtn->setMenu(extEditorMenu);
     //
     if (editorMode == modeReader)
     {
@@ -590,12 +626,13 @@ void WizTitleBar::applyButtonStateForSeparateWindow(bool inSeparateWindow)
 }
 
 /**
- * @brief 点击编辑按钮后切换编辑模式
+ * @brief Switch editor mode when button clicked.
  *
- * FIXME: 为什么不使用信号槽而采用这么难看的调用方式？
+ * FIXME: use signal-slot instead.
  */
 void WizTitleBar::onEditButtonClicked()
 {
+    // Switch editor mode
     noteView()->setEditorMode(noteView()->editorMode() == modeEditor ? modeReader: modeEditor);
     //
     WizAnalyzer& analyzer = WizAnalyzer::getAnalyzer();
@@ -639,6 +676,18 @@ void WizTitleBar::onExternalEditorMenuSelected()
 
     emit viewNoteInExternalEditor_request(Name, ProgramFile, Arguments, TextEditor, UTF8Encoding);
 
+}
+
+void WizTitleBar::handleDiscardChanges()
+{
+    // Confirm
+    QMessageBox::StandardButton res = QMessageBox::question(this, 
+        tr("Discard changes"), tr("Do you really want to discard changes ?"));
+    if (res == QMessageBox::Yes) {
+        emit discardChangesRequest();
+    } else {
+        return;
+    }
 }
 
 void WizTitleBar::onSeparateButtonClicked()

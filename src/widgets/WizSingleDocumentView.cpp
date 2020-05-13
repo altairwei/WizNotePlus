@@ -14,7 +14,6 @@
 #include "WizMainWindow.h"
 #include "WizMainTabBrowser.h"
 #include "WizEditorToolBar.h"
-#include "WizDocumentWebEngine.h"
 
 #ifdef Q_OS_MAC
 #include "mac/WizMacHelper.h"
@@ -134,8 +133,6 @@ void WizSingleDocumentViewer::resizeEvent(QResizeEvent* ev)
 void WizSingleDocumentViewer::closeEvent(QCloseEvent *ev)
 {
     m_docView->waitForDone();
-    //
-    m_docView->web()->closeAll();
     //
     QWidget::closeEvent(ev);
 }

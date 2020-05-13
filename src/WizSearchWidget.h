@@ -10,11 +10,6 @@
 // Wrap widget for qt widget and mac native search field
 // refer to mac/wizSearchWidget.mm for osx NSSearchField
 
-#ifdef USECOCOATOOLBAR
-class WizSearchView;
-
-#else
-
 class WizExplorerApp;
 
 class WizSearchEdit : public QLineEdit
@@ -71,8 +66,6 @@ Q_SIGNALS:
     void addCustomSearchRequest();
     void doSearch(const QString& keywords);
 };
-
-#endif // Q_OS_MAC
 
 
 

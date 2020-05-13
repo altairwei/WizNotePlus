@@ -5,7 +5,7 @@
 WizScrollBar::WizScrollBar(QWidget* parent /* = 0 */)
     : QScrollBar(parent)
     , m_bgColor("transparent")
-    , m_handleColor("#C1C1C1")
+    , m_handleColor("#88C1C1C1")
     , m_bLeftBorder(false)
 {
 

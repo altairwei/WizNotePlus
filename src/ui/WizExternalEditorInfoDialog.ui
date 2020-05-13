@@ -81,7 +81,7 @@
      <item>
       <widget class="QCheckBox" name="checkTextEditor">
        <property name="text">
-        <string>Use for txt editor</string>
+        <string>Use for text editor</string>
        </property>
       </widget>
      </item>

@@ -73,10 +73,8 @@
 #include "html/WizHtmlReader.h"
 
 #include "WizTitleBar.h"
-#include "interface/IWizHtmlEditorApp.h"
-
-#include "gumbo-query/Document.h"
-#include "gumbo-query/Node.h"
+#include "plugins/public_apis_object/IWizHtmlEditorApp.h"
+#include "plugins/js_plugin_system/JSPluginManager.h"
 
 enum WizLinkType {
     WizLink_Doucment,
@@ -180,12 +178,9 @@ WizDocumentWebView::WizDocumentWebView(WizExplorerApp& app, QWidget* parent)
     m_timerAutoSave.setInterval(1*60*1000); // 1 minutes
     connect(&m_timerAutoSave, SIGNAL(timeout()), SLOT(onTimerAutoSaveTimout()));
     //
-    // 向页面JS脚本空间注册对象
-    //addToJavaScriptWindowObject("WizExplorerApp", m_app.object());
     WizMainWindow* mainWindow = qobject_cast<WizMainWindow*>(m_app.mainWindow());
-    addToJavaScriptWindowObject("WizExplorerApp", mainWindow->componentInterface());
-    //addToJavaScriptWindowObject("WizQtEditor", this);
-    addToJavaScriptWindowObject("WizQtEditor", m_htmlEditorApp);
+    addObjectToJavaScriptClient("WizExplorerApp", mainWindow->publicAPIsObject());
+    addObjectToJavaScriptClient("WizQtEditor", m_htmlEditorApp);
 
     connect(this, SIGNAL(loadFinishedEx(bool)), SLOT(onEditorLoadFinished(bool)));
     //
@@ -451,13 +446,10 @@ void WizDocumentWebView::createReadModeContextMenu(QContextMenuEvent *event)
     // save page action
     connect(pageAction(QWebEnginePage::SavePage), &QAction::triggered, 
                     this, &WizDocumentWebView::handleSavePageTriggered, Qt::UniqueConnection);
-    // refresh new page's ViewSource action
-    connect(pageAction(QWebEnginePage::ViewSource), &QAction::triggered, 
-                    this, &WizDocumentWebView::onViewSourceTriggered, Qt::UniqueConnection);
     // handle open location of document
     if(page()->url().isLocalFile()) {
         QAction *action = new QAction(menu);
-        action->setText("Open temporary file's location");
+        action->setText(tr("Open temporary file's location"));
         connect(action, &QAction::triggered, [this]() {
             QUrl tmpfileFolder = page()->url().adjusted(QUrl::RemoveFilename);
             QDesktopServices::openUrl(tmpfileFolder);
@@ -478,11 +470,6 @@ void WizDocumentWebView::createReadModeContextMenu(QContextMenuEvent *event)
     menu->popup(event->globalPos());
 }
 
-void WizDocumentWebView::onViewSourceTriggered()
-{
-    emit viewSourceRequested(page()->url(), view()->note().strTitle);
-}
-
 void WizDocumentWebView::handleSavePageTriggered()
 {
     QString title = view()->note().strTitle;
@@ -496,6 +483,20 @@ void WizDocumentWebView::handleSavePageTriggered()
 void WizDocumentWebView::handleReloadTriggered()
 {
     reloadNoteData(view()->note());
+}
+
+void WizDocumentWebView::discardChanges()
+{
+    isModified([=](bool modified){
+        // Close rich text editor
+        enableEditor(false);
+        m_currentEditorMode = modeReader;
+        // Stop auto save
+        m_timerAutoSave.stop();
+        // Reload document if necessary
+        if (modified)
+            reloadNoteData(view()->note());
+    });
 }
 
 void WizDocumentWebView::dragEnterEvent(QDragEnterEvent *event)
@@ -855,15 +856,6 @@ QString WizDocumentWebView::documentTitle()
     return view()->note().strTitle;
 }
 
-void WizDocumentWebView::queryHtmlNodeText(QString& strHtml, QString strSelector)
-{
-    CDocument doc;
-    doc.parse(strHtml.toStdString().c_str());
-
-    CSelection c = doc.find(strSelector.toStdString().c_str());
-    qDebug() << QString::fromUtf8(c.nodeAt(0).text().c_str()); // some link
-}
-
 void WizDocumentWebView::replaceDefaultCss(QString& strHtml)
 {
     QString strFileName = Utils::WizPathResolve::resourcesPath() + "files/wizeditor/default.css";
@@ -880,7 +872,7 @@ void WizDocumentWebView::replaceDefaultCss(QString& strHtml)
     QString strFont = m_app.userSettings().defaultFontFamily();
     int nSize = m_app.userSettings().defaultFontSize();
 
-    strCss.replace("/*default-font-family*/", QString("font-family:'%1';").arg(strFont));
+    strCss.replace("/*default-font-family*/", QString("font-family:%1;").arg(strFont));
     strCss.replace("/*default-font-size*/", QString("font-size:%1px;").arg(nSize));
     QString backgroundColor = m_app.userSettings().editorBackgroundColor();
     if (backgroundColor.isEmpty())
@@ -1212,34 +1204,55 @@ void WizDocumentWebView::onEditorLoadFinished(bool ok)
     bool ignoreTable = doc.strURL.startsWith("http");
     //
     QString noteType = getNoteType();
-    //
-    QString strCode = WizFormatString6("WizEditorInit(\"%1\", \"%2\", \"%3\", \"%4\", %5, \"%6\");",
+    QString keywords = getHighlightKeywords();
+    // Initialize rich text editor
+    QString strCode = "(async function(){\n";
+    strCode += WizFormatString6("await WizEditorInit(\"%1\", \"%2\", \"%3\", \"%4\", %5, \"%6\", false);",
                                        editorPath, lang, userGUID, userAlias,
                                        ignoreTable ? "true" : "false",
                                        noteType);
     qDebug() << strCode;
-    if (m_currentEditorMode == modeEditor)
-    {
+    if (m_currentEditorMode == modeEditor) {
+        // Open rich text editor when doc is in edit mode
         strCode += "WizEditor.on();";
-    }
-    else
-    {
-
-        QString keywords = getHighlightKeywords();
+    } else {
+        // Close rich text editor when doc is in read mode
         if (keywords.isEmpty()) {
-            //
             strCode += "WizEditor.off();";
-            //
         } else {
-            strCode += QString("WizEditor.off(null, function(){\n\
+            // When user open document in search results, highlit key words
+            QString strCodeMarkdown = QString("WizEditor.off(null, function(){\n\
                 WizReader.highlight.on([%1]);\nconsole.log('highlight');\n\
             });").arg(keywords);
+            QString strCodeCommon = "await new Promise( (resolve, reject) => {"
+                "WizEditor.off(null, () => {"
+                    "resolve();"
+                "});"
+            "});";
+            // It's hard to determine when markdown document has rendered.
+            // So, keywords highlight in scroll bar is only available for 
+            // common document. 
+            if (noteType == "common") {
+                strCode += strCodeCommon;
+            } else {
+                strCode += strCodeMarkdown;
+            }
         }
     }
-    //
+    strCode += "\n})()";
     qDebug() << strCode;
-    //
-    page()->runJavaScript(strCode);
+    page()->runJavaScript(strCode, [=](const QVariant &v) {
+        if (!keywords.isEmpty()) {
+            if (noteType == "common") {
+                //FIXME: This is not the best way, it needs the keyword in search line
+                QString word = keywords.split(",").first()
+                                    .section("'", 0, 0, QString::SectionSkipEmpty);
+                findText(word);
+            }
+        }
+    });
+    // Notify all plugins
+    JSPluginManager::instance().notifyDocumentChanged();
 }
 
 /**
@@ -1475,28 +1488,36 @@ void WizDocumentWebView::on_insertCodeHtml_requset(QString strOldHtml)
 
 //#define DEBUG_EDITOR
 
-void WizDocumentWebView::getAllEditorScriptAndStypeFileName(std::map<QString, QString>& files)
+/**
+ * @brief Get all scripts and style files needed for rich text editor
+ * 
+ * @param files 
+ */
+void WizDocumentWebView::getAllEditorScriptAndStyleFileName(std::map<QString, QString>& files)
 {
     QString strResourcePath = Utils::WizPathResolve::resourcesPath();
     QString strHtmlEditorPath = strResourcePath + "files/wizeditor/";
+    QString strWebEnginePath = strResourcePath + "files/webengine/";
     //
 #ifdef DEBUG_EDITOR
     QString strEditorJS = "http://192.168.1.73:8080/libs/wizEditor/wizEditorForMac.js";
-    QString strInit = "file:///" + strHtmlEditorPath + "editorHelper.js";
+    QString strInit = QUrl::fromLocalFile(strHtmlEditorPath + "editorHelper.js").toString();
 #else
-    QString strEditorJS = "file:///" +  strHtmlEditorPath + "wizEditorForMac.js";
-    QString strInit = "file:///" + strHtmlEditorPath + "editorHelper.js";
+    QString strEditorJS = QUrl::fromLocalFile(strHtmlEditorPath + "wizEditorForMac.js").toString();
+    QString strWebChannelJS = QUrl::fromLocalFile(strWebEnginePath + "wizwebchannel.js").toString();
+    QString strInit = QUrl::fromLocalFile(strHtmlEditorPath + "editorHelper.js").toString();
 #endif
     //
     files.clear();
     files[strEditorJS] = "";
+    files[strWebChannelJS] = "";
     files[strInit] = "";
     //
     /*
      *
      * 渐变式加载笔记，暂时不需要
-    QString tempCss = "file:///" + strHtmlEditorPath + "tempeditorstyle.css";
-    QString tempCssLoadOnly = "file:///" + strHtmlEditorPath + "tempeditorstyle_loadonly.css";
+    QString tempCss = QUrl::fromLocalFile(strHtmlEditorPath + "tempeditorstyle.css").toString();
+    QString tempCssLoadOnly = QUrl::fromLocalFile(strHtmlEditorPath + "tempeditorstyle_loadonly.css").toString();
     //
     files[tempCss] = "wiz_unsave_style";
     files[tempCssLoadOnly] = "wiz_style_for_load";
@@ -1566,8 +1587,11 @@ void WizDocumentWebView::insertScriptAndStyleCore(QString& strHtml, const std::m
     QString strTemplateJsFileName = ::Utils::WizPathResolve::wizTemplateJsFilePath();
     if (QFileInfo(strTemplateJsFileName).exists())
     {
-        QString strTag = QString("<script type=\"text/javascript\" src=\"file:///%1\" wiz_style=\"unsave\" charset=\"utf-8\"></script>").arg(strTemplateJsFileName);
-        //
+        strTemplateJsFileName = QUrl::fromLocalFile(strTemplateJsFileName).toString();
+        QString strTag = QString(
+            "<script type=\"text/javascript\" src=\"%1\" wiz_style=\"unsave\" charset=\"utf-8\"></script>")
+            .arg(strTemplateJsFileName);
+        
         WizHTMLAppendTextInHead(strTag, strHtml);
     }
 }
@@ -1608,7 +1632,7 @@ void WizDocumentWebView::loadDocumentInWeb(WizEditorMode editorMode)
     }
     //
     std::map<QString, QString> files;
-    getAllEditorScriptAndStypeFileName(files);
+    getAllEditorScriptAndStyleFileName(files);
     insertScriptAndStyleCore(strHtml, files);
     //
     replaceDefaultCss(strHtml);
@@ -1912,8 +1936,8 @@ void WizDocumentWebView::findPre(QString strTxt, bool bCasesensitive)
         options |= QWebEnginePage::FindCaseSensitively;
     }
     //
-    //findText(strTxt, options);
-    innerFindText(strTxt, false, bCasesensitive);
+    findText(strTxt, options);
+    //innerFindText(strTxt, false, bCasesensitive);
 }
 
 void WizDocumentWebView::findNext(QString strTxt, bool bCasesensitive)
@@ -1930,8 +1954,8 @@ void WizDocumentWebView::findNext(QString strTxt, bool bCasesensitive)
         options |= QWebEnginePage::FindCaseSensitively;
     }
     //
-    //findText(strTxt, options);
-    innerFindText(strTxt, true, bCasesensitive);
+    findText(strTxt, options);
+    //innerFindText(strTxt, true, bCasesensitive);
 }
 
 void WizDocumentWebView::replaceCurrent(QString strSource, QString strTarget)
@@ -2134,7 +2158,7 @@ void WizDocumentWebView::editorCommandExecuteInsertImage()
         //
         if (QFile::copy(strImgFile, destImageFileName))
         {
-            files.push_back(destImageFileName);
+            files.push_back(QUrl::fromLocalFile(destImageFileName).toString());
         }
         //
         initPath = Utils::WizMisc::extractFilePath(strImgFile);
@@ -2454,13 +2478,6 @@ void WizDocumentWebView::saveAsRenderedHtml(QString& destFileName, std::function
     // 现在不需要去除这些东西了，因为本就要渲染后的页面
     page()->toHtml([=](const QString& strHtml){
         //
-        CDocument doc;
-        doc.parse(strHtml.toStdString().c_str());
-        size_t scriptNum = doc.find("script[name=\"wiz_inner_script\"]").nodeNum();
-        qDebug() << QString("There are %1 wiz_inner_script").arg(QString::number(scriptNum));
-        size_t styleNum = doc.find("style[name=\"wiz_tmp_editor_style\"]").nodeNum();
-        qDebug() << QString("There are %1 wiz_tmp_editor_style").arg(QString::number(styleNum));
-        //
         if(::WizSaveUnicodeTextToUtf8File(destFileName, strHtml, false))
             callback(destFileName);
     });
@@ -2664,6 +2681,24 @@ void WizDocumentWebView::saveCurrentNote()
     WizExecuteOnThread(WIZ_THREAD_MAIN, [=]{
         //
         onTimerAutoSaveTimout();
+        //
+    });
+}
+
+void WizDocumentWebView::onReturn()
+{
+    WizExecuteOnThread(WIZ_THREAD_MAIN, [=]{
+        //
+        tryResetTitle();
+        //
+    });
+}
+
+void WizDocumentWebView::doPaste()
+{
+    WizExecuteOnThread(WIZ_THREAD_MAIN, [=]{
+        //
+        onPasteCommand();
         //
     });
 }

@@ -1682,7 +1682,7 @@ bool WizHtmlReader::parseTag(WizHtmlTag &rTag,
 
 
 /**
- * @brief 解析笔记文档内容
+ * @brief Parse html document
  * @return
  */
 UINT WizHtmlReader::parseDocument(void)
@@ -1729,7 +1729,7 @@ UINT WizHtmlReader::parseDocument(void)
 			{
 				ungetChar();
                 //
-				
+
                 strComment.clear();
 				if (!parseComment(strComment))
 				{
@@ -1866,7 +1866,7 @@ UINT WizHtmlReader::parseDocument(void)
 UINT WizHtmlReader::read(const QString& strHtml)
 {
     const unsigned short* lpszString = strHtml.utf16();
-
+    
     m_dwBufLen = strHtml.length();
     if (m_dwBufLen) {
 		m_lpszBuffer = lpszString;

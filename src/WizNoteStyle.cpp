@@ -404,7 +404,7 @@ void CWizNoteStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption *opt, 
                     // 改变图标尺寸和位置
                     QRect rectIcon = opt->rect;
                     // 调整 brach 图标偏移量
-                    rectIcon.adjust(8, 0, 0, 0);
+                    rectIcon.adjust(0, 0, 0, 0);
                     //
                     if ((opt->state & QStyle::State_Selected)) {        //(opt->state & State_HasFocus)
                         //drawcenterImage(p, bExpanded ? m_expandedImageSelected : m_collapsedImageSelected, opt->rect.adjusted(8, 0, 0, 0));
@@ -458,9 +458,10 @@ void CWizNoteStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption *opt, 
                     return;
                 }
 
-                if (opt->state & State_Selected) {
+                if (pItemBase->isSelected()) {
                     // 选区背景
                     QRect rc(vopt->rect);
+                    rc.moveLeft(0);
                     rc.setWidth(p->window().width());
                     int nMargin = (opt->rect.height() - WizSmartScaleUI(20)) / 2;
                     rc.adjust(0, nMargin, 0, -nMargin);

@@ -138,6 +138,35 @@ bool WizNoteManager::createNote(WIZDOCUMENTDATA& data, const QString& strKbGUID,
     return true;
 }
 
+bool WizNoteManager::createNote(WIZDOCUMENTDATA& data, const QString& strKbGUID, const QString& strTitle,
+                const QString& strHtml, const QString& strFileName, const QString& strLocation, const WIZTAGDATA& tag)
+{
+    QString location = strLocation;
+    if (location.isEmpty())
+    {
+        location = m_dbMgr.db(strKbGUID).getDefaultNoteLocation();
+    }
+
+    if (data.strType.isEmpty())
+    {
+        data.strType = WIZ_DOCUMENT_TYPE_NORMAL;
+    }
+
+    if (!m_dbMgr.db(strKbGUID).createDocumentAndInit(strHtml, strFileName, 0, strTitle, "newnote", location, "", data))
+    {
+        qCritical() << "Failed to new document!";
+        return false;
+    }
+
+    if (!tag.strGUID.isEmpty())
+    {
+        WizDocument doc(m_dbMgr.db(strKbGUID), data);
+        doc.addTag(tag);
+    }
+
+    return true;
+}
+
 bool WizNoteManager::createNoteByTemplate(WIZDOCUMENTDATA& data, const WIZTAGDATA& tag, const QString& strZiw)
 {
     //通过模板创建笔记时，如果模板文件不存在则创建一篇空笔记
@@ -207,7 +236,6 @@ void WizNoteManager::downloadTemplatePurchaseRecord()
         //
         QNetworkAccessManager manager;
         QString url = WizCommonApiEntry::asServerUrl() + "/a/templates/record?token=" + WizToken::token();
-//        qDebug() << "get templates record from url : " << url;
         //
         QByteArray ba;
         {
@@ -233,25 +261,25 @@ bool WizNoteManager::updateLocalTemplates(const QByteArray& newJsonData, QNetwor
     if (!reader.parse(newJsonData.constData(), d))
         return false;
 
-    QString localFile = Utils::WizPathResolve::wizTemplateJsonFilePath();
     bool needUpdateJs = true;
     QMap<int, TemplateData> localTmplMap;
-    QFile file(localFile);
-    if (file.open(QFile::ReadOnly))
-    {
-        QTextStream stream(&file);
-        QString jsonData = stream.readAll();
-        Json::Value localD;
-        if (reader.parse(jsonData.toUtf8().constData(), localD))
-        {
-            if (localD.isMember("template_js_version") && d.isMember("template_js_version"))
-            {
-                needUpdateJs = (localD["template_js_version"].asString() !=
-                        d["template_js_version"].asString());
-            }
-        }
 
-        getTemplatesFromJsonData(jsonData.toUtf8(), localTmplMap);
+    QString jsonFile = Utils::WizPathResolve::wizTemplateJsonFilePath();
+    if (!jsonFile.isEmpty() && QFile::exists(jsonFile)) {
+        QString jsonData;
+        if(WizLoadUnicodeTextFromFile(jsonFile, jsonData, "UTF-8")) {
+            Json::Value localD;
+            if (reader.parse(jsonData.toUtf8().constData(), localD))
+            {
+                if (localD.isMember("template_js_version") && d.isMember("template_js_version"))
+                {
+                    needUpdateJs = (localD["template_js_version"].asString() !=
+                            d["template_js_version"].asString());
+                }
+            }
+
+            getTemplatesFromJsonData(jsonData.toUtf8(), localTmplMap);
+        }
     }
 
     //

@@ -35,6 +35,8 @@ public:
                     const QString& strHtml, const WIZTAGDATA& tag);
     bool createNote(WIZDOCUMENTDATA& data, const QString& strKbGUID, const QString& strTitle,
                     const QString& strHtml, const QString& strLocation, const WIZTAGDATA& tag);
+    bool createNote(WIZDOCUMENTDATA& data, const QString& strKbGUID, const QString& strTitle,
+                    const QString& strHtml, const QString& strFileName, const QString& strLocation, const WIZTAGDATA& tag);
 
     bool createNoteByTemplate(WIZDOCUMENTDATA& data, const WIZTAGDATA& tag, const QString& strZiw);
 

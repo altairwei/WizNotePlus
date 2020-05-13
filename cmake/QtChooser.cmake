@@ -8,6 +8,7 @@ find_package( Qt5WebEngine CONFIG REQUIRED )
 find_package( Qt5WebEngineWidgets CONFIG REQUIRED )
 find_package( Qt5WebSockets CONFIG REQUIRED )
 find_package( Qt5WebChannel CONFIG REQUIRED )
+find_package( Qt5Svg CONFIG REQUIRED )
 
 if(APPLE)
     find_package( Qt5MacExtras REQUIRED )
@@ -55,12 +56,23 @@ macro(qt_add_resources)
 endmacro()
 
 macro(qt_use_modules)
+    target_link_libraries( ${ARGV0} 
+        Qt5::Core 
+        Qt5::Gui 
+        Qt5::Widgets 
+        Qt5::Xml 
+        Qt5::Network 
+        Qt5::PrintSupport 
+        Qt5::WebEngine 
+        Qt5::WebEngineWidgets 
+        Qt5::WebSockets 
+        Qt5::WebChannel 
+        Qt5::Svg
+    )
     if(APPLE)
-        #qt5_use_modules(${ARGV0} Core Gui Widgets Xml Network PrintSupport WebEngine WebEngineWidgets WebSockets WebChannel MacExtras)
-        target_link_libraries(${ARGV0} Qt5::Core Qt5::Gui Qt5::Widgets Qt5::Xml Qt5::Network Qt5::PrintSupport Qt5::WebEngine Qt5::WebEngineWidgets Qt5::WebSockets Qt5::WebChannel Qt5::MacExtras)
-    else(APPLE)
-        #qt5_use_modules(${ARGV0} Core Gui Widgets Xml Network PrintSupport WebEngine WebEngineWidgets WebSockets WebChannel)
-        target_link_libraries(${ARGV0} Qt5::Core Qt5::Gui Qt5::Widgets Qt5::Xml Qt5::Network Qt5::PrintSupport Qt5::WebEngine Qt5::WebEngineWidgets Qt5::WebSockets Qt5::WebChannel)
+        target_link_libraries( ${ARGV0} Qt5::MacExtras)
+    elseif(WIN32)
+        target_link_libraries( ${ARGV0} Qt5::WinMain)
     endif(APPLE)
 endmacro()
 
