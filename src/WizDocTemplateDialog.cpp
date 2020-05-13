@@ -352,16 +352,16 @@ void WizDocTemplateDialog::itemClicked(QTreeWidgetItem *item, int)
                 {
                     if (QFile::exists(strTempFolder + "preview.html"))
                     {
-                        previewFile = "file:///" + strTempFolder + "preview.html";
+                        previewFile = QUrl::fromLocalFile(strTempFolder + "preview.html").toString();
                     }
                     else
                     {
-                        previewFile = "file:///" + strTempFolder + "index.html";
+                        previewFile = QUrl::fromLocalFile(strTempFolder + "index.html").toString();
                     }
                 }
                 else
                 {
-                    previewFile = "file:///" + previewFile;
+                    previewFile = QUrl::fromLocalFile(previewFile).toString();
                 }
                 ui->webView_preview->load(QUrl(previewFile));
             }

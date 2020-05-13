@@ -1501,11 +1501,11 @@ void WizDocumentWebView::getAllEditorScriptAndStyleFileName(std::map<QString, QS
     //
 #ifdef DEBUG_EDITOR
     QString strEditorJS = "http://192.168.1.73:8080/libs/wizEditor/wizEditorForMac.js";
-    QString strInit = "file:///" + strHtmlEditorPath + "editorHelper.js";
+    QString strInit = QUrl::fromLocalFile(strHtmlEditorPath + "editorHelper.js").toString();
 #else
-    QString strEditorJS = "file:///" +  strHtmlEditorPath + "wizEditorForMac.js";
-    QString strWebChannelJS = "file:///" + strWebEnginePath + "wizwebchannel.js";
-    QString strInit = "file:///" + strHtmlEditorPath + "editorHelper.js";
+    QString strEditorJS = QUrl::fromLocalFile(strHtmlEditorPath + "wizEditorForMac.js").toString();
+    QString strWebChannelJS = QUrl::fromLocalFile(strWebEnginePath + "wizwebchannel.js").toString();
+    QString strInit = QUrl::fromLocalFile(strHtmlEditorPath + "editorHelper.js").toString();
 #endif
     //
     files.clear();
@@ -1516,8 +1516,8 @@ void WizDocumentWebView::getAllEditorScriptAndStyleFileName(std::map<QString, QS
     /*
      *
      * 渐变式加载笔记，暂时不需要
-    QString tempCss = "file:///" + strHtmlEditorPath + "tempeditorstyle.css";
-    QString tempCssLoadOnly = "file:///" + strHtmlEditorPath + "tempeditorstyle_loadonly.css";
+    QString tempCss = QUrl::fromLocalFile(strHtmlEditorPath + "tempeditorstyle.css").toString();
+    QString tempCssLoadOnly = QUrl::fromLocalFile(strHtmlEditorPath + "tempeditorstyle_loadonly.css").toString();
     //
     files[tempCss] = "wiz_unsave_style";
     files[tempCssLoadOnly] = "wiz_style_for_load";
@@ -1587,8 +1587,11 @@ void WizDocumentWebView::insertScriptAndStyleCore(QString& strHtml, const std::m
     QString strTemplateJsFileName = ::Utils::WizPathResolve::wizTemplateJsFilePath();
     if (QFileInfo(strTemplateJsFileName).exists())
     {
-        QString strTag = QString("<script type=\"text/javascript\" src=\"file:///%1\" wiz_style=\"unsave\" charset=\"utf-8\"></script>").arg(strTemplateJsFileName);
-        //
+        strTemplateJsFileName = QUrl::fromLocalFile(strTemplateJsFileName).toString();
+        QString strTag = QString(
+            "<script type=\"text/javascript\" src=\"%1\" wiz_style=\"unsave\" charset=\"utf-8\"></script>")
+            .arg(strTemplateJsFileName);
+        
         WizHTMLAppendTextInHead(strTag, strHtml);
     }
 }

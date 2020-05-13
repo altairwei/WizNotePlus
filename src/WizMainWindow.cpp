@@ -4029,7 +4029,8 @@ void WizMainWindow::ProcessClipboardBeforePaste(const QVariantMap& data)
 //            return;
 //        }
 //
-//        QString strHtml = QString("<img border=\"0\" src=\"file:///%1\" />").arg(strFileName);
+//        QString strHtml = QString("<img border=\"0\" src=\"%1\" />")
+//            .arg(QUrl::fromLocalFile(strFileName).toString());
 //        web()->editorCommandExecuteInsertHtml(strHtml, true);
     //    }
 }

@@ -2105,13 +2105,15 @@ QString WizText2Html(const QString& text)
 
 QString getImageHtmlLabelByFile(const QString& strImageFile)
 {
-    return QString("<div><img border=\"0\" src=\"file:///%1\" /></div>").arg(strImageFile);
+    return QString("<div><img border=\"0\" src=\"%1\" /></div>")
+                .arg(QUrl::fromLocalFile(strImageFile).toString());
 }
 
 QString WizGetImageHtmlLabelWithLink(const QString& imageFile, const QSize& imgSize, const QString& linkHref)
 {
-    return QString("<div><a href=\"%1\"><img border=\"0\" width=\"%2px\" height=\"%3px\" src=\"file:///%4\" /></a></div>")
-            .arg(linkHref).arg(imgSize.width()).arg(imgSize.height()).arg(imageFile);
+    return QString("<div><a href=\"%1\"><img border=\"0\" width=\"%2px\" height=\"%3px\" src=\"%4\" /></a></div>")
+            .arg(linkHref).arg(imgSize.width()).arg(imgSize.height())
+            .arg(QUrl::fromLocalFile(imageFile).toString());
 }
 
 bool WizImage2Html(const QString& strImageFile, QString& strHtml, QString strDestImagePath)
