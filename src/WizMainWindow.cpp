@@ -3708,7 +3708,7 @@ void WizMainWindow::showHomePage()
     WizWebEngineView *webView = new WizWebEngineView(
         {{"WizExplorerApp", WizMainWindow::instance()->publicAPIsObject()}}, nullptr);
     QPointer<WizWebsiteView> websiteView = new WizWebsiteView(webView, *this);
-    websiteView->viewHtml(welcomeHtml);
+    websiteView->viewHtml(QUrl::fromLocalFile(welcomeHtml));
     // Show in tab browser
     m_mainTabBrowser->createTab(websiteView);
 }
