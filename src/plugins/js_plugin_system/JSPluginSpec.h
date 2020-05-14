@@ -16,6 +16,7 @@ public:
     //
     Q_PROPERTY(QString name READ name)
     Q_PROPERTY(QString path READ path)
+    Q_PROPERTY(QString PluginPath READ path)
     Q_PROPERTY(QString guid READ guid)
     Q_PROPERTY(QString strings READ strings)
 

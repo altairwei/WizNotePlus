@@ -3827,6 +3827,30 @@ void WizMainWindow::viewDocument(const WIZDOCUMENTDATAEX& data)
     return;
 }
 
+void WizMainWindow::viewAttachment(const WIZDOCUMENTATTACHMENTDATA &attachment)
+{
+    WizDatabase &db = m_dbMgr.db(attachment.strKbGUID);
+    bool bIsLocal = db.isObjectDataDownloaded(attachment.strGUID, "attachment");
+    QString strFileName = db.getAttachmentFileName(attachment.strGUID);
+    bool bExists = WizPathFileExists(strFileName);
+
+    if (!bIsLocal || !bExists)
+    {
+        downloadAttachment(attachment);
+        // try to set the attachement read-only.
+        QFile file(strFileName);
+        if (file.exists() && !db.canEditAttachment(attachment) && (file.permissions() & QFileDevice::WriteUser))
+        {
+            QFile::Permissions permissions = file.permissions();
+            permissions = permissions & ~QFileDevice::WriteOwner & ~QFileDevice::WriteUser
+                    & ~QFileDevice::WriteGroup & ~QFileDevice::WriteOther;
+            file.setPermissions(permissions);
+        }
+    }
+
+    openAttachment(attachment, strFileName);
+}
+
 void WizMainWindow::titleChanged()
 {
     WizDocumentView* docView = currentDocumentView();
@@ -4131,33 +4155,10 @@ void WizMainWindow::viewAttachmentByWizKMURL(const QString& strKbGUID, const QSt
 
     WIZDOCUMENTATTACHMENTDATA attachment;
     if (db.attachmentFromGuid(strGUID, attachment))
-    {
-        bool bIsLocal = db.isObjectDataDownloaded(attachment.strGUID, "attachment");
-        QString strFileName = db.getAttachmentFileName(attachment.strGUID);
-        bool bExists = WizPathFileExists(strFileName);
-        if (!bIsLocal || !bExists)
-        {
-            downloadAttachment(attachment);
-
-#if QT_VERSION > 0x050000
-            // try to set the attachement read-only.
-            QFile file(strFileName);
-            if (file.exists() && !db.canEditAttachment(attachment) && (file.permissions() & QFileDevice::WriteUser))
-            {
-                QFile::Permissions permissions = file.permissions();
-                permissions = permissions & ~QFileDevice::WriteOwner & ~QFileDevice::WriteUser
-                        & ~QFileDevice::WriteGroup & ~QFileDevice::WriteOther;
-                file.setPermissions(permissions);
-            }
-#endif
-        }
-
-        openAttachment(attachment, strFileName);
-    }
+        viewAttachment(attachment);
     else
-    {
-        WizMessageBox::information(this, tr("Info"), tr("Can't find the specified attachment, may be it has been deleted."));
-    }
+        WizMessageBox::information(this, tr("Info"), 
+            tr("Can't find the specified attachment, may be it has been deleted."));
 }
 
 void WizMainWindow::createNoteWithAttachments(const QStringList& strAttachList)

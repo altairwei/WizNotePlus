@@ -48,6 +48,7 @@ public:
     Q_INVOKABLE void SetSavingDocument(bool saving);
     Q_INVOKABLE void ProcessClipboardBeforePaste(const QVariantMap& data);
     Q_INVOKABLE QString Locale();
+    Q_INVOKABLE QObject* GetGroupDatabase(const QString &kbGUID);
 
     //NOTE: these functions would called by web page, do not delete
     Q_INVOKABLE QString TranslateString(const QString& string);

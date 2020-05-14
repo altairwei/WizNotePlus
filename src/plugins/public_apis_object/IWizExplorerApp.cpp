@@ -64,6 +64,11 @@ void IWizExplorerApp::ProcessClipboardBeforePaste(const QVariantMap& data)
     m_mainWindow->ProcessClipboardBeforePaste(data);
 }
 
+QObject* IWizExplorerApp::GetGroupDatabase(const QString &kbGUID)
+{
+    return m_database->GetGroupDatabase(kbGUID);
+}
+
 QString IWizExplorerApp::TranslateString(const QString& string)
 {
     return m_mainWindow->TranslateString(string);

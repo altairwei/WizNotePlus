@@ -41,3 +41,11 @@ void IWizExplorerWindow::ViewDocument(QObject *pWizDocument, bool vbOpenInNewTab
         m_mainWindow->viewDocument(docData);
     }
 }
+
+void IWizExplorerWindow::ViewAttachment(QObject *pWizDocumentAttachment)
+{
+    WizDocumentAttachment *att = qobject_cast<WizDocumentAttachment *>(pWizDocumentAttachment);
+    if (att) {
+        m_mainWindow->viewAttachment(att->data());
+    }
+}

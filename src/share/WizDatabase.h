@@ -13,6 +13,7 @@
 class WizDatabase;
 class WizFolder;
 class WizDocument;
+class WizDocumentAttachment;
 
 class WizDocument : public QObject
 {
@@ -121,12 +122,13 @@ public:
     Q_INVOKABLE void Delete();
     Q_INVOKABLE void PermanentlyDelete(void);
     Q_INVOKABLE void moveTo(QObject* pFolder);
+    Q_INVOKABLE bool UpdateDocument3(const QString& strHtml, int nFlags);
     Q_INVOKABLE bool UpdateDocument4(const QString& strHtml, const QString& strURL, int nFlags);
     Q_INVOKABLE bool UpdateDocument6(const QString &strHtmlFileName, const QString &strURL, int nFlags);
     Q_INVOKABLE void deleteToTrash();
     Q_INVOKABLE void deleteFromTrash();
 
-    Q_INVOKABLE bool SaveToFolder(const QString &htmlFileName);
+    Q_INVOKABLE bool SaveToFolder(const QString &folderName);
 
     Q_INVOKABLE void Reload();
 
@@ -149,6 +151,61 @@ private:
 
 };
 
+
+class WizDocumentAttachment : public QObject
+{
+    Q_OBJECT
+
+public:
+    WizDocumentAttachment(WizDatabase &db, 
+        const WIZDOCUMENTATTACHMENTDATA &data, QObject *parent = nullptr);
+
+    QString GUID() const { return m_data.strGUID; }
+    Q_PROPERTY(QString GUID READ GUID NOTIFY GUIDChanged)
+
+    QString Name() const { return m_data.strName; }
+    Q_PROPERTY(QString Name READ Name NOTIFY NameChanged)
+
+    QString Description() const { return m_data.strDescription; }
+    Q_PROPERTY(QString Description READ Description NOTIFY DescriptionChanged)
+
+    QString URL() const { return m_data.strURL; }
+    Q_PROPERTY(QString URL READ URL NOTIFY URLChanged)
+
+    QString InfoDateModified() const { return m_data.tInfoModified.toString(Qt::ISODate); }
+    Q_PROPERTY(QString InfoDateModified READ InfoDateModified NOTIFY InfoDateModifiedChanged)
+
+    QString InfoMD5() const { return m_data.strInfoMD5; }
+    Q_PROPERTY(QString InfoMD5 READ InfoMD5 NOTIFY InfoMD5Changed)
+
+    QString DataDateModified() const { return m_data.tDataModified.toString(Qt::ISODate); }
+    Q_PROPERTY(QString DataDateModified READ DataDateModified NOTIFY DataDateModifiedChanged)
+    
+    QString DataMD5() const { return m_data.strDataMD5; }
+    Q_PROPERTY(QString DataMD5 READ DataMD5 NOTIFY DataMD5Changed)
+
+    QString DocumentGUID() const { return m_data.strDocumentGUID; }
+    Q_PROPERTY(QString DocumentGUID READ DocumentGUID NOTIFY DocumentGUIDChanged)
+
+
+    WIZDOCUMENTATTACHMENTDATA data() { return m_data; }
+
+signals:
+    void GUIDChanged();
+    void NameChanged();
+    void DescriptionChanged();
+    void URLChanged();
+    void InfoDateModifiedChanged();
+    void InfoMD5Changed();
+    void DataDateModifiedChanged();
+    void DataMD5Changed();
+    void DocumentGUIDChanged();
+
+private:
+    WizDatabase& m_db;
+    WIZDOCUMENTATTACHMENTDATA m_data;
+
+};
 
 class WizFolder : public QObject
 {
@@ -606,7 +663,7 @@ public:
     Q_INVOKABLE QObject *DocumentFromGUID(const QString &strGUID);
     Q_INVOKABLE QVariantList DocumentsFromSQLWhere(const QString& strSQLWhere);
     Q_INVOKABLE QVariantList GetRecentDocuments(const QString &documentType, int count);
-
+    Q_INVOKABLE QObject *AttachmentFromGUID(const QString &attachmentGUID);
     //using CWizIndexBase::DocumentFromGUID;
     //Q_INVOKABLE QObject* DocumentFromGUID(const QString& strGUID);
 

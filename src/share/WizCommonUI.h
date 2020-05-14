@@ -19,6 +19,12 @@ public:
     Q_INVOKABLE bool CreateDirectory(const QString &bstrPath);
     Q_INVOKABLE bool URLDownloadToFile(const QString &bstrURL, const QString &bstrFileName,  bool isImage);
     Q_INVOKABLE bool Base64ToFile(const QString &base64, const QString &fileName);
+    Q_INVOKABLE void OpenUrl(const QString &url);
+    Q_INVOKABLE QString SelectWindowsFile(bool isOpen, const QString &filter);
+    Q_INVOKABLE bool PathFileExists(const QString &path);
+    Q_INVOKABLE void CopyFile(const QString &existingFile, const QString &newFileName);
+    Q_INVOKABLE QString GetValueFromIni(const QString &fileName, const QString &section, const QString &key);
+    Q_INVOKABLE void SetValueToIni(const QString &fileName, const QString &section, const QString &key, const QString &value);
 
 private:
     //interface WizKMControls.WizCommonUI;

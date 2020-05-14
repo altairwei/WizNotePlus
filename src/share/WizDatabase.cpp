@@ -185,6 +185,12 @@ void WizDocument::makeSureObjectDataExists()
     }
 }
 
+bool WizDocument::UpdateDocument3(const QString& strHtml, int nFlags)
+{
+    return m_db.updateDocumentData(m_data, strHtml, "", nFlags);
+}
+
+
 bool WizDocument::UpdateDocument4(const QString& strHtml, const QString& strURL, int nFlags)
 {
     return m_db.updateDocumentData(m_data, strHtml, strURL, nFlags);
@@ -603,6 +609,15 @@ bool WizDocument::copyDocumentAttachment(const WIZDOCUMENTDATA& sourceDoc,
 bool WizDocument::reloadDocumentInfo()
 {
     return m_db.documentFromGuid(m_data.strGUID, m_data);
+}
+
+WizDocumentAttachment::WizDocumentAttachment(
+    WizDatabase &db, const WIZDOCUMENTATTACHMENTDATA &data, QObject *parent)
+    : QObject(parent)
+    , m_db(db)
+    , m_data(data)
+{
+
 }
 
 
@@ -4727,6 +4742,15 @@ QVariantList WizDatabase::DocumentsFromSQLWhere(const QString& strSQLWhere)
     CString strSQL = formatQuerySQL(TABLE_NAME_WIZ_DOCUMENT, FIELD_LIST_WIZ_DOCUMENT, strSQLWhere);
     sqlToDocumentDataArray(strSQL, arrayDocument);
     return packDocumentsToList(arrayDocument);
+}
+
+QObject *WizDatabase::AttachmentFromGUID(const QString &attachmentGUID)
+{
+    WIZDOCUMENTATTACHMENTDATA attachment;
+    if (!attachmentFromGuid(attachmentGUID, attachment))
+        return nullptr;
+    WizDocumentAttachment *pAttachment = new WizDocumentAttachment(*this, attachment, this);
+    return pAttachment;
 }
 
 /**
