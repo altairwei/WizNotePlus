@@ -6,14 +6,13 @@
 #include <QPushButton>
 #include <QSystemTrayIcon>
 #include <QList>
+#include <QJsonObject>
 #include <memory>
 
 #include "WizDef.h"
 #include "share/WizUIHelper.h"
 #include "share/WizSettings.h"
-#ifndef Q_OS_MAC
 #include "share/WizShadowWindow.h"
-#endif
 
 
 #define WIZ_SINGLE_APPLICATION "WIZ_SINGLE_APPLICATION"
@@ -74,27 +73,20 @@ class WizDocumentWebViewSaverThread;
 class WizSingleDocumentViewDelegate;
 class QWebEngineView;
 
-class IWizExplorerApp; // interface
+class IWizExplorerApp;
+class PublicAPIsServer;
 
 #ifdef Q_OS_MAC
 class WizMacToolBarButtonItem;
 #endif
 
 class WizMainWindow
-#ifdef Q_OS_MAC
-    : public QMainWindow
-#else
     : public WizShadowWindow<QMainWindow>
-#endif
     , public WizExplorerApp
 {
     Q_OBJECT
 
-#ifdef Q_OS_MAC
-    typedef QMainWindow  _baseClass;
-#else
     typedef WizShadowWindow<QMainWindow> _baseClass;
-#endif
 
 public:
     explicit WizMainWindow(WizDatabaseManager& dbMgr, QWidget *parent = nullptr);
@@ -135,14 +127,6 @@ protected:
     void moveEvent(QMoveEvent* ev);
     void keyPressEvent(QKeyEvent* ev);
 
-#ifdef Q_OS_MAC
-    virtual void paintEvent(QPaintEvent* event);
-#endif
-
-#ifdef USECOCOATOOLBAR
-    virtual void showEvent(QShowEvent *event);
-#endif
-
 private:
     WizDatabaseManager& m_dbMgr;
     WizProgressDialog* m_progress;
@@ -162,14 +146,8 @@ private:
     WizTrayIcon* m_tray;
     QMenu* m_trayMenu;
 
-#ifdef USECOCOATOOLBAR
-    WizMacToolBar* m_toolBar;
-    WizMacFixedSpacer* m_spacerForToolButtonAdjust;
-    WizMacToolBarButtonItem* m_newNoteButton;
-#else
     QToolBar* m_toolBar;
     WizFixedSpacer* m_spacerForToolButtonAdjust;
-#endif
 
     QMenuBar* m_menuBar;
     QMenu* m_dockMenu;
@@ -177,10 +155,8 @@ private:
     QMenu* m_newNoteExtraMenu;
     QActionGroup* m_viewTypeActions;
     QActionGroup* m_sortTypeActions;
-#ifndef Q_OS_MAC
     QMenu* m_menu;
     QToolButton* m_menuButton;    
-#endif
     bool m_useSystemBasedStyle;
 
     QWidget* m_clienWgt;
@@ -234,6 +210,8 @@ private:
     QFileSystemWatcher* m_extFileWatcher;
     QMap<QString, WizExternalEditTask> m_watchedFileData;
 
+    PublicAPIsServer *m_publicAPIsServer;
+
 private:
     void initQuitHandler();
     void initSearcher();
@@ -241,12 +219,11 @@ private:
     void initSyncQuick();
     void initActions();
     void initToolBar();
+    void initToolBarPluginButtons();
     void initClient();
     //
-#ifndef Q_OS_MAC
     virtual void layoutTitleBar();
     void initMenuList();
-#endif
     void initMenuBar();
     void initViewTypeActionGroup();
     void initSortTypeActionGroup();
@@ -278,7 +255,7 @@ public:
     WizProgressDialog* progressDialog() const { return m_progress; }
     WizIAPDialog* iapDialog();
 
-    QObject* componentInterface();
+    QObject* publicAPIsObject();
 
     void resetPermission(const QString& strKbGUID, const QString& strDocumentOwner);
     void viewDocument(const WIZDOCUMENTDATAEX& data, bool addToHistory);
@@ -340,6 +317,9 @@ public Q_SLOTS:
     // menu view
     void on_actionViewToggleCategory_triggered();
     void on_actionViewToggleFullscreen_triggered();
+#ifdef Q_OS_MAC
+    void on_actionViewToggleClientFullscreen_triggered();
+#endif // Q_OS_MAC
     void on_actionViewMinimize_triggered();
     void on_actionZoom_triggered();
     void on_actionBringFront_triggered();
@@ -397,8 +377,6 @@ public Q_SLOTS:
     void on_actionGoBack_triggered();
     void on_actionGoForward_triggered();
 
-    void on_actionOpenDevTools_triggered();
-
     void on_category_itemSelectionChanged();
     void on_documents_itemSelectionChanged();
     void on_documents_itemDoubleClicked(QListWidgetItem * item);
@@ -449,7 +427,7 @@ public Q_SLOTS:
     void on_application_aboutToQuit();
     void on_application_messageAvailable(const QString& strMsg);
 
-    void on_checkUpgrade_finished(bool bUpgradeAvaliable);
+    void on_checkUpgrade_finished(QJsonObject latestStable, QJsonObject latestTest);
 
 #ifdef WIZ_OBOSOLETE
     void on_upgradeThread_finished();
@@ -458,7 +436,7 @@ public Q_SLOTS:
     //
     void on_trayIcon_newDocument_clicked();
     void on_hideTrayIcon_clicked();
-    void on_trayIcon_actived(QSystemTrayIcon::ActivationReason reason);
+    void handleTrayIconActived(QSystemTrayIcon::ActivationReason reason);
     void showBubbleNotification(const QString& strTitle, const QString& strInfo);
     void showTrayIconMenu();
     void on_viewMessage_request(qint64 messageID);
@@ -514,6 +492,9 @@ public:
     WizDatabaseManager* DatabaseManagerEx();
     Q_PROPERTY(QObject* DatabaseManager READ DatabaseManager)
 
+    QObject* CurrentDocumentBrowserObject();
+    Q_PROPERTY(QObject* CurrentDocumentBrowserObject READ CurrentDocumentBrowserObject)
+
     Q_INVOKABLE QObject* CreateWizObject(const QString& strObjectID);
     Q_INVOKABLE void SetSavingDocument(bool saving);
     Q_INVOKABLE void ProcessClipboardBeforePaste(const QVariantMap& data);
@@ -536,9 +517,8 @@ private:
     //
     void initTrayIcon(QSystemTrayIcon* trayIcon);
 
-#ifdef Q_OS_LINUX
-    void setWindowStyleForLinux(bool bUseSystemStyle);
-#endif
+    void setWindowStyle(bool bUseSystemStyle);
+
     //
     void startSearchStatus();
     void quitSearchStatus();
@@ -597,9 +577,6 @@ private slots:
 
     void showVipUpgradePage();
 
-#ifdef Q_OS_MAC
-    void on_newNoteButton_extraMenuRequest();
-#endif
     void on_newNoteByExtraMenu_request();
 
 private:

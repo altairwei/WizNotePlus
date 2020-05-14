@@ -3,6 +3,9 @@
 #include "utils/WizPathResolve.h"
 #include "share/WizSettings.h"
 #include "WizDocumentWebView.h"
+#include "share/WizGlobal.h"
+#include "share/WizWebEngineView.h"
+#include "share/WizThreads.h"
 
 #include <QVBoxLayout>
 #include <QHBoxLayout>
@@ -20,10 +23,7 @@
 #include <QDebug>
 #include <QWebEnginePage>
 #include <QApplication>
-
-#include "share/WizGlobal.h"
-#include "share/WizWebEngineView.h"
-#include "share/WizThreads.h"
+#include <QWebChannel>
 
 #define LASTUSEDCODETYPE "LASTUSEDCODETYPE"
 
@@ -33,9 +33,13 @@ WizCodeEditorDialog::WizCodeEditorDialog(WizExplorerApp& app, WizDocumentWebView
   , m_external(external)
   , m_codeBrowser(new WizWebEngineView(this))
 {
-    m_codeBrowser->addToJavaScriptWindowObject("codeEditor", this);
-    m_codeBrowser->addToJavaScriptWindowObject("external", m_external); //FIXME: Change the interface to minimized version.
-
+    WizWebEngineInjectObjectCollection objects = {
+        {"codeEditor", this},
+        {"external", m_external->publicAPIsObject()}
+    };
+    auto profile = createWebEngineProfile(objects, this);
+    auto webPage = new WizWebEnginePage(objects, profile, m_codeBrowser);
+    m_codeBrowser->setPage(webPage);
     //
     //setAttribute(Qt::WA_DeleteOnClose);
     //setWindowFlags(Qt::WindowStaysOnTopHint);          //could cause fullscreen problem on mac when mainwindow was fullscreen
@@ -58,6 +62,15 @@ WizCodeEditorDialog::WizCodeEditorDialog(WizExplorerApp& app, WizDocumentWebView
     QUrl url = QUrl::fromLocalFile(strFileName);
 
     m_codeBrowser->page()->setHtml(strHtml, url);
+}
+
+WizCodeEditorDialog::~WizCodeEditorDialog()
+{
+    //FIXME: The order of destructor may be wrong, so we need to 
+    //  deregister objects before deleting dialog.
+    auto channel = m_codeBrowser->page()->webChannel();
+    if (channel)
+        channel->deregisterObject(this);
 }
 
 void WizCodeEditorDialog::setCode(const QString& strCode)

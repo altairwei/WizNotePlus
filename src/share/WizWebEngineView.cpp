@@ -1,17 +1,25 @@
-﻿#include <QWebEngineView>
+﻿#include "WizWebEngineView.h"
+#include "WizMisc.h"
+#include "utils/WizPathResolve.h"
+#include "WizMainWindow.h"
+#include "WizMainTabBrowser.h"
+
+#include <QWebEngineView>
 #include <QWebSocketServer>
 #include <QWebChannel>
+#include <QWebEngineScript>
+#include <QWebEngineScriptCollection>
+#include <QWebEngineProfile>
 #include <QDesktopWidget>
 #include <QStyle>
 #include <QMenu>
-#include "WizWebEngineView.h"
-#include "WizMisc.h"
-#include "utils/WizPathResolve.h"
 #include <QKeyEvent>
 #include <QApplication>
 #include <QDesktopServices>
 #include <QClipboard>
 #include <QFileDialog>
+#include <QTimer>
+
 #ifdef Q_OS_MAC
 #include "mac/WizMacHelper.h"
 #include <QTimer>
@@ -21,6 +29,7 @@
 #include "WizDevToolsDialog.h"
 #include "WizDocumentView.h"
 
+/*
 class WizInvisibleWebEngineView : public QWebEngineView
 {
     class WizInvisibleWebEnginePage : public QWebEnginePage
@@ -67,12 +76,76 @@ public:
         return web->page();
     }
 };
+*/
 
-WizWebEnginePage::WizWebEnginePage(QObject* parent)
-    : QWebEnginePage(parent)
+WizWebEngineAsyncMethodResultObject::WizWebEngineAsyncMethodResultObject(QObject* parent)
+    : QObject(parent)
+    , m_acquired(false)
+{
+}
+
+WizWebEngineAsyncMethodResultObject::~WizWebEngineAsyncMethodResultObject()
+{
+}
+
+void WizWebEngineAsyncMethodResultObject::setResult(const QVariant& result)
+{
+    m_acquired = true;
+    m_result = result;
+    emit resultAcquired(m_result);
+}
+
+
+QWebEngineProfile* createWebEngineProfile(const WizWebEngineInjectObjectCollection& objects, QObject* parent)
+{
+    if (objects.empty())
+        return nullptr;
+    // Create a new profile
+    QWebEngineProfile *profile = new QWebEngineProfile("WizNoteWebEngineProfile", parent);
+    // Read qtwebchannel library
+    QString jsWebChannelFileName = Utils::WizPathResolve::resourcesPath() + "files/webengine/wizwebchannel.js";
+    QString jsWebChannel;
+    WizLoadUnicodeTextFromFile(jsWebChannelFileName, jsWebChannel);
+    // Read javascript initialization script
+    QString initFileName = Utils::WizPathResolve::resourcesPath() + "files/webengine/wizwebengineviewinit.js";
+    QString jsInit;
+    WizLoadUnicodeTextFromFile(initFileName, jsInit);
+    // Get all names of published objects
+    CWizStdStringArray names;
+    WizWebEngineInjectObjectCollection::const_iterator inject = objects.constBegin();
+    while (inject != objects.constEnd()) {
+        names.push_back("\"" + inject.key() + "\"");
+        ++inject;
+    }
+    // 
+    CString objectNames;
+    WizStringArrayToText(names, objectNames, ", ");
+    jsInit.replace("__objectNames__", objectNames);
+    // Combine scripts
+    QString jsAll = jsWebChannel + "\n" + jsInit;
+    //
+    {
+        QWebEngineScript script;
+        script.setSourceCode(jsAll);
+        script.setName("webchannel.js");
+        script.setWorldId(QWebEngineScript::MainWorld);
+        script.setInjectionPoint(QWebEngineScript::DocumentCreation);
+        script.setRunsOnSubFrames(false); // if set True, it will cause some error in javascript.
+        profile->scripts()->insert(script);
+    }
+    //
+    return profile;
+}
+
+WizWebEnginePage::WizWebEnginePage(const WizWebEngineInjectObjectCollection& objects, QWebEngineProfile *profile, QObject* parent)
+    : QWebEnginePage(profile, parent)
     , m_continueNavigate(true)
 {
-
+    if (!objects.isEmpty()) {
+        QWebChannel *channel = new QWebChannel(this);
+        channel->registerObjects(objects);
+        setWebChannel(channel);
+    }
 }
 
 void WizWebEnginePage::javaScriptConsoleMessage(JavaScriptConsoleMessageLevel level, const QString& message, int lineNumber, const QString& sourceID)
@@ -89,10 +162,6 @@ bool WizWebEnginePage::acceptNavigationRequest(const QUrl &url, QWebEnginePage::
     emit linkClicked(url, type, isMainFrame, this);
 
     return m_continueNavigate;
-}
-QWebEnginePage *WizWebEnginePage::createWindow(WebWindowType type)
-{
-    return WizInvisibleWebEngineView::create(this);
 }
 
 void WizWebEnginePage::triggerAction(WizWebEnginePage::WebAction action, bool checked /*= false*/)
@@ -137,54 +206,160 @@ void WizWebEnginePage::triggerAction(WizWebEnginePage::WebAction action, bool ch
  *
  *  创建WizWebEnginePage
  */
-WizWebEngineView::WizWebEngineView(QWidget* parent)
+WizWebEngineView::WizWebEngineView(const WizWebEngineInjectObjectCollection& objects, QWidget* parent)
     : QWebEngineView(parent)
-    , m_server(nullptr)
-    , m_clientWrapper(nullptr)
-    , m_channel(nullptr)
-    //, m_page(new WizWebEnginePage(this))
 {
-    // 创建Page设置为到该View
-    WizWebEnginePage* p = new WizWebEnginePage(this);
+    WizWebEnginePage* p = new WizWebEnginePage(objects, this);
     setPage(p);
     //
     connect(p, SIGNAL(openLinkInNewWindow(QUrl)), this, SLOT(openLinkInDefaultBrowser(QUrl)));
     //
     connect(this, SIGNAL(loadFinished(bool)), this, SLOT(innerLoadFinished(bool)));
-    //
-    // setup the QWebSocketServer
-    m_server = new QWebSocketServer(QStringLiteral("WizNote QWebChannel Server"), QWebSocketServer::NonSecureMode, this);
-    //
-    if (!m_server->listen(QHostAddress::LocalHost)) {
-        qFatal("Failed to open web socket server.");
-        return;
-    }
-
-    // wrap WebSocket clients in QWebChannelAbstractTransport objects
-    m_clientWrapper = new WebSocketClientWrapper(m_server, this);
-    //
-    // setup the channel
-    m_channel = new QWebChannel();
-    QObject::connect(m_clientWrapper, &WebSocketClientWrapper::clientConnected, m_channel, &QWebChannel::connectTo);
-}
-
-void WizWebEngineView::addToJavaScriptWindowObject(QString name, QObject* obj)
-{
-    m_channel->registerObject(name, obj);
-    //
-    if (m_objectNames.isEmpty())
-    {
-        m_objectNames = QString("\"%1\"").arg(name);
-    }
-    else
-    {
-        m_objectNames = m_objectNames + ", " + QString("\"%1\"").arg(name);
-    }
+    
+    // Initialize actions
+    QAction* action = new QAction(tr("Open DevTools"), this);
+    action->setShortcut(QKeySequence("F12"));
+    connect(action, &QAction::triggered, this, &WizWebEngineView::handleOpenDevToolsTriggered);
+    addAction(action);
 }
 
 WizWebEngineView::~WizWebEngineView()
 {
-    closeAll();
+    
+}
+
+QVariant WizWebEngineView::ExecuteScript(QString script)
+{
+    auto result = QSharedPointer<WizWebEngineAsyncMethodResultObject>(new WizWebEngineAsyncMethodResultObject(nullptr), &QObject::deleteLater);
+    //
+    page()->runJavaScript(script, [=](const QVariant &v) {
+        result->setResult(v);
+        QTimer::singleShot(1000, [=]{
+            auto r = result;
+            r = nullptr;
+        });
+    });
+
+    QVariant v;
+    v.setValue<QObject*>(result.data());
+    return v;
+}
+
+QVariant WizWebEngineView::ExecuteScriptFile(QString fileName)
+{
+    QString script;
+    if (!WizLoadUnicodeTextFromFile(fileName, script)) {
+        return QVariant();
+    }
+    return ExecuteScript(script);
+}
+
+QVariant WizWebEngineView::ExecuteFunction0(QString function)
+{
+    QString script = QString("%1();").arg(function);
+    return ExecuteScript(script);
+}
+
+QString toArgument(const QVariant& v)
+{
+    switch (v.type()) {
+    case QVariant::Bool:
+        return v.toBool() ? "true" : "false";
+    case QVariant::Int:
+    case QVariant::UInt:
+    case QVariant::LongLong:
+    case QVariant::ULongLong:
+        return QString("%1").arg(v.toLongLong());
+    case QVariant::Double: {
+        double f = v.toDouble();
+        QString str;
+        str.sprintf("%f", f);
+        return str;
+    }
+    case QVariant::Date:
+    case QVariant::Time:
+    case QVariant::DateTime:
+        return QString("new Date(%1)").arg(v.toDateTime().toTime_t() * 1000);
+    case QVariant::String: {
+            QString s = v.toString();
+            s.replace("\\", "\\\\");
+            s.replace("\r", "\\r");
+            s.replace("\n", "\\n");
+            s.replace("\t", "\\t");
+            s.replace("\"", "\\\"");
+            return "\"" + s + "\"";
+        }
+    default:
+        qDebug() << "Unsupport type: " << v.type();
+        return "undefined";
+    }
+}
+
+QVariant WizWebEngineView::ExecuteFunction1(QString function, const QVariant& arg1)
+{
+    QString script = QString("%1(%2);")
+            .arg(function)
+            .arg(toArgument(arg1))
+            ;
+    return ExecuteScript(script);
+}
+
+QVariant WizWebEngineView::ExecuteFunction2(QString function, const QVariant& arg1, const QVariant& arg2)
+{
+    QString script = QString("%1(%2, %3);")
+            .arg(function)
+            .arg(toArgument(arg1))
+            .arg(toArgument(arg2))
+            ;
+    return ExecuteScript(script);
+}
+
+QVariant WizWebEngineView::ExecuteFunction3(QString function, const QVariant& arg1, const QVariant& arg2, const QVariant& arg3)
+{
+    QString script = QString("%1(%2, %3, %4);")
+            .arg(function)
+            .arg(toArgument(arg1))
+            .arg(toArgument(arg2))
+            .arg(toArgument(arg3))
+            ;
+    return ExecuteScript(script);
+}
+
+QVariant WizWebEngineView::ExecuteFunction4(QString function, const QVariant& arg1, const QVariant& arg2, const QVariant& arg3, const QVariant& arg4)
+{
+    QString script = QString("%1(%2, %3, %4, %5);")
+            .arg(function)
+            .arg(toArgument(arg1))
+            .arg(toArgument(arg2))
+            .arg(toArgument(arg3))
+            .arg(toArgument(arg4))
+            ;
+    return ExecuteScript(script);
+}
+
+/**
+ * @brief Set the zoom percentage of this page.
+ * 
+ * @param percent The range from 25 to 500. The default factor is 100.
+ */
+void WizWebEngineView::SetZoom(int percent)
+{
+    if ( percent < 25 && percent > 500)
+        return;
+    qreal factor = static_cast<qreal>(percent) / 100;
+    setZoomFactor(factor);
+}
+
+/**
+ * @brief Get the zoom percentage of this page.
+ * 
+ * @return int 
+ */
+int WizWebEngineView::GetZoom()
+{
+    qreal factor = zoomFactor();
+    int percent = static_cast<int>( qRound(factor * 100) );
+    return percent;
 }
 
 /**
@@ -195,23 +370,19 @@ QMenu* WizWebEngineView::createStandardContextMenu()
 {
     QMenu *menu = page()->createStandardContextMenu();
     const QList<QAction *> actions = menu->actions();
+    // remove ViewSource
+    auto viewSource = std::find(actions.cbegin(), actions.cend(), page()->action(QWebEnginePage::ViewSource));
+    if (viewSource != actions.cend())
+        menu->removeAction(*viewSource);
     // add Open DevTools action
     auto inspectElement = std::find(actions.cbegin(), actions.cend(), page()->action(QWebEnginePage::InspectElement));
     if (inspectElement == actions.cend()) {
-        auto viewSource = std::find(actions.cbegin(), actions.cend(), page()->action(QWebEnginePage::ViewSource));
-        if (viewSource == actions.cend())
-            menu->addSeparator();
-
         QAction *action = new QAction(menu);
         action->setText(tr("Open DevTools"));
         connect(action, &QAction::triggered, this, &WizWebEngineView::openDevTools, Qt::UniqueConnection);
-
-        QAction *before(inspectElement == actions.cend() ? nullptr : *inspectElement);
-        menu->insertAction(before, action);
+        menu->addAction(action);
     } else {
         (*inspectElement)->setText(tr("Inspect element"));
-        // refresh new page's InspectElement action
-        //disconnect(*inspectElement, &QAction::triggered, this, &WizWebEngineView::openDevTools);
         connect(*inspectElement, &QAction::triggered, this, &WizWebEngineView::openDevTools, Qt::UniqueConnection);
     }
     return menu;
@@ -220,9 +391,6 @@ QMenu* WizWebEngineView::createStandardContextMenu()
 void WizWebEngineView::contextMenuEvent(QContextMenuEvent *event)
 {
     QMenu *menu = createStandardContextMenu();
-    // refresh new page's ViewSource action
-    connect(pageAction(QWebEnginePage::ViewSource), &QAction::triggered, 
-                    this, &WizWebEngineView::onViewSourceTriggered, Qt::UniqueConnection);
     // save page action
     connect(pageAction(QWebEnginePage::SavePage), &QAction::triggered, 
                     this, &WizWebEngineView::handleSavePageTriggered, Qt::UniqueConnection);
@@ -230,75 +398,10 @@ void WizWebEngineView::contextMenuEvent(QContextMenuEvent *event)
     menu->popup(event->globalPos());
 }
 
-void WizWebEngineView::closeAll()
-{
-    if (m_server)
-    {
-        m_server->disconnect();
-        m_server->close();
-        //m_server->deleteLater();
-        //m_server = NULL;
-    }
-    if (m_clientWrapper)
-    {
-        m_clientWrapper->disconnect();
-        //m_clientWrapper->deleteLater();
-        //m_clientWrapper = NULL;
-    }
-    if (m_channel)
-    {
-        m_channel->disconnect();
-        //m_channel->deleteLater();
-        //m_channel = NULL;
-    }
-}
-
 
 void WizWebEngineView::innerLoadFinished(bool ret)
 {
-    //
-    if (ret)
-    {
-        // 页面加载时设置合适的缩放比例
-        qreal zFactor = (1.0*WizSmartScaleUI(100)) / 100;
-        setZoomFactor(zFactor);
-        //
-
-        if (m_server && m_server->isListening()
-                && m_clientWrapper
-                && m_channel)
-        {
-            QString jsWebChannel ;
-            if (WizLoadTextFromResource(":/qtwebchannel/qwebchannel.js", jsWebChannel))
-            {
-                page()->runJavaScript(jsWebChannel, [=](const QVariant&){
-                    //
-                    QString initFileName = Utils::WizPathResolve::resourcesPath() + "files/webengine/wizwebengineviewinit.js";
-                    QString jsInit;
-                    WizLoadUnicodeTextFromFile(initFileName, jsInit);
-                    //
-                    QString port = QString::asprintf("%d", int(m_server->serverPort()));
-                    //
-                    jsInit.replace("__port__", port).replace("__objectNames__", m_objectNames);
-                    //
-                    page()->runJavaScript(jsInit, [=](const QVariant&){
-                        //
-                        emit loadFinishedEx(ret);
-                        //
-                    });
-                });
-            }
-            else
-            {
-                qDebug() << "Can't load wen channel.js";
-                emit loadFinishedEx(ret);
-            }
-        }
-    }
-    else
-    {
-        emit loadFinishedEx(ret);
-    }
+    emit loadFinishedEx(ret);
 }
 
 void WizWebEngineView::openLinkInDefaultBrowser(QUrl url)
@@ -311,12 +414,34 @@ QString WizWebEngineView::documentTitle()
     return title();
 }
 
+/**
+ * @brief Publish C++ objects to javascript clients.
+ * 
+ * @param name 
+ * @param obj 
+ */
+void WizWebEngineView::addObjectToJavaScriptClient(QString name, QObject* obj)
+{
+    QWebEnginePage *webPage = page();
+    QWebChannel *channel = webPage->webChannel();
+    if (!channel) {
+        channel = new QWebChannel(webPage);
+        webPage->setWebChannel(channel);
+    }
+    qDebug() << name;
+    WizWebEngineInjectObjectCollection r_objs = channel->registeredObjects();
+    if (!obj)
+        return;
+    if (!r_objs.contains(name) && obj != nullptr)
+        channel->registerObject(name, obj);
+}
+
 void WizWebEngineView::openDevTools()
 {
     if (!m_devToolsWindow)
     {
         m_devToolsWindow = new WizDevToolsDialog(this);
-        // 设置外观
+        //
         QString title = documentTitle();
         m_devToolsWindow->setWindowTitle("DevTools - " + title);
         //
@@ -332,13 +457,15 @@ void WizWebEngineView::openDevTools()
         );
     }
     //
+    page()->triggerAction(QWebEnginePage::InspectElement);
+    //
     m_devToolsWindow->show();
     m_devToolsWindow->raise();
 }
 
-void WizWebEngineView::onViewSourceTriggered()
+void WizWebEngineView::handleOpenDevToolsTriggered()
 {
-    emit viewSourceRequested(page()->url(), page()->url().url());
+    openDevTools();
 }
 
 void WizWebEngineView::handleSavePageTriggered()
@@ -359,15 +486,17 @@ WizWebEnginePage* WizWebEngineView::getPage() {
 }
 
 /**
- * @brief 重写基类setPage函数，重设m_page
- * @param page
-
-void WizWebEngineView::setPage(WizWebEnginePage* page)
-{
-    m_page = page;
-    QWebEngineView::setPage(page);
-}
+ * @brief Create new window according to the request triggered within web page.
+ * 
+ * @param type 
+ * @return QWebEngineView* 
  */
+QWebEngineView *WizWebEngineView::createWindow(QWebEnginePage::WebWindowType type)
+{
+    WizNavigationForwarderView *forwarder = new WizNavigationForwarderView(this, this);
+    forwarder->setVisible(false);
+    return forwarder->forward(type);
+}
 
 static QWebEngineView* getActiveWeb()
 {
@@ -475,4 +604,107 @@ void WizWebEngineView::wheelEvent(QWheelEvent *event)
     } else {
         event->ignore();
     }
+}
+
+/**
+ * @brief Construct a new WizNavigationForwarder.
+ * 
+ *      This is used to forward Url navigation request. If the url is WizNote internal one,
+ *      it will be passed to WizNote handler.
+ * 
+ * @param ownerView 
+ * @param parent 
+ */
+WizNavigationForwarderView::WizNavigationForwarderView(QWebEngineView *ownerView, QWidget* parent)
+    : QWebEngineView(parent)
+{
+    WizNavigationForwarderPage *page = new WizNavigationForwarderPage(ownerView, this);
+    m_page = page;
+    setPage(page);
+}
+
+
+QWebEngineView *WizNavigationForwarderView::forward(QWebEnginePage::WebWindowType type)
+{
+    m_page->setWebWindowType(type);
+    return this;
+}
+
+WizNavigationForwarderPage::WizNavigationForwarderPage(QWebEngineView *ownerView, QObject *parent)
+    : QWebEnginePage(parent)
+    , m_ownerView(ownerView)
+{
+
+}
+
+bool WizNavigationForwarderPage::acceptNavigationRequest(const QUrl &url, QWebEnginePage::NavigationType type, bool isMainFrame)
+{
+    if (!isMainFrame)
+        return false;
+
+    QString protocol = url.scheme().toLower();
+    QString strUrl = url.toString();
+    if (strUrl.isEmpty())
+        return false;
+
+    WizMainWindow *mainWindow = WizMainWindow::instance();
+    if (!mainWindow)
+        return false;
+
+    if (protocol == "wiz") {
+        // WizNote internal url
+        switch (GetWizUrlType(strUrl)) {
+        case WizUrl_Document:
+            mainWindow->viewDocumentByWizKMURL(strUrl);
+            break;
+        case WizUrl_Attachment:
+        {
+            WizDocumentWebView *docWebView = qobject_cast<WizDocumentWebView *>(m_ownerView);
+            if (docWebView) {
+                if (!docWebView->isEditing()) {
+                    QString strGUID = docWebView->view()->note().strKbGUID;
+                    mainWindow->viewAttachmentByWizKMURL(strGUID, strUrl);
+                }
+            }
+            break;
+        }
+        default:
+            qDebug() << QString("%1 is a wiz internal url , but we can not identify it");
+        }
+    } else {
+        // http or file url
+        switch (m_windowType) {
+            // A web browser tab.
+            case QWebEnginePage::WebBrowserTab:
+            {
+                mainWindow->mainTabView()->createTab(url);
+                break;
+            }
+            // A web browser tab without hiding the current visible WebEngineView.
+            case QWebEnginePage::WebBrowserBackgroundTab: 
+            {
+                WizWebEngineView * view = mainWindow->mainTabView()->createBackgroundTab();
+                view->load(url);
+                break;
+            }
+            // A window without decoration.
+            case QWebEnginePage::WebDialog:
+            // A complete web browser window.
+            case QWebEnginePage::WebBrowserWindow: 
+            {
+                WizWebEngineView * view = mainWindow->mainTabView()->createWindow();
+                view->load(url);
+                break;
+            }
+        }
+    }
+
+    parent()->deleteLater();
+
+    return false;
+}
+
+void WizNavigationForwarderPage::setWebWindowType(QWebEnginePage::WebWindowType type)
+{
+    m_windowType = type;
 }

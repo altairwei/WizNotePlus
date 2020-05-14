@@ -13,6 +13,7 @@ QString WizGetWindowsFontName();
 class QApplication;
 class QString;
 QFont WizCreateWindowsUIFont(const QApplication& a, const QString& strDefaultFontName);
+QFont WizCreateWindowsUIFont(const QApplication& app);
 
 #endif  //Q_OS_WIN
 

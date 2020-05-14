@@ -207,6 +207,8 @@ public Q_SLOTS:
     void on_action_copyDocument();
     void on_action_copyDocument_confirmed(int result);
 
+    void on_action_renameDocument();
+
     void on_action_showDocumentInNewTab();
     void on_action_showDocumentInFloatWindow();
     void on_action_copyDocumentLink();

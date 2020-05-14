@@ -12,6 +12,7 @@
 #include <QDesktopServices>
 #include <QMessageBox>
 #include <QDebug>
+#include <QWebChannel>
 #include "share/WizWebEngineView.h"
 #include "share/WizThreads.h"
 #include "sync/WizApiEntry.h"
@@ -27,18 +28,28 @@ WizShareLinkDialog::WizShareLinkDialog(WizUserSettings& settings, QWidget* paren
     QVBoxLayout* layout = new QVBoxLayout(this);
     layout->setContentsMargins(0, 0, 0, 0);
     layout->addWidget(m_view);
-
+    // Publish C++ object
+    WizWebEngineInjectObjectCollection objects = {
+        {"external", this},
+        {"wizQt", this}
+    };
+    // Create profile
+    auto profile = createWebEngineProfile(objects, this);
+    auto webPage = new WizWebEnginePage(objects, profile, m_view);
+    m_view->setPage(webPage);
+    // Change settings
     m_view->settings()->setAttribute(QWebEngineSettings::LocalStorageEnabled, true);
     m_view->settings()->setAttribute(QWebEngineSettings::LocalContentCanAccessRemoteUrls, true);
-    //
-    m_view->addToJavaScriptWindowObject("external", this); //FIXME: check the interface.
-    m_view->addToJavaScriptWindowObject("wizQt", this); //FIXME: check the interface.
-    //m_view->addToJavaScriptWindowObject("customObject", this);
 
 }
 
 WizShareLinkDialog::~WizShareLinkDialog()
 {
+    //FIXME: The order of destructor may be wrong, so we need to 
+    //  deregister objects before deleting dialog.
+    auto channel = m_view->page()->webChannel();
+    if (channel)
+        channel->deregisterObject(this);
 }
 
 QSize WizShareLinkDialog::sizeHint() const

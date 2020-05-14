@@ -1,16 +1,5 @@
 ﻿#include "WizMainTabBrowser.h"
 
-#include <QWidget>
-#include <QMessageBox>
-#include <QStyle>
-#include <QStylePainter>
-#include <QStyleOption>
-#include <QStyleOptionTabBarBase>
-#include <QLabel>
-#include <QMenu>
-#include <QTabBar>
-#include <QLayout>
-
 #include "share/WizWebEngineView.h"
 #include "share/WizGlobal.h"
 #include "WizDef.h"
@@ -21,6 +10,18 @@
 #include "WizTitleBar.h"
 #include "WizDocumentView.h"
 #include "WizWebsiteView.h"
+#include "plugins/tab_browser/WebEngineWindow.h"
+
+#include <QWidget>
+#include <QMessageBox>
+#include <QStyle>
+#include <QStylePainter>
+#include <QStyleOption>
+#include <QStyleOptionTabBarBase>
+#include <QLabel>
+#include <QMenu>
+#include <QTabBar>
+#include <QLayout>
 
 //-------------------------------------------------------------------
 // class WizMainTabBrowser
@@ -139,6 +140,7 @@ WizMainTabBrowser::WizMainTabBrowser(WizExplorerApp& app, QWidget *parent)
                     this, &WizMainTabBrowser::handleContextMenuRequested);
     connect(tabBar, &QTabBar::tabCloseRequested, this, &WizMainTabBrowser::closeTab);
     connect(&m_dbMgr, &WizDatabaseManager::documentDeleted, this, &WizMainTabBrowser::on_document_deleted);
+    connect(&m_dbMgr, &WizDatabaseManager::documentModified, this, &WizMainTabBrowser::on_document_modified);
     //
     setDocumentMode(true); // 不渲染tab widget frame
     setElideMode(Qt::ElideRight);
@@ -193,12 +195,12 @@ void WizMainTabBrowser::handleContextMenuRequested(const QPoint &pos)
     // ensure click pos is in tab not tabbar
     if (index != -1) {
         // close actions
-        QAction *action = menu.addAction(tr("&Close Tab"));
+        QAction *action = menu.addAction(tr("Close Tab"));
         action->setShortcut(QKeySequence::Close);
         connect(action, &QAction::triggered, this, [this,index]() {
             closeTab(index);
         });
-        action = menu.addAction(tr("Close &Other Tabs"));
+        action = menu.addAction(tr("Close Other Tabs"));
         connect(action, &QAction::triggered, this, [this,index]() {
             closeOtherTabs(index);
         });
@@ -209,6 +211,10 @@ void WizMainTabBrowser::handleContextMenuRequested(const QPoint &pos)
         action = menu.addAction(tr("Close Right Tabs"));
         connect(action, &QAction::triggered, this, [this,index]() {
             closeRightTabs(index);
+        });
+        action = menu.addAction(tr("Close All Tabs"));
+        connect(action, &QAction::triggered, this, [this]() {
+            closeAllTabs();
         });
         menu.addSeparator();
         // lock action
@@ -259,6 +265,60 @@ void WizMainTabBrowser::on_document_deleted(const WIZDOCUMENTDATA& data)
     }
 }
 
+void WizMainTabBrowser::on_document_modified(const WIZDOCUMENTDATA& documentOld, const WIZDOCUMENTDATA& documentNew)
+{
+    for (int i = 0; i < count(); ++i) {
+        WizDocumentView* docView = qobject_cast<WizDocumentView*>(widget(i));
+        if ( docView == nullptr ) {
+            continue;
+        } else {
+            QString noteGUID = documentOld.strGUID;
+            if (noteGUID == docView->note().strGUID) {
+                // Change tab text when document title changed
+                setTabText(i, documentNew.strTitle);
+            }
+        }
+
+    }
+}
+
+void WizMainTabBrowser::triggeredFullScreen()
+{
+    WizWebEngineView *webView = currentWebView();
+    if (!webView)
+        // Avoid responsing to non-webpage widget
+        return;
+    FullScreenWindow *fWindow = new FullScreenWindow(webView);
+    // Only full screen action (F11) comes from outside of web page needed to 
+    // handle ExitFullScreen requests separately. Because there is no way to 
+    // emit QWebEngineFullScreenRequest by C++ side.
+    connect(fWindow, &FullScreenWindow::ExitFullScreen,
+                    this, &WizMainTabBrowser::handleExitFullScreen);
+    m_fullScreenWindow.reset(fWindow);
+}
+
+void WizMainTabBrowser::handleExitFullScreen()
+{
+    if (!m_fullScreenWindow.isNull())
+        m_fullScreenWindow.reset();
+}
+
+void WizMainTabBrowser::fullScreenRequested(QWebEngineFullScreenRequest request)
+{
+    if (request.toggleOn()) {
+        if (m_fullScreenWindow)
+            return;
+        request.accept();
+        // Request always comes from current web page.
+        m_fullScreenWindow.reset(new FullScreenWindow(currentWebView()));
+    } else {
+        if (!m_fullScreenWindow)
+            return;
+        request.accept();
+        m_fullScreenWindow.reset();
+    }
+}
+
 void WizMainTabBrowser::setupTab(QWidget *wgt)
 {
     int index = indexOf(wgt);
@@ -279,6 +339,47 @@ void WizMainTabBrowser::setupTab(QWidget *wgt)
 }
 
 /**
+ * @brief Create an empty web page with WizWebsiteView, but do not focus on new tab.
+ * 
+ * @return WizWebEngineView* 
+ */
+WizWebEngineView *WizMainTabBrowser::createBackgroundTab()
+{
+    // create default website view
+    WizWebsiteView* websiteView = new WizWebsiteView(m_app);
+    WizWebEngineView *webView = websiteView->webView();
+    // create and int tab page
+    setupWebsiteView(websiteView);
+    addTab(websiteView, tr("Untitled"));
+    setupTab(websiteView);
+    //
+    return webView;
+}
+
+WizWebEngineView *WizMainTabBrowser::createWindow()
+{
+    WebEngineWindow *webWindow = new WebEngineWindow(this);
+    webWindow->setAttribute(Qt::WA_DeleteOnClose);
+    webWindow->show();
+    webWindow->raise();
+    return webWindow->webView();
+}
+
+/**
+ * @brief Create an empty web page, then focus on new tab page.
+ * 
+ * @return WizWebEngineView* 
+ */
+WizWebEngineView *WizMainTabBrowser::createTab()
+{
+    // create default website view
+    WizWebsiteView* websiteView = new WizWebsiteView(m_app);
+    createTab(websiteView);
+    //
+    return websiteView->webView();
+}
+
+/**
  * @brief 浏览笔记文档
  * @param docView 已经构建好的文档视图
  */
@@ -296,24 +397,38 @@ int WizMainTabBrowser::createTab(WizDocumentView *docView)
 }
 
 /**
- * @brief 通过地址来浏览页面
- * @param url 要浏览的地址，可以使本地文件地址;
+ * @brief create a tab with website view.
+ * 
+ * @param websiteView 
+ * @return int 
+ */
+int WizMainTabBrowser::createTab(WizWebsiteView *websiteView)
+{
+    WizWebEngineView *webView = websiteView->webView();
+    // create and int tab page
+    setupWebsiteView(websiteView);
+    int index = addTab(websiteView, webView->title());
+    setupTab(websiteView);
+    // Workaround for QTBUG-61770
+    webView->resize(currentWidget()->size());
+    // focus on it
+    webView->setFocus();
+    setCurrentWidget(websiteView);
+    //
+    return index;
+}
+
+/**
+ * @brief create a tab with url
+ * @param url The url can be local filename.
  */
 int WizMainTabBrowser::createTab(const QUrl &url)
 {
-    // 创建网页视图组件
+    // create default website view
     WizWebsiteView* websiteView = new WizWebsiteView(m_app);
-    setupWebsiteView(websiteView);
-    // 创建标签页
-    int index = addTab(websiteView, tr("Untitled"));
-    setupTab(websiteView);
-    websiteView->getWebView()->resize(currentWidget()->size()); // Workaround for QTBUG-61770
-    // 设置地址并浏览
     websiteView->viewHtml(url);
-    websiteView->getWebView()->setFocus();
-    // 设置成当前部件
-    setCurrentWidget(websiteView);
-    //
+    int index = createTab(websiteView);
+    setTabText(index, url.url());
     return index;
 }
 
@@ -340,6 +455,12 @@ void WizMainTabBrowser::closeOtherTabs(int index)
     for (int i = count() - 1; i > index; --i)
         closeTab(i);
     for (int i = index - 1; i >= 0; --i)
+        closeTab(i);
+}
+
+void WizMainTabBrowser::closeAllTabs()
+{
+    for (int i = count() - 1; i >= 0; --i)
         closeTab(i);
 }
 
@@ -425,15 +546,8 @@ WizWebEngineView* WizMainTabBrowser::currentWebView() const
  * @param view
  */
 void WizMainTabBrowser::setupView(WizWebEngineView* view) {
-    connect(view, &WizWebEngineView::viewSourceRequested, [=](QUrl url, QString title){
-        int index = createTab("view-source:" + url.url());
-        WizWebsiteView* webView = qobject_cast<WizWebsiteView*>(widget(index));
-        if (webView) {
-            // To avoid tabtext being changed when users view source of WizDocumentWebPage.
-            disconnect(webView->getWebView(), &WizWebEngineView::titleChanged, nullptr, nullptr);
-        }
-        setTabText(index, "view-source:" + title);
-    });
+    QWebEnginePage *webPage = view->page();
+    connect(webPage, &QWebEnginePage::fullScreenRequested, this, &WizMainTabBrowser::fullScreenRequested);
 }
 
 /**
@@ -457,12 +571,14 @@ void WizMainTabBrowser::setupDocView(WizDocumentView *docView) {
             setTabText(index, doc.strTitle);
         }
     });
+    /* // WizMainTab has connected WizDatabaseManager::documentModified
     connect(docView->web(), &WizDocumentWebView::titleEdited, [this](WizDocumentView* view, QString newTitle){
         int index = indexOf(view);
         if (index != -1) {
             setTabText(index, newTitle);
         }
     });
+    */
     setupView(docView->web());
 }
 

@@ -1,10 +1,12 @@
 ﻿#include "WizFramelessWebDialog.h"
+#include "../share/WizWebEngineView.h"
+#include "../share/WizThreads.h"
+
 #include <QVBoxLayout>
 #include <QDesktopServices>
 #include <QWebEnginePage>
-#include "../share/WizWebEngineView.h"
-#include "../share/WizThreads.h"
 #include <QTimer>
+#include <QWebChannel>
 
 bool WizFramelessWebDialog::m_bVisibling = false;
 
@@ -16,8 +18,10 @@ WizFramelessWebDialog::WizFramelessWebDialog(QWidget *parent) :
     setAttribute(Qt::WA_DeleteOnClose);
 
     m_web = new WizWebEngineView(this);
-    //
-    m_web->addToJavaScriptWindowObject("customObject", this); //FIXME: check the interface.
+    WizWebEngineInjectObjectCollection objects = {{"customObject", this}};
+    auto profile = createWebEngineProfile(objects, this);
+    auto webPage = new WizWebEnginePage(objects, profile, m_web);
+    m_web->setPage(webPage);
     //
     m_frame = m_web->page();
     connect(m_web, SIGNAL(loadFinishedEx(bool)), SLOT(onPageLoadFinished(bool)));
@@ -27,6 +31,15 @@ WizFramelessWebDialog::WizFramelessWebDialog(QWidget *parent) :
     QVBoxLayout *layout = new QVBoxLayout(this);
     layout->setContentsMargins(0, 0, 0, 0);
     layout->addWidget(m_web);
+}
+
+WizFramelessWebDialog::~WizFramelessWebDialog()
+{
+    //FIXME: The order of destructor may be wrong, so we need to 
+    //  deregister objects before deleting dialog.
+    auto channel = m_web->page()->webChannel();
+    if (channel)
+        channel->deregisterObject(this);
 }
 
 void WizFramelessWebDialog::loadAndShow(const QString& strUrl)
@@ -42,7 +55,6 @@ void WizFramelessWebDialog::Execute(const QString& strFunction, QVariant param1,
     {
         ::WizExecuteOnThread(WIZ_THREAD_MAIN, [=]{
             hide();
-            m_web->closeAll();
             //
             QTimer::singleShot(1000, Qt::PreciseTimer, [=]{
                 deleteLater();

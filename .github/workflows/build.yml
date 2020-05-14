@@ -1,0 +1,221 @@
+name: Build
+on:
+  push:
+    branches:
+      - master
+      - develop
+      - release-*
+      - feat-*
+    tags:
+      - v2.*
+
+env:
+  QT_VERSION_MAJOR: 5
+  QT_VERSION_MINOR: 12
+  QT_VERSION_PATCH: 8
+  QT_VERSION: 5.12.8
+
+jobs:
+  
+  build_linux:
+    name: Linux
+    runs-on: ubuntu-16.04
+    env:
+      QT_INSTALL_TARGET_ARCH: gcc_64
+      QT_INSTALL_TARGET_DIR_PREFIX: /opt
+    steps:
+      - uses: actions/checkout@v1
+      - uses: actions/setup-python@v1
+        with:
+          python-version: '3.8'
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y -qq --no-install-recommends git make cmake g++ wget
+          sudo apt-get install -y -qq --no-install-recommends xvfb libgl-dev fcitx fcitx-frontend-qt5
+      - name: Cache Qt
+        id: cache-qt
+        uses: actions/cache@v1
+        with:
+          path: ${{ env.QT_INSTALL_TARGET_DIR_PREFIX }}/Qt
+          key: QtCache-Linux-${{ env.QT_VERSION }}
+      - name: Install Qt
+        uses: jurplel/install-qt-action@v2
+        with:
+          cached: ${{ steps.cache-qt.outputs.cache-hit }}
+          version: ${{ env.QT_VERSION }}
+          host: linux
+          target: desktop
+          arch: ${{ env.QT_INSTALL_TARGET_ARCH }}
+          dir: ${{ env.QT_INSTALL_TARGET_DIR_PREFIX }}
+          modules: qtwebengine
+      - name: Download deploy tool
+        run: |
+          sudo wget -q -O /usr/bin/linuxdeployqt https://github.com/probonopd/linuxdeployqt/releases/download/continuous/linuxdeployqt-continuous-x86_64.AppImage
+          sudo chmod a+x /usr/bin/linuxdeployqt
+      - name: Install and config conan
+        run: |
+          pip install conan
+          conan remote add bincrafters https://api.bintray.com/conan/bincrafters/public-conan
+          conan remote add conan-community https://api.bintray.com/conan/conan-community/conan
+          conan remote add wiznoteplus https://api.bintray.com/conan/altairwei/conan
+          conan profile new default --detect
+          conan profile update settings.compiler.libcxx=libstdc++11 default
+      - name: Build project
+        env:
+          QT_INSTALL_PREFIX: ${{ env.QT_INSTALL_TARGET_DIR_PREFIX }}/Qt/${{ env.QT_VERSION }}/${{ env.QT_INSTALL_TARGET_ARCH }}
+        run: |
+          mkdir -p _build
+          ./.ci/build.sh $(pwd) $(pwd)/_build
+      - uses: actions/upload-artifact@v1
+        with:
+          name: Linux_Dist
+          path: _build/package/dist
+
+  build_windows:
+    name: Windows
+    runs-on: windows-2016
+    env:
+      QT_INSTALL_TARGET_ARCH: msvc2017_64
+      QT_INSTALL_TARGET_DIR_PREFIX: ${{ github.workspace }}
+    steps:
+      - uses: actions/checkout@v1
+      - uses: actions/setup-python@v1
+        with:
+          python-version: '3.8'
+      - name: Install dependencies
+        shell: powershell
+        run: |
+          choco install wget
+      - name: Install and config conan
+        shell: powershell
+        run: |
+          python -m pip install conan
+          conan remote add bincrafters https://api.bintray.com/conan/bincrafters/public-conan
+          conan remote add conan-community https://api.bintray.com/conan/conan-community/conan
+          conan remote add wiznoteplus https://api.bintray.com/conan/altairwei/conan
+          conan profile new default --detect
+      - name: Cache Qt
+        id: cache-qt
+        uses: actions/cache@v1
+        with:
+          path: ${{ env.QT_INSTALL_TARGET_DIR_PREFIX }}\Qt
+          key: QtCache-Windows-${{ env.QT_VERSION }}
+      - name: Install Qt
+        uses: jurplel/install-qt-action@v2
+        with:
+          cached: ${{ steps.cache-qt.outputs.cache-hit }}
+          version: ${{ env.QT_VERSION }}
+          host: windows
+          target: desktop
+          arch: win64_${{ env.QT_INSTALL_TARGET_ARCH }}
+          dir: ${{ env.QT_INSTALL_TARGET_DIR_PREFIX }}
+          modules: qtwebengine
+      - name: Build project
+        env:
+          QT_INSTALL_PREFIX: ${{ env.QT_INSTALL_TARGET_DIR_PREFIX }}\Qt\${{ env.QT_VERSION }}\${{ env.QT_INSTALL_TARGET_ARCH }}
+        shell: powershell
+        run: |
+          mkdir -Force _build
+          .\.ci\build.ps1 "$PWD" "$PWD\_build"
+      - uses: actions/upload-artifact@v1
+        with:
+          name: Windows_Dist
+          path: _build/package/dist
+
+  build_macos:
+    name: MacOS
+    runs-on: macos-latest
+    env:
+      QT_INSTALL_TARGET_ARCH: clang_64
+      QT_INSTALL_TARGET_DIR_PREFIX: /Applications
+    steps:
+      - uses: actions/checkout@v1
+      - uses: actions/setup-python@v1
+        with:
+          python-version: '3.8'
+      - uses: actions/setup-node@v1
+        with:
+          node-version: '10.x'
+      - name: Install dependencies
+        run: |
+          sudo chown -R $(whoami) $(npm config get prefix)/{lib/node_modules,bin,share}
+          npm install --global appdmg
+      - name: Install and config conan
+        run: |
+          python -m pip install conan
+          conan remote add bincrafters https://api.bintray.com/conan/bincrafters/public-conan
+          conan remote add conan-community https://api.bintray.com/conan/conan-community/conan
+          conan remote add wiznoteplus https://api.bintray.com/conan/altairwei/conan
+          conan profile new default --detect
+      - name: Cache Qt
+        id: cache-qt
+        uses: actions/cache@v1
+        with:
+          path: ${{ env.QT_INSTALL_TARGET_DIR_PREFIX }}/Qt
+          key: QtCache-MacOS-${{ env.QT_VERSION }}
+      - name: Install Qt
+        uses: jurplel/install-qt-action@v2
+        with:
+          cached: ${{ steps.cache-qt.outputs.cache-hit }}
+          version: ${{ env.QT_VERSION }}
+          host: mac
+          target: desktop
+          arch: ${{ env.QT_INSTALL_TARGET_ARCH }}
+          dir: ${{ env.QT_INSTALL_TARGET_DIR_PREFIX }}
+          modules: qtwebengine
+      - name: Build project
+        env:
+          QT_INSTALL_PREFIX: ${{ env.QT_INSTALL_TARGET_DIR_PREFIX }}/Qt/${{ env.QT_VERSION }}/${{ env.QT_INSTALL_TARGET_ARCH }}
+        run: |
+          mkdir -p _build
+          ./.ci/build.sh $(pwd) $(pwd)/_build
+      - uses: actions/upload-artifact@v1
+        with:
+          name: MacOS_Dist
+          path: _build/package/dist
+
+  release:
+    needs: [build_linux, build_windows, build_macos]
+    runs-on: ubuntu-latest
+    if: contains(github.ref, 'refs/tags/v')
+    steps:
+      - uses: actions/checkout@v1
+      - name: Download pre-built packages for Linux
+        uses: actions/download-artifact@v1
+        with:
+          name: Linux_Dist
+          path: artifacts
+      - name: Download pre-built packages for Windows
+        uses: actions/download-artifact@v1
+        with:
+          name: Windows_Dist
+          path: artifacts
+      - name: Download pre-built packages for MacOS
+        uses: actions/download-artifact@v1
+        with:
+          name: MacOS_Dist
+          path: artifacts
+      - name: Create Release Notes
+        id: release_notes
+        run: |
+          version=$(printf '${{ github.ref }}' | sed -E 's#refs/tags/v(.*)#\1#')
+          notes_zh="dist/changes-${version}-zh-CN.md"
+          [[ -f "${notes_zh}" ]] || { echo >&2 "release notes is required."; exit 1; }
+          notes_en="dist/changes-${version}-en-US.md"
+          [[ -f "${notes_en}" ]] || { echo >&2 "release notes is required."; exit 1; }
+          content=$(cat ${notes_zh} | sed '1d')
+          content="${content}\n\n---\n\n$(cat ${notes_en} | sed '1d')"
+          printf "${content}\n" > dist/changes-${version}.md
+          echo "::set-output name=version::${version}"
+          echo "::set-output name=content_file::dist/changes-${version}.md"
+      - name: Create Release
+        id: create_release
+        uses: ncipollo/release-action@v1
+        with:
+          name: WizNotePlus v${{ steps.release_notes.outputs.version }}
+          token: ${{ secrets.GITHUB_TOKEN }}
+          artifacts: "artifacts/*"
+          bodyFile: ${{ steps.release_notes.outputs.content_file }}
+          draft: true
+          prerelease: true

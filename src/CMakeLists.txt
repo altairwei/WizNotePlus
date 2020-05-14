@@ -1,19 +1,14 @@
 project(WizNote)
 
-add_subdirectory(test)
-
 #============================================================================
 # Sources
 #============================================================================
 
 set(wiznote_SOURCES_MAC
-    mac/WizSearchWidget.mm
     mac/WizMacHelper.mm
-    mac/WizMacToolBar.mm
-    mac/WizMacToolBarDelegate.mm
-    mac/WizMacActionHelper.cpp
     mac/WizUserInfoWidgetBaseMac.mm
     mac/WizUserInfoWidgetBaseMac_mm.cpp
+    widgets/WizUserInfoWidgetBase.cpp
     utils/WizNotify.mm
     mac/WizIAPHelper.mm
     mac/rmstore/RMAppReceipt.mm
@@ -26,11 +21,8 @@ set(wiznote_SOURCES_MAC
 set(wiznote_HEADERS_MAC
     mac/WizMacHelper.h
     mac/WizMacHelper_mm.h
-    mac/WizSearchWidget_mm.h
-    mac/WizMacToolBar.h
-    mac/WizMacToolBarDelegate.h
-    mac/WizMacActionHelper.h
     mac/WizUserInfoWidgetBaseMac_mm.h
+    widgets/WizUserInfoWidgetBase.h
     mac/WizIAPHelper.h
     mac/rmstore/RMAppReceipt.h
     mac/rmstore/RMStoreAppReceiptVerificator.h
@@ -127,14 +119,25 @@ set(wiznote_SOURCES
     widgets/WizEmailShareDialog.cpp
     widgets/WizTemplatePurchaseDialog.cpp
     widgets/WizExecutingActionDialog.cpp
-    share/WebSocketClientWrapper.cpp
-    share/WebSocketTransport.cpp
     share/WizWebEngineView.cpp
     widgets/WizTableSelector.cpp
     widgets/WizUserServiceExprDialog.cpp
 
     share/jsoncpp/jsoncpp.cpp
     share/WizRequest.cpp
+
+    plugins/js_plugin_system/JSPluginManager.cpp
+    plugins/js_plugin_system/JSPluginSpec.cpp
+    plugins/js_plugin_system/JSPluginSelectorWindow.cpp
+    plugins/js_plugin_system/JSPluginHtmlDialog.cpp
+
+    plugins/public_apis_server/PublicAPIsServer.cpp
+    plugins/public_apis_server/WebSocketClientWrapper.cpp
+    plugins/public_apis_server/WebSocketTransport.cpp
+
+    plugins/tab_browser/FullScreenWindow.cpp
+    plugins/tab_browser/FullScreenNotification.cpp
+    plugins/tab_browser/WebEngineWindow.cpp
 
     WizCategoryView.cpp
     WizCategoryViewItem.cpp
@@ -192,7 +195,6 @@ set(wiznote_SOURCES
     WizCombineNotesDialog.cpp
 
     WizOEMSettings.cpp    
-    mac/WizSearchWidget_mm.cpp
     core/WizAccountManager.cpp
     core/WizCommentManager.cpp
     core/WizNoteManager.cpp
@@ -202,12 +204,12 @@ set(wiznote_SOURCES
     WizInitBizCertDialog.cpp
     share/WizDocumentStyle.cpp
 
-    interface/IWizHtmlEditorApp.cpp
-    interface/IWizExplorerWindow.cpp
-    interface/IWizCategoryCtrl.cpp
-    interface/IWizDocumentListCtrl.cpp
-    interface/IWizDatabase.cpp
-    interface/IWizExplorerApp.cpp
+    plugins/public_apis_object/IWizHtmlEditorApp.cpp
+    plugins/public_apis_object/IWizExplorerWindow.cpp
+    plugins/public_apis_object/IWizCategoryCtrl.cpp
+    plugins/public_apis_object/IWizDocumentListCtrl.cpp
+    plugins/public_apis_object/IWizDatabase.cpp
+    plugins/public_apis_object/IWizExplorerApp.cpp
 )
 
 set(wiznote_HEADERS
@@ -270,6 +272,19 @@ set(wiznote_HEADERS
     share/jsoncpp/json/json.h
     share/jsoncpp/json/json-forwards.h
     share/WizRequest.h
+
+    plugins/js_plugin_system/JSPluginManager.h
+    plugins/js_plugin_system/JSPluginSpec.h
+    plugins/js_plugin_system/JSPluginSelectorWindow.h
+    plugins/js_plugin_system/JSPluginHtmlDialog.h
+
+    plugins/public_apis_server/PublicAPIsServer.h
+    plugins/public_apis_server/WebSocketClientWrapper.h
+    plugins/public_apis_server/WebSocketTransport.h
+
+    plugins/tab_browser/FullScreenWindow.h
+    plugins/tab_browser/FullScreenNotification.h
+    plugins/tab_browser/WebEngineWindow.h
 
     WizDef.h
     WizActions.h
@@ -341,8 +356,6 @@ set(wiznote_HEADERS
     widgets/WizScreenShotWidget.h
     widgets/WizVerificationCodeDialog.h
     widgets/WizEmailShareDialog.h
-    share/WebSocketClientWrapper.h
-    share/WebSocketTransport.h
     share/WizWebEngineView.h
     WizWebEngineInjectObject.h
     widgets/WizShareLinkDialog.h
@@ -376,12 +389,12 @@ set(wiznote_HEADERS
     share/WizDocumentStyle.h
     WizCombineNotesDialog.h
 
-    interface/IWizHtmlEditorApp.h
-    interface/IWizExplorerWindow.h
-    interface/IWizCategoryCtrl.h
-    interface/IWizDocumentListCtrl.h
-    interface/IWizDatabase.h
-    interface/IWizExplorerApp.h
+    plugins/public_apis_object/IWizHtmlEditorApp.h
+    plugins/public_apis_object/IWizExplorerWindow.h
+    plugins/public_apis_object/IWizCategoryCtrl.h
+    plugins/public_apis_object/IWizDocumentListCtrl.h
+    plugins/public_apis_object/IWizDatabase.h
+    plugins/public_apis_object/IWizExplorerApp.h
 )
 
 set(wiznote_FORMS
@@ -428,8 +441,6 @@ include_directories(
     ${zlib_INCLUDE_DIRS}
     ${cryptopp_INCLUDE_DIRS}
     ${OpenSSL_INCLUDE_DIRS}
-    ${Gumbo_INCLUDE_DIRS}
-    ${GumboQuery_INCLUDE_DIRS}
 )
 
 #============================================================================
@@ -526,7 +537,10 @@ else()
     add_definitions(-DUNICODE=TRUE)
     add_definitions(-D_UNICODE=TRUE)
     #add_compile_options("/utf-8") # UNICODE or _UNICODE may not work
-    add_executable(WizNote WIN32 ${wiznote_SOURCES} ${wiznote_HEADERS} ${wiznote_FORM_HEADERS} ${wiznote_QM} ${wiznote_RC})
+    add_executable(WizNote WIN32 ${wiznote_SOURCES} ${wiznote_HEADERS} 
+        ${wiznote_FORM_HEADERS} ${wiznote_QM} ${wiznote_RC} 
+        ${CMAKE_SOURCE_DIR}/resources/logo.rc
+    )
     set_target_properties(${PROJECT_NAME} PROPERTIES AUTOMOC_MOC_OPTIONS "-DQ_OS_WIN32")
 
     install(TARGETS ${PROJECT_NAME} RUNTIME DESTINATION bin)
@@ -543,8 +557,6 @@ else()
             COMMAND ${CMAKE_COMMAND} -E copy ${_file} ${CMAKE_BINARY_DIR}/share/wiznote/locales/)
     endforeach()
 endif()
-
-add_definitions(-DWIZNOTEPLUS_VERSION="${WizNotePlus_VERSION}")
 
 qt_use_modules(WizNote)
 qt_suppress_warnings(WizNote)
@@ -563,57 +575,40 @@ link_directories(
 #============================================================================
 
 if(UNIX)
-	if(APPLE)
-		if(APPSTORE_BUILD)
-			target_link_libraries(${PROJECT_NAME}
-                            Qt5::WebEngine
-                            Qt5::WebEngineWidgets
-                            ${CMAKE_DL_LIBS}
-                            ${cryptopp_LIBRARIES}
-                            ${quazip_LIBRARIES}
-                            ${zlib_LIBRARIES}
-                            ${GumboQuery_LIBRARIES}
-                            ${Gumbo_LIBRARIES}
-			)
-		else(APPSTORE_BUILD)
-			target_link_libraries(${PROJECT_NAME}
-                            Qt5::WebEngine
-                            Qt5::WebEngineWidgets
-                            ${CMAKE_DL_LIBS}
-                            ${cryptopp_LIBRARIES}
-                            ${quazip_LIBRARIES}
-                            ${zlib_LIBRARIES}
-                            ${GumboQuery_LIBRARIES}
-                            ${Gumbo_LIBRARIES}
-			)
-		endif(APPSTORE_BUILD)
-	else(APPLE) 
-                # Linux: linking order is important.
-		target_link_libraries(${PROJECT_NAME}
-                    -lpthread
-                    X11
-                    Qt5::WebEngine
-                    Qt5::WebEngineWidgets
-                    ${CMAKE_DL_LIBS}
-                    ${cryptopp_LIBRARIES}
-                    ${OpenSSL_LIBRARIES}
-                    ${quazip_LIBRARIES}
-                    ${zlib_LIBRARIES}
-                    ${GumboQuery_LIBRARIES}
-                    ${Gumbo_LIBRARIES}
-		)
-	endif(APPLE)
-else(NOT UNIX)
-	target_link_libraries(${PROJECT_NAME}
-            Qt5::WebEngine
-            Qt5::WebEngineWidgets
-            Qt5::WinMain
+    if(APPLE)
+        if(APPSTORE_BUILD)
+            target_link_libraries(${PROJECT_NAME}
+                ${CMAKE_DL_LIBS}
+                ${cryptopp_LIBRARIES}
+                ${quazip_LIBRARIES}
+                ${zlib_LIBRARIES}
+            )
+        else(APPSTORE_BUILD)
+            target_link_libraries(${PROJECT_NAME}
+                ${CMAKE_DL_LIBS}
+                ${cryptopp_LIBRARIES}
+                ${quazip_LIBRARIES}
+                ${zlib_LIBRARIES}
+            )
+        endif(APPSTORE_BUILD)
+    else(APPLE)
+        # Linux: linking order is important.
+        target_link_libraries(${PROJECT_NAME}
+            -lpthread
+            X11
             ${CMAKE_DL_LIBS}
             ${cryptopp_LIBRARIES}
             ${OpenSSL_LIBRARIES}
             ${quazip_LIBRARIES}
             ${zlib_LIBRARIES}
-            ${GumboQuery_LIBRARIES}
-            ${Gumbo_LIBRARIES}
-	)
+        )
+    endif(APPLE)
+else(NOT UNIX)
+    target_link_libraries(${PROJECT_NAME}
+        ${CMAKE_DL_LIBS}
+        ${cryptopp_LIBRARIES}
+        ${OpenSSL_LIBRARIES}
+        ${quazip_LIBRARIES}
+        ${zlib_LIBRARIES}
+    )
 endif()

@@ -1,0 +1,3 @@
+src/share/sqlite3.c linguist-vendored=true
+src/share/sqlite3.h linguist-vendored=true
+src/share/sqlite3ext.h linguist-vendored=true

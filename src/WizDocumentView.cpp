@@ -99,17 +99,16 @@ WizDocumentView::WizDocumentView(WizExplorerApp& app, QWidget* parent)
     m_tab->addWidget(m_blankView);
     m_tab->setCurrentWidget(m_blankView);
     m_tab->setBackgroundRole(QPalette::HighlightedText);
-    // 设置评论部件
+    // Setup comment widget
     m_comments = m_commentWidget->web();
-    //m_comments->history()->setMaximumItemCount(0);
+    WizWebEngineInjectObjectCollection objects = {{"WizExplorerApp", WizGlobal::mainWindow()->publicAPIsObject()}};
+    auto profile = createWebEngineProfile(objects, this);
+    auto webPage = new WizWebEnginePage(objects, profile, m_comments);
+    m_comments->setPage(webPage);
     m_comments->settings()->setAttribute(QWebEngineSettings::LocalStorageEnabled, true);
-    //m_comments->page()->setScrollBarPolicy(Qt::Horizontal, Qt::ScrollBarAlwaysOff);
     m_comments->setAcceptDrops(false);
     connect(m_comments, SIGNAL(loadFinishedEx(bool)), m_title, SLOT(onCommentPageLoaded(bool)));
-
-    WizMainWindow* mv = WizGlobal::mainWindow();
-    QObject* IWizExplorerApp = qobject_cast<QObject*>(mv->componentInterface());
-    m_comments->addToJavaScriptWindowObject("WizExplorerApp", IWizExplorerApp);
+    //m_comments->addObjectToJavaScriptClient("WizExplorerApp", WizGlobal::mainWindow()->publicAPIsObject());
     //
     connect(m_commentWidget, SIGNAL(widgetStatusChanged()), SLOT(on_commentWidget_statusChanged()));
 
@@ -122,7 +121,8 @@ WizDocumentView::WizDocumentView(WizExplorerApp& app, QWidget* parent)
     m_title->setEditor(m_web);
     // 创建评论文档页面
     QWebEnginePage* commentsPage = m_comments->page();
-    connect(commentsPage, SIGNAL(linkClicked(QUrl, QWebEnginePage::NavigationType, bool, WizWebEnginePage*)), m_web, SLOT(onEditorLinkClicked(QUrl, QWebEnginePage::NavigationType, bool, WizWebEnginePage*)));
+    connect(commentsPage, SIGNAL(linkClicked(QUrl, QWebEnginePage::NavigationType, bool, WizWebEnginePage*)), 
+        m_web, SLOT(onEditorLinkClicked(QUrl, QWebEnginePage::NavigationType, bool, WizWebEnginePage*)));
 
     QVBoxLayout* layoutEditor = new QVBoxLayout(wgtEditor);
     layoutEditor->setSpacing(0);
@@ -182,6 +182,7 @@ WizDocumentView::WizDocumentView(WizExplorerApp& app, QWidget* parent)
     connect(m_title, SIGNAL(notifyBar_link_clicked(QString)), SLOT(on_notifyBar_link_clicked(QString)));
     connect(m_title, SIGNAL(loadComment_request(QString)), SLOT(on_loadComment_request(QString)), Qt::QueuedConnection);
     connect(m_title, SIGNAL(viewNoteInExternalEditor_request(QString&,QString&,QString&,int,int)), SLOT(on_viewNoteInExternalEditor_request(QString&,QString&,QString&,int,int)));
+    connect(m_title, &WizTitleBar::discardChangesRequest, this, &WizDocumentView::handleDiscardChangesRequest);
 
     // 编辑状态同步线程
     m_editStatusSyncThread->start(QThread::IdlePriority);
@@ -998,6 +999,21 @@ void WizDocumentView::on_viewNoteInExternalEditor_request(QString& Name, QString
     web()->viewDocumentInExternalEditor(editorData);
 }
 
+void WizDocumentView::handleDiscardChangesRequest()
+{
+    // Change editor state
+    m_editorMode = modeReader;
+    m_editStatus = DOCUMENT_STATUS_NOSTATUS;
+    m_title->setEditorMode(modeReader);
+    // Discard changes
+    m_web->discardChanges();
+    // Notify group status
+    bool isGroupNote = m_dbMgr.db(m_note.strKbGUID).isGroup();
+    if (isGroupNote) {
+        stopDocumentEditingStatus();
+        startCheckDocumentEditStatus();
+    }
+}
 
 void WizDocumentView::on_loadComment_request(const QString& url)
 {

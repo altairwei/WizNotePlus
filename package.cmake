@@ -132,6 +132,18 @@ file(STRINGS ${WIZNOTE_SOURCE_DIR}/CMakeLists.txt project_command_str
 )
 string(REGEX MATCH "([0-9]+)\.([0-9]+)\.([0-9]+)" WIZNOTEPLUS_VERSION ${project_command_str})
 
+# Get build version
+execute_process(
+    COMMAND git describe --tags
+    WORKING_DIRECTORY ${WIZNOTE_SOURCE_DIR}
+    OUTPUT_VARIABLE WIZNOTEPLUS_BUILD_VERSION
+    RESULT_VARIABLE result
+)
+if(NOT result EQUAL "0")
+    message(FATAL_ERROR "Fail to get build version!")
+endif()
+string(STRIP ${WIZNOTEPLUS_BUILD_VERSION} WIZNOTEPLUS_BUILD_VERSION)
+
 #============================================================================
 # Construct directory tree 构建目录树
 #============================================================================
@@ -155,7 +167,10 @@ if(UNIX)
     endif(APPLE)
 elseif(WIN32)
     #TODO: Windows platform
-
+    file(MAKE_DIRECTORY 
+        ${WIZNOTE_BUILD_DIR}
+        ${WIZNOTE_PACKAGE_DIR}
+    )
 else(UNIX)
     message(FATAL_ERROR "\nCan't detect which platform your are useing!")
 endif(UNIX)
@@ -251,15 +266,12 @@ if(GENERATE_INSTALL_DIR)
             message(FATAL_ERROR "Fail to install WizNotePlus project!")
         endif()
     elseif(WIN32)
-        # use NMake Makefiles generator
+        # Windows platform
         message("\nStart install WizNotePlus project:\n")
-        execute_process(COMMAND nmake install
-            WORKING_DIRECTORY ${WIZNOTE_BUILD_DIR}
-            RESULT_VARIABLE result
-        )
-        if(NOT result EQUAL "0")
-            message(FATAL_ERROR "Fail to install WizNotePlus project!")
-        endif()
+        file(GLOB all_bin ${WIZNOTE_BUILD_DIR}/bin/*)
+        file(COPY ${all_bin} DESTINATION ${WIZNOTE_PACKAGE_DIR}/WizNote/bin )
+        file(GLOB all_share ${WIZNOTE_BUILD_DIR}/share/*)
+        file(COPY ${all_share} DESTINATION ${WIZNOTE_PACKAGE_DIR}/WizNote/share )
     else()
         # unavailable platform
         message(FATAL_ERROR "\nCan't detect which platform your are useing!")
@@ -403,9 +415,9 @@ if(GENERATE_INSTALL_DIR AND GENERATE_PACKAGE)
             endif()
 
             # change Info.plist version.
-            file(READ ${WIZNOTE_INSTALL_PREFIX}/Contents/Info.plist info_plist ENCODING UTF-8)
-            string(REGEX REPLACE "<string>2.7.0</string>" "<string>${WIZNOTEPLUS_VERSION}</string>" info_plist "${info_plist}")
-            file(WRITE ${WIZNOTE_INSTALL_PREFIX}/Contents/Info.plist "${info_plist}")
+            #file(READ ${WIZNOTE_INSTALL_PREFIX}/Contents/Info.plist info_plist ENCODING UTF-8)
+            #string(REGEX REPLACE "<string>2.7.0</string>" "<string>${WIZNOTEPLUS_VERSION}</string>" info_plist "${info_plist}")
+            #file(WRITE ${WIZNOTE_INSTALL_PREFIX}/Contents/Info.plist "${info_plist}")
 
             # deploy 3rdpaty libraries
             message("\nStart deploy WizNotePlus project:\n")
@@ -423,18 +435,18 @@ if(GENERATE_INSTALL_DIR AND GENERATE_PACKAGE)
                     "\n-- Exit Code: ${macdeployqt_result}"
                 )
             endif()
-            execute_process(COMMAND python ${WIZNOTE_SOURCE_DIR}/external/macdeployqtfix.py
-                ${WIZNOTE_INSTALL_PREFIX}/Contents/MacOS/WizNote ${QTDIR}
-                WORKING_DIRECTORY ${WIZNOTE_BUILD_DIR}
-                RESULT_VARIABLE macdeployqtfix_result
-            )
-            if(NOT macdeployqtfix_result EQUAL "0")
-                message(FATAL_ERROR
-                    "\nFail to package WizNotePlus project!"
-                    "\n-- Command: python ${WIZNOTE_SOURCE_DIR}/external/macdeployqtfix.py"
-                    "\n-- Exit Code: ${macdeployqtfix_result}"
-                )
-            endif()
+            # execute_process(COMMAND python ${WIZNOTE_SOURCE_DIR}/external/macdeployqtfix.py
+            #     ${WIZNOTE_INSTALL_PREFIX}/Contents/MacOS/WizNote ${QTDIR}
+            #     WORKING_DIRECTORY ${WIZNOTE_BUILD_DIR}
+            #     RESULT_VARIABLE macdeployqtfix_result
+            # )
+            # if(NOT macdeployqtfix_result EQUAL "0")
+            #     message(FATAL_ERROR
+            #         "\nFail to package WizNotePlus project!"
+            #         "\n-- Command: python ${WIZNOTE_SOURCE_DIR}/external/macdeployqtfix.py"
+            #         "\n-- Exit Code: ${macdeployqtfix_result}"
+            #     )
+            # endif()
             #FIXME: Should not add rpath by hand!
             execute_process(COMMAND install_name_tool
                 -add_rpath "@executable_path/../Frameworks"
@@ -480,7 +492,7 @@ if(GENERATE_INSTALL_DIR AND GENERATE_PACKAGE)
                 --hide-extension "WizNote.app"
                 --app-drop-link 400 190
                 --format UDZO
-                ${package_output_path}/WizNotePlus-mac-v${WIZNOTEPLUS_VERSION}.dmg
+                ${package_output_path}/WizNotePlus-mac-${WIZNOTEPLUS_BUILD_VERSION}.dmg
                 ${WIZNOTE_PACKAGE_DIR}/
                 WORKING_DIRECTORY ${WIZNOTE_SOURCE_DIR}
                 RESULT_VARIABLE result
@@ -508,12 +520,20 @@ if(GENERATE_INSTALL_DIR AND GENERATE_PACKAGE)
                 ${OUTSIDE_DIR}/WizNote*.AppImage)
             list(GET wiznote_appimage_files 0 wiznote_appimage_file)
             string(REGEX REPLACE "WizNote\\-(.*)\\.AppImage"
-                "WizNotePlus-linux-\\1-v${WIZNOTEPLUS_VERSION}.AppImage" new_appimage_filename
+                "WizNotePlus-linux-\\1-${WIZNOTEPLUS_BUILD_VERSION}.AppImage" new_appimage_filename
                 ${wiznote_appimage_file})
             file(RENAME ${wiznote_appimage_file} ${new_appimage_filename})
         endif(APPLE)
     elseif(WIN32)
         # Windows platform
+        message("\nStart package WizNotePlus project:\n")
+        execute_process(COMMAND ${QTDIR}/bin/windeployqt ${WIZNOTE_PACKAGE_DIR}/WizNote/bin/WizNote.exe
+            WORKING_DIRECTORY ${WIZNOTE_PACKAGE_DIR}
+            RESULT_VARIABLE result
+        )
+        if(NOT result EQUAL "0")
+            message(FATAL_ERROR "Fail to package WizNotePlus project!")
+        endif()
 
     else(UNIX)
         message(FATAL_ERROR "\nCan't detect which platform your are useing!")

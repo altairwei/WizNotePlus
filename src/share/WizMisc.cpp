@@ -5,6 +5,7 @@
 #include <fstream>
 #include <stdlib.h>
 #include <string.h>
+
 #include <QApplication>
 #include <QTextDocument>
 #include <QClipboard>
@@ -15,12 +16,15 @@
 #include <QThread>
 #include <QFileIconProvider>
 #include <QSettings>
-
+#include <QtSvg>
+#include <QSvgRenderer>
+#include <QGraphicsSvgItem>
 #include <QtCore>
 #include <QNetworkConfigurationManager>
 #include <QNetworkAccessManager>
 #include <QNetworkRequest>
 #include <QNetworkReply>
+
 #include "utils/WizLogger.h"
 #include "utils/WizPathResolve.h"
 #include "utils/WizStyleHelper.h"
@@ -1106,27 +1110,14 @@ BOOL WizLoadUnicodeTextFromBuffer(const char* pBuffer, size_t nLen, CString& str
 }
 
 
-bool WizLoadUnicodeTextFromFile(const QString& strFileName, QString& strText)
+bool WizLoadUnicodeTextFromFile(const QString& strFileName, QString& strText, const char *encoding /*= "UTF-8"*/)
 {
     QFile file(strFileName);
     if (!file.open(QIODevice::ReadOnly | QIODevice::Text))
         return false;
 
     QTextStream stream(&file);
-    strText = stream.readAll();
-    file.close();
-
-    return true;
-}
-
-bool WizLoadUtf8TextFromFile(const QString& strFileName, QString& strText)
-{
-    QFile file(strFileName);
-    if (!file.open(QIODevice::ReadOnly | QIODevice::Text))
-        return false;
-
-    QTextStream stream(&file);
-    stream.setCodec("UTF-8");
+    stream.setCodec(encoding);
     strText = stream.readAll();
     file.close();
 
@@ -1146,7 +1137,7 @@ bool WizLoadTextFromResource(const QString& resourceName, QString& text)
 }
 
 
-bool WizSaveUnicodeTextToUtf16File(const CString& strFileName, const CString& strText)
+bool WizSaveUnicodeTextToUtf16File(const QString& strFileName, const QString& strText)
 {
     QFile file(strFileName);
     if (!file.open(QIODevice::WriteOnly))
@@ -1680,36 +1671,52 @@ QString WizGetSystemCustomSkinPath(const QString& strSkinName)
         #endif
 }
 
+/**
+ * @brief Search for skin resource files according to given name.
+ * 
+ *      If you do not specify the suffixes of resource name, svg 
+ *      files will gain high priority.
+ * 
+ * @param strSkinName 
+ * @param strName 
+ * @return QString 
+ */
 QString WizGetSkinResourceFileName(const QString& strSkinName, const QString& strName)
 {
+    if (strSkinName.isEmpty()) {
+        if (strName.indexOf("/") != -1)
+            return strName;
+        if (strName.indexOf("\\") != -1)
+            return strName;
+    }
+    //
     QString arrayPath[] =
     {
-        WizGetSystemCustomSkinPath(strSkinName),
+        //FIXME: treat OS equally
+        //WizGetSystemCustomSkinPath(strSkinName),
         WizGetSkinResourcePath(strSkinName)
     };
 
     QStringList suffixList;
-    suffixList << ".png" << ".tiff" << ".gif";
 
+    QString ext = Utils::WizMisc::extractFileExt(strName);
+    if (ext.isEmpty()) {
+        suffixList << ".svg" << ".png";
+    } else {
+        suffixList << "";
+    }
+    //
     for (size_t i = 0; i < sizeof(arrayPath) / sizeof(QString); i++)
     {
         QStringList::const_iterator it;
         for (it = suffixList.begin(); it != suffixList.end(); it++) {
             QString strFileName = arrayPath[i] + strName + *it;
-            //qDebug() << strFileName;
             if (::WizPathFileExists(strFileName)) {
                 return strFileName;
             }
         }
     }
-
     return QString();
-}
-
-QIcon WizLoadSkinIcon(const QString& strSkinName, const QString& strIconName,
-                      QIcon::Mode mode /* = QIcon::Normal */, QIcon::State state /* = QIcon::Off */)
-{
-    return WizLoadSkinIcon(strSkinName, strIconName, QSize(), mode, state);
 }
 
 QPixmap WizLoadPixmapIcon(const QString& strSkinName, const QString& strIconName, const QSize& iconSize)
@@ -1742,129 +1749,112 @@ QPixmap WizLoadPixmapIcon(const QString& strSkinName, const QString& strIconName
 
 }
 
-QIcon WizLoadSkinIcon(const QString& strSkinName, const QString& strIconName, const QSize& iconSize,
+/** Render svg to pixmap */
+QPixmap svg2Pixmap(QString svgFile, const QSize& size)
+{
+    // Get svg content.
+    QFile file(svgFile);
+    file.open(QFile::ReadOnly);
+    QByteArray bytes = file.readAll();
+    // Render to pixmap.
+    QSvgRenderer rr(bytes);
+    QImage image(size.width(), size.height(), QImage::Format_ARGB32);
+    QPainter painter(&image);
+    painter.setCompositionMode(QPainter::CompositionMode_SourceOver);
+    image.fill(Qt::transparent);
+    rr.render(&painter);
+    return QPixmap::fromImage(image); 
+}
+
+/**
+ * @brief Create QIcon by loading icon files of specified skin name.
+ * 
+ * @param strSkinName 
+ * @param strIconName 
+ * @param iconSize 
+ * @param mode 
+ * @param state 
+ * @return QIcon 
+ */
+QIcon WizLoadSkinIconFiles(const QString& strSkinName, const QString& strIconName, const QSize& iconSize,
                       QIcon::Mode mode /* = QIcon::Normal */, QIcon::State state /* = QIcon::Off */)
 {
     Q_UNUSED(mode);
     Q_UNUSED(state);
 
-
- #ifdef Q_OS_MAC
-
-    Q_UNUSED(iconSize);
-
     QString strIconNormal = WizGetSkinResourceFileName(strSkinName, strIconName);
     QString strIconActive1 = WizGetSkinResourceFileName(strSkinName, strIconName + "_on");
     QString strIconActive2 = WizGetSkinResourceFileName(strSkinName, strIconName + "_selected");
-
 
     if (!strIconNormal.isEmpty() && !QFile::exists(strIconNormal)) {
         //TOLOG1("Can't load icon: ", strIconName);
         return QIcon();
     }
 
-    QIcon icon;
-    icon.addFile(strIconNormal, QSize(), QIcon::Normal, QIcon::Off);
+    bool bSvgExt = Utils::WizMisc::extractFileExt(strIconNormal) == ".svg";
 
-    // used for check state
+    QIcon icon(strIconNormal);
+
+    if (bSvgExt)
+        icon.addPixmap(svg2Pixmap(strIconNormal, iconSize), QIcon::Normal, QIcon::Off);
+    else
+        icon.addFile(strIconNormal, iconSize, QIcon::Normal, QIcon::Off);
+
+    // used for check state； "_on" suffix
     if (!strIconActive1.isEmpty() && QFile::exists(strIconActive1)) {
-        icon.addFile(strIconActive1, QSize(), QIcon::Active, QIcon::On);
+        if (bSvgExt)
+            icon.addPixmap(svg2Pixmap(strIconActive1, iconSize), QIcon::Active, QIcon::On);
+        else
+            icon.addFile(strIconActive1, iconSize, QIcon::Active, QIcon::On);
     }
 
-    // used for sunken state
+    // used for sunken state; "_selected" suffix
     if (!strIconActive2.isEmpty() && QFile::exists(strIconActive2)) {
-        icon.addFile(strIconActive2, QSize(), QIcon::Active, QIcon::Off);
-    }
-
-    return icon;
-#else
-    QString strIconNormal = strIconName;
-    QString strIconActive1 = strIconName + "_on";
-    QString strIconActive2 = strIconName + "_selected";
-
-
-    if (!WizGetSkinResourceFileName(strSkinName, strIconNormal).isEmpty() && !QFile::exists(WizGetSkinResourceFileName(strSkinName, strIconNormal))) {
-        //TOLOG1("Can't load icon: ", strIconName);
-        return QIcon();
-    }
-
-    QPixmap pixmapNormal = WizLoadPixmapIcon(strSkinName, strIconNormal, iconSize);
-
-    QIcon icon;
-    icon.addPixmap(pixmapNormal, QIcon::Normal, QIcon::Off);
-
-    // used for check state
-    if (!WizGetSkinResourceFileName(strSkinName, strIconActive1).isEmpty() && QFile::exists(WizGetSkinResourceFileName(strSkinName, strIconActive1))) {
-        QPixmap pixmapActive1 = WizLoadPixmapIcon(strSkinName, strIconActive1, iconSize);
-        icon.addPixmap(pixmapActive1, QIcon::Active, QIcon::On);
-    }
-
-    // used for sunken state
-    if (!WizGetSkinResourceFileName(strSkinName, strIconActive2).isEmpty() && QFile::exists(WizGetSkinResourceFileName(strSkinName, strIconActive2))) {
-        QPixmap pixmapActive2 = WizLoadPixmapIcon(strSkinName, strIconActive2, iconSize);
-        icon.addPixmap(pixmapActive2, QIcon::Active, QIcon::Off);
-    }
-
-    return icon;
-#endif
-}
-
-QIcon WizLoadSkinIcon(const QString& strSkinName, QColor forceground, const QString& strIconName)
-{
-    Q_UNUSED(forceground);
-
-    QString strFileName = WizGetSkinResourceFileName(strSkinName, strIconName);
-    if (strFileName.isEmpty())
-        return QIcon();
-
-    QPixmap pixmap(strFileName);
-
-    QIcon icon;
-    icon.addPixmap(pixmap);
-
-    return icon;
-}
-
-QIcon WizLoadSkinIcon2(const QString& strSkinName, const QColor& blendColor, const QString& strIconName)
-{
-    QString strFileName = WizGetSkinResourceFileName(strSkinName, strIconName);
-    if (!strFileName.isEmpty() && !QFile::exists(strFileName)) {
-        return QIcon();
-    }
-
-    QImage imgOrig(strFileName);
-
-    float factor_R = 0.6f;
-    float factor_G = 0.7f;
-    float factor_B = 1.0f;
-    QRgb blendColorBase = qRgb(blendColor.red() * factor_R, blendColor.green() * factor_G, blendColor.blue() * factor_B);
-
-    for (int i = 0; i < imgOrig.height(); i++) {
-        for (int j = 0; j < imgOrig.width(); j++) {
-            QRgb colorOld = imgOrig.pixel(i, j);
-            int alpha  = qAlpha(colorOld);
-
-            // alpha channel blending
-            int red = qRed(blendColorBase) * (255 - alpha) / 255;
-            int green = qGreen(blendColorBase) * (255 - alpha) / 255;
-            int blue = qBlue(blendColorBase) * (255 - alpha) / 255;
-
-            // optimize, shallow color deepth
-            if (alpha <= 192) {
-                imgOrig.setPixel(i, j, qRgba(red, green, blue, alpha));
-            } else if (alpha > 192) {
-                imgOrig.setPixel(i, j, qRgba(red, green, blue, alpha - 128));
-            }
+        if (bSvgExt) {
+            icon.addPixmap(svg2Pixmap(strIconActive2, iconSize), QIcon::Active, QIcon::Off);
+            icon.addPixmap(svg2Pixmap(strIconActive2, iconSize), QIcon::Selected, QIcon::Off);
+        } else {
+            icon.addFile(strIconActive2, iconSize, QIcon::Active, QIcon::Off);
+            icon.addFile(strIconActive2, iconSize, QIcon::Selected, QIcon::Off);
         }
+            
     }
 
-
-    // Test
-    QIcon icon;
-    QPixmap pixmap;
-    pixmap.convertFromImage(imgOrig);
-    icon.addPixmap(pixmap);
     return icon;
+}
+
+QIcon WizLoadSkinIcon(const QString& strSkinName, const QString& strIconName)
+{
+    return WizLoadSkinIcon(strSkinName, strIconName, QSize());
+}
+
+/**
+ * @brief Create QIcon by specifying skin and icon name.
+ * 
+ *      The icon name is not the full name of icon file, please see
+ *      relevant icon file naming rules.
+ * 
+ * @param strSkinName 
+ * @param strIconName 
+ * @param iconSize 
+ * @param mode 
+ * @param state 
+ * @return QIcon 
+ */
+QIcon WizLoadSkinIcon(const QString& strSkinName, const QString& strIconName, const QSize& iconSize, 
+                        QIcon::Mode mode /*= QIcon::Normal*/, QIcon::State state /*= QIcon::Off*/)
+{
+    QSize size = iconSize;
+    if (size.isEmpty() || size.isNull() || !size.isValid()) {
+        size = QSize(WizSmartScaleUIEx(16), WizSmartScaleUIEx(16));
+    }
+    //
+    QString fileName = WizGetSkinResourceFileName(strSkinName, strIconName);
+    if (fileName.isEmpty() || !QFile::exists(fileName)) {
+        return QIcon();
+    }
+
+    return WizLoadSkinIconFiles(strSkinName, strIconName, size);
 }
 
 bool WizImageBlending(QImage& img, const QColor& blendColor, QIcon::Mode mode /* = QIcon::Normal */)
@@ -2115,13 +2105,15 @@ QString WizText2Html(const QString& text)
 
 QString getImageHtmlLabelByFile(const QString& strImageFile)
 {
-    return QString("<div><img border=\"0\" src=\"file://%1\" /></div>").arg(strImageFile);
+    return QString("<div><img border=\"0\" src=\"%1\" /></div>")
+                .arg(QUrl::fromLocalFile(strImageFile).toString());
 }
 
 QString WizGetImageHtmlLabelWithLink(const QString& imageFile, const QSize& imgSize, const QString& linkHref)
 {
-    return QString("<div><a href=\"%1\"><img border=\"0\" width=\"%2px\" height=\"%3px\" src=\"file://%4\" /></a></div>")
-            .arg(linkHref).arg(imgSize.width()).arg(imgSize.height()).arg(imageFile);
+    return QString("<div><a href=\"%1\"><img border=\"0\" width=\"%2px\" height=\"%3px\" src=\"%4\" /></a></div>")
+            .arg(linkHref).arg(imgSize.width()).arg(imgSize.height())
+            .arg(QUrl::fromLocalFile(imageFile).toString());
 }
 
 bool WizImage2Html(const QString& strImageFile, QString& strHtml, QString strDestImagePath)
@@ -2413,6 +2405,11 @@ QString WizGetDefaultTranslatedLocal()
 bool IsWizKMURL(const QString& strURL)
 {
     return strURL.left(5) == "wiz:/";
+}
+
+bool IsHttpURL(const QString &strURL)
+{
+    return strURL.left(7) == "http://" || strURL.left(8) == "https://";
 }
 
 
@@ -2992,12 +2989,16 @@ bool WizURLDownloadToFile(const QString& url, const QString& fileName, bool isIm
     QString newUrl = url;
     QNetworkAccessManager netCtrl;
     QNetworkReply* reply;
-    //
+    
+    // Get data from URL
     bool redirect = false;
     QByteArray byData;
     do
     {
         QNetworkRequest request(newUrl);
+        request.setAttribute(
+            QNetworkRequest::RedirectPolicyAttribute, 
+            QNetworkRequest::NoLessSafeRedirectPolicy);
         //
         reply = netCtrl.get(request);
         WizAutoTimeOutEventLoop loop(reply);
@@ -3023,13 +3024,17 @@ bool WizURLDownloadToFile(const QString& url, const QString& fileName, bool isIm
 
     WizDeleteFile(fileName);
 
+    /*
+    // It's not necessary to treat image specially?
     if (isImage)
     {
         QPixmap pix;
         pix.loadFromData(byData);
         return pix.save(fileName);
     }
+    */
 
+    // Save data to file
     QFile file(fileName);
     if (!file.open(QIODevice::WriteOnly | QIODevice::Truncate))
         return false;

@@ -25,7 +25,6 @@
 #include "share/WizMisc.h"
 #include "WizDef.h"
 #include "share/WizSettings.h"
-#include "WizDocumentWebEngine.h"
 #include "WizDocumentWebView.h"
 #include "WizActions.h"
 #include "utils/WizLogger.h"
@@ -2322,7 +2321,7 @@ bool WizEditorToolBar::processImageSrc(bool bUseForCopy, bool& bNeedSubsequent)
         return true;
     }
 
-    //
+    //FIXME: check file URI scheme is correct or not?
     if (m_strImageSrc.left(7) == "file://")
     {
         m_strImageSrc.remove(0, 7);

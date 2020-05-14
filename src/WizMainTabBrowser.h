@@ -3,8 +3,12 @@
 
 #include <QTabWidget>
 #include <QAbstractButton>
+#include <QScopedPointer>
+#include <QWebEngineFullScreenRequest>
+
 #include "share/WizWebEngineView.h"
 #include "WizDocumentWebView.h"
+#include "plugins/tab_browser/FullScreenWindow.h"
 
 QT_BEGIN_NAMESPACE
 class QUrl;
@@ -55,6 +59,7 @@ private:
     WizExplorerApp& m_app;
     WizDatabaseManager& m_dbMgr;
     QString m_strTheme;
+    QScopedPointer<FullScreenWindow> m_fullScreenWindow;
 
 signals:
     void titleChanged(const QString &title);
@@ -65,16 +70,26 @@ signals:
 public slots:
     void handleCurrentChanged(int index);
     void handleContextMenuRequested(const QPoint &pos);
+    WizWebEngineView *createTab();
+    WizWebEngineView *createBackgroundTab();
+    WizWebEngineView *createWindow();
     int createTab(WizDocumentView *docView);
+    int createTab(WizWebsiteView *websiteView);
     int createTab(const QUrl &url);
     void closeTab(int index);
     void closeOtherTabs(int index);
+    void closeAllTabs();
     void closeLeftTabs(int index);
     void closeRightTabs(int index);
     void lockTab(int index);
     void unlockTab(int index);
     void onViewNoteRequested(WizDocumentView* view, const WIZDOCUMENTDATAEX& doc, bool forceEditing);
     void on_document_deleted(const WIZDOCUMENTDATA&);
+    void on_document_modified(const WIZDOCUMENTDATA& documentOld, const WIZDOCUMENTDATA& documentNew);
+
+    void triggeredFullScreen();
+    void handleExitFullScreen();
+    void fullScreenRequested(QWebEngineFullScreenRequest request);
 
 private:
     void setupView(WizWebEngineView* view);

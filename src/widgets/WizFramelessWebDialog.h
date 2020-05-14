@@ -14,7 +14,7 @@ class WizFramelessWebDialog : public WizWebEngineViewContainerDialog
     Q_OBJECT
 public:
     explicit WizFramelessWebDialog(QWidget *parent = 0);
-
+    ~WizFramelessWebDialog();
     void loadAndShow(const QString& strUrl);
 
 signals:

@@ -15,7 +15,7 @@
 #include "WizDef.h"
 #include "share/WizObject.h"
 #include "share/WizWebEngineView.h"
-#include "interface/IWizHtmlEditorApp.h"
+#include "plugins/public_apis_object/IWizHtmlEditorApp.h"
 
 
 class WizObjectDownloaderHost;
@@ -160,9 +160,6 @@ public:
     //
     void clear();
     //
-    friend class WizDocumentWebViewPage;
-    friend class IWizHtmlEditorApp;
-    //
     void waitForDone();
 
     // view and save
@@ -184,7 +181,6 @@ public:
     void viewDocumentInExternalEditor(const WizExternalEditorData &editorData);
     void loadDocumentToExternalEditor(const WIZDOCUMENTDATA &docData, const WizExternalEditorData &editorData);
     QString documentTitle();
-    void queryHtmlNodeText(QString& strHtml, QString strSelector);
 
     // initialize editor style before render, only invoke once.
     void replaceDefaultCss(QString& strHtml);
@@ -253,13 +249,17 @@ public:
     QString getLocalLanguage();
     void OnSelectionChange(const QString& currentStyle);
     void saveCurrentNote();
+    void onReturn();
+    void doPaste();
+
+    QObject *publicAPIsObject() { return m_htmlEditorApp; }
 
 private:
     void initEditorActions();
     //
     void loadDocumentInWeb(WizEditorMode editorMode);
     //
-    void getAllEditorScriptAndStypeFileName(std::map<QString, QString>& arrayFile);
+    void getAllEditorScriptAndStyleFileName(std::map<QString, QString>& arrayFile);
     void insertScriptAndStyleCore(QString& strHtml, const std::map<QString, QString>& files);
     //
     void tryResetTitle();
@@ -323,6 +323,7 @@ private:
 
 public:
     void onNoteLoadFinished(); // editor callback
+    void discardChanges();
 
 public Q_SLOTS:
     void onActionTriggered(QWebEnginePage::WebAction act);
@@ -342,7 +343,6 @@ public Q_SLOTS:
     void on_insertCodeHtml_requset(QString strOldHtml);
 
     //
-    void onViewSourceTriggered();
     void onActionSaveTriggered();
     void handleSavePageTriggered();
     void handleReloadTriggered();
@@ -442,6 +442,9 @@ private:
     QString getHighlightKeywords();
     //
 //    bool shouldAddUserDefaultCSS();
+
+    friend class WizDocumentWebViewPage;
+    friend class IWizHtmlEditorApp;
 };
 
 

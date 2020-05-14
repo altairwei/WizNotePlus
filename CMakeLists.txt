@@ -12,11 +12,13 @@
 
 cmake_minimum_required(VERSION 3.0)
 
-project(WizNotePlus VERSION 2.7.3)
+project(WizNotePlus VERSION 2.8.0)
 
 #============================================================================
 # Options and Variables
 #============================================================================
+
+option(BUILD_TESTING "Building the test target or not." OFF)
 
 # Excute conan outside or not.
 option(CONAN_INSTALL_MANUALLY "Run Conan install command manually." OFF)
@@ -89,21 +91,24 @@ if(NOT CONAN_INSTALL_MANUALLY)
     include(${CMAKE_BINARY_DIR}/conan_paths.cmake)
 endif()
 
+# set find_package search path
+# This is a workaround of conan-zlib bug https://github.com/conan-community/community/issues/259
+set(CMAKE_MODULE_PATH ${CMAKE_BINARY_DIR} ${CMAKE_MODULE_PATH})
+
 # setup 3rd-party package
 find_package(cryptopp REQUIRED)
 find_package(quazip REQUIRED)
 find_package(zlib REQUIRED)
-find_package(Gumbo REQUIRED)
-find_package(GumboQuery REQUIRED)
 find_package(OpenSSL)
 
 # install 3rd-party package
-list(REMOVE_ITEM OpenSSL_LIBRARIES dl)
-if(NOT APPLE)
-    install(FILES ${OpenSSL_LIBRARIES} DESTINATION lib)
-else()
-    install(FILES ${OpenSSL_LIBRARIES} DESTINATION Contents/MacOS)
-endif()
+# list(REMOVE_ITEM OpenSSL_LIBRARIES dl)
+# if(NOT APPLE)
+#     set(lib_install_dest lib)
+# else()
+#     set(lib_install_dest Contents/MacOS)
+# endif()
+# install(DIRECTORY ${CMAKE_BINARY_DIR}/lib/ DESTINATION ${lib_install_dest} )
 
 # set output path
 include(${CMAKE_BINARY_DIR}/conanbuildinfo.cmake)
@@ -155,3 +160,8 @@ endif()
 
 #add_subdirectory(lib)
 add_subdirectory(src)
+
+if(CMAKE_PROJECT_NAME STREQUAL PROJECT_NAME AND BUILD_TESTING)
+    enable_testing()
+    add_subdirectory(tests)
+endif()

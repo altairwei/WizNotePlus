@@ -39,7 +39,6 @@
 #include "sync/WizAvatarHost.h"
 #include "WizThumbCache.h"
 #include "WizMainWindow.h"
-#include "WizDocumentWebEngine.h"
 #include "WizLoginDialog.h"
 
 #ifdef Q_OS_MAC
@@ -147,10 +146,10 @@ int mainCore(int argc, char *argv[])
 #ifdef Q_OS_WIN
     // 暂时先采用UI缩放+字体缩小的方案来适配Windows高分屏
     QApplication::setAttribute(Qt::AA_EnableHighDpiScaling);
-    QApplication::setAttribute(Qt::AA_Use96Dpi);
+    //QApplication::setAttribute(Qt::AA_Use96Dpi);
 #endif
 
-    // 初始化主进程和QtWebEngine
+    // Init Application and QtWebEngine
     //-------------------------------------------------------------------
 
 #ifdef Q_OS_LINUX
@@ -161,20 +160,16 @@ int mainCore(int argc, char *argv[])
         app.sendMessage(WIZ_SINGLE_APPLICATION);
         return 0;
     }
-    // 初始化Chrome内核
-    QtWebEngine::initialize();
 #else
-    // 创建Win和Mac端 Qt主进程
+    // create application for Windows and MacOS
     QApplication app(argc, argv);
     //
 #ifdef BUILD4APPSTORE
-    QDir dir(QApplication::applicationDirPath()); //进入exe文件所在的绝对路径
+    QDir dir(QApplication::applicationDirPath());
     dir.cdUp();
     dir.cd("PlugIns");
-    QApplication::setLibraryPaths(QStringList(dir.absolutePath())); //设置库路径
+    QApplication::setLibraryPaths(QStringList(dir.absolutePath()));
 #endif
-    // 初始化Win和Mac端Chrome内核
-    QtWebEngine::initialize();
 
 #ifdef BUILD4APPSTORE
     WizIAPHelper helper;
@@ -182,16 +177,17 @@ int mainCore(int argc, char *argv[])
 #endif
 #endif
 
+    QtWebEngine::initialize();
     QWebEngineSettings::defaultSettings()->setAttribute(QWebEngineSettings::FocusOnNavigationEnabled, true);
     QWebEngineSettings::defaultSettings()->setAttribute(QWebEngineSettings::AllowWindowActivationFromJavaScript, true);
+    QWebEngineSettings::defaultSettings()->setAttribute(QWebEngineSettings::LocalContentCanAccessRemoteUrls, true);
+    QWebEngineSettings::defaultSettings()->setAttribute(QWebEngineSettings::FullScreenSupportEnabled, true);
 
     // 配置QtApp和Debug
     //-------------------------------------------------------------------
 
 #ifdef Q_OS_WIN
-    QFont appFont = WizCreateWindowsUIFont(app, WizGetWindowsFontName());
-    appFont.setPixelSize(14); // Windows 端自动缩放UI后缩小字体大小
-    //appFont.setPointSize(12);
+    QFont appFont = WizCreateWindowsUIFont(app);
     QApplication::setFont(appFont);
 #endif
     // Debug 输出
@@ -271,19 +267,6 @@ int mainCore(int argc, char *argv[])
     /// 获取用户设置
     QSettings* settings = new QSettings(Utils::WizPathResolve::userSettingsFile(strAccountFolderName), QSettings::IniFormat);
     WizGlobal::setSettings(settings);
-
-    /// 外置编辑器设置
-    /*
-    QSettings* extEditorSettings = new QSettings(
-                Utils::WizPathResolve::dataStorePath() + strAccountFolderName + "/externalEditor.ini", QSettings::IniFormat);
-    extEditorSettings->beginGroup("Editor_0");
-    extEditorSettings->setValue("Name", "Typora");
-    extEditorSettings->setValue("ProgramFile", "/usr/bin/typora");
-    extEditorSettings->setValue("Arguments", "%1"); // %1 将被传入文件地址
-    extEditorSettings->setValue("TextEditor", "1");
-    extEditorSettings->setValue("UTF8Encoding", "0");
-    extEditorSettings->endGroup();
-    */
 
     // 语言本地化
     //-------------------------------------------------------------------

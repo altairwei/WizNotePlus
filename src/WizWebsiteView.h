@@ -14,13 +14,15 @@ class WizWebsiteView  : public QWidget
     Q_OBJECT
 
 public:
-    WizWebsiteView(WizExplorerApp& app, QWidget* parent = nullptr);
+    WizWebsiteView(WizWebEngineView *webView, WizExplorerApp& app, QWidget* parent = nullptr);
+    WizWebsiteView(WizExplorerApp& app, QWidget* parent = nullptr) : WizWebsiteView(nullptr, app, parent) {};
     ~WizWebsiteView();
 
     virtual QSize sizeHint() const;
     void setSizeHint(QSize size);
 
     WizWebEngineView* getWebView() const { return m_webView; }
+    WizWebEngineView* webView() const { return m_webView; }
     void viewHtml(const QUrl &url);
 
 private:

@@ -99,8 +99,12 @@ WIZACTION* WizActions::actionsData()
 
         // view
         {WIZACTION_GLOBAL_TOGGLE_CATEGORY,      QObject::tr("Hide Sidebar"),                QObject::tr("Show Sidebar"),            QKeySequence("Alt+Ctrl+S")},
-        {WIZACTION_GLOBAL_TOGGLE_FULLSCREEN,    QObject::tr("Enter Fullscreen"),            QObject::tr("Leave Fullscreen"),        QKeySequence("Ctrl+Meta+f")},
-
+#ifdef Q_OS_MAC
+        {WIZACTION_GLOBAL_CLIENT_FULLSCREEN,    QObject::tr("Enter Client Fullscreen"),     QObject::tr("Leave Client Fullscreen"), QKeySequence("Ctrl+Meta+F")},
+        {WIZACTION_GLOBAL_TOGGLE_FULLSCREEN,    QObject::tr("Enter Fullscreen"),            QObject::tr("Leave Fullscreen"),        QKeySequence("Shift+Meta+F")},
+#else
+        {WIZACTION_GLOBAL_TOGGLE_FULLSCREEN,    QObject::tr("Enter Fullscreen"),            QObject::tr("Leave Fullscreen"),        QKeySequence("F11")},
+#endif
         {"actionViewMinimize",                  QObject::tr("Minimize"),                    QObject::tr(""),                        QKeySequence("Ctrl+M")},
         {"actionZoom",                          QObject::tr("Zoom"),                        QObject::tr(""),                        QKeySequence()},
         {"actionBringFront",                    QObject::tr("Bring All to Front"),          QObject::tr(""),                        QKeySequence()},
@@ -145,7 +149,6 @@ WIZACTION* WizActions::actionsData()
         {WIZACTION_FORMAT_INSERT_IMAGE,         QObject::tr("Insert Image"),                "",                                     QKeySequence("Shift+Ctrl+I")},
         {WIZACTION_FORMAT_REMOVE_FORMAT,        QObject::tr("Remove Format"),               "",                                     QKeySequence()},
         {WIZACTION_FORMAT_SCREEN_SHOT,          QObject::tr("Screen Shot..."),              "",                                     QKeySequence()},
-        {"actionOpenDevTools",                  QObject::tr("Open DevTools"),               "",                                     QKeySequence("F12")},
 
         // 用于结束循环
         {"", "", "", QKeySequence()}
@@ -305,18 +308,19 @@ void WizActions::buildMenu(QMenu* pMenu, WizSettings& settings, const QString& s
         if (strAction.isEmpty())
             break;
 
-        // no fullscreen mode menu
-#ifndef Q_OS_MAC
-        if (strAction == WIZACTION_GLOBAL_TOGGLE_FULLSCREEN) {
-            index++;
-            continue;
-        }
-#endif
-
         if (!bMenuBar && (strAction == "actionPreference" || strAction == "actionExit")) {
             index++;
             continue;
         }
+
+#ifndef Q_OS_MAC
+        // Remove needless action on Windows or Linux
+        // TODO: refactor menu building process
+        if (strAction == "actionViewToggleClientFullscreen") {
+            index++;
+            continue;
+        }
+#endif
 
         if (strAction.startsWith("-"))
         {
