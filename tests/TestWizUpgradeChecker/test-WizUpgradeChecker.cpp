@@ -1,4 +1,4 @@
-#include "TestWizUpgradeChecker.h"
+#include "test-WizUpgradeChecker.h"
 
 #include <QString>
 #include <QTest>

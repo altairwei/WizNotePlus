@@ -72,4 +72,4 @@ void TestCpuFeatures::testQuaZip()
 }
 
 QTEST_MAIN(TestCpuFeatures)
-#include "main.moc"
+#include "test-cpu-features.moc"

@@ -19,4 +19,4 @@ macro(qt_use_modules)
 endmacro()
 
 add_subdirectory(TestWizUpgradeChecker)
-add_subdirectory(TestCpuFeatures)
+#add_subdirectory(TestCpuFeatures)
