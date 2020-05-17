@@ -70,7 +70,9 @@ set(wiznote_SOURCES
     share/WizEnc.cpp
     share/WizZiwReader.cpp
     html/WizHtmlReader.cpp
-    html/WizHtmlCollector.cpp    
+    html/WizHtmlCollector.cpp
+    html/WizHtmlTool.cpp
+    html/WizGumboHelper.cpp
     share/WizSearch.cpp
     widgets/WizScrollBar.cpp
     sync/WizToken.cpp
@@ -244,6 +246,8 @@ set(wiznote_HEADERS
     share/WizGlobal.h
     html/WizHtmlReader.h
     html/WizHtmlCollector.h
+    html/WizHtmlTool.h
+    html/WizGumboHelper.h
     sync/WizKMServer.h
     sync/WizKMSync.h
     sync/WizAsyncApi.h
@@ -441,6 +445,7 @@ include_directories(
     ${zlib_INCLUDE_DIRS}
     ${cryptopp_INCLUDE_DIRS}
     ${OpenSSL_INCLUDE_DIRS}
+    ${Gumbo_INCLUDE_DIRS}
 )
 
 #============================================================================
@@ -582,6 +587,7 @@ if(UNIX)
                 ${cryptopp_LIBRARIES}
                 ${quazip_LIBRARIES}
                 ${zlib_LIBRARIES}
+                ${Gumbo_LIBRARIES}
             )
         else(APPSTORE_BUILD)
             target_link_libraries(${PROJECT_NAME}
@@ -589,6 +595,7 @@ if(UNIX)
                 ${cryptopp_LIBRARIES}
                 ${quazip_LIBRARIES}
                 ${zlib_LIBRARIES}
+                ${Gumbo_LIBRARIES}
             )
         endif(APPSTORE_BUILD)
     else(APPLE)
@@ -601,6 +608,7 @@ if(UNIX)
             ${OpenSSL_LIBRARIES}
             ${quazip_LIBRARIES}
             ${zlib_LIBRARIES}
+            ${Gumbo_LIBRARIES}
         )
     endif(APPLE)
 else(NOT UNIX)
@@ -610,5 +618,6 @@ else(NOT UNIX)
         ${OpenSSL_LIBRARIES}
         ${quazip_LIBRARIES}
         ${zlib_LIBRARIES}
+        ${Gumbo_LIBRARIES}
     )
 endif()
