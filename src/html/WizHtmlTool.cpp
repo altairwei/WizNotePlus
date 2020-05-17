@@ -4,8 +4,6 @@
 #include <QStringList>
 #include <QDebug>
 
-#include "gumbo-parser/gumbo.h"
-
 #include "WizGumboHelper.h"
 
 namespace Utils {
@@ -27,6 +25,9 @@ QString WizHtmlTagGetAttributeValue(
 /**
  * @brief Get specific tags from given html text.
  * 
+ *  This function will return the original pieces html string of tags.
+ *  If you have any questions, please check the test cases.
+ *           
  * @param htmlText HTML string.
  * @param tagName HTML tag name.
  * @param tagAttributeName HTML attribute name.
@@ -40,11 +41,10 @@ QStringList WizHtmlExtractTags(
     const QString &tagAttributeValue /*= ""*/)
 {
     // Gumbo only accepts UTF-8 encoding string.
-    std::string htmlString = htmlText.toUtf8().toStdString();
-    const char *buf = htmlString.c_str();
-    GumboOutput* output = gumbo_parse(buf);
+    std::string rawHtmlString = htmlText.toStdString();
+    GumboOutput* output = Utils::Gumbo::parseFromString(rawHtmlString);
 
-    // Find all tags
+    // Find all matched tags
     std::vector<GumboNode *> tags;
     Utils::Gumbo::getElementsByTagName(output->root, tagName, tags);
     if (!tagAttributeName.isEmpty()) {
@@ -54,11 +54,11 @@ QStringList WizHtmlExtractTags(
     // Extract outer html
     QStringList results;
     for (auto tag : tags) {
-        results.append(Utils::Gumbo::outerHtml(tag));
+        results.append(Utils::Gumbo::outerRawHtml(tag, rawHtmlString));
     }
 
     // Destroy node tree.
-    gumbo_destroy_output(&kGumboDefaultOptions, output);
+    Utils::Gumbo::destroyGumboOutput(output);
 
     return results;
 }

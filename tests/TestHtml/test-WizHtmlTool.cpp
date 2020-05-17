@@ -53,8 +53,34 @@ void TestWizHtmlTool::checkWizHtmlExtractTags_data()
 
     // Check format of output html
     QTest::newRow("Trim space in html tag brackets")
-        << wrapTextInHtml5("<div     test='hello'   >Hello World</div  >") << "div" << "test" << "hello"
+        << wrapTextInHtml5("<div test='hello'>Hello World</div>") << "div" << "test" << "hello"
         << QStringList("<div test='hello'>Hello World</div>");
 
+    QTest::newRow("Test boolean attribute")
+        << wrapTextInHtml5("<div checked>Hello World</div>") << "div" << "checked" << ""
+        << QStringList("<div checked>Hello World</div>");
+
+    QTest::newRow("Attribute value without quotes")
+        << wrapTextInHtml5("<div test=hello>Hello World</div>") << "div" << "test" << "hello"
+        << QStringList("<div test=hello>Hello World</div>");
+
     // Check escape
+    QTest::newRow("Test escape in tag")
+        << wrapTextInHtml5("<div><span id=\"that's\">1\n</span>2\n</div>") << "span" << "id" << "that's"
+        << QStringList("<span id=\"that's\">1\n</span>");
+
+    QTest::newRow("Test HTML entities")
+        << wrapTextInHtml5("<a class=\"special\">&nbsp;&nbsp;&nbsp;&nbsp;some link</a>") << "a" << "class" << "special"
+        << QStringList("<a class=\"special\">&nbsp;&nbsp;&nbsp;&nbsp;some link</a>");
+
+
+    // Check Robustness
+    // FIXME: this is not the desired results.
+    QTest::newRow("Test wrong overlaped <div> tag")
+        << wrapTextInHtml5("<div id='first'>Hello <p></div> World</p>") << "div" << "id" << "first"
+        << QStringList("<div id='first'>Hello <p></div>");
+
+    QTest::newRow("Test wrong overlaped <p> tags")
+        << wrapTextInHtml5("<div id='first'>Hello <p id='second'></div> World</p>") << "p" << "id" << "second"
+        << QStringList({"<p id='second'></div>", "</p>"});
 }

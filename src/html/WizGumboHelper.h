@@ -1,16 +1,23 @@
 #ifndef HTML_WIZGUMBOHELPER_H
 #define HTML_WIZGUMBOHELPER_H
 
-#include <QString>
+#include <string>
 #include <vector>
+
+#include <QString>
 
 #include "gumbo-parser/gumbo.h"
 
 namespace Utils {
 namespace Gumbo {
 
+GumboOutput* parseFromString(const std::string &html);
+GumboOutput* parseFromString(const QString &html);
+void destroyGumboOutput(GumboOutput*);
+
 QString innerText(GumboNode *node);
 QString outerHtml(GumboNode *node);
+QString outerRawHtml(GumboNode *node, std::string originHtml);
 
 void getElementsByTagName(GumboNode *node, const QString &tagName, std::vector<GumboNode *> &tags);
 void filterTagsByAttribute(std::vector<GumboNode *> &tags, const QString &attrName, const QString &attrValue);
