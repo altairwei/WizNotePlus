@@ -381,23 +381,82 @@ void getElementsByTagName(GumboNode *node, const QString &tagName, std::vector<G
 }
 
 
+void getElementsByTagAttr(
+    GumboNode *node,
+    const QString &tagName,
+    const QString &attrName,
+    const QString &attrValue,
+    std::vector<GumboNode *> &tags)
+{
+    std::vector<GumboNode *> tempTags;
+    getElementsByTagName(node, tagName, tempTags);
+    if (!attrName.isEmpty()) {
+        filterTagsByAttribute(tempTags, attrName, attrValue);
+    }
+
+    tags = tempTags;
+}
+
+
+/**
+ * @brief Insert plain text or html text to original html string.
+ * 
+ * @param node 
+ * @param position See https://developer.mozilla.org/en-US/docs/Web/API/Element/insertAdjacentText
+ * @param text 
+ * @param originalHtml 
+ * @return QString 
+ */
+void insertAdjacentText(GumboNode *node, const QString &position, const QString &text, std::string &originalHtml)
+{
+    if (node->type != GUMBO_NODE_ELEMENT) {
+        return;
+    }
+
+    GumboElement *elem = &node->v.element;
+    size_t pos = 0;
+    if (position == "beforebegin")
+    {
+        pos = elem->start_pos.offset;
+    }
+    else if (position == "afterbegin")
+    {
+        pos = elem->start_pos.offset + elem->original_tag.length;
+    }
+    else if (position == "beforeend")
+    {
+        pos = elem->end_pos.offset;
+    }
+    else if (position == "afterend")
+    {
+        pos = elem->end_pos.offset + elem->original_end_tag.length;
+    }
+    else
+    {
+        return;
+    }
+
+    originalHtml.insert(pos, text.toStdString());
+}
+
+
 void filterTagsByAttribute(
     std::vector<GumboNode *> &tags, const QString &attrName, const QString &attrValue)
 {
-    std::remove_if(tags.begin(), tags.end(), [=](const GumboNode *tag) {
+    tags.erase(std::remove_if(tags.begin(), tags.end(), [=](const GumboNode *tag) {
         // Remove non-element node.
         if (tag->type != GUMBO_NODE_ELEMENT)
             return true;
         std::string attrNameString = attrName.toUtf8().toStdString();
-        GumboAttribute* href = gumbo_get_attribute(&tag->v.element.attributes, attrNameString.c_str());
-        if (href) {
+        GumboAttribute* attr = gumbo_get_attribute(&tag->v.element.attributes, attrNameString.c_str());
+        if (attr != nullptr) {
             // Remove node whose attr does not match given value.
-            return QString(href->value) != attrValue;
+            return  QString(attr->value) != attrValue;
         } else {
             // Remove node which hasn't this attr.
             return true;
         }
-    });
+    }), tags.end());
 }
 
 

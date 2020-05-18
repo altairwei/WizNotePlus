@@ -10,8 +10,11 @@ class TestWizHtmlTool : public QObject
     Q_OBJECT
 
 private slots:
-    void checkWizHtmlExtractTags();
-    void checkWizHtmlExtractTags_data();
+    void check_WizHtmlExtractTags();
+    void check_WizHtmlExtractTags_data();
+
+    void check_WizHtmlInsertText();
+    void check_WizHtmlInsertText_data();
 };
 
 #endif // TEST_WIZHTMLTOOL_H

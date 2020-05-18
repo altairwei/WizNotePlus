@@ -12,7 +12,7 @@ static QString wrapTextInHtml5(const QString &text) {
 }
 
 
-void TestWizHtmlTool::checkWizHtmlExtractTags()
+void TestWizHtmlTool::check_WizHtmlExtractTags()
 {
     QFETCH(QString, htmltext);
     QFETCH(QString, tagname);
@@ -24,7 +24,7 @@ void TestWizHtmlTool::checkWizHtmlExtractTags()
     QCOMPARE(actuals, tagtexts);
 }
 
-void TestWizHtmlTool::checkWizHtmlExtractTags_data()
+void TestWizHtmlTool::check_WizHtmlExtractTags_data()
 {
     QTest::addColumn<QString>("htmltext");
     QTest::addColumn<QString>("tagname");
@@ -76,11 +76,70 @@ void TestWizHtmlTool::checkWizHtmlExtractTags_data()
 
     // Check Robustness
     // FIXME: this is not the desired results.
+    QTest::newRow("Test no matched tag")
+        << wrapTextInHtml5("<div id='first'>Hello <p></div> World</p>") << "div" << "id" << "second"
+        << QStringList();
+
+    QTest::newRow("Test no attr")
+        << wrapTextInHtml5("<div id='first'>Hello <p></div> World</p>") << "div" << "class" << "second"
+        << QStringList();
+
     QTest::newRow("Test wrong overlaped <div> tag")
         << wrapTextInHtml5("<div id='first'>Hello <p></div> World</p>") << "div" << "id" << "first"
         << QStringList("<div id='first'>Hello <p></div>");
 
     QTest::newRow("Test wrong overlaped <p> tags")
         << wrapTextInHtml5("<div id='first'>Hello <p id='second'></div> World</p>") << "p" << "id" << "second"
-        << QStringList({"<p id='second'></div>", "</p>"});
+        << QStringList("<p id='second'></div>");
+}
+
+
+void TestWizHtmlTool::check_WizHtmlInsertText()
+{
+    QFETCH(QString, htmlText);
+    QFETCH(QString, tagName);
+    QFETCH(QString, attrName);
+    QFETCH(QString, attrValue);
+    QFETCH(QString, insetText);
+    QFETCH(QString, position);
+    QFETCH(QString, outputText);
+
+    QString resultText = Utils::WizHtmlInsertText(
+        htmlText, insetText, position, tagName, attrName, attrValue);
+
+    QCOMPARE(resultText, outputText);
+}
+
+
+void TestWizHtmlTool::check_WizHtmlInsertText_data()
+{
+    QTest::addColumn<QString>("htmlText");
+    QTest::addColumn<QString>("tagName");
+    QTest::addColumn<QString>("attrName");
+    QTest::addColumn<QString>("attrValue");
+    QTest::addColumn<QString>("insetText");
+    QTest::addColumn<QString>("position");
+    QTest::addColumn<QString>("outputText");
+
+    // Check insert position
+    QTest::newRow("Inset <div> tag beforeend <body>")
+        << wrapTextInHtml5("<p></p>") << "body" << "" << "" << "<div id='inserted'>Hello</div>" << "beforeend"
+        << wrapTextInHtml5("<p></p><div id='inserted'>Hello</div>");
+
+    QTest::newRow("Inset <div> tag beforebegin <body>")
+        << "<html><head></head><body><p></p></body></html>" << "body" << "" << "" << "<div id='inserted'>Hello</div>" << "beforebegin"
+        << "<html><head></head><div id='inserted'>Hello</div><body><p></p></body></html>";
+
+    QTest::newRow("Inset <div> tag afterbegin <body>")
+        << "<html><head></head><body><p></p></body></html>" << "body" << "" << "" << "<div id='inserted'>Hello</div>" << "afterbegin"
+        << "<html><head></head><body><div id='inserted'>Hello</div><p></p></body></html>";
+
+    QTest::newRow("Inset <div> tag afterend <body>")
+        << "<html><head></head><body><p></p></body></html>" << "body" << "" << "" << "<div id='inserted'>Hello</div>" << "afterend"
+        << "<html><head></head><body><p></p></body><div id='inserted'>Hello</div></html>";
+
+    // Check Robustness
+    QTest::newRow("No matched tag")
+        << "<body><p id='para'></p></body>" << "p" << "id" << "wrong" << "<div id='inserted'>Hello</div>" << "beforeend"
+        << "<body><p id='para'></p></body>";
 }

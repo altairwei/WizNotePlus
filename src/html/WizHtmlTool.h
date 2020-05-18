@@ -11,6 +11,14 @@ namespace Utils {
         const QString &tagName,
         const QString &tagAttributeName = "",
         const QString &tagAttributeValue = "");
+
+    QString WizHtmlInsertText(
+        const QString &htmlText,
+        const QString &text,
+        const QString &position,
+        const QString &tagName,
+        const QString &tagAttributeName = "",
+        const QString &tagAttributeValue = "");
 }
 
 #endif // HTML_WIZHTMLTOOL_H

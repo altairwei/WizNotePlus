@@ -20,7 +20,10 @@ QString outerHtml(GumboNode *node);
 QString outerRawHtml(GumboNode *node, std::string originHtml);
 
 void getElementsByTagName(GumboNode *node, const QString &tagName, std::vector<GumboNode *> &tags);
+void getElementsByTagAttr(GumboNode *node, const QString &tagName,
+    const QString &attrName, const QString &attrValue, std::vector<GumboNode *> &tags);
 void filterTagsByAttribute(std::vector<GumboNode *> &tags, const QString &attrName, const QString &attrValue);
+void insertAdjacentText(GumboNode *node, const QString &position, const QString &text, std::string &originalHtml);
 
 } // namespace Gumbo
 } // namespace Utils

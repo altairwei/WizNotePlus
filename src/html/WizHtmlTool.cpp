@@ -46,10 +46,8 @@ QStringList WizHtmlExtractTags(
 
     // Find all matched tags
     std::vector<GumboNode *> tags;
-    Utils::Gumbo::getElementsByTagName(output->root, tagName, tags);
-    if (!tagAttributeName.isEmpty()) {
-        Utils::Gumbo::filterTagsByAttribute(tags, tagAttributeName, tagAttributeValue);
-    }
+    Utils::Gumbo::getElementsByTagAttr(
+        output->root, tagName, tagAttributeName, tagAttributeValue, tags);
 
     // Extract outer html
     QStringList results;
@@ -61,6 +59,34 @@ QStringList WizHtmlExtractTags(
     Utils::Gumbo::destroyGumboOutput(output);
 
     return results;
+}
+
+
+QString WizHtmlInsertText(
+    const QString &htmlText,
+    const QString &text,
+    const QString &position,
+    const QString &tagName,
+    const QString &tagAttributeName /*= ""*/,
+    const QString &tagAttributeValue /*= ""*/)
+{
+    std::string rawHtmlString = htmlText.toStdString();
+    GumboOutput* output = Utils::Gumbo::parseFromString(rawHtmlString);
+
+    std::vector<GumboNode *> tags;
+    Utils::Gumbo::getElementsByTagAttr(
+        output->root, tagName, tagAttributeName, tagAttributeValue, tags);
+
+    if (tags.empty()) {
+        return htmlText;
+    }
+
+    GumboNode *firstFound = tags[0];
+    Utils::Gumbo::insertAdjacentText(firstFound, position, text, rawHtmlString);
+
+    Utils::Gumbo::destroyGumboOutput(output);
+
+    return QString::fromStdString(rawHtmlString);
 }
 
 
