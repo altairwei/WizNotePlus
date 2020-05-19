@@ -19,6 +19,9 @@ namespace Utils {
         const QString &tagName,
         const QString &tagAttributeName = "",
         const QString &tagAttributeValue = "");
+
+    QString WizHtmlGetContent(const QString &htmlText);
+    QString WizHtmlGetPureText(const QString &htmlText);
 }
 
 #endif // HTML_WIZHTMLTOOL_H

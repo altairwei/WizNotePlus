@@ -316,9 +316,15 @@ QString innerText(GumboNode *node)
         QString contents = "";
         GumboVector *children = &node->v.element.children;
         for (unsigned int i = 0; i < children->length; ++i) {
-            const QString text = innerText((GumboNode *)children->data[i]);
+            GumboNode * pNode = (GumboNode *)children->data[i];
+            std::string pTagName = get_tag_name(pNode);
+            bool is_inline = nonbreaking_inline.find("|" + pTagName + "|") != std::string::npos;
+            bool is_special_handling = special_handling.find("|" + pTagName + "|") != std::string::npos;
+            const QString text = innerText(pNode);
             if (i != 0 && !text.isEmpty()) {
-                contents.append(" ");
+                if (!is_inline && !is_special_handling) {
+                    contents.append("\n");
+                }
             }
             contents.append(text);
         }
@@ -328,6 +334,12 @@ QString innerText(GumboNode *node)
     {
         return QString("");
     }
+}
+
+/** 以QTextDocument.toPlainText标准实现这个函数 */
+QString plainText(GumboNode *node)
+{
+
 }
 
 
@@ -395,6 +407,20 @@ void getElementsByTagAttr(
     }
 
     tags = tempTags;
+}
+
+
+QString getAttribute(GumboNode *node, const QString &attrName)
+{
+    if (node->type != GUMBO_NODE_ELEMENT) {
+        return QString();
+    }
+
+    std::string attrNameString = attrName.toUtf8().toStdString();
+    GumboAttribute* attr = gumbo_get_attribute(
+        &node->v.element.attributes, attrNameString.c_str());
+
+    return QString(attr->value);
 }
 
 

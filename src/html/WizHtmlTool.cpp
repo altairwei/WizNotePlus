@@ -3,23 +3,11 @@
 #include <QString>
 #include <QStringList>
 #include <QDebug>
+#include <QTextDocument>
 
 #include "WizGumboHelper.h"
 
 namespace Utils {
-
-/**
- * @brief Get the value of an attribute from a given tag string.
- * 
- * @param htmlTag HTML string.
- * @param tagAttributeName HTML tag name.
- * @return QString
- */
-QString WizHtmlTagGetAttributeValue(
-    const QString &htmlTag, const QString &tagAttributeName)
-{
-    return QString();
-}
 
 
 /**
@@ -91,28 +79,36 @@ QString WizHtmlInsertText(
 
 
 /**
- * @brief Get all <a> tag from html text.
+ * @brief Get pure text content from html string.
+ * 
+ *   TODO: add more test cases.
  * 
  * @param htmlText HTML string.
- * @param url HTML url.
- * @return QStringList
+ * @return QString 
  */
-QStringList WizHtmlEnumLinks(const QString &htmlText, const QString &url)
+QString WizHtmlGetContent(const QString &htmlText)
 {
-    return QStringList();    
+    GumboOutput *output = Utils::Gumbo::parseFromString(htmlText);
+    const QString content = Utils::Gumbo::innerText(output->root);
+    Utils::Gumbo::destroyGumboOutput(output);
+
+    return content;
 }
 
 
 /**
  * @brief Get pure text content from html string.
  * 
- * @param htmlText HTML string.
- * @param url HTML的URL
+ * @param htmlText 
  * @return QString 
  */
-QString WizHtmlGetContent(const QString &htmlText, const QString &url)
+QString WizHtmlGetPureText(const QString &htmlText)
 {
-    return QString();
+   QTextDocument doc;
+   doc.setHtml(htmlText);
+   QString content = doc.toPlainText(); //auto deHtmlEscaped
+   return content;
 }
+
 
 } // namespace Utils

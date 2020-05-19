@@ -143,3 +143,57 @@ void TestWizHtmlTool::check_WizHtmlInsertText_data()
         << "<body><p id='para'></p></body>" << "p" << "id" << "wrong" << "<div id='inserted'>Hello</div>" << "beforeend"
         << "<body><p id='para'></p></body>";
 }
+
+
+void TestWizHtmlTool::check_WizHtmlGetContent()
+{
+    QFETCH(QString, htmlText);
+    QFETCH(QString, content);
+
+    QString text = Utils::WizHtmlGetContent(htmlText);
+
+    QCOMPARE(text, content);
+}
+
+
+void TestWizHtmlTool::check_WizHtmlGetContent_data()
+{
+    QTest::addColumn<QString>("htmlText");
+    QTest::addColumn<QString>("content");
+
+    QTest::newRow("Whole html document")
+        << wrapTextInHtml5("<p id='para'>Hello <span>World</span></p><div>This is WizNotePlus</div>")
+        << "Hello World\nThis is WizNotePlus";
+}
+
+
+void TestWizHtmlTool::check_WizHtmlGetPureText()
+{
+    QFETCH(QString, htmlText);
+    QFETCH(QString, content);
+
+    QString text = Utils::WizHtmlGetPureText(htmlText);
+
+    QCOMPARE(text, content);
+
+}
+
+
+void TestWizHtmlTool::check_WizHtmlGetPureText_data()
+{
+    QTest::addColumn<QString>("htmlText");
+    QTest::addColumn<QString>("content");
+
+    QTest::newRow("Test Whole html document")
+        << wrapTextInHtml5("<body><p id='para'>Hello World</p><div>This is WizNotePlus</div></body>")
+        << "Hello World\nThis is WizNotePlus";
+
+    QTest::newRow("Test partial html document")
+        << "<p id='para'>Hello World</p><div>This is WizNotePlus</div>"
+        << "Hello World\nThis is WizNotePlus";
+
+    // One <br/> equals two line break.
+    QTest::newRow("Test escape and entities")
+        << "<p id='para'>Hello World&nbsp;&nbsp;&nbsp;&nbsp;</p><br/><div>This is WizNotePlus</div>"
+        << "Hello World    \n\n\nThis is WizNotePlus";
+}

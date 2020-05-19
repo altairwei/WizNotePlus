@@ -15,6 +15,12 @@ private slots:
 
     void check_WizHtmlInsertText();
     void check_WizHtmlInsertText_data();
+
+    void check_WizHtmlGetContent();
+    void check_WizHtmlGetContent_data();
+
+    void check_WizHtmlGetPureText();
+    void check_WizHtmlGetPureText_data();
 };
 
 #endif // TEST_WIZHTMLTOOL_H
