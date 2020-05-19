@@ -128,10 +128,10 @@ set(wiznote_SOURCES
     share/jsoncpp/jsoncpp.cpp
     share/WizRequest.cpp
 
-    plugins/js_plugin_system/JSPluginManager.cpp
-    plugins/js_plugin_system/JSPluginSpec.cpp
-    plugins/js_plugin_system/JSPluginSelectorWindow.cpp
-    plugins/js_plugin_system/JSPluginHtmlDialog.cpp
+    jsplugin/JSPluginManager.cpp
+    jsplugin/JSPluginSpec.cpp
+    jsplugin/JSPluginSelectorWindow.cpp
+    jsplugin/JSPluginHtmlDialog.cpp
 
     plugins/public_apis_server/PublicAPIsServer.cpp
     plugins/public_apis_server/WebSocketClientWrapper.cpp
@@ -277,10 +277,10 @@ set(wiznote_HEADERS
     share/jsoncpp/json/json-forwards.h
     share/WizRequest.h
 
-    plugins/js_plugin_system/JSPluginManager.h
-    plugins/js_plugin_system/JSPluginSpec.h
-    plugins/js_plugin_system/JSPluginSelectorWindow.h
-    plugins/js_plugin_system/JSPluginHtmlDialog.h
+    jsplugin/JSPluginManager.h
+    jsplugin/JSPluginSpec.h
+    jsplugin/JSPluginSelectorWindow.h
+    jsplugin/JSPluginHtmlDialog.h
 
     plugins/public_apis_server/PublicAPIsServer.h
     plugins/public_apis_server/WebSocketClientWrapper.h

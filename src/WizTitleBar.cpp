@@ -48,8 +48,8 @@
 
 #include "core/WizCommentManager.h"
 
-#include "plugins/js_plugin_system/JSPluginManager.h"
-#include "plugins/js_plugin_system/JSPluginSpec.h"
+#include "jsplugin/JSPluginManager.h"
+#include "jsplugin/JSPluginSpec.h"
 
 #define WIZACTION_TITLEBAR_SHARE_DOCUMENT_BY_LINK QObject::tr("Share by Link")
 #define WIZACTION_TITLEBAR_SHARE_DOCUMENT_BY_EMAIL QObject::tr("Share by Email")

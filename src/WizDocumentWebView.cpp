@@ -74,7 +74,7 @@
 
 #include "WizTitleBar.h"
 #include "plugins/public_apis_object/IWizHtmlEditorApp.h"
-#include "plugins/js_plugin_system/JSPluginManager.h"
+#include "jsplugin/JSPluginManager.h"
 
 enum WizLinkType {
     WizLink_Doucment,

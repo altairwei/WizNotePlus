@@ -103,8 +103,8 @@
 #include "WizFileImporter.h"
 
 #include "plugins/public_apis_object/IWizExplorerApp.h"
-#include "plugins/js_plugin_system/JSPluginManager.h"
-#include "plugins/js_plugin_system/JSPluginSpec.h"
+#include "jsplugin/JSPluginManager.h"
+#include "jsplugin/JSPluginSpec.h"
 #include "plugins/public_apis_server/PublicAPIsServer.h"
 
 #include "WizWebsiteView.h"
