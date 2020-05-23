@@ -1,13 +1,4 @@
 #include "JSPluginManager.h"
-#include "JSPluginSpec.h"
-#include "JSPluginHtmlDialog.h"
-#include "JSPluginSelectorWindow.h"
-
-#include "sync/WizToken.h"
-#include "WizMainWindow.h"
-#include "share/WizGlobal.h"
-#include "utils/WizPathResolve.h"
-#include "widgets/WizLocalProgressWebView.h"
 
 #include <QApplication>
 #include <QDesktopWidget>
@@ -25,11 +16,22 @@
 #include <QNetworkReply>
 #include <QWebEngineView>
 #include <QWebEngineSettings>
+
+#include "sync/WizToken.h"
+#include "WizMainWindow.h"
+#include "share/WizGlobal.h"
+#include "utils/WizPathResolve.h"
+#include "widgets/WizLocalProgressWebView.h"
+
 #include "share/WizSettings.h"
 #include "share/WizWebEngineView.h"
 #include "share/WizMisc.h"
 #include "WizWebsiteView.h"
 #include "WizMainTabBrowser.h"
+#include "JSPlugin.h"
+#include "JSPluginSpec.h"
+#include "JSPluginHtmlDialog.h"
+#include "JSPluginSelectorWindow.h"
 
 JSPluginManager::JSPluginManager()
     : QObject(nullptr)
@@ -63,18 +65,23 @@ void JSPluginManager::loadPluginData(QString &pluginScanPath)
     for (auto folder : folders) {
         if (!QDir(folder).exists("manifest.ini"))
             continue;
-        JSPluginSpec* data = new JSPluginSpec(folder, this);
-        m_pluginDataCollection.push_back(data);
-        qDebug() << "Loaded plugin: " + data->name();
+        JSPlugin* data = new JSPlugin(folder, this);
+        if (data->isAvailable()) {
+            m_pluginDataCollection.push_back(data);
+            qDebug() << "Loaded plugin: " + data->spec()->name();
+        } else {
+            qWarning() << "Failed to load plugin: " + data->spec()->name();
+            delete data;
+        }
     }
 }
 
-QList<JSPluginModuleSpec *> JSPluginManager::modulesByButtonLocation(QString buttonLocation) const
+QList<JSPluginModule *> JSPluginManager::modulesByButtonLocation(QString buttonLocation) const
 {
-    QList<JSPluginModuleSpec *> ret;
-    for (JSPluginSpec *pluginData : m_pluginDataCollection) {
-        for (JSPluginModuleSpec *moduleData : pluginData->modules()) {
-            if (moduleData->buttonLocation() == buttonLocation) {
+    QList<JSPluginModule *> ret;
+    for (JSPlugin *pluginData : m_pluginDataCollection) {
+        for (JSPluginModule *moduleData : pluginData->modules()) {
+            if (moduleData->spec()->buttonLocation() == buttonLocation) {
                 ret.push_back(moduleData);
             }
         }
@@ -82,14 +89,14 @@ QList<JSPluginModuleSpec *> JSPluginManager::modulesByButtonLocation(QString but
     return ret;
 }
 
-QList<JSPluginModuleSpec *> JSPluginManager::modulesByKeyValue(QString key, QString value) const
+QList<JSPluginModule *> JSPluginManager::modulesByKeyValue(QString key, QString value) const
 {
-    QList<JSPluginModuleSpec *> ret;
-    for (JSPluginSpec *pluginData : m_pluginDataCollection) {
-        WizSettings *settings = pluginData->settings();
-        for (JSPluginModuleSpec *moduleData : pluginData->modules()) {
-            QString section = moduleData->section();
-            if (settings->getString(section, key) == value) {
+    QList<JSPluginModule *> ret;
+    for (JSPlugin *pluginData : m_pluginDataCollection) {
+        QSettings *settings = pluginData->spec()->settings();
+        for (JSPluginModule *moduleData : pluginData->modules()) {
+            QString section = moduleData->spec()->section();
+            if (settings->value(section + "/" + key) == value) {
                 ret.push_back(moduleData);
             }
         }
@@ -97,12 +104,12 @@ QList<JSPluginModuleSpec *> JSPluginManager::modulesByKeyValue(QString key, QStr
     return ret;
 }
 
-JSPluginModuleSpec *JSPluginManager::moduleByGUID(QString guid) const
+JSPluginModule *JSPluginManager::moduleByGUID(QString guid) const
 {
-    JSPluginModuleSpec *ret = nullptr;
-    for (JSPluginSpec *pluginData : m_pluginDataCollection) {
-        for (JSPluginModuleSpec *moduleData : pluginData->modules()) {
-            if (moduleData->guid() == guid) {
+    JSPluginModule *ret = nullptr;
+    for (JSPlugin *pluginData : m_pluginDataCollection) {
+        for (JSPluginModule *moduleData : pluginData->modules()) {
+            if (moduleData->spec()->guid() == guid) {
                 ret = moduleData;
             }
         }
@@ -111,48 +118,48 @@ JSPluginModuleSpec *JSPluginManager::moduleByGUID(QString guid) const
     return ret;
 }
 
-QAction *JSPluginManager::createPluginAction(QWidget *parent, JSPluginModuleSpec *moduleData)
+QAction *JSPluginManager::createPluginAction(QWidget *parent, JSPluginModule *moduleData)
 {
     QAction *ac = new QAction(parent);
-    ac->setData(moduleData->guid());
-    ac->setIcon(QIcon(moduleData->iconFileName()));
-    ac->setIconText(moduleData->caption());
-    ac->setText(moduleData->caption());
-    ac->setToolTip(moduleData->caption());
+    ac->setData(moduleData->spec()->guid());
+    ac->setIcon(QIcon(moduleData->spec()->iconFileName()));
+    ac->setIconText(moduleData->spec()->caption());
+    ac->setText(moduleData->spec()->caption());
+    ac->setToolTip(moduleData->spec()->caption());
     return ac;
 }
 
-JSPluginHtmlDialog *JSPluginManager::initPluginHtmlDialog(JSPluginModuleSpec *moduleData)
+JSPluginHtmlDialog *JSPluginManager::initPluginHtmlDialog(JSPluginModule *moduleData)
 {
     JSPluginHtmlDialog *htmlDialog = new JSPluginHtmlDialog(m_app, moduleData, nullptr);
-    m_pluginHtmlDialogCollection.insert(moduleData->guid(), htmlDialog);
+    m_pluginHtmlDialogCollection.insert(moduleData->spec()->guid(), htmlDialog);
     return htmlDialog;
 }
 
-JSPluginSelectorWindow *JSPluginManager::initPluginSelectorWindow(JSPluginModuleSpec *moduleData)
+JSPluginSelectorWindow *JSPluginManager::initPluginSelectorWindow(JSPluginModule *moduleData)
 {
     JSPluginSelectorWindow *selectorWindow = new JSPluginSelectorWindow(m_app, moduleData, nullptr);
-    m_pluginPopupDialogCollection.insert(moduleData->guid(), selectorWindow);
+    m_pluginPopupDialogCollection.insert(moduleData->spec()->guid(), selectorWindow);
     return selectorWindow;
 }
 
-WizWebsiteView *JSPluginManager::initPluginMainTabView(JSPluginModuleSpec *moduleData)
+WizWebsiteView *JSPluginManager::initPluginMainTabView(JSPluginModule *moduleData)
 {
     WizWebEngineInjectObjectCollection objects = {
-        {"JSPluginSpec", moduleData->parentPlugin()},
-        {"JSPluginModuleSpec", moduleData},
+        {"JSPlugin", moduleData->parentPlugin()},
+        {"JSPluginModule", moduleData},
         {"WizExplorerApp", WizMainWindow::instance()->publicAPIsObject()}
     };
     WizWebEngineView *webView = new WizWebEngineView(objects, nullptr);
     QPointer<WizWebsiteView> websiteView = new WizWebsiteView(webView, m_app);
-    websiteView->viewHtml(QUrl::fromLocalFile(moduleData->htmlFileName()));
-    m_pluginMainTabViewCollection.insert(moduleData->guid(), websiteView);
+    websiteView->viewHtml(QUrl::fromLocalFile(moduleData->spec()->htmlFileName()));
+    m_pluginMainTabViewCollection.insert(moduleData->spec()->guid(), websiteView);
     return websiteView;
 }
 
-void JSPluginManager::showPluginHtmlDialog(JSPluginModuleSpec *moduleData)
+void JSPluginManager::showPluginHtmlDialog(JSPluginModule *moduleData)
 {
-    QString guid = moduleData->guid();
+    QString guid = moduleData->spec()->guid();
     JSPluginHtmlDialog* dialog;
     auto it = m_pluginHtmlDialogCollection.find(guid);
     if ( it == m_pluginHtmlDialogCollection.end()) {
@@ -174,9 +181,9 @@ void JSPluginManager::showPluginHtmlDialog(JSPluginModuleSpec *moduleData)
     dialog->raise();
 }
 
-void JSPluginManager::showPluginSelectorWindow(JSPluginModuleSpec *moduleData, QPoint &pt)
+void JSPluginManager::showPluginSelectorWindow(JSPluginModule *moduleData, QPoint &pt)
 {
-    QString guid = moduleData->guid();
+    QString guid = moduleData->spec()->guid();
     JSPluginSelectorWindow* selectorWindow;
     auto it = m_pluginPopupDialogCollection.find(guid);
     if ( it == m_pluginPopupDialogCollection.end()) {
@@ -189,9 +196,9 @@ void JSPluginManager::showPluginSelectorWindow(JSPluginModuleSpec *moduleData, Q
     selectorWindow->showAtPoint(pt);
 }
 
-void JSPluginManager::showPluginMainTabView(JSPluginModuleSpec *moduleData)
+void JSPluginManager::showPluginMainTabView(JSPluginModule *moduleData)
 {
-    QString guid = moduleData->guid();
+    QString guid = moduleData->spec()->guid();
     QPointer<WizWebsiteView> mainTabView;
     WizMainTabBrowser *tabBrowser = WizMainWindow::instance()->mainTabView();
     auto it = m_pluginMainTabViewCollection.find(guid);
@@ -218,11 +225,11 @@ void JSPluginManager::handlePluginActionTriggered()
     if (moduleGuid.isEmpty())
         return;
 
-    JSPluginModuleSpec *moduleData = moduleByGUID(moduleGuid);
+    JSPluginModule *moduleData = moduleByGUID(moduleGuid);
     if (!moduleData)
         return;
 
-    QString slotType = moduleData->slotType();
+    QString slotType = moduleData->spec()->slotType();
     if ( slotType == "SelectorWindow" ) {
         QToolBar *bar = qobject_cast<QToolBar *>(ac->parentWidget());
         if (!bar)

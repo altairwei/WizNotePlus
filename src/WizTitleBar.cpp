@@ -50,6 +50,7 @@
 
 #include "jsplugin/JSPluginManager.h"
 #include "jsplugin/JSPluginSpec.h"
+#include "jsplugin/JSPlugin.h"
 
 #define WIZACTION_TITLEBAR_SHARE_DOCUMENT_BY_LINK QObject::tr("Share by Link")
 #define WIZACTION_TITLEBAR_SHARE_DOCUMENT_BY_EMAIL QObject::tr("Share by Email")
@@ -267,9 +268,9 @@ void WizTitleBar::initPlugins(QToolBar* docToolbar)
 {
     int nTitleHeight = Utils::WizStyleHelper::titleEditorHeight();
     JSPluginManager &jsPluginMgr = JSPluginManager::instance();
-    QList<JSPluginModuleSpec *> modules = jsPluginMgr.modulesByKeyValue("ModuleType", "Action");
+    QList<JSPluginModule *> modules = jsPluginMgr.modulesByKeyValue("ModuleType", "Action");
     for (auto moduleData : modules) {
-        if (moduleData->buttonLocation() != "Document")
+        if (moduleData->spec()->buttonLocation() != "Document")
             continue;
         QAction *ac = jsPluginMgr.createPluginAction(docToolbar, moduleData);
         connect(ac, &QAction::triggered, 

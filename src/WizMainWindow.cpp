@@ -105,6 +105,7 @@
 #include "plugins/public_apis_object/IWizExplorerApp.h"
 #include "jsplugin/JSPluginManager.h"
 #include "jsplugin/JSPluginSpec.h"
+#include "jsplugin/JSPlugin.h"
 #include "plugins/public_apis_server/PublicAPIsServer.h"
 
 #include "WizWebsiteView.h"
@@ -2018,9 +2019,9 @@ void WizMainWindow::initToolBar()
 void WizMainWindow::initToolBarPluginButtons()
 {
     JSPluginManager &jsPluginMgr = JSPluginManager::instance();
-    QList<JSPluginModuleSpec *> modules = jsPluginMgr.modulesByKeyValue("ModuleType", "Action");
+    QList<JSPluginModule *> modules = jsPluginMgr.modulesByKeyValue("ModuleType", "Action");
     for (auto moduleData : modules) {
-        if (moduleData->buttonLocation() != "Main")
+        if (moduleData->spec()->buttonLocation() != "Main")
             continue;
         QAction *ac = jsPluginMgr.createPluginAction(m_toolBar, moduleData);
         connect(ac, &QAction::triggered, 

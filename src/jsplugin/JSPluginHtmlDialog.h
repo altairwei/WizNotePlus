@@ -5,27 +5,25 @@
 
 class WizExplorerApp;
 class WizWebEngineView;
-class JSPluginModuleSpec;
+class JSPluginModule;
 
 class JSPluginHtmlDialog : public QWidget
 {
     Q_OBJECT
 
 public:
-    JSPluginHtmlDialog(WizExplorerApp& app, JSPluginModuleSpec* data, QWidget* parent);
+    JSPluginHtmlDialog(WizExplorerApp& app, JSPluginModule* module, QWidget* parent);
     QSize dialogSize() const;
 
 private:
     WizWebEngineView* m_web;
-    JSPluginModuleSpec* m_data;
+    JSPluginModule* m_module;
     int m_dialogWidth;
     int m_dialogHeight;
-    //
+
 private:
     virtual QSize sizeHint() const;
-    //
-    friend class JSPluginSpec;
-    friend class JSPluginModuleSpec;
+
 };
 
 #endif // JSPLUGINHTMLDIALOG_H

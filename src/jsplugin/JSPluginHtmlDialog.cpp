@@ -1,25 +1,26 @@
 #include "JSPluginHtmlDialog.h"
-#include "JSPluginSpec.h"
-
-#include "WizMainWindow.h"
-#include "share/WizWebEngineView.h"
 
 #include <QVBoxLayout>
 
-JSPluginHtmlDialog::JSPluginHtmlDialog(WizExplorerApp& app, JSPluginModuleSpec* data, QWidget* parent)
+#include "JSPlugin.h"
+#include "WizMainWindow.h"
+#include "share/WizWebEngineView.h"
+
+
+JSPluginHtmlDialog::JSPluginHtmlDialog(WizExplorerApp& app, JSPluginModule* module, QWidget* parent)
     : QWidget(parent, Qt::Window)
-    , m_data(data)
-    , m_dialogWidth(data->width())
-    , m_dialogHeight(data->height())
+    , m_module(module)
+    , m_dialogWidth(module->spec()->width())
+    , m_dialogHeight(module->spec()->height())
 {
-    data->parentPlugin()->initStrings();
+    module->parentPlugin()->initStrings();
     //
-    setWindowTitle(data->caption());
+    setWindowTitle(module->spec()->caption());
     //
     WizMainWindow* mw = qobject_cast<WizMainWindow*>(app.mainWindow());
     WizWebEngineInjectObjectCollection objects = {
-        {"JSPluginSpec", data->parentPlugin()},
-        {"JSPluginModuleSpec", data},
+        {"JSPlugin", module->parentPlugin()},
+        {"JSPluginModule", module},
         {"WizExplorerApp", mw->publicAPIsObject()}
     };
     m_web = new WizWebEngineView(objects, this);
@@ -28,7 +29,7 @@ JSPluginHtmlDialog::JSPluginHtmlDialog(WizExplorerApp& app, JSPluginModuleSpec* 
     setLayout(layout);
     layout->addWidget(m_web);
     //
-    m_web->load(QUrl::fromLocalFile(m_data->htmlFileName()));
+    m_web->load(QUrl::fromLocalFile(m_module->spec()->htmlFileName()));
 }
 
 QSize JSPluginHtmlDialog::dialogSize() const

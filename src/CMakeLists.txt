@@ -128,6 +128,7 @@ set(wiznote_SOURCES
     share/jsoncpp/jsoncpp.cpp
     share/WizRequest.cpp
 
+    jsplugin/JSPlugin.cpp
     jsplugin/JSPluginManager.cpp
     jsplugin/JSPluginSpec.cpp
     jsplugin/JSPluginSelectorWindow.cpp
@@ -277,6 +278,7 @@ set(wiznote_HEADERS
     share/jsoncpp/json/json-forwards.h
     share/WizRequest.h
 
+    jsplugin/JSPlugin.h
     jsplugin/JSPluginManager.h
     jsplugin/JSPluginSpec.h
     jsplugin/JSPluginSelectorWindow.h

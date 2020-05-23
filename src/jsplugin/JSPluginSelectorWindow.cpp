@@ -1,23 +1,25 @@
 #include "JSPluginSelectorWindow.h"
-#include "JSPluginSpec.h"
-
-#include "WizMainWindow.h"
-#include "share/WizWebEngineView.h"
 
 #include <QVBoxLayout>
 
-JSPluginSelectorWindow::JSPluginSelectorWindow(WizExplorerApp& app, JSPluginModuleSpec* data, QWidget* parent)
+#include "JSPluginSpec.h"
+#include "JSPlugin.h"
+#include "WizMainWindow.h"
+#include "share/WizWebEngineView.h"
+
+
+JSPluginSelectorWindow::JSPluginSelectorWindow(WizExplorerApp& app, JSPluginModule* module, QWidget* parent)
     : WizPopupWidget(parent)
-    , m_data(data)
-    , m_windowWidth(data->width())
-    , m_windowHeight(data->height())
+    , m_module(module)
+    , m_windowWidth(module->spec()->width())
+    , m_windowHeight(module->spec()->height())
 {
-    data->parentPlugin()->initStrings();
+    module->parentPlugin()->initStrings();
     //
     WizMainWindow *mw = WizMainWindow::instance();
     WizWebEngineInjectObjectCollection objects = {
-        {"JSPluginSpec", data->parentPlugin()},
-        {"JSPluginModuleSpec", data},
+        {"JSPluginSpec", module->parentPlugin()},
+        {"JSPluginModuleSpec", module},
         {"WizExplorerApp", mw->publicAPIsObject()}
     };
     m_web = new WizWebEngineView(objects, this);
@@ -28,7 +30,7 @@ JSPluginSelectorWindow::JSPluginSelectorWindow(WizExplorerApp& app, JSPluginModu
     setLayout(layout);
 
     layout->addWidget(m_web);
-    m_web->load(QUrl::fromLocalFile(m_data->htmlFileName()));
+    m_web->load(QUrl::fromLocalFile(m_module->spec()->htmlFileName()));
 
 }
 

@@ -339,7 +339,7 @@ QString innerText(GumboNode *node)
 /** 以QTextDocument.toPlainText标准实现这个函数 */
 QString plainText(GumboNode *node)
 {
-
+    return QString();
 }
 
 

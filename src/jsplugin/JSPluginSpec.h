@@ -1,9 +1,10 @@
 #ifndef JSPLUGINSPEC_H
 #define JSPLUGINSPEC_H
 
-#include "share/WizSettings.h"
-
 #include <QObject>
+#include <QSettings>
+#include <QDir>
+#include <QVector>
 
 class JSPluginModuleSpec;
 
@@ -18,34 +19,30 @@ public:
     Q_PROPERTY(QString path READ path)
     Q_PROPERTY(QString PluginPath READ path)
     Q_PROPERTY(QString guid READ guid)
-    Q_PROPERTY(QString strings READ strings)
+
+    /** Validate the plugin specification. */
+    bool validate();
 
 public:
-    WizSettings *settings() { return m_settings; }
+    QSettings *settings() { return m_settings; }
     QString path() const { return m_path; }
     QString guid() const { return m_guid; }
     QString type() const { return m_type; }
     QString name() const { return m_name; }
-    QString strings() const { return m_strings; }
     QVector<JSPluginModuleSpec *> modules() { return m_modules; }
-    void initStrings();
-    void emitDocumentChanged();
-    void emitShowEvent();
-
-Q_SIGNALS:
-    void documentChanged();
-    void willShow();
 
 private:
-    WizSettings *m_settings;
+    QSettings *m_settings;
+    QDir m_dir;
     QString m_path;
     QString m_guid;
     QString m_type;
     QString m_name;
-    QString m_strings;
     int m_moduleCount;
+    int m_realModuleCount;
     QVector<JSPluginModuleSpec *> m_modules;
-    //
+
+public:
     friend class JSPluginSelectorWindow;
     friend class JSPluginModuleSpec;
 };
@@ -55,8 +52,6 @@ class JSPluginModuleSpec : public QObject
     Q_OBJECT
 
 public:
-    JSPluginModuleSpec(QString& section, WizSettings& setting, QObject* parent);
-    //
     Q_PROPERTY(QString section READ section)
     Q_PROPERTY(QString caption READ caption)
     Q_PROPERTY(QString guid READ guid)
@@ -65,8 +60,14 @@ public:
     Q_PROPERTY(QString htmlFileName READ htmlFileName)
     Q_PROPERTY(QString scriptFileName READ scriptFileName)
 
+    /** Validate the plugin module specification. */
+    bool validate();
+
+private:
+    JSPluginModuleSpec(QString& section, QSettings *setting, QObject* parent);
+
 public:
-    JSPluginSpec* parentPlugin() { return m_parentPlugin; }
+    JSPluginSpec *parentSpec() { return m_parentSpec; }
     QString section() { return m_section; }
     QString caption() { return m_caption; }
     QString guid() { return m_guid; }
@@ -79,17 +80,11 @@ public:
     QString scriptFileName() { return m_scriptFileName; }
     int width() { return m_width; }
     int height() { return m_height; }
-    void emitDocumentChanged();
-    void emitShowEvent();
-    
-Q_SIGNALS:
-    void documentChanged();
-    void willShow();
 
 private:
     // base info
-    
-    JSPluginSpec* m_parentPlugin;
+
+    JSPluginSpec *m_parentSpec;
     QString m_path;
     QString m_section;
     QString m_caption;
@@ -106,6 +101,9 @@ private:
     QString m_scriptFileName;
     int m_width;
     int m_height;
+
+public:
+    friend class JSPluginSpec;
 
 };
 

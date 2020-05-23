@@ -5,29 +5,28 @@
 
 class WizExplorerApp;
 class WizWebEngineView;
-class JSPluginModuleSpec;
-class JSPluginSpec;
+class JSPluginModule;
 
 class JSPluginSelectorWindow : public WizPopupWidget
 {
 
+    Q_OBJECT
+
 public:
-    JSPluginSelectorWindow(WizExplorerApp& app, JSPluginModuleSpec* data, QWidget* parent);
+    JSPluginSelectorWindow(WizExplorerApp& app, JSPluginModule* module, QWidget* parent);
 
 public:
     WizWebEngineView* web() const {return m_web; }
 
 private:
     WizWebEngineView* m_web;
-    JSPluginModuleSpec* m_data;
+    JSPluginModule* m_module;
     int m_windowWidth;
     int m_windowHeight;
 
 private:
     virtual QSize sizeHint() const;
-    //
-    friend class JSPluginSpec;
-    friend class JSPluginModuleSpec;
+
 };
 
 #endif // JSPLUGINSELECTORWINDOW_H
