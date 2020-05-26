@@ -5,6 +5,7 @@
 #include <QSettings>
 #include <QDir>
 #include <QVector>
+#include <QStringList>
 
 class JSPluginModuleSpec;
 
@@ -13,7 +14,7 @@ class JSPluginSpec : public QObject
     Q_OBJECT
 
 public:
-    JSPluginSpec(QString path, QObject* parent);
+    JSPluginSpec(const QString &manifestFileName, QObject* parent);
     //
     Q_PROPERTY(QString name READ name)
     Q_PROPERTY(QString path READ path)
@@ -30,6 +31,7 @@ public:
     QString type() const { return m_type; }
     QString name() const { return m_name; }
     QVector<JSPluginModuleSpec *> modules() { return m_modules; }
+    int moduleCount() { return m_moduleCount; }
 
 private:
     QSettings *m_settings;
@@ -65,6 +67,8 @@ public:
 
 private:
     JSPluginModuleSpec(QString& section, QSettings *setting, QObject* parent);
+    bool validateActionTypeModule();
+    bool validateEditorTypeModule();
 
 public:
     JSPluginSpec *parentSpec() { return m_parentSpec; }
@@ -86,6 +90,7 @@ private:
 
     JSPluginSpec *m_parentSpec;
     QString m_path;
+    QDir m_dir;
     QString m_section;
     QString m_caption;
     QString m_guid;
@@ -101,6 +106,11 @@ private:
     QString m_scriptFileName;
     int m_width;
     int m_height;
+
+    // ModuleType=Editor
+    QStringList m_scriptFiles;
+    QStringList m_styleFiles;
+    QStringList m_supportedFormats;
 
 public:
     friend class JSPluginSpec;
