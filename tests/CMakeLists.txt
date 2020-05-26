@@ -22,3 +22,4 @@ endmacro()
 
 add_subdirectory(TestWizUpgradeChecker)
 add_subdirectory(TestHtml)
+add_subdirectory(TestJSPlugin)
