@@ -15,11 +15,17 @@ class JSPlugin : public QObject
 public:
     JSPlugin(QString &pluginFolder, QObject *parent);
 
-    Q_PROPERTY(QObject* Spec READ spec)
+    Q_PROPERTY(QString name READ name)
+    Q_PROPERTY(QString PluginPath READ path)
+    Q_PROPERTY(QString guid READ guid)
     Q_PROPERTY(QString strings READ strings)
 
     JSPluginSpec *spec() { return m_data; }
     QVector<JSPluginModule *> modules() { return m_modules; }
+
+    QString name() { return m_data->name(); }
+    QString path() { return m_data->path(); }
+    QString guid() { return m_data->guid(); }
     QString strings() { return m_strings; }
  
     /** Validate the plugin spec. */

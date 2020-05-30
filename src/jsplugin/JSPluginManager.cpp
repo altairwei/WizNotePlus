@@ -68,9 +68,9 @@ void JSPluginManager::loadPluginData(QString &pluginScanPath)
         JSPlugin* data = new JSPlugin(folder, this);
         if (data->isAvailable()) {
             m_pluginDataCollection.push_back(data);
-            qDebug() << "Loaded plugin: " + data->spec()->name();
+            qDebug() << QString("Loaded plugin: %1").arg(data->spec()->name());
         } else {
-            qWarning() << "Failed to load plugin: " + data->spec()->name();
+            qWarning() << QString("Failed to load plugin: %1").arg(data->spec()->name());
             delete data;
         }
     }

@@ -2,6 +2,7 @@
 
 #include <QJsonObject>
 #include <QJsonDocument>
+#include <QDebug>
 
 #include "share/WizSettings.h"
 
@@ -9,7 +10,7 @@
 JSPlugin::JSPlugin(QString &pluginFolder, QObject *parent)
     : QObject(parent)
 {
-    m_data = new JSPluginSpec(pluginFolder, this);
+    m_data = new JSPluginSpec(QDir(pluginFolder).absoluteFilePath("manifest.ini"), this);
     for (const auto &moduleSpec : m_data->modules()) {
         m_modules.append(new JSPluginModule(moduleSpec, this));
     }
@@ -121,6 +122,9 @@ JSPluginModule::JSPluginModule(JSPluginModuleSpec *moduleSpec, QObject *parent)
     : QObject(parent)
 {
     m_parentPlugin = qobject_cast<JSPlugin*>(parent);
+    if (!m_parentPlugin) {
+        qWarning() << "Error";
+    }
     m_data = moduleSpec;
 }
 

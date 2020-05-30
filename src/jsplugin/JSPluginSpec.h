@@ -34,6 +34,7 @@ public:
     QVector<JSPluginModuleSpec *> modules() { return m_modules; }
     JSPluginModuleSpec *module(int index) { return m_modules[index]; }
     int moduleCount() { return m_moduleCount; }
+    int manifestVersion() { return m_manifestVersion; }
 
 private:
     void warn(const QString &msg);
@@ -47,6 +48,7 @@ private:
     QString m_name;
     int m_moduleCount;
     int m_realModuleCount;
+    int m_manifestVersion;
     QVector<JSPluginModuleSpec *> m_modules;
 
 public:

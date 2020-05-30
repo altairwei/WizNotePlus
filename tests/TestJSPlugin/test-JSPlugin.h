@@ -1,7 +1,7 @@
 #ifndef TEST_JSPLUGIN_H
 #define TEST_JSPLUGIN_H
 
-#include <QtTest/QtTest>
+#include <QtTest/QTest>
 #include <QObject>
 
 class TestJSPlugin : public QObject

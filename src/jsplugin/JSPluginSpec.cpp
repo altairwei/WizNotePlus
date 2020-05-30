@@ -10,6 +10,9 @@
 #include <QVector>
 
 
+#define MANIFESTVERSION 2
+
+
 JSPluginSpec::JSPluginSpec(const QString &manifestFileName, QObject* parent)
     : QObject(parent)
 {
@@ -25,6 +28,7 @@ JSPluginSpec::JSPluginSpec(const QString &manifestFileName, QObject* parent)
     m_type = m_settings->value("Common/AppType", "").toString();
     m_guid = m_settings->value("Common/AppGUID", "").toString();
     m_moduleCount = m_settings->value("Common/ModuleCount", 0).toInt();
+    m_manifestVersion = m_settings->value("Common/ManifestVersion", 0).toInt();
 
     // Parse Modules
     m_realModuleCount = 0;
@@ -49,6 +53,11 @@ void JSPluginSpec::warn(const QString &msg)
 }
 
 bool JSPluginSpec::validate() {
+    if (m_manifestVersion != MANIFESTVERSION) {
+        warn(QString("Plugin is too old! ManifestVersion is not equal to %1").arg(MANIFESTVERSION));
+        return false;
+    }
+
     if (m_name.isEmpty() || m_guid.isEmpty()) {
         warn("AppName or AppGUID is empty.");
         return false;
@@ -130,7 +139,7 @@ bool JSPluginModuleSpec::validateActionTypeModule()
         return false;
 
     QVector<QString> slotTypeOptions = {
-        "ExecuteScript", "HtmlDialog", "PopupDialog", "MainTabView"
+        "ExecuteScript", "HtmlDialog", "SelectorWindow", "MainTabView"
     };
     if (!slotTypeOptions.contains(m_slotType)) {
         warn(QString("Unknown SlotType '%1'").arg(m_slotType));

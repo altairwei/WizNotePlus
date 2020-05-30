@@ -18,8 +18,8 @@ JSPluginSelectorWindow::JSPluginSelectorWindow(WizExplorerApp& app, JSPluginModu
     //
     WizMainWindow *mw = WizMainWindow::instance();
     WizWebEngineInjectObjectCollection objects = {
-        {"JSPluginSpec", module->parentPlugin()},
-        {"JSPluginModuleSpec", module},
+        {"JSPlugin", module->parentPlugin()},
+        {"JSPluginModule", module},
         {"WizExplorerApp", mw->publicAPIsObject()}
     };
     m_web = new WizWebEngineView(objects, this);

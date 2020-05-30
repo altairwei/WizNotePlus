@@ -15,6 +15,7 @@ void TestJSPlugin::check_JSPluginSpec()
     QFETCH(QString, AppType);
     QFETCH(QString, AppGUID);
     QFETCH(int, ModuleCount);
+    QFETCH(int, ManifestVersion);
     QFETCH(bool, isValid);
 
     JSPluginSpec plugin(iniFileName, this);
@@ -23,6 +24,7 @@ void TestJSPlugin::check_JSPluginSpec()
     QCOMPARE(plugin.type(), AppType);
     QCOMPARE(plugin.guid(), AppGUID);
     QCOMPARE(plugin.moduleCount(), ModuleCount);
+    QCOMPARE(plugin.manifestVersion(), ManifestVersion);
     QCOMPARE(plugin.validate(), isValid);
 }
 
@@ -34,16 +36,17 @@ void TestJSPlugin::check_JSPluginSpec_data()
     QTest::addColumn<QString>("AppType");
     QTest::addColumn<QString>("AppGUID");
     QTest::addColumn<int>("ModuleCount");
+    QTest::addColumn<int>("ManifestVersion");
     QTest::addColumn<bool>("isValid");
 
     QTest::newRow("Parse common plugin information") << QFINDTESTDATA("manifest_files/plugin_eg_01.ini")
-        << "HelloWorldApp" << "Tools" << "{edb64fbd-2255-408f-b690-f61e56cb9606}" << 4 << true;
+        << "HelloWorldApp" << "Tools" << "{edb64fbd-2255-408f-b690-f61e56cb9606}" << 4 << 2 << true;
 
     QTest::newRow("Parse manifest without any module") << QFINDTESTDATA("manifest_files/plugin_eg_02.ini")
-        << "HelloWorldApp" << "Tools" << "{edb64fbd-2255-408f-b690-f61e56cb9606}" << 0 << true;
+        << "HelloWorldApp" << "Tools" << "{edb64fbd-2255-408f-b690-f61e56cb9606}" << 0 << 2 << true;
 
     QTest::newRow("Manifest file without GUID") << QFINDTESTDATA("manifest_files/plugin_eg_03.ini")
-        << "HelloWorldApp" << "Tools" << "" << 2 << false;
+        << "HelloWorldApp" << "Tools" << "" << 2 << 1 << false;
 }
 
 
@@ -134,10 +137,10 @@ void TestJSPlugin::check_JSPluginModuleSpec_data()
         << true;
 
     // Illegal format
-    QTest::newRow("ModuleType = Action, SlotType = PopupDialog, illegal")
+    QTest::newRow("ModuleType = Action, SlotType = SelectorWindow, illegal")
         << QFINDTESTDATA("manifest_files/plugin_eg_03.ini") << 0
-        << "Action" << "Hello World (PopupDialog)" << "{a45d3846-4d3d-4ceb-849c-23a5980c0318}"
-        << "Document" << "PopupDialog" << "" << ""
+        << "Action" << "Hello World (SelectorWindow)" << "{a45d3846-4d3d-4ceb-849c-23a5980c0318}"
+        << "Document" << "SelectorWindow" << "" << ""
         << QStringList() << QStringList() << QStringList()
         << false;
 
