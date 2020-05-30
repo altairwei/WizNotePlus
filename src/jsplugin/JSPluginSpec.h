@@ -15,7 +15,8 @@ class JSPluginSpec : public QObject
 
 public:
     JSPluginSpec(const QString &manifestFileName, QObject* parent);
-    //
+    ~JSPluginSpec() = default;
+
     Q_PROPERTY(QString name READ name)
     Q_PROPERTY(QString path READ path)
     Q_PROPERTY(QString PluginPath READ path)
@@ -31,7 +32,11 @@ public:
     QString type() const { return m_type; }
     QString name() const { return m_name; }
     QVector<JSPluginModuleSpec *> modules() { return m_modules; }
+    JSPluginModuleSpec *module(int index) { return m_modules[index]; }
     int moduleCount() { return m_moduleCount; }
+
+private:
+    void warn(const QString &msg);
 
 private:
     QSettings *m_settings;
@@ -67,6 +72,8 @@ public:
 
 private:
     JSPluginModuleSpec(QString& section, QSettings *setting, QObject* parent);
+    ~JSPluginModuleSpec() = default;
+
     bool validateActionTypeModule();
     bool validateEditorTypeModule();
 
@@ -82,8 +89,16 @@ public:
     QString iconFileName() { return m_iconFileName; }
     QString htmlFileName() { return m_htmlFileName; }
     QString scriptFileName() { return m_scriptFileName; }
+    QStringList scriptFiles() { return m_scriptFiles; }
+    QStringList styleFiles() { return m_styleFiles; }
+    QStringList supportedFormats() { return m_supportedFormats; }
     int width() { return m_width; }
     int height() { return m_height; }
+
+private:
+    QString getFilePath(QSettings *setting, const QString &key);
+    QStringList getFileList(QSettings *setting, const QString &key);
+    void warn(const QString &msg);
 
 private:
     // base info
@@ -108,6 +123,7 @@ private:
     int m_height;
 
     // ModuleType=Editor
+
     QStringList m_scriptFiles;
     QStringList m_styleFiles;
     QStringList m_supportedFormats;

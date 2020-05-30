@@ -10,7 +10,7 @@ JSPlugin::JSPlugin(QString &pluginFolder, QObject *parent)
     : QObject(parent)
 {
     m_data = new JSPluginSpec(pluginFolder, this);
-    for (auto moduleSpec : m_data->modules()) {
+    for (const auto &moduleSpec : m_data->modules()) {
         m_modules.append(new JSPluginModule(moduleSpec, this));
     }
 }
