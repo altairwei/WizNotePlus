@@ -204,8 +204,8 @@ jobs:
           [[ -f "${notes_zh}" ]] || { echo >&2 "release notes is required."; exit 1; }
           notes_en="dist/changes-${version}-en-US.md"
           [[ -f "${notes_en}" ]] || { echo >&2 "release notes is required."; exit 1; }
-          content=$(cat ${notes_zh} | sed '1d')
-          content="${content}\n\n---\n\n$(cat ${notes_en} | sed '1d')"
+          content=$(cat ${notes_zh})
+          content="${content}\n\n---\n\n$(cat ${notes_en})"
           printf "${content}\n" > dist/changes-${version}.md
           echo "::set-output name=version::${version}"
           echo "::set-output name=content_file::dist/changes-${version}.md"
