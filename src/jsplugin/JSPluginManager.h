@@ -3,6 +3,8 @@
 
 #include <QAction>
 
+#include "share/WizObject.h"
+
 class WizExplorerApp;
 class JSPluginSelectorWindow;
 class JSPluginSpec;
@@ -30,11 +32,11 @@ public:
         static JSPluginManager instance;
         return instance;
     }
-    //
+
     QList<JSPluginModule *> modulesByButtonLocation(QString buttonLocation) const;
     QList<JSPluginModule *> modulesByKeyValue(QString key, QString value) const;
     JSPluginModule *moduleByGUID(QString guid) const;
-    //
+
     static QAction *createPluginAction(QWidget *parent, JSPluginModule *moduleData);
 
     JSPluginHtmlDialog *initPluginHtmlDialog(JSPluginModule *moduleData);
@@ -59,6 +61,7 @@ public:
 public slots:
     void handlePluginActionTriggered();
     void notifyDocumentChanged();
+    void handlePluginEditorRequest(const WIZDOCUMENTDATA &doc, const QString &guid);
 
 private:
     WizExplorerApp &m_app;

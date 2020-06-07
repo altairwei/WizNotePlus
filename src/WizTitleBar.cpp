@@ -232,7 +232,7 @@ WizTitleBar::WizTitleBar(WizExplorerApp& app, QWidget *parent)
     layoutInfo2->addWidget(m_commentsBtn);
     */
 
-    initPlugins(m_documentToolBar);
+    initPlugins();
 
     // 笔记状态信息布局
     QVBoxLayout* layoutInfo1 = new QVBoxLayout();
@@ -261,10 +261,8 @@ WizTitleBar::WizTitleBar(WizExplorerApp& app, QWidget *parent)
 
 /**
  * @brief Init plugins' tool button on document tool bar.
- * 
- * @param docToolbar 
  */
-void WizTitleBar::initPlugins(QToolBar* docToolbar)
+void WizTitleBar::initPlugins()
 {
     int nTitleHeight = Utils::WizStyleHelper::titleEditorHeight();
     JSPluginManager &jsPluginMgr = JSPluginManager::instance();
@@ -272,12 +270,15 @@ void WizTitleBar::initPlugins(QToolBar* docToolbar)
     for (auto moduleData : modules) {
         if (moduleData->spec()->buttonLocation() != "Document")
             continue;
-        QAction *ac = jsPluginMgr.createPluginAction(docToolbar, moduleData);
+        QAction *ac = jsPluginMgr.createPluginAction(m_documentToolBar, moduleData);
         connect(ac, &QAction::triggered, 
             &jsPluginMgr, &JSPluginManager::handlePluginActionTriggered);
 
-        docToolbar->addAction(ac);
+        m_documentToolBar->addAction(ac);
     }
+
+    connect(this, &WizTitleBar::launchPluginEditorRequest, 
+        &jsPluginMgr, &JSPluginManager::handlePluginEditorRequest);
 }
 
 /**
@@ -355,6 +356,17 @@ QMenu* WizTitleBar::createEditorMenu()
     // External editor option
     editorMenu->addAction(tr("Editor Options"), this, SLOT(onEditorOptionSelected()));
     editorMenu->addSeparator();
+
+    // Load JSPlugin type editor
+    JSPluginManager &jsPluginMgr = JSPluginManager::instance();
+    QList<JSPluginModule *> modules = jsPluginMgr.modulesByKeyValue("ModuleType", "Editor");
+    for (auto module : modules) {
+        QAction *editorAction = jsPluginMgr.createPluginAction(this, module);
+        connect(editorAction, &QAction::triggered,
+            this, &WizTitleBar::handlePluginEditorActionTriggered);
+        editorMenu->addAction(editorAction);
+    }
+
     // Reading External editor settings
     QSettings* extEditorSettings = new QSettings(
                 Utils::WizPathResolve::dataStorePath() + "externalEditor.ini", QSettings::IniFormat);
@@ -377,6 +389,20 @@ QMenu* WizTitleBar::createEditorMenu()
     }
     //
     return editorMenu;
+}
+
+void WizTitleBar::handlePluginEditorActionTriggered()
+{
+    QAction *ac = qobject_cast<QAction *>(sender());
+    if (!ac)
+        return;
+
+    QString moduleGuid = ac->data().toString();
+    if (moduleGuid.isEmpty())
+        return;
+
+    const WIZDOCUMENTDATA &doc = noteView()->note();
+    emit launchPluginEditorRequest(doc, moduleGuid);
 }
 
 void WizTitleBar::setEditor(WizDocumentWebView* editor)

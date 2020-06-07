@@ -16,13 +16,16 @@
 #include <QNetworkReply>
 #include <QWebEngineView>
 #include <QWebEngineSettings>
+#include <QMessageBox>
 
 #include "sync/WizToken.h"
 #include "WizMainWindow.h"
+#include "share/WizMisc.h"
 #include "share/WizGlobal.h"
+#include "share/WizDatabaseManager.h"
 #include "utils/WizPathResolve.h"
 #include "widgets/WizLocalProgressWebView.h"
-
+#include "html/WizHtmlTool.h"
 #include "share/WizSettings.h"
 #include "share/WizWebEngineView.h"
 #include "share/WizMisc.h"
@@ -252,4 +255,66 @@ void JSPluginManager::notifyDocumentChanged()
     for (auto data : m_pluginDataCollection) {
         data->emitDocumentChanged();
     }
+}
+
+void JSPluginManager::handlePluginEditorRequest(const WIZDOCUMENTDATA &doc, const QString &guid)
+{
+    WizDatabaseManager *dbMgr = WizDatabaseManager::instance();
+    WizDatabase &db = dbMgr->db(doc.strKbGUID);
+    QString strDocumentFileName = db.getDocumentFileName(doc.strGUID);
+    
+    QFileInfo docZiwFile(strDocumentFileName);
+    if (!docZiwFile.exists()) {
+        qWarning() << tr("Document data does not exist: ") + doc.strTitle;
+        return;
+    }
+
+    QString strHtmlFile;
+    if (!db.documentToTempHtmlFile(doc, strHtmlFile)) {
+        qWarning() << tr("Can't unzip note data: ") + doc.strTitle;
+        return;
+    }
+    
+    QString htmlContent;
+    if (!WizLoadUnicodeTextFromFile(strHtmlFile, htmlContent)) {
+        qWarning() << tr("Can't read html file: ") + doc.strTitle;
+        return;
+    }
+    
+    // Insert JavaScript and CSS files
+    JSPluginModule *module = moduleByGUID(guid);
+    QStringList scriptFiles = module->spec()->scriptFiles();
+    QStringList styleFiles = module->spec()->styleFiles();
+    QString insertion;
+    for (auto &cssFile : styleFiles) {
+        insertion += QString(
+            "<link rel='stylesheet' type='text/css' href='%1' name='wiz_inner_style' wiz_style='unsave' charset='utf-8'>")
+            .arg(QUrl::fromLocalFile(cssFile).toString());
+    }
+    for (auto &jsFile : scriptFiles) {
+        insertion += QString(
+            "<script type='text/javascript' src='%1' name='wiz_inner_script' wiz_style='unsave' charset='utf-8'></script>")
+            .arg(QUrl::fromLocalFile(jsFile).toString());
+    }
+    
+    htmlContent = Utils::WizHtmlInsertText(htmlContent, insertion, "beforeend", "head");
+
+    // Save to temp file
+    if (!WizSaveUnicodeTextToUtf8File(strHtmlFile, htmlContent, true)) {
+        qWarning() << tr("Can't write html file: ") + doc.strTitle;
+        return;
+    }
+
+    QString indexFileUrl = QUrl::fromLocalFile(strHtmlFile).toString() + "?guid=" + doc.strGUID + "&kbguid=" + doc.strKbGUID;
+    WizWebEngineInjectObjectCollection objects = {
+        {"JSPlugin", module->parentPlugin()},
+        {"JSPluginModule", module},
+        {"WizExplorerApp", WizMainWindow::instance()->publicAPIsObject()}
+    };
+    // Ownership of page is passed on to the QTabWidget.
+    WizWebEngineView *webView = new WizWebEngineView(objects, nullptr);
+    WizWebsiteView *websiteView = new WizWebsiteView(webView, m_app);
+    websiteView->viewHtml(indexFileUrl);
+    WizMainTabBrowser *tabBrowser = WizMainWindow::instance()->mainTabView();
+    tabBrowser->createTab(websiteView);
 }

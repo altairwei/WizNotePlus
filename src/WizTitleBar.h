@@ -102,6 +102,8 @@ public Q_SLOTS:
     void onTitleEditFinished();
 
     void loadErrorPage();
+
+    void handlePluginEditorActionTriggered();
     
 signals:
     void notifyBar_link_clicked(const QString& link);
@@ -110,12 +112,13 @@ signals:
     void viewNoteInExternalEditor_request(QString& Name, QString& ProgramFile,
                                 QString& Arguments, int TextEditor, int UTF8Encoding);
     void discardChangesRequest();
+    void launchPluginEditorRequest(const WIZDOCUMENTDATA &doc, const QString &guid);
 
 private:
     void showInfoBar();
     void showEditorBar();
     void setTagBarVisible(bool visible);
-    void initPlugins(QToolBar* docToolbar);
+    void initPlugins();
     QMenu* createEditorMenu();
     //
     WizDocumentWebView* m_editor;
