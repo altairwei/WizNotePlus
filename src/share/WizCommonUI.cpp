@@ -82,9 +82,9 @@ bool WizCommonUI::SaveTextToFile(const QString &strFileName, const QString &strT
     return saveTextToFile(strFileName, strText, strCharset);
 }
 
-QString WizCommonUI::ClipboardToImage(int hwnd, const QString& strOptions)
+QString WizCommonUI::ClipboardToImage(const QString& strOptions)
 {
-    return clipboardToImage(hwnd, strOptions);
+    return clipboardToImage(0, strOptions);
 }
 
 QString WizCommonUI::GetSpecialFolder(const QString &bstrFolderName)

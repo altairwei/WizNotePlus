@@ -2682,7 +2682,9 @@ void WizMainWindow::on_actionEditingPaste_triggered()
 void WizMainWindow::on_actionEditingPastePlain_triggered()
 {
     WizDocumentView* docView = currentDocumentView();
-    if (docView->commentView()->hasFocus())
+    if (!docView)
+        return;
+    if (docView->commentView() && docView->commentView()->hasFocus())
     {
         docView->commentView()->triggerPageAction(QWebEnginePage::Paste);
     }

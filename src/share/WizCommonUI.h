@@ -12,7 +12,7 @@ public:
     //interface WizKMControls.WizCommonUI
     Q_INVOKABLE QString LoadTextFromFile(const QString& strFileName);
     Q_INVOKABLE bool SaveTextToFile(const QString &strFileName, const QString &strText, const QString &strCharset);
-    Q_INVOKABLE QString ClipboardToImage(int hwnd, const QString& strOptions);
+    Q_INVOKABLE QString ClipboardToImage(const QString& strOptions);
 
     Q_INVOKABLE QString GetSpecialFolder(const QString &bstrFolderName);
     Q_INVOKABLE QString GetATempFileName(const QString &bstrFileExt);
