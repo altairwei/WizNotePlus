@@ -14,7 +14,6 @@ class QUrl;
 
 class WizExplorerApp;
 class WizDatabaseManager;
-class WIZDOCUMENTDATA;
 class WizDocumentView;
 class WizDocumentWebView;
 class WizWebsiteView;
@@ -81,7 +80,6 @@ public slots:
     void closeRightTabs(int index);
     void lockTab(int index);
     void unlockTab(int index);
-    void onViewNoteRequested(WizDocumentView* view, const WIZDOCUMENTDATAEX& doc, bool forceEditing);
     void on_document_deleted(const WIZDOCUMENTDATA&);
     void on_document_modified(const WIZDOCUMENTDATA& documentOld, const WIZDOCUMENTDATA& documentNew);
 
@@ -94,8 +92,6 @@ private:
     void setupWebsiteView(WizWebsiteView *websiteView);
     void setupDocView(WizDocumentView *docView);
     void setupTab(QWidget* wgt);
-    void paintEvent(QPaintEvent *);
-    void initStyleBaseOption(QStyleOptionTabBarBase *optTabBase, QTabBar *tabbar, QSize size);
 };
 
 #endif // WIZTABWIDGET_H

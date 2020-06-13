@@ -124,44 +124,33 @@ WizMainTabBrowser::WizMainTabBrowser(WizExplorerApp& app, QWidget *parent)
     , m_dbMgr(app.databaseManager())
     , m_strTheme(Utils::WizStyleHelper::themeName())
 {
-    // 标签栏设置
     QTabBar *tabBar = this->tabBar();
     tabBar->setTabsClosable(false);
     tabBar->setSelectionBehaviorOnRemove(QTabBar::SelectPreviousTab);
     tabBar->setMovable(true);
     tabBar->setContextMenuPolicy(Qt::CustomContextMenu);
-    // 设置样式
+
+    /* 如果要让标签栏下移，得设置整个QTabWidget布局，比如加个 spacer；
+       如果想要让documentMode状态下的标签栏右移，但底线会一同右移动；
+       看来这个底线是QTabBar的而非documentMode下，这些底线是tab widget frame。*/
     setStyleSheet("QTabBar::tab { max-width: 300px; }");
-    // 如果要让标签栏下移，得设置整个QTabWidget布局，比如价格 spacer
-    // 如果想要让documentMode状态下的标签栏右移，但底线会一同右移动，看来这个底线是QTabBar的
-    // 而非documentMode下，这些底线是tab widget frame。
-    //
-    connect(tabBar, &QTabBar::customContextMenuRequested,
-                    this, &WizMainTabBrowser::handleContextMenuRequested);
-    connect(tabBar, &QTabBar::tabCloseRequested, this, &WizMainTabBrowser::closeTab);
-    connect(&m_dbMgr, &WizDatabaseManager::documentDeleted, this, &WizMainTabBrowser::on_document_deleted);
-    connect(&m_dbMgr, &WizDatabaseManager::documentModified, this, &WizMainTabBrowser::on_document_modified);
-    //
     setDocumentMode(true); // 不渲染tab widget frame
     setElideMode(Qt::ElideRight);
-    //TabButton* p = new TabButton(this);
-    //p->setText("Home");
-    //setCornerWidget(p, Qt::TopLeftCorner);
-    // 处理标签切换信号
+
+    // This signal is emitted whenever the current page index changes.
     connect(this, &QTabWidget::currentChanged, this, &WizMainTabBrowser::handleCurrentChanged);
+
+    connect(tabBar, &QTabBar::customContextMenuRequested, this, &WizMainTabBrowser::handleContextMenuRequested);
+    connect(tabBar, &QTabBar::tabCloseRequested, this, &WizMainTabBrowser::closeTab);
+
+    connect(&m_dbMgr, &WizDatabaseManager::documentDeleted, this, &WizMainTabBrowser::on_document_deleted);
+    connect(&m_dbMgr, &WizDatabaseManager::documentModified, this, &WizMainTabBrowser::on_document_modified);
 }
 
 void WizMainTabBrowser::handleCurrentChanged(int index)
 {
     // index 是新的当前标签
-    // 发送各种信号
-    // WizMainWindow 的m_doc需要更新
     if (index != -1) {
-        WizDocumentWebView* docView = qobject_cast<WizDocumentWebView*>(getWebView(index));
-        if (docView) {
-            docView->setFocus();
-        }
-            
         // emit titleChanged(view->title());
         // emit loadProgress(view->loadProgress());
         // emit urlChanged(view->url());
@@ -182,10 +171,7 @@ void WizMainTabBrowser::handleCurrentChanged(int index)
     }
 }
 
-/**
- * @brief 选项卡右键弹出菜单
- * @param pos
- */
+/** Show menu when right clicked */
 void WizMainTabBrowser::handleContextMenuRequested(const QPoint &pos)
 {
     QMenu menu;
@@ -196,7 +182,7 @@ void WizMainTabBrowser::handleContextMenuRequested(const QPoint &pos)
     if (index != -1) {
         // close actions
         QAction *action = menu.addAction(tr("Close Tab"));
-        action->setShortcut(QKeySequence::Close);
+        //action->setShortcut(QKeySequence::Close);
         connect(action, &QAction::triggered, this, [this,index]() {
             closeTab(index);
         });
@@ -231,20 +217,6 @@ void WizMainTabBrowser::handleContextMenuRequested(const QPoint &pos)
         }
     }
     menu.exec(QCursor::pos());
-}
-
-/**
- * @brief 处理浏览笔记信号
- * @param view 文档视图
- * @param doc 文档数据
- * @param forceEditing 是否强制编辑
- */
-void WizMainTabBrowser::onViewNoteRequested(WizDocumentView* view, const WIZDOCUMENTDATAEX& doc, bool forceEditing)
-{
-    Q_UNUSED(forceEditing);
-    Q_UNUSED(view);
-    Q_UNUSED(doc);
-
 }
 
 /**
@@ -616,69 +588,4 @@ void WizMainTabBrowser::setupWebsiteView(WizWebsiteView *websiteView)
             emit linkHovered(url);
     });
     setupView(webView);
-}
-
-void WizMainTabBrowser::paintEvent(QPaintEvent *)
-{
-    //Q_D(QTabWidget);
-    // 是否处于文档浏览模式
-    if (documentMode()) {
-        QStylePainter p(this, tabBar());
-        // 为左上角部件留出空间
-        if (QWidget *w = cornerWidget(Qt::TopLeftCorner)) {
-            QStyleOptionTabBarBase opt;
-            initStyleBaseOption(&opt, tabBar(), w->size());
-            opt.rect.moveLeft(w->x() + opt.rect.x());
-            opt.rect.moveTop(w->y() + opt.rect.y());
-            p.drawPrimitive(QStyle::PE_FrameTabBarBase, opt);
-        }
-        // 为右上角部件空间
-        if (QWidget *w = cornerWidget(Qt::TopRightCorner)) {
-            QStyleOptionTabBarBase opt;
-            initStyleBaseOption(&opt, tabBar(), w->size());
-            opt.rect.moveLeft(w->x() + opt.rect.x());
-            opt.rect.moveTop(w->y() + opt.rect.y());
-            p.drawPrimitive(QStyle::PE_FrameTabBarBase, opt);
-        }
-        return;
-    }
-    QStylePainter p(this);
-
-    QStyleOptionTabWidgetFrame opt;
-    initStyleOption(&opt);
-    opt.rect = style()->subElementRect(QStyle::SE_TabWidgetTabPane, &opt, this);;
-    p.drawPrimitive(QStyle::PE_FrameTabWidget, opt);
-}
-
-void WizMainTabBrowser::initStyleBaseOption(QStyleOptionTabBarBase *optTabBase, QTabBar *tabbar, QSize size)
-{
-    QStyleOptionTab tabOverlap;
-    tabOverlap.shape = tabbar->shape();
-    int overlap = tabbar->style()->pixelMetric(QStyle::PM_TabBarBaseOverlap, &tabOverlap, tabbar);
-    QWidget *theParent = tabbar->parentWidget();
-    optTabBase->init(tabbar);
-    optTabBase->shape = tabbar->shape();
-    optTabBase->documentMode = tabbar->documentMode();
-    if (theParent && overlap > 0) {
-        QRect rect;
-        switch (tabOverlap.shape) {
-        case QTabBar::RoundedNorth:
-        case QTabBar::TriangularNorth:
-            rect.setRect(0, size.height()-overlap, size.width(), overlap);
-            break;
-        case QTabBar::RoundedSouth:
-        case QTabBar::TriangularSouth:
-            rect.setRect(0, 0, size.width(), overlap);
-            break;
-        case QTabBar::RoundedEast:
-        case QTabBar::TriangularEast:
-            rect.setRect(0, 0, overlap, size.height());
-            break;
-        case QTabBar::RoundedWest:
-        case QTabBar::TriangularWest:
-            rect.setRect(size.width() - overlap, 0, overlap, size.height());
-            break;
-        }
-        optTabBase->rect = rect;
-    }
 }
