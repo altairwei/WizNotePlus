@@ -138,11 +138,12 @@ set(wiznote_SOURCES
     plugins/public_apis_server/WebSocketClientWrapper.cpp
     plugins/public_apis_server/WebSocketTransport.cpp
 
-    plugins/tab_browser/FullScreenWindow.cpp
-    plugins/tab_browser/FullScreenNotification.cpp
-    plugins/tab_browser/WebEngineWindow.cpp
+    gui/tabbrowser/WizMainTabBrowser.cpp
+    gui/tabbrowser/FullScreenWindow.cpp
+    gui/tabbrowser/FullScreenNotification.cpp
+    gui/tabbrowser/WebEngineWindow.cpp
 
-    WizCategoryView.cpp
+    WizCategoryView.cpp 
     WizCategoryViewItem.cpp
     WizDevToolsDialog.cpp
     WizDocumentListView.cpp
@@ -154,7 +155,6 @@ set(wiznote_SOURCES
     WizLineInputDialog.cpp
     WizDocumentHistory.cpp
     WizAttachmentListWidget.cpp
-    WizMainTabBrowser.cpp
     WizTagListWidget.cpp
     WizConsoleDialog.cpp
     WizPreferenceDialog.cpp
@@ -288,9 +288,10 @@ set(wiznote_HEADERS
     plugins/public_apis_server/WebSocketClientWrapper.h
     plugins/public_apis_server/WebSocketTransport.h
 
-    plugins/tab_browser/FullScreenWindow.h
-    plugins/tab_browser/FullScreenNotification.h
-    plugins/tab_browser/WebEngineWindow.h
+    gui/tabbrowser/WizMainTabBrowser.h
+    gui/tabbrowser/FullScreenWindow.h
+    gui/tabbrowser/FullScreenNotification.h
+    gui/tabbrowser/WebEngineWindow.h
 
     WizDef.h
     WizActions.h
@@ -304,7 +305,6 @@ set(wiznote_HEADERS
     WizDocumentWebView.h
     WizDocumentHistory.h
     WizAttachmentListWidget.h
-    WizMainTabBrowser.h
     WizTagListWidget.h
     WizConsoleDialog.h
     WizPreferenceDialog.h

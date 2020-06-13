@@ -8,11 +8,9 @@
 
 #include "share/WizWebEngineView.h"
 #include "WizDocumentWebView.h"
-#include "plugins/tab_browser/FullScreenWindow.h"
+#include "FullScreenWindow.h"
 
-QT_BEGIN_NAMESPACE
 class QUrl;
-QT_END_NAMESPACE
 
 class WizExplorerApp;
 class WizDatabaseManager;

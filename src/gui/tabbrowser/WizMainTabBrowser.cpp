@@ -10,7 +10,7 @@
 #include "WizTitleBar.h"
 #include "WizDocumentView.h"
 #include "WizWebsiteView.h"
-#include "plugins/tab_browser/WebEngineWindow.h"
+#include "gui/tabbrowser/WebEngineWindow.h"
 
 #include <QWidget>
 #include <QMessageBox>

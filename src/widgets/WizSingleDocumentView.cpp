@@ -12,7 +12,7 @@
 #include "WizDocumentView.h"
 #include "WizDocumentWebView.h"
 #include "WizMainWindow.h"
-#include "WizMainTabBrowser.h"
+#include "gui/tabbrowser/WizMainTabBrowser.h"
 #include "WizEditorToolBar.h"
 
 #ifdef Q_OS_MAC

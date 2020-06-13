@@ -30,7 +30,7 @@
 #include "share/WizWebEngineView.h"
 #include "share/WizMisc.h"
 #include "WizWebsiteView.h"
-#include "WizMainTabBrowser.h"
+#include "gui/tabbrowser/WizMainTabBrowser.h"
 #include "JSPlugin.h"
 #include "JSPluginSpec.h"
 #include "JSPluginHtmlDialog.h"

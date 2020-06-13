@@ -37,7 +37,7 @@
 #include "WizUserCipherForm.h"
 #include "WizDocumentView.h"
 #include "WizTitleBar.h"
-#include "WizMainTabBrowser.h"
+#include "gui/tabbrowser/WizMainTabBrowser.h"
 
 #include "WizDocumentWebView.h"
 #include "WizActions.h"
