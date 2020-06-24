@@ -7,7 +7,7 @@
 #include <QWebEngineFullScreenRequest>
 
 #include "share/WizWebEngineView.h"
-#include "WizDocumentWebView.h"
+#include "gui/documentviewer/WizDocumentWebView.h"
 #include "FullScreenWindow.h"
 
 class QUrl;

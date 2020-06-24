@@ -7,8 +7,8 @@
 #include "utils/WizStyleHelper.h"
 #include "utils/WizPathResolve.h"
 #include "share/WizDatabaseManager.h"
-#include "WizTitleBar.h"
-#include "WizDocumentView.h"
+#include "gui/documentviewer/WizTitleBar.h"
+#include "gui/documentviewer/WizDocumentView.h"
 #include "WizWebsiteView.h"
 #include "gui/tabbrowser/WebEngineWindow.h"
 

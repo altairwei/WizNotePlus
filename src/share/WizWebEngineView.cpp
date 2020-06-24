@@ -27,7 +27,7 @@
 #endif
 
 #include "WizDevToolsDialog.h"
-#include "WizDocumentView.h"
+#include "gui/documentviewer/WizDocumentView.h"
 
 /*
 class WizInvisibleWebEngineView : public QWebEngineView

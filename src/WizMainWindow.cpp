@@ -35,11 +35,11 @@
 #include "WizCategoryView.h"
 #include "WizDocumentListView.h"
 #include "WizUserCipherForm.h"
-#include "WizDocumentView.h"
-#include "WizTitleBar.h"
+#include "gui/documentviewer/WizDocumentView.h"
+#include "gui/documentviewer/WizTitleBar.h"
 #include "gui/tabbrowser/WizMainTabBrowser.h"
 
-#include "WizDocumentWebView.h"
+#include "gui/documentviewer/WizDocumentWebView.h"
 #include "WizActions.h"
 #include "WizPreferenceDialog.h"
 #include "WizUpgradeNotifyDialog.h"
@@ -69,7 +69,7 @@
 
 #include "WizButton.h"
 
-#include "WizEditorToolBar.h"
+#include "gui/documentviewer/WizEditorToolBar.h"
 #include "WizProgressDialog.h"
 #include "WizDocumentSelectionView.h"
 #include "WizDocumentTransitionView.h"
@@ -90,7 +90,7 @@
 #include "share/WizTranslater.h"
 #include "share/WizThreads.h"
 #include "widgets/WizShareLinkDialog.h"
-#include "widgets/WizSingleDocumentView.h"
+#include "gui/documentviewer/WizSingleDocumentView.h"
 #include "widgets/WizCustomToolBar.h"
 #include "widgets/WizTipsWidget.h"
 #include "WizPositionDelegate.h"

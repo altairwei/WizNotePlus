@@ -102,7 +102,6 @@ set(wiznote_SOURCES
     widgets/WizCrashReportDialog.cpp
     widgets/WizCustomToolBar.cpp
     widgets/WizTipsWidget.cpp
-    widgets/WizSingleDocumentView.cpp
     widgets/WizShareLinkDialog.cpp
     share/WizAnalyzer.cpp
     share/WizTranslater.cpp
@@ -148,8 +147,19 @@ set(wiznote_SOURCES
     WizDevToolsDialog.cpp
     WizDocumentListView.cpp
     WizDocumentListViewItem.cpp
-    WizDocumentView.cpp
-    WizDocumentWebView.cpp
+
+    gui/documentviewer/WizDocumentView.cpp
+    gui/documentviewer/WizDocumentWebView.cpp
+    gui/documentviewer/WizSingleDocumentView.cpp
+    gui/documentviewer/WizDocumentEditStatus.cpp
+    gui/documentviewer/WizTitleBar.cpp
+    gui/documentviewer/WizEditorToolBar.cpp
+    gui/documentviewer/WizEditorInsertLinkForm.cpp
+    gui/documentviewer/WizEditorInsertTableForm.cpp
+    gui/documentviewer/WizNoteInfoForm.cpp
+    gui/documentviewer/WizSearchReplaceWidget.cpp
+    gui/documentviewer/WizTitleEdit.cpp
+
     WizActions.cpp
     WizNoteStyle.cpp
     WizLineInputDialog.cpp
@@ -162,20 +172,14 @@ set(wiznote_SOURCES
     WizCreateAccountDialog.cpp
     WizMainWindow.cpp
     WizCellButton.cpp
-    WizTitleBar.cpp
     WizInfoBar.cpp
     WizNotifyBar.cpp
-    WizTitleEdit.cpp
     WizStatusBar.cpp
     WizUpgradeNotifyDialog.cpp
     WizUserCipherForm.cpp
-    WizNoteInfoForm.cpp
     WizSearchWidget.cpp
-    WizEditorInsertLinkForm.cpp
     WizUpgrade.cpp
     WizButton.cpp
-    WizEditorToolBar.cpp
-    WizEditorInsertTableForm.cpp
     WizFileImporter.cpp
     WizFolderSelector.cpp
     WizProgressDialog.cpp
@@ -189,9 +193,7 @@ set(wiznote_SOURCES
     WizMessageListView.cpp
     WizThumbCache.cpp
     WizMessageCompleter.cpp
-    WizDocumentEditStatus.cpp
     WizLoginDialog.cpp
-    WizSearchReplaceWidget.cpp
     WizDocTemplateDialog.cpp
     WizMobileFileReceiver.cpp
     WizWebEngineInjectObject.cpp
@@ -301,8 +303,19 @@ set(wiznote_HEADERS
     WizDevToolsDialog.h
     WizDocumentListView.h
     WizDocumentListViewItem.h
-    WizDocumentView.h
-    WizDocumentWebView.h
+
+    gui/documentviewer/WizDocumentView.h
+    gui/documentviewer/WizDocumentWebView.h
+    gui/documentviewer/WizSingleDocumentView.h
+    gui/documentviewer/WizDocumentEditStatus.h
+    gui/documentviewer/WizTitleBar.h
+    gui/documentviewer/WizEditorToolBar.h
+    gui/documentviewer/WizEditorInsertLinkForm.h
+    gui/documentviewer/WizEditorInsertTableForm.h
+    gui/documentviewer/WizNoteInfoForm.h
+    gui/documentviewer/WizSearchReplaceWidget.h
+    gui/documentviewer/WizTitleEdit.h
+
     WizDocumentHistory.h
     WizAttachmentListWidget.h
     WizTagListWidget.h
@@ -312,27 +325,21 @@ set(wiznote_HEADERS
     WizCreateAccountDialog.h
     WizMainWindow.h
     WizCellButton.h
-    WizTitleBar.h
     WizInfoBar.h
     WizNotifyBar.h
-    WizTitleEdit.h
     sync/WizSync.h
     sync/WizKMSync_p.h
     WizStatusBar.h
     WizUpgradeNotifyDialog.h
     WizUserCipherForm.h
-    WizNoteInfoForm.h
     WizLineInputDialog.h
     WizSearchWidget.h
-    WizEditorInsertLinkForm.h
     WizUpgrade.h
-    WizEditorToolBar.h
     WizWebsiteView.h
     WizWebSettingsDialog.h
     WizPopupButton.h
     WizDocumentTransitionView.h
     WizButton.h
-    WizEditorInsertTableForm.h
     WizFileImporter.h
     WizFolderSelector.h
     WizProgressDialog.h
@@ -348,10 +355,8 @@ set(wiznote_HEADERS
     WizThumbCache_p.h
     WizMessageCompleter.h
     widgets/WizImageButton.h
-    WizDocumentEditStatus.h
     WizLoginDialog.h
     share/WizFileMonitor.h
-    WizSearchReplaceWidget.h
     widgets/WizCodeEditorDialog.h
     WizDocTemplateDialog.h
     WizMobileFileReceiver.h
@@ -381,7 +386,6 @@ set(wiznote_HEADERS
     widgets/WizCrashReportDialog.h
     widgets/WizCustomToolBar.h
     widgets/WizTipsWidget.cpp
-    widgets/WizSingleDocumentView.h
     widgets/WizTemplatePurchaseDialog.h
     widgets/WizExecutingActionDialog.h
     widgets/WizUserServiceExprDialog.h
