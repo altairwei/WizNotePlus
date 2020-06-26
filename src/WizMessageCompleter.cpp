@@ -18,7 +18,7 @@
 #include "utils/WizPinyin.h"
 #include "utils/WizStyleHelper.h"
 
-#include "WizDocumentView.h"
+#include "gui/documentviewer/WizDocumentView.h"
 
 class MessageCompleterModel : public QAbstractListModel
 {

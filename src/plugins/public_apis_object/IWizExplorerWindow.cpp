@@ -1,6 +1,6 @@
 #include "IWizExplorerWindow.h"
 #include "WizMainWindow.h"
-#include "WizDocumentView.h"
+#include "gui/documentviewer/WizDocumentView.h"
 #include "share/WizDatabaseManager.h"
 #include "share/WizDatabase.h"
 

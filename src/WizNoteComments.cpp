@@ -3,7 +3,7 @@
 
 #include <QDebug>
 
-#include "WizDocumentView.h"
+#include "gui/documentviewer/WizDocumentView.h"
 #include "share/WizObject.h"
 #include "sync/WizToken.h"
 #include "sync/WizApiEntry.h"
