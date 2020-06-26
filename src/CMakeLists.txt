@@ -138,9 +138,11 @@ set(wiznote_SOURCES
     plugins/public_apis_server/WebSocketTransport.cpp
 
     gui/tabbrowser/WizMainTabBrowser.cpp
+    gui/tabbrowser/AbstractTabPage.cpp
     gui/tabbrowser/FullScreenWindow.cpp
     gui/tabbrowser/FullScreenNotification.cpp
     gui/tabbrowser/WebEngineWindow.cpp
+    gui/tabbrowser/WizWebsiteView.cpp
 
     WizCategoryView.cpp 
     WizCategoryViewItem.cpp
@@ -187,7 +189,6 @@ set(wiznote_SOURCES
     WizDocumentSelectionView.cpp
     WizDocumentTransitionView.cpp
     WizPopupButton.cpp
-    WizWebsiteView.cpp
     WizWebSettingsDialog.cpp
     WizUserVerifyDialog.cpp
     WizMessageListView.cpp
@@ -291,9 +292,11 @@ set(wiznote_HEADERS
     plugins/public_apis_server/WebSocketTransport.h
 
     gui/tabbrowser/WizMainTabBrowser.h
+    gui/tabbrowser/AbstractTabPage.h
     gui/tabbrowser/FullScreenWindow.h
     gui/tabbrowser/FullScreenNotification.h
     gui/tabbrowser/WebEngineWindow.h
+    gui/tabbrowser/WizWebsiteView.h
 
     WizDef.h
     WizActions.h
@@ -335,7 +338,6 @@ set(wiznote_HEADERS
     WizLineInputDialog.h
     WizSearchWidget.h
     WizUpgrade.h
-    WizWebsiteView.h
     WizWebSettingsDialog.h
     WizPopupButton.h
     WizDocumentTransitionView.h

@@ -1,9 +1,12 @@
-﻿#ifndef CORE_WIZDOCUMENTVIEW_H
-#define CORE_WIZDOCUMENTVIEW_H
+﻿#ifndef GUI_DOCUMENTVIEWER_WIZDOCUMENTVIEW_H
+#define GUI_DOCUMENTVIEWER_WIZDOCUMENTVIEW_H
 
-#include "share/WizObject.h"
 #include <QSharedPointer>
 #include <QWidget>
+#include <QStackedWidget>
+
+#include "share/WizObject.h"
+#include "gui/tabbrowser/AbstractTabPage.h"
 
 class QScrollArea;
 class QLineEdit;
@@ -21,7 +24,6 @@ class WizDatabase;
 class WizSplitter;
 class WizUserCipherForm;
 class WizObjectDownloaderHost;
-class QStackedWidget;
 class QWebFrame;
 class QWebEnginePage;
 class WizWebEngineView;
@@ -34,26 +36,28 @@ class WizTitleBar;
 class WizEditorToolBar;
 class WizTagBar;
 
-class WizDocumentView : public QWidget
+class WizDocumentView : public AbstractTabPage
 {
     Q_OBJECT
 
 public:
     WizDocumentView(WizExplorerApp& app, QWidget* parent = nullptr);
     ~WizDocumentView();
+
     virtual QSize sizeHint() const;
     void setSizeHint(QSize size);
 
-    QWidget* client() const;
+    QWidget* client() const { return m_stack; }
     WizDocumentWebView* web() const { return m_web; }
     WizWebEngineView* commentView() const;
-    WizLocalProgressWebView* commentWidget() const;
-    //
-    WizDocumentTransitionView* transitionView();
-    //
-    WizTitleBar* titleBar();
-    //
+    WizLocalProgressWebView* commentWidget() const { return m_commentWidget; }
+    WizDocumentTransitionView* transitionView() { return m_transitionView; }
+    WizTitleBar* titleBar() { return m_title; }
+
+    QString Title() override { return m_note.strTitle; }
+
     void waitForDone();
+    void RequestClose() override;
 
 protected:
     WizExplorerApp& m_app;
@@ -62,7 +66,7 @@ protected:
     WizObjectDownloaderHost* m_downloaderHost;
     WizDocumentTransitionView* m_transitionView;
 
-    QStackedWidget* m_tab;
+    QStackedWidget* m_stack;
     QWidget* m_msgWidget;
     QLabel* m_msgLabel;
 
@@ -76,7 +80,6 @@ protected:
 
     WizUserCipherForm* m_passwordView;
     WizDocumentEditStatusSyncThread* m_editStatusSyncThread;
-//    CWizDocumentStatusCheckThread* m_editStatusCheckThread;
     WizDocumentStatusChecker* m_editStatusChecker;
 
     virtual void showEvent(QShowEvent *event);
@@ -97,6 +100,7 @@ public:
     bool isLocked() const { return m_bLocked; }
     bool isEditing() const { return m_editorMode == modeEditor; }
     WizEditorMode editorMode() const { return m_editorMode; }
+
     bool reload();
     void reloadNote();
     void setEditorFocus();
@@ -137,6 +141,7 @@ public Q_SLOTS:
                               const WIZDOCUMENTDATA& documentNew);
     void on_document_data_modified(const WIZDOCUMENTDATA& data);
     void on_document_data_changed(const QString& strGUID, WizDocumentView* viewer);
+    void on_document_deleted(const WIZDOCUMENTDATA& data);
 
     void on_attachment_created(const WIZDOCUMENTATTACHMENTDATA& attachment);
     void on_attachment_deleted(const WIZDOCUMENTATTACHMENTDATA& attachment);
@@ -158,6 +163,7 @@ public Q_SLOTS:
     void on_viewNoteInExternalEditor_request(QString& Name, QString& ProgramFile,
                                                 QString& Arguments, int TextEditor, int UTF8Encoding);
     void handleDiscardChangesRequest();
+    void handleWindowCloseRequested();
 
 private:
     void loadNote(const WIZDOCUMENTDATAEX &doc);
@@ -172,4 +178,4 @@ private:
 };
 
 
-#endif // CORE_WIZDOCUMENTVIEW_H
+#endif // GUI_DOCUMENTVIEWER_WIZDOCUMENTVIEW_H

@@ -7,7 +7,7 @@
 #include "share/WizWebEngineView.h"
 
 WizWebsiteView::WizWebsiteView(WizWebEngineView *webView, WizExplorerApp& app, QWidget* parent)
-    : QWidget(parent)
+    : AbstractTabPage(parent)
     , m_webView(webView)
     , m_sizeHint(QSize(200, 1))
     , m_app(app)
@@ -26,6 +26,11 @@ WizWebsiteView::WizWebsiteView(WizWebEngineView *webView, WizExplorerApp& app, Q
     // set web view
     layout->addWidget(m_webView);
     m_webView->show();
+
+    connect(m_webView->page(), &QWebEnginePage::windowCloseRequested,
+        this, &WizWebsiteView::handleWindowCloseRequested);
+    connect(m_webView->page(), &QWebEnginePage::titleChanged,
+        this, &WizWebsiteView::titleChanged);
 }
 
 WizWebsiteView::~WizWebsiteView()
@@ -46,4 +51,19 @@ void WizWebsiteView::setSizeHint(QSize size)
 void WizWebsiteView::viewHtml(const QUrl &url)
 {
     m_webView->setUrl(url);
+}
+
+QString WizWebsiteView::Title()
+{
+    return m_webView->title();
+}
+
+void WizWebsiteView::RequestClose()
+{
+    m_webView->triggerPageAction(QWebEnginePage::RequestClose);
+}
+
+void WizWebsiteView::handleWindowCloseRequested()
+{
+    emit pageCloseRequested();
 }

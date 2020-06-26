@@ -1,16 +1,6 @@
 ﻿#include "WizMainTabBrowser.h"
 
-#include "share/WizWebEngineView.h"
-#include "share/WizGlobal.h"
-#include "WizDef.h"
-#include "share/WizMisc.h"
-#include "utils/WizStyleHelper.h"
-#include "utils/WizPathResolve.h"
-#include "share/WizDatabaseManager.h"
-#include "gui/documentviewer/WizTitleBar.h"
-#include "gui/documentviewer/WizDocumentView.h"
-#include "WizWebsiteView.h"
-#include "gui/tabbrowser/WebEngineWindow.h"
+#include <stdexcept>
 
 #include <QWidget>
 #include <QMessageBox>
@@ -22,6 +12,18 @@
 #include <QMenu>
 #include <QTabBar>
 #include <QLayout>
+
+#include "share/WizWebEngineView.h"
+#include "share/WizGlobal.h"
+#include "WizDef.h"
+#include "share/WizMisc.h"
+#include "utils/WizStyleHelper.h"
+#include "utils/WizPathResolve.h"
+#include "share/WizDatabaseManager.h"
+#include "gui/documentviewer/WizTitleBar.h"
+#include "gui/documentviewer/WizDocumentView.h"
+#include "gui/tabbrowser/WizWebsiteView.h"
+#include "gui/tabbrowser/WebEngineWindow.h"
 
 //-------------------------------------------------------------------
 // class WizMainTabBrowser
@@ -141,33 +143,15 @@ WizMainTabBrowser::WizMainTabBrowser(WizExplorerApp& app, QWidget *parent)
     connect(this, &QTabWidget::currentChanged, this, &WizMainTabBrowser::handleCurrentChanged);
 
     connect(tabBar, &QTabBar::customContextMenuRequested, this, &WizMainTabBrowser::handleContextMenuRequested);
-    connect(tabBar, &QTabBar::tabCloseRequested, this, &WizMainTabBrowser::closeTab);
-
-    connect(&m_dbMgr, &WizDatabaseManager::documentDeleted, this, &WizMainTabBrowser::on_document_deleted);
-    connect(&m_dbMgr, &WizDatabaseManager::documentModified, this, &WizMainTabBrowser::on_document_modified);
+    connect(tabBar, &QTabBar::tabCloseRequested, this, &WizMainTabBrowser::handleTabCloseRequested);
 }
 
 void WizMainTabBrowser::handleCurrentChanged(int index)
 {
-    // index 是新的当前标签
     if (index != -1) {
-        // emit titleChanged(view->title());
-        // emit loadProgress(view->loadProgress());
-        // emit urlChanged(view->url());
-        // emit favIconChanged(view->favIcon());
-        // emit webActionEnabledChanged(QWebEnginePage::Back, view->isWebActionEnabled(QWebEnginePage::Back));
-        // emit webActionEnabledChanged(QWebEnginePage::Forward, view->isWebActionEnabled(QWebEnginePage::Forward));
-        // emit webActionEnabledChanged(QWebEnginePage::Stop, view->isWebActionEnabled(QWebEnginePage::Stop));
-        // emit webActionEnabledChanged(QWebEnginePage::Reload,view->isWebActionEnabled(QWebEnginePage::Reload));
+        emit titleChanged(tabPage(index)->Title());
     } else {
-        // emit titleChanged(QString());
-        // emit loadProgress(0);
-        // emit urlChanged(QUrl());
-        // emit favIconChanged(QIcon());
-        // emit webActionEnabledChanged(QWebEnginePage::Back, false);
-        // emit webActionEnabledChanged(QWebEnginePage::Forward, false);
-        // emit webActionEnabledChanged(QWebEnginePage::Stop, false);
-        // emit webActionEnabledChanged(QWebEnginePage::Reload, true);
+        emit titleChanged(QString());
     }
 }
 
@@ -182,20 +166,19 @@ void WizMainTabBrowser::handleContextMenuRequested(const QPoint &pos)
     if (index != -1) {
         // close actions
         QAction *action = menu.addAction(tr("Close Tab"));
-        //action->setShortcut(QKeySequence::Close);
-        connect(action, &QAction::triggered, this, [this,index]() {
-            closeTab(index);
+        connect(action, &QAction::triggered, this, [this, index]() {
+            tabPage(index)->RequestClose();
         });
         action = menu.addAction(tr("Close Other Tabs"));
-        connect(action, &QAction::triggered, this, [this,index]() {
+        connect(action, &QAction::triggered, this, [this, index]() {
             closeOtherTabs(index);
         });
         action = menu.addAction(tr("Close Left Tabs"));
-        connect(action, &QAction::triggered, this, [this,index]() {
+        connect(action, &QAction::triggered, this, [this, index]() {
             closeLeftTabs(index);
         });
         action = menu.addAction(tr("Close Right Tabs"));
-        connect(action, &QAction::triggered, this, [this,index]() {
+        connect(action, &QAction::triggered, this, [this, index]() {
             closeRightTabs(index);
         });
         action = menu.addAction(tr("Close All Tabs"));
@@ -217,41 +200,6 @@ void WizMainTabBrowser::handleContextMenuRequested(const QPoint &pos)
         }
     }
     menu.exec(QCursor::pos());
-}
-
-/**
- * @brief Remove related tab page when recieve document deletion signal.
- */
-void WizMainTabBrowser::on_document_deleted(const WIZDOCUMENTDATA& data)
-{
-    for (int i = 0; i < count(); ++i) {
-        WizDocumentView* docView = qobject_cast<WizDocumentView*>(widget(i));
-        if ( docView == nullptr ) {
-            continue;
-        } else {
-            QString noteGUID = data.strGUID;
-            if (noteGUID == docView->note().strGUID)
-                closeTab(i);
-        }
-
-    }
-}
-
-void WizMainTabBrowser::on_document_modified(const WIZDOCUMENTDATA& documentOld, const WIZDOCUMENTDATA& documentNew)
-{
-    for (int i = 0; i < count(); ++i) {
-        WizDocumentView* docView = qobject_cast<WizDocumentView*>(widget(i));
-        if ( docView == nullptr ) {
-            continue;
-        } else {
-            QString noteGUID = documentOld.strGUID;
-            if (noteGUID == docView->note().strGUID) {
-                // Change tab text when document title changed
-                setTabText(i, documentNew.strTitle);
-            }
-        }
-
-    }
 }
 
 void WizMainTabBrowser::triggeredFullScreen()
@@ -291,25 +239,6 @@ void WizMainTabBrowser::fullScreenRequested(QWebEngineFullScreenRequest request)
     }
 }
 
-void WizMainTabBrowser::setupTab(QWidget *wgt)
-{
-    int index = indexOf(wgt);
-    if (index != -1) {
-        TabButton* closeBtn = new TabButton(this->tabBar());
-        closeBtn->setIcon(WizLoadSkinIcon(m_strTheme, "tab_close", QSize(16, 16)));
-        connect(closeBtn, &QAbstractButton::clicked, this, [this, wgt](){
-            int currentIndex = indexOf(wgt);
-            emit this->tabBar()->tabCloseRequested(currentIndex);
-        });
-        tabBar()->setTabButton(index, QTabBar::RightSide, closeBtn);
-        //
-        TabStatusData status;
-        status["Locked"] = QVariant(false);
-        tabBar()->setTabData(index, status);
-
-    }
-}
-
 /**
  * @brief Create an empty web page with WizWebsiteView, but do not focus on new tab.
  * 
@@ -319,13 +248,10 @@ WizWebEngineView *WizMainTabBrowser::createBackgroundTab()
 {
     // create default website view
     WizWebsiteView* websiteView = new WizWebsiteView(m_app);
-    WizWebEngineView *webView = websiteView->webView();
-    // create and int tab page
-    setupWebsiteView(websiteView);
     addTab(websiteView, tr("Untitled"));
-    setupTab(websiteView);
+    setupTabPage(websiteView);
     //
-    return webView;
+    return websiteView->webView();
 }
 
 WizWebEngineView *WizMainTabBrowser::createWindow()
@@ -352,45 +278,6 @@ WizWebEngineView *WizMainTabBrowser::createTab()
 }
 
 /**
- * @brief 浏览笔记文档
- * @param docView 已经构建好的文档视图
- */
-int WizMainTabBrowser::createTab(WizDocumentView *docView)
-{
-    // 创建标签页
-    int index = addTab(docView, docView->note().strTitle);
-    setupTab(docView);
-    setupDocView(docView);
-    docView->resize(currentWidget()->size()); // Workaround for QTBUG-61770
-    // 设置成当前部件
-    setCurrentWidget(docView);
-    //
-    return index;
-}
-
-/**
- * @brief create a tab with website view.
- * 
- * @param websiteView 
- * @return int 
- */
-int WizMainTabBrowser::createTab(WizWebsiteView *websiteView)
-{
-    WizWebEngineView *webView = websiteView->webView();
-    // create and int tab page
-    setupWebsiteView(websiteView);
-    int index = addTab(websiteView, webView->title());
-    setupTab(websiteView);
-    // Workaround for QTBUG-61770
-    webView->resize(currentWidget()->size());
-    // focus on it
-    webView->setFocus();
-    setCurrentWidget(websiteView);
-    //
-    return index;
-}
-
-/**
  * @brief create a tab with url
  * @param url The url can be local filename.
  */
@@ -404,48 +291,57 @@ int WizMainTabBrowser::createTab(const QUrl &url)
     return index;
 }
 
+int WizMainTabBrowser::createTab(AbstractTabPage *tabPage)
+{
+    int index = addTab(tabPage, tabPage->Title());
+    setupTabPage(tabPage);
+    // Workaround for QTBUG-61770
+    tabPage->resize(currentWidget()->size());
+    setCurrentWidget(tabPage);
+
+    return index;
+}
+
+void WizMainTabBrowser::handleTabCloseRequested(int index)
+{
+    tabPage(index)->RequestClose();
+}
+
 /**
  * @brief 处理标签栏发出的关闭信号
  * @param index 标签编号
  */
 void WizMainTabBrowser::closeTab(int index)
 {
-    // process document view closing.
-    QWidget* p = widget(index);
+    auto p = tabPage(index);
     removeTab(index);
-    WizDocumentView* docView = qobject_cast<WizDocumentView*>(p);
-    if (docView) {
-        //
-        docView->waitForDone();
-    }
-    //
     p->deleteLater();
 }
 
 void WizMainTabBrowser::closeOtherTabs(int index)
 {
     for (int i = count() - 1; i > index; --i)
-        closeTab(i);
+        tabPage(i)->RequestClose();
     for (int i = index - 1; i >= 0; --i)
-        closeTab(i);
+        tabPage(i)->RequestClose();
 }
 
 void WizMainTabBrowser::closeAllTabs()
 {
     for (int i = count() - 1; i >= 0; --i)
-        closeTab(i);
+        tabPage(i)->RequestClose();
 }
 
 void WizMainTabBrowser::closeLeftTabs(int index)
 {
     for (int i = index - 1; i >= 0; --i)
-        closeTab(i);
+        tabPage(i)->RequestClose();
 }
 
 void WizMainTabBrowser::closeRightTabs(int index)
 {
     for (int i = count() - 1; i > index; --i)
-        closeTab(i);
+        tabPage(i)->RequestClose();
 }
 
 void WizMainTabBrowser::lockTab(int index)
@@ -513,6 +409,16 @@ WizWebEngineView* WizMainTabBrowser::currentWebView() const
     return getWebView(currentIndex());
 }
 
+AbstractTabPage *WizMainTabBrowser::tabPage(int index) const noexcept(false)
+{
+    auto tabPage = qobject_cast<AbstractTabPage *>(widget(index));
+    if (tabPage) {
+        return tabPage;
+    } else {
+        throw std::runtime_error("Can not cast to AbstractTabPage.");
+    }
+}
+
 /**
  * @brief 初始化WizWebEngineView
  * @param view
@@ -522,49 +428,10 @@ void WizMainTabBrowser::setupView(WizWebEngineView* view) {
     connect(webPage, &QWebEnginePage::fullScreenRequested, this, &WizMainTabBrowser::fullScreenRequested);
 }
 
-/**
- * @brief 初始化文档阅读编辑器
- * @param docView
- */
-void WizMainTabBrowser::setupDocView(WizDocumentView *docView) {
-    // set tab text to document title
-    connect(WizGlobal::instance(), &WizGlobal::viewNoteRequested, [this](WizDocumentView* view, const WIZDOCUMENTDATAEX& doc, bool forceEditing){
-        Q_UNUSED(forceEditing);
-        int index = indexOf(view);
-        if (index != -1) {
-            setTabText(index, doc.strTitle);
-        }
-    });
-    connect(docView, &WizDocumentView::documentSaved, [this](QString strGUID, WizDocumentView* view){
-        Q_UNUSED(strGUID);
-        int index = indexOf(view);
-        auto doc = view->note();
-        if (index != -1) {
-            setTabText(index, doc.strTitle);
-        }
-    });
-    /* // WizMainTab has connected WizDatabaseManager::documentModified
-    connect(docView->web(), &WizDocumentWebView::titleEdited, [this](WizDocumentView* view, QString newTitle){
-        int index = indexOf(view);
-        if (index != -1) {
-            setTabText(index, newTitle);
-        }
-    });
-    */
-    setupView(docView->web());
-}
-
-/**
- * @brief 初始化网页浏览器
- * @param webView 要初始化的页面视图;
- */
-void WizMainTabBrowser::setupWebsiteView(WizWebsiteView *websiteView)
+void WizMainTabBrowser::setupTabPage(AbstractTabPage *tabPage)
 {
-    WizWebEngineView *webView = websiteView->getWebView();
-    WizWebEnginePage *webPage = webView->getPage();
-
-    connect(webView, &WizWebEngineView::titleChanged, [this, websiteView](const QString &title) {
-        int index = indexOf(websiteView);
+    connect(tabPage, &AbstractTabPage::titleChanged, [this, tabPage](const QString &title) {
+        int index = indexOf(tabPage);
         if (index != -1) {
             setTabText(index, title);
             setTabToolTip(index, title);
@@ -572,20 +439,26 @@ void WizMainTabBrowser::setupWebsiteView(WizWebsiteView *websiteView)
         if (currentIndex() == index)
             emit titleChanged(title);
     });
-    connect(webView, &WizWebEngineView::urlChanged, [this, websiteView](const QUrl &url) {
-        int index = indexOf(websiteView);
-        if (index != -1)
-            tabBar()->setTabData(index, url);
-        if (currentIndex() == index)
-            emit urlChanged(url);
+
+    connect(tabPage, &AbstractTabPage::pageCloseRequested, [this, tabPage]() {
+        int index = indexOf(tabPage);
+        if (index != -1) {
+            closeTab(index);
+        }
     });
-    connect(webView, &WizWebEngineView::loadProgress, [this, websiteView](int progress) {
-        if (currentIndex() == indexOf(websiteView))
-            emit loadProgress(progress);
-    });
-    connect(webPage, &WizWebEnginePage::linkHovered, [this, websiteView](const QString &url) {
-        if (currentIndex() == indexOf(websiteView))
-            emit linkHovered(url);
-    });
-    setupView(webView);
+
+    // Close Button
+    int index = indexOf(tabPage);
+    if (index != -1) {
+        TabButton* closeBtn = new TabButton(tabBar());
+        closeBtn->setIcon(WizLoadSkinIcon(m_strTheme, "tab_close", QSize(16, 16)));
+        connect(closeBtn, &QAbstractButton::clicked, this, [this, tabPage](){
+            tabPage->RequestClose();
+        });
+        tabBar()->setTabButton(index, QTabBar::RightSide, closeBtn);
+        //
+        TabStatusData status;
+        status["Locked"] = QVariant(false);
+        tabBar()->setTabData(index, status);
+    }
 }

@@ -9,6 +9,7 @@
 #include "share/WizWebEngineView.h"
 #include "gui/documentviewer/WizDocumentWebView.h"
 #include "FullScreenWindow.h"
+#include "AbstractTabPage.h"
 
 class QUrl;
 
@@ -51,6 +52,7 @@ public:
     //WizDocumentView* currentDocView();
     WizWebEngineView* currentWebView() const;
     WizWebEngineView* getWebView(int index) const;
+    AbstractTabPage *tabPage(int index) const;
 
 private:
     WizExplorerApp& m_app;
@@ -60,9 +62,6 @@ private:
 
 signals:
     void titleChanged(const QString &title);
-    void urlChanged(const QUrl &url);
-    void loadProgress(int progress);
-    void linkHovered(const QString &link);
 
 public slots:
     void handleCurrentChanged(int index);
@@ -70,9 +69,8 @@ public slots:
     WizWebEngineView *createTab();
     WizWebEngineView *createBackgroundTab();
     WizWebEngineView *createWindow();
-    int createTab(WizDocumentView *docView);
-    int createTab(WizWebsiteView *websiteView);
     int createTab(const QUrl &url);
+    int createTab(AbstractTabPage *tabPage);
     void closeTab(int index);
     void closeOtherTabs(int index);
     void closeAllTabs();
@@ -80,18 +78,15 @@ public slots:
     void closeRightTabs(int index);
     void lockTab(int index);
     void unlockTab(int index);
-    void on_document_deleted(const WIZDOCUMENTDATA&);
-    void on_document_modified(const WIZDOCUMENTDATA& documentOld, const WIZDOCUMENTDATA& documentNew);
 
     void triggeredFullScreen();
     void handleExitFullScreen();
     void fullScreenRequested(QWebEngineFullScreenRequest request);
+    void handleTabCloseRequested(int index);
 
 private:
     void setupView(WizWebEngineView* view);
-    void setupWebsiteView(WizWebsiteView *websiteView);
-    void setupDocView(WizDocumentView *docView);
-    void setupTab(QWidget* wgt);
+    void setupTabPage(AbstractTabPage *tabPage);
 };
 
 #endif // WIZTABWIDGET_H

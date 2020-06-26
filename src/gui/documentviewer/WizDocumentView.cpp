@@ -52,7 +52,7 @@
 #define DOCUMENT_STATUS_ON_CHECKLIST       0x0080
 
 WizDocumentView::WizDocumentView(WizExplorerApp& app, QWidget* parent)
-    : QWidget(parent)
+    : AbstractTabPage(parent)
     , m_app(app)
     , m_dbMgr(app.databaseManager())
     , m_userSettings(app.userSettings())
@@ -77,7 +77,7 @@ WizDocumentView::WizDocumentView(WizExplorerApp& app, QWidget* parent)
     m_docView = new QWidget(this);
     m_docView->setLayout(layoutDoc);
     // 创建堆叠部件
-    m_tab = new QStackedWidget(this);
+    m_stack = new QStackedWidget(this);
     // 设置密码视图
     m_passwordView->setGeometry(this->geometry());
     connect(m_passwordView, SIGNAL(cipherCheckRequest()), SLOT(onCipherCheckRequest()));
@@ -92,13 +92,13 @@ WizDocumentView::WizDocumentView(WizExplorerApp& app, QWidget* parent)
     // 创建空白视图
     m_blankView = new QWidget(this);
     // 添加不同视图到堆叠部件
-    m_tab->addWidget(m_docView);
-    m_tab->addWidget(m_passwordView);
-    m_tab->addWidget(m_msgWidget);
-    m_tab->addWidget(m_transitionView);
-    m_tab->addWidget(m_blankView);
-    m_tab->setCurrentWidget(m_blankView);
-    m_tab->setBackgroundRole(QPalette::HighlightedText);
+    m_stack->addWidget(m_docView);
+    m_stack->addWidget(m_passwordView);
+    m_stack->addWidget(m_msgWidget);
+    m_stack->addWidget(m_transitionView);
+    m_stack->addWidget(m_blankView);
+    m_stack->setCurrentWidget(m_blankView);
+    m_stack->setBackgroundRole(QPalette::HighlightedText);
     // Setup comment widget
     m_comments = m_commentWidget->web();
     WizWebEngineInjectObjectCollection objects = {{"WizExplorerApp", WizGlobal::mainWindow()->publicAPIsObject()}};
@@ -145,27 +145,29 @@ WizDocumentView::WizDocumentView(WizExplorerApp& app, QWidget* parent)
     QVBoxLayout* layoutMain = new QVBoxLayout(this);
     layoutMain->setContentsMargins(0, 0, 0, 0);
     setLayout(layoutMain);
-    layoutMain->addWidget(m_tab);
+    layoutMain->addWidget(m_stack);
     // 设置下载器
     WizMainWindow* mainWindow = qobject_cast<WizMainWindow *>(m_app.mainWindow());
     m_downloaderHost = mainWindow->downloaderHost();
     connect(m_downloaderHost, SIGNAL(downloadDone(const WIZOBJECTDATA&, bool)),
             SLOT(on_download_finished(const WIZOBJECTDATA&, bool)));
 
-    connect(&m_dbMgr, SIGNAL(documentModified(const WIZDOCUMENTDATA&, const WIZDOCUMENTDATA&)), \
+    connect(&m_dbMgr, SIGNAL(documentModified(const WIZDOCUMENTDATA&, const WIZDOCUMENTDATA&)),
             SLOT(on_document_modified(const WIZDOCUMENTDATA&, const WIZDOCUMENTDATA&)));
 
     connect(&m_dbMgr, SIGNAL(documentDataModified(const WIZDOCUMENTDATA&)),
             SLOT(on_document_data_modified(const WIZDOCUMENTDATA&)));
 
-    connect(&m_dbMgr, SIGNAL(attachmentCreated(const WIZDOCUMENTATTACHMENTDATA&)), \
+    connect(&m_dbMgr, SIGNAL(attachmentCreated(const WIZDOCUMENTATTACHMENTDATA&)),
             SLOT(on_attachment_created(const WIZDOCUMENTATTACHMENTDATA&)));
 
-    connect(&m_dbMgr, SIGNAL(attachmentDeleted(const WIZDOCUMENTATTACHMENTDATA&)), \
+    connect(&m_dbMgr, SIGNAL(attachmentDeleted(const WIZDOCUMENTATTACHMENTDATA&)),
             SLOT(on_attachment_deleted(const WIZDOCUMENTATTACHMENTDATA&)));
 
-    connect(&m_dbMgr, SIGNAL(documentUploaded(QString,QString)), \
+    connect(&m_dbMgr, SIGNAL(documentUploaded(QString,QString)),
             m_editStatusSyncThread, SLOT(documentUploaded(QString,QString)));
+    
+    connect(&m_dbMgr, &WizDatabaseManager::documentDeleted, this, &WizDocumentView::on_document_deleted);
 
     // 连接浏览笔记请求信号
     connect(WizGlobal::instance(), SIGNAL(viewNoteRequested(WizDocumentView*,const WIZDOCUMENTDATAEX&,bool)),
@@ -178,6 +180,7 @@ WizDocumentView::WizDocumentView(WizExplorerApp& app, QWidget* parent)
             SLOT(onCloseNoteRequested(WizDocumentView*)));
 
     connect(m_web, SIGNAL(focusIn()), SLOT(on_webView_focus_changed()));
+    connect(m_web->page(), &QWebEnginePage::windowCloseRequested, this, &WizDocumentView::handleWindowCloseRequested);
 
     connect(m_title, SIGNAL(notifyBar_link_clicked(QString)), SLOT(on_notifyBar_link_clicked(QString)));
     connect(m_title, SIGNAL(loadComment_request(QString)), SLOT(on_loadComment_request(QString)), Qt::QueuedConnection);
@@ -228,29 +231,34 @@ void WizDocumentView::waitForDone()
 {
     m_editStatusChecker->thread()->quit();
     m_editStatusSyncThread->waitForDone();
-    //
-    //
+
     bool done = false;
     m_web->trySaveDocument(m_note, false, [=, &done](const QVariant& ret){
-
         m_web->waitForDone();
-        //
         done = true;
     });
-    //
+
     while (!done)
     {
         QApplication::processEvents();
     }
 }
 
-/**
- * @brief 返回文档视图的主要用户端 - 堆叠部件
- * @return
- */
-QWidget* WizDocumentView::client() const
+void WizDocumentView::RequestClose()
 {
-    return m_tab;
+    // We can not runJavaScript after RequestClose.
+    waitForDone();
+    m_web->triggerPageAction(QWebEnginePage::RequestClose);
+}
+
+void WizDocumentView::handleWindowCloseRequested()
+{
+    // We Should exit all thread
+    m_editStatusChecker->thread()->quit();
+    m_editStatusSyncThread->waitForDone();
+    m_web->waitForDone();
+
+    emit pageCloseRequested();
 }
 
 WizWebEngineView*WizDocumentView::commentView() const
@@ -258,20 +266,6 @@ WizWebEngineView*WizDocumentView::commentView() const
     return m_commentWidget->web();
 }
 
-WizLocalProgressWebView*WizDocumentView::commentWidget() const
-{
-    return m_commentWidget;
-}
-
-WizDocumentTransitionView* WizDocumentView::transitionView()
-{
-    return m_transitionView;
-}
-
-WizTitleBar*WizDocumentView::titleBar()
-{
-    return m_title;
-}
 void WizDocumentView::showEvent(QShowEvent *event)
 {
     Q_UNUSED(event);
@@ -316,6 +310,7 @@ bool WizDocumentView::reload()
 {
     bool ret = m_dbMgr.db(m_note.strKbGUID).documentFromGuid(m_note.strGUID, m_note);
     m_title->updateInfo(note());
+    emit titleChanged(m_note.strTitle);
 
     return ret;
 }
@@ -404,7 +399,7 @@ void WizDocumentView::viewNote(const WIZDOCUMENTDATAEX& wizDoc, bool forceEdit)
         {
             m_web->clear();
 
-            m_tab->setCurrentWidget(m_transitionView);
+            m_stack->setCurrentWidget(m_transitionView);
             downloadNoteFromServer(data);
 
             return;
@@ -431,14 +426,14 @@ void WizDocumentView::viewNote(const WIZDOCUMENTDATAEX& wizDoc, bool forceEdit)
                 //
 
                 m_passwordView->setHint(db.getCertPasswordHint());
-                m_tab->setCurrentWidget(m_passwordView);
+                m_stack->setCurrentWidget(m_passwordView);
                 m_passwordView->setCipherEditorFocus();
 
                 return;
             }
         }
         //
-        m_tab->setCurrentWidget(m_docView);
+        m_stack->setCurrentWidget(m_docView);
 
         loadNote(data);
         WIZDOCUMENTDATA docData = data;
@@ -447,6 +442,7 @@ void WizDocumentView::viewNote(const WIZDOCUMENTDATAEX& wizDoc, bool forceEdit)
         docData.tAccessed = WizGetCurrentTime();
         db.modifyDocumentDateAccessed(docData);
 
+        emit titleChanged(docData.strTitle);
     });
 }
 
@@ -475,15 +471,15 @@ void WizDocumentView::reviewCurrentNote()
 
         if (db.getCertPassword().isEmpty()) {
             m_passwordView->setHint(db.getCertPasswordHint());
-            m_tab->setCurrentWidget(m_passwordView);
+            m_stack->setCurrentWidget(m_passwordView);
             m_passwordView->setCipherEditorFocus();
 
             return;
         }
     }
 
-    if (m_tab->currentWidget() != m_docView) {
-        m_tab->setCurrentWidget(m_docView);
+    if (m_stack->currentWidget() != m_docView) {
+        m_stack->setCurrentWidget(m_docView);
     }
 }
 
@@ -577,6 +573,8 @@ void WizDocumentView::sendDocumentSavedSignal(const QString& strGUID, const QStr
     }
 
     emit documentSaved(strGUID, this);
+    //FIXME: Is it really necessary?
+    emit titleChanged(m_note.strTitle);
 }
 
 void WizDocumentView::resetTitle(const QString& strTitle)
@@ -586,7 +584,7 @@ void WizDocumentView::resetTitle(const QString& strTitle)
 
 void WizDocumentView::promptMessage(const QString &strMsg)
 {
-    m_tab->setCurrentWidget(m_msgWidget);
+    m_stack->setCurrentWidget(m_msgWidget);
 
     m_msgLabel->setText(strMsg);
 }
@@ -790,7 +788,7 @@ void WizDocumentView::onCloseNoteRequested(WizDocumentView *view)
 {
     Q_UNUSED(view)
 
-    m_tab->setCurrentWidget(m_blankView);
+    m_stack->setCurrentWidget(m_blankView);
 }
 
 void WizDocumentView::onCipherCheckRequest()
@@ -809,7 +807,7 @@ void WizDocumentView::onCipherCheckRequest()
     //
     m_passwordView->cipherCorrect();
 
-    m_tab->setCurrentWidget(m_docView);
+    m_stack->setCurrentWidget(m_docView);
     loadNote(noteData);
 }
 
@@ -863,6 +861,11 @@ void WizDocumentView::on_document_data_changed(const QString& strGUID,
     {
         reloadNote();
     }
+}
+
+void WizDocumentView::on_document_deleted(const WIZDOCUMENTDATA& data)
+{
+    RequestClose();
 }
 
 

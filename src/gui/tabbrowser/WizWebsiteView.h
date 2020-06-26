@@ -1,7 +1,9 @@
-#ifndef WIZWEBSITEVIEW_H
-#define WIZWEBSITEVIEW_H
+#ifndef GUI_TABBROWSER_WIZWEBSITEVIEW_H
+#define GUI_TABBROWSER_WIZWEBSITEVIEW_H
 
 #include <QWidget>
+
+#include "AbstractTabPage.h"
 
 class WizExplorerApp;
 class WizDatabaseManager;
@@ -9,7 +11,7 @@ class WizUserSettings;
 class WizWebEngineView;
 class WizObjectDownloaderHost;
 
-class WizWebsiteView  : public QWidget
+class WizWebsiteView  : public AbstractTabPage
 {
     Q_OBJECT
 
@@ -25,6 +27,12 @@ public:
     WizWebEngineView* webView() const { return m_webView; }
     void viewHtml(const QUrl &url);
 
+    QString Title() override;
+    void RequestClose() override;
+
+public slots:
+    void handleWindowCloseRequested();
+
 private:
     QSize m_sizeHint;
     WizWebEngineView* m_webView;
@@ -36,4 +44,4 @@ protected:
     WizObjectDownloaderHost* m_downloaderHost;
 };
 
-#endif // WIZWEBSITEVIEW_H
+#endif // GUI_TABBROWSER_WIZWEBSITEVIEW_H

@@ -108,7 +108,7 @@
 #include "jsplugin/JSPlugin.h"
 #include "plugins/public_apis_server/PublicAPIsServer.h"
 
-#include "WizWebsiteView.h"
+#include "gui/tabbrowser/WizWebsiteView.h"
 
 #define MAINWINDOW  "MainWindow"
 
