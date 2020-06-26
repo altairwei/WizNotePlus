@@ -10,7 +10,7 @@ class AbstractTabPage : public QWidget
 
 public:
     AbstractTabPage(QWidget *parent = nullptr) : QWidget(parent) { }
-    virtual ~AbstractTabPage() = 0 { }
+    virtual ~AbstractTabPage() = 0;
 
     virtual void RequestClose() = 0;
     virtual QString Title() = 0;
