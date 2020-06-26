@@ -161,6 +161,7 @@ set(wiznote_SOURCES
     gui/documentviewer/WizNoteInfoForm.cpp
     gui/documentviewer/WizSearchReplaceWidget.cpp
     gui/documentviewer/WizTitleEdit.cpp
+    gui/tabbrowser/TabButton.cpp
 
     WizActions.cpp
     WizNoteStyle.cpp
@@ -318,6 +319,7 @@ set(wiznote_HEADERS
     gui/documentviewer/WizNoteInfoForm.h
     gui/documentviewer/WizSearchReplaceWidget.h
     gui/documentviewer/WizTitleEdit.h
+    gui/tabbrowser/TabButton.h
 
     WizDocumentHistory.h
     WizAttachmentListWidget.h

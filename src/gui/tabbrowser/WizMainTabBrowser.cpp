@@ -4,10 +4,6 @@
 
 #include <QWidget>
 #include <QMessageBox>
-#include <QStyle>
-#include <QStylePainter>
-#include <QStyleOption>
-#include <QStyleOptionTabBarBase>
 #include <QLabel>
 #include <QMenu>
 #include <QTabBar>
@@ -24,101 +20,8 @@
 #include "gui/documentviewer/WizDocumentView.h"
 #include "gui/tabbrowser/WizWebsiteView.h"
 #include "gui/tabbrowser/WebEngineWindow.h"
+#include "gui/tabbrowser/TabButton.h"
 
-//-------------------------------------------------------------------
-// class WizMainTabBrowser
-//-------------------------------------------------------------------
-
-TabButton::TabButton(QWidget *parent)
-    : QAbstractButton(parent)
-{
-    setFocusPolicy(Qt::NoFocus);
-    setCursor(Qt::ArrowCursor);
-    resize(sizeHint());
-    setIconSize(QSize(16, 16));
-}
-
-QSize TabButton::sizeHint() const
-{
-    ensurePolished();
-    int width = style()->pixelMetric(QStyle::PM_TabCloseIndicatorWidth, 0, this);
-    int height = style()->pixelMetric(QStyle::PM_TabCloseIndicatorHeight, 0, this);
-    return QSize(width, height);
-}
-
-void TabButton::enterEvent(QEvent *event)
-{
-    if (isEnabled())
-        update();
-    QAbstractButton::enterEvent(event);
-}
-
-void TabButton::leaveEvent(QEvent *event)
-{
-    if (isEnabled())
-        update();
-    QAbstractButton::leaveEvent(event);
-}
-
-void TabButton::paintEvent(QPaintEvent *)
-{
-    QPainter p(this);
-    QStyleOptionButton opt;
-    opt.init(this);
-    opt.state |= QStyle::State_AutoRaise;
-    if (isEnabled() && underMouse() && !isChecked() && !isDown())
-        opt.state |= QStyle::State_Raised;
-    if (isChecked())
-        opt.state |= QStyle::State_On;
-    if (isDown())
-        opt.state |= QStyle::State_Sunken;
-
-    if (const QTabBar *tb = qobject_cast<const QTabBar *>(parent())) {
-        int index = tb->currentIndex();
-        QTabBar::ButtonPosition position = (QTabBar::ButtonPosition)style()->styleHint(QStyle::SH_TabBar_CloseButtonPosition, 0, tb);
-        if (tb->tabButton(index, position) == this)
-            opt.state |= QStyle::State_Selected;
-    }
-    opt.icon = icon();
-    opt.iconSize = QSize(16, 16);
-    //style()->drawPrimitive(QStyle::PE_IndicatorTabClose, &opt, &p, this);
-    drawTabBtn(&opt, &p, this);
-}
-
-void TabButton::drawTabBtn(const QStyleOptionButton *opt, QPainter *p, const QWidget *widget) const
-{
-
-    /* 应该添加下面几种状态
-    if (d->tabBarcloseButtonIcon.isNull()) {
-        d->tabBarcloseButtonIcon.addPixmap(QPixmap(
-                    QLatin1String(":/qt-project.org/styles/commonstyle/images/standardbutton-closetab-16.png")),
-                    QIcon::Normal, QIcon::Off);
-        d->tabBarcloseButtonIcon.addPixmap(QPixmap(
-                    QLatin1String(":/qt-project.org/styles/commonstyle/images/standardbutton-closetab-down-16.png")),
-                    QIcon::Normal, QIcon::On);
-        d->tabBarcloseButtonIcon.addPixmap(QPixmap(
-                    QLatin1String(":/qt-project.org/styles/commonstyle/images/standardbutton-closetab-hover-16.png")),
-                    QIcon::Active, QIcon::Off);
-    }
-    */
-    //int size = style()->pixelMetric(QStyle::PM_SmallIconSize);
-    QIcon::Mode mode = opt->state & QStyle::State_Enabled ?
-                        (opt->state & QStyle::State_Raised ? QIcon::Active : QIcon::Normal)
-                        : QIcon::Disabled;
-    if (!(opt->state & QStyle::State_Raised)
-        && !(opt->state & QStyle::State_Sunken)
-        && !(opt->state & QStyle::State_Selected))
-        mode = QIcon::Disabled;
-    //
-
-    QIcon::State state = opt->state & QStyle::State_Sunken ? QIcon::On : QIcon::Off;
-    QPixmap pixmap = opt->icon.pixmap(opt->iconSize, mode, state);
-    style()->drawItemPixmap(p, opt->rect, Qt::AlignCenter, pixmap);
-}
-
-//-------------------------------------------------------------------
-// class WizMainTabBrowser
-//-------------------------------------------------------------------
 
 WizMainTabBrowser::WizMainTabBrowser(WizExplorerApp& app, QWidget *parent)
     : QTabWidget(parent)
@@ -160,14 +63,13 @@ void WizMainTabBrowser::handleContextMenuRequested(const QPoint &pos)
 {
     QMenu menu;
     int index = tabBar()->tabAt(pos);
-    TabStatusData status = tabBar()->tabData(index).toMap();
-    bool isLocked = status["Locked"].toBool();
+    bool isLocked = isTabLocked(index);
     // ensure click pos is in tab not tabbar
     if (index != -1) {
         // close actions
         QAction *action = menu.addAction(tr("Close Tab"));
         connect(action, &QAction::triggered, this, [this, index]() {
-            tabPage(index)->RequestClose();
+            closeTab(index);
         });
         action = menu.addAction(tr("Close Other Tabs"));
         connect(action, &QAction::triggered, this, [this, index]() {
@@ -248,7 +150,8 @@ WizWebEngineView *WizMainTabBrowser::createBackgroundTab()
 {
     // create default website view
     WizWebsiteView* websiteView = new WizWebsiteView(m_app);
-    addTab(websiteView, tr("Untitled"));
+    int index = addTab(websiteView, tr("Untitled"));
+    setupTab(index);
     setupTabPage(websiteView);
     //
     return websiteView->webView();
@@ -294,6 +197,7 @@ int WizMainTabBrowser::createTab(const QUrl &url)
 int WizMainTabBrowser::createTab(AbstractTabPage *tabPage)
 {
     int index = addTab(tabPage, tabPage->Title());
+    setupTab(index);
     setupTabPage(tabPage);
     // Workaround for QTBUG-61770
     tabPage->resize(currentWidget()->size());
@@ -302,79 +206,151 @@ int WizMainTabBrowser::createTab(AbstractTabPage *tabPage)
     return index;
 }
 
-void WizMainTabBrowser::handleTabCloseRequested(int index)
+void WizMainTabBrowser::setupTab(int index)
 {
-    tabPage(index)->RequestClose();
+    // Close Button
+    if (index != -1) {
+        TabButton* closeBtn = new TabButton(tabBar());
+        closeBtn->setIcon(WizLoadSkinIcon(m_strTheme, "tab_close", QSize(16, 16)));
+        connect(closeBtn, &QAbstractButton::clicked, this, &WizMainTabBrowser::handleCloseButtonClicked);
+        tabBar()->setTabButton(index, QTabBar::RightSide, closeBtn);
+        //
+        QMap<QString, QVariant> status;
+        status["Locked"] = QVariant(false);
+        tabBar()->setTabData(index, status);
+    }
 }
 
-/**
- * @brief 处理标签栏发出的关闭信号
- * @param index 标签编号
- */
-void WizMainTabBrowser::closeTab(int index)
+void WizMainTabBrowser::handleTabCloseRequested(int index)
+{
+    closeTab(index);
+}
+
+void WizMainTabBrowser::handleCloseButtonClicked()
+{
+    QObject *b = sender();
+    // Find which close button was clicked
+    for (int i = count() - 1; i >= 0; --i) {
+        if (b == tabBar()->tabButton(i, QTabBar::RightSide)) {
+            closeTab(i);
+            return;
+        }
+    }
+}
+
+void WizMainTabBrowser::destroyTab(int index)
 {
     auto p = tabPage(index);
     removeTab(index);
     p->deleteLater();
 }
 
+void WizMainTabBrowser::closeTab(int index)
+{
+    // Only one page needed to be closed.
+    if (!isTabLocked(index))
+        tabPage(index)->RequestClose();
+}
+
 void WizMainTabBrowser::closeOtherTabs(int index)
 {
-    for (int i = count() - 1; i > index; --i)
-        tabPage(i)->RequestClose();
-    for (int i = index - 1; i >= 0; --i)
-        tabPage(i)->RequestClose();
+    // Locked tabs will disturb the order of tabs,
+    // To avoid that, we collect all the pages first.
+    for (int i = count() - 1; i > index; --i) {
+        if (!isTabLocked(i)) {
+            m_scheduleForClose.append(tabPage(i));
+        }
+    }
+
+    for (int i = index - 1; i >= 0; --i) {
+        if (!isTabLocked(i)) {
+            m_scheduleForClose.append(tabPage(i));
+        }
+    }
+
+    doCloseSchedule();
 }
 
 void WizMainTabBrowser::closeAllTabs()
 {
-    for (int i = count() - 1; i >= 0; --i)
-        tabPage(i)->RequestClose();
+    for (int i = count() - 1; i >= 0; --i) {
+        if (!isTabLocked(i)) {
+             m_scheduleForClose.append(tabPage(i));
+        }
+    }
+
+    doCloseSchedule();
 }
 
 void WizMainTabBrowser::closeLeftTabs(int index)
 {
-    for (int i = index - 1; i >= 0; --i)
-        tabPage(i)->RequestClose();
+    for (int i = index - 1; i >= 0; --i) {
+        if (!isTabLocked(i)) {
+             m_scheduleForClose.append(tabPage(i));
+        }
+    }
+
+    doCloseSchedule();
 }
 
 void WizMainTabBrowser::closeRightTabs(int index)
 {
-    for (int i = count() - 1; i > index; --i)
-        tabPage(i)->RequestClose();
+    for (int i = count() - 1; i > index; --i) {
+        if (!isTabLocked(i)) {
+             m_scheduleForClose.append(tabPage(i));
+        }
+    }
+
+    doCloseSchedule();
+}
+
+void WizMainTabBrowser::doCloseSchedule()
+{
+    for (auto page : m_scheduleForClose) {
+        page->RequestClose();
+    }
+
+    m_scheduleForClose.clear();
+}
+
+QMap<QString, QVariant> WizMainTabBrowser::tabStatus(int index) const
+{
+    return tabBar()->tabData(index).toMap();
+}
+
+void WizMainTabBrowser::switchTabStatus(int index, bool lock)
+{
+    if (index != -1) {
+        auto status = tabStatus(index);
+        QWidget* tb = tabBar()->tabButton(index, QTabBar::RightSide);
+        TabButton* tabBtn = qobject_cast<TabButton*>(tb);
+        if (tabBtn) {
+            tabBtn->setIcon(WizLoadSkinIcon(m_strTheme, lock ? "tab_lock" : "tab_close", QSize(16, 16)));
+            status["Locked"] = QVariant(lock);
+            tabBar()->setTabData(index, status);
+        }
+    }
 }
 
 void WizMainTabBrowser::lockTab(int index)
 {
-    if (index != -1) {
-        TabStatusData status = tabBar()->tabData(index).toMap();
-        QWidget* tb = tabBar()->tabButton(index, QTabBar::RightSide);
-        TabButton* tabBtn = qobject_cast<TabButton*>(tb);
-        if (tabBtn) {
-            tabBtn->setIcon(WizLoadSkinIcon(m_strTheme, "tab_lock", QSize(16, 16)));
-            tabBtn->disconnect();
-            status["Locked"] = QVariant(true);
-            tabBar()->setTabData(index, status);
-        }
-    }
+    switchTabStatus(index, true);
 }
 
 void WizMainTabBrowser::unlockTab(int index)
 {
+    switchTabStatus(index, false);
+
+}
+
+bool WizMainTabBrowser::isTabLocked(int index) const
+{
     if (index != -1) {
-        TabStatusData status = tabBar()->tabData(index).toMap();
-        QWidget* tb = tabBar()->tabButton(index, QTabBar::RightSide);
-        TabButton* tabBtn = qobject_cast<TabButton*>(tb);
-        if (tabBtn) {
-            tabBtn->setIcon(WizLoadSkinIcon(m_strTheme, "tab_close", QSize(16, 16)));
-            connect(tabBtn, &QAbstractButton::clicked, this, [this, index](){
-                emit this->tabBar()->tabCloseRequested(index);
-            });
-            status["Locked"] = QVariant(false);
-            tabBar()->setTabData(index, status);
-        }
+        QMap<QString, QVariant> status = tabStatus(index);
+        return status["Locked"].toBool();
     }
 
+    return false;
 }
 
 /**
@@ -443,22 +419,7 @@ void WizMainTabBrowser::setupTabPage(AbstractTabPage *tabPage)
     connect(tabPage, &AbstractTabPage::pageCloseRequested, [this, tabPage]() {
         int index = indexOf(tabPage);
         if (index != -1) {
-            closeTab(index);
+            destroyTab(index);
         }
     });
-
-    // Close Button
-    int index = indexOf(tabPage);
-    if (index != -1) {
-        TabButton* closeBtn = new TabButton(tabBar());
-        closeBtn->setIcon(WizLoadSkinIcon(m_strTheme, "tab_close", QSize(16, 16)));
-        connect(closeBtn, &QAbstractButton::clicked, this, [this, tabPage](){
-            tabPage->RequestClose();
-        });
-        tabBar()->setTabButton(index, QTabBar::RightSide, closeBtn);
-        //
-        TabStatusData status;
-        status["Locked"] = QVariant(false);
-        tabBar()->setTabData(index, status);
-    }
 }
