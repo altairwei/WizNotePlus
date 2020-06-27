@@ -1211,7 +1211,6 @@ void WizDocumentWebView::onEditorLoadFinished(bool ok)
                                        editorPath, lang, userGUID, userAlias,
                                        ignoreTable ? "true" : "false",
                                        noteType);
-    qDebug() << strCode;
     if (m_currentEditorMode == modeEditor) {
         // Open rich text editor when doc is in edit mode
         strCode += "WizEditor.on();";
@@ -1240,7 +1239,6 @@ void WizDocumentWebView::onEditorLoadFinished(bool ok)
         }
     }
     strCode += "\n})()";
-    qDebug() << strCode;
     page()->runJavaScript(strCode, [=](const QVariant &v) {
         if (!keywords.isEmpty()) {
             if (noteType == "common") {

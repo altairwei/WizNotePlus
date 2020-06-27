@@ -57,6 +57,8 @@ public:
     QString Title() override { return m_note.strTitle; }
 
     void waitForDone();
+    void waitForSave();
+    void waitForThread();
     void RequestClose() override;
 
 protected:

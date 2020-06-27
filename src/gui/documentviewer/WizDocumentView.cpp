@@ -69,13 +69,13 @@ WizDocumentView::WizDocumentView(WizExplorerApp& app, QWidget* parent)
     , m_sizeHint(QSize(200, 1))
     , m_comments(nullptr)
 {
-    // 创建布局
+    // docView is the widget to view/edit document actually.
     QVBoxLayout* layoutDoc = new QVBoxLayout();
     layoutDoc->setContentsMargins(0, 0, 0, 0);
     layoutDoc->setSpacing(0);
-    // 创建文档视图部件
     m_docView = new QWidget(this);
     m_docView->setLayout(layoutDoc);
+
     // 创建堆叠部件
     m_stack = new QStackedWidget(this);
     // 设置密码视图
@@ -244,20 +244,37 @@ void WizDocumentView::waitForDone()
     }
 }
 
+void WizDocumentView::waitForSave()
+{
+    bool done = false;
+    m_web->trySaveDocument(m_note, false, [=, &done](const QVariant& ret){
+        done = true;
+    });
+
+    while (!done)
+    {
+        QApplication::processEvents();
+    }
+}
+
+void WizDocumentView::waitForThread()
+{
+    m_editStatusChecker->thread()->quit();
+    m_editStatusSyncThread->waitForDone();
+    m_web->waitForDone();
+}
+
 void WizDocumentView::RequestClose()
 {
     // We can not runJavaScript after RequestClose.
-    waitForDone();
+    waitForSave();
     m_web->triggerPageAction(QWebEnginePage::RequestClose);
 }
 
 void WizDocumentView::handleWindowCloseRequested()
 {
-    // We Should exit all thread
-    m_editStatusChecker->thread()->quit();
-    m_editStatusSyncThread->waitForDone();
-    m_web->waitForDone();
-
+    // We Should exit all thread after user confirmed to close page.
+    waitForThread();
     emit pageCloseRequested();
 }
 
