@@ -882,6 +882,9 @@ void WizDocumentView::on_document_data_changed(const QString& strGUID,
 
 void WizDocumentView::on_document_deleted(const WIZDOCUMENTDATA& data)
 {
+    if (note().strGUID != data.strGUID || !m_noteLoaded)
+        return;
+
     RequestClose();
 }
 
