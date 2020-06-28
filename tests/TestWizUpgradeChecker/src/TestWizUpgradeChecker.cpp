@@ -68,16 +68,18 @@ void TestWizUpgradeChecker::checkCompareTagName_data()
     QTest::addColumn<QString>("tag2");
     QTest::addColumn<int>("result");
 
-    QTest::newRow("TagName check: full tag 1")      << "v2.7.3-beta.1"  << "v2.8.0-beta.0"  << -1 ;
-    QTest::newRow("TagName check: full tag 2")      << "v2.8.0-beta.1"  << "v2.8.0-beta.0"  << 1 ;
-    QTest::newRow("TagName check: full tag 3")      << "v2.8.0-beta.1"  << "v2.8.0-beta.1"  << 0 ;
-    QTest::newRow("TagName check: short tag 1")     << "v2.7.0"         << "v2.8.0-beta.1"  << -1 ;
-    QTest::newRow("TagName check: short tag 2")     << "v2.7.3"         << "v2.8.0"         << -1 ;
-    QTest::newRow("TagName check: short tag 3")     << "v2.8.3"         << "v2.8.0"         << 1 ;
-    QTest::newRow("TagName check: short tag 4")     << "v2.8.3-alpha.3" << "v2.8.0"         << 1 ;
-    QTest::newRow("TagName check: short tag 5")     << "v2.7.3-beta.2"  << "v2.8.0"         << -1 ;
-    QTest::newRow("TagName check: illegal tag 1")   << "wrong version"  << "v2.8.0"         << 0 ;
-    QTest::newRow("TagName check: illegal tag 2")   << "v2.8.0"         << "wrong versoin"  << 0 ;
+    QTest::newRow("TagName check: full tag 1")      << "v2.7.3-beta.1"   << "v2.8.0-beta.0"   << -1 ;
+    QTest::newRow("TagName check: full tag 2")      << "v2.8.0-beta.1"   << "v2.8.0-beta.0"   << 1 ;
+    QTest::newRow("TagName check: full tag 3")      << "v2.8.0-beta.1"   << "v2.8.0-beta.1"   << 0 ;
+    QTest::newRow("TagName check: short tag 1")     << "v2.7.0"          << "v2.8.0-beta.1"   << -1 ;
+    QTest::newRow("TagName check: short tag 2")     << "v2.7.3"          << "v2.8.0"          << -1 ;
+    QTest::newRow("TagName check: short tag 3")     << "v2.8.3"          << "v2.8.0"          << 1 ;
+    QTest::newRow("TagName check: short tag 4")     << "v2.8.3-alpha.3"  << "v2.8.0"          << 1 ;
+    QTest::newRow("TagName check: short tag 5")     << "v2.7.3-beta.2"   << "v2.8.0"          << -1 ;
+    QTest::newRow("TagName check: illegal tag 1")   << "wrong version"   << "v2.8.0"          << 0 ;
+    QTest::newRow("TagName check: illegal tag 2")   << "v2.8.0"          << "wrong versoin"   << 0 ;
+    QTest::newRow("TagName check: stable tag 1")    << "v2.8.0"          << "v2.8.0-stable.0" << 0 ;
+    QTest::newRow("TagName check: stable tag 2")    << "v2.8.0-stable.0" << "v2.8.0"          << 0 ;
 }
 
 void TestWizUpgradeChecker::checkFindNewerReleases()
