@@ -4,7 +4,7 @@ forked from [WizTeam/WizQTClient](https://github.com/WizTeam/WizQTClient)
 
 README **中文** | [English](doc/README-en.md)
 
-**为知笔记+** 是一款基于云服务的跨平台个人知识与时间管理工具。
+**为知笔记+** 是一款基于云服务的跨平台个人知识管理工具。
 
 ## 介绍
 
@@ -61,14 +61,14 @@ Windows 平台下为 `WizNotePlus-windows.zip` ，请将压缩包内容解压到
 - [x] Devtools 开发者工具。
 - [x] 多标签浏览
 - [x] 外部编辑器功能
-- [ ] JavaScript 插件系统
+- [x] JavaScript 插件系统
 - [ ] 更换默认富文本编辑器
 - [ ] 建立其他云服务系统
 - [ ] 皮肤或主题系统
 
 ## 依赖
 
-- Qt 5.11 (L-GPL v3)
+- Qt 5.14 (L-GPL v3)
 - QuaZIP (L-GPL V2.1)
 - Cryptopp (Boost Software License 1.0)
-- create-dmg (MIT License)
+- appdmg (MIT License)
