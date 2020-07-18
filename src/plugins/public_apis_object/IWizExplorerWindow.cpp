@@ -1,6 +1,6 @@
 #include "IWizExplorerWindow.h"
 #include "WizMainWindow.h"
-#include "WizDocumentView.h"
+#include "gui/documentviewer/WizDocumentView.h"
 #include "share/WizDatabaseManager.h"
 #include "share/WizDatabase.h"
 
@@ -39,5 +39,13 @@ void IWizExplorerWindow::ViewDocument(QObject *pWizDocument, bool vbOpenInNewTab
     if (doc) {
         WIZDOCUMENTDATAEX docData(doc->data());
         m_mainWindow->viewDocument(docData);
+    }
+}
+
+void IWizExplorerWindow::ViewAttachment(QObject *pWizDocumentAttachment)
+{
+    WizDocumentAttachment *att = qobject_cast<WizDocumentAttachment *>(pWizDocumentAttachment);
+    if (att) {
+        m_mainWindow->viewAttachment(att->data());
     }
 }

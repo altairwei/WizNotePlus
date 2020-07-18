@@ -1,4 +1,4 @@
-# WizNotePlus v2.8.0-rc.1 Release Notes
+# WizNotePlus v2.8.0 Release Notes
 
 ## System Requirements
 

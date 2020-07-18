@@ -1,6 +1,6 @@
 #include "IWizHtmlEditorApp.h"
-#include "WizDocumentWebView.h"
-#include "WizDocumentView.h"
+#include "gui/documentviewer/WizDocumentWebView.h"
+#include "gui/documentviewer/WizDocumentView.h"
 
 #include "share/WizDatabaseManager.h"
 #include "share/WizDatabase.h"

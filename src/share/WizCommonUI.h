@@ -12,13 +12,19 @@ public:
     //interface WizKMControls.WizCommonUI
     Q_INVOKABLE QString LoadTextFromFile(const QString& strFileName);
     Q_INVOKABLE bool SaveTextToFile(const QString &strFileName, const QString &strText, const QString &strCharset);
-    Q_INVOKABLE QString ClipboardToImage(int hwnd, const QString& strOptions);
+    Q_INVOKABLE QString ClipboardToImage(const QString& strOptions);
 
     Q_INVOKABLE QString GetSpecialFolder(const QString &bstrFolderName);
     Q_INVOKABLE QString GetATempFileName(const QString &bstrFileExt);
     Q_INVOKABLE bool CreateDirectory(const QString &bstrPath);
     Q_INVOKABLE bool URLDownloadToFile(const QString &bstrURL, const QString &bstrFileName,  bool isImage);
     Q_INVOKABLE bool Base64ToFile(const QString &base64, const QString &fileName);
+    Q_INVOKABLE void OpenUrl(const QString &url);
+    Q_INVOKABLE QString SelectWindowsFile(bool isOpen, const QString &filter);
+    Q_INVOKABLE bool PathFileExists(const QString &path);
+    Q_INVOKABLE void CopyFile(const QString &existingFile, const QString &newFileName);
+    Q_INVOKABLE QString GetValueFromIni(const QString &fileName, const QString &section, const QString &key);
+    Q_INVOKABLE void SetValueToIni(const QString &fileName, const QString &section, const QString &key, const QString &value);
 
 private:
     //interface WizKMControls.WizCommonUI;

@@ -260,6 +260,7 @@ public:
     void resetPermission(const QString& strKbGUID, const QString& strDocumentOwner);
     void viewDocument(const WIZDOCUMENTDATAEX& data, bool addToHistory);
     void viewDocument(const WIZDOCUMENTDATAEX& data);
+    void viewAttachment(const WIZDOCUMENTATTACHMENTDATA &data);
     //
     void checkWizUpdate();
     void setSystemTrayIconVisible(bool bVisible);
@@ -468,7 +469,8 @@ public Q_SLOTS:
     void on_mainTabWidget_currentChanged(int pageIndex);
 
     void onWatchedDocumentChanged(const QString& fileName);
-
+    void showHomePage();
+    
 public:
     // WizExplorerApp pointer
     virtual QWidget* mainWindow();

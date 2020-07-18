@@ -64,6 +64,11 @@ void IWizExplorerApp::ProcessClipboardBeforePaste(const QVariantMap& data)
     m_mainWindow->ProcessClipboardBeforePaste(data);
 }
 
+QObject* IWizExplorerApp::GetGroupDatabase(const QString &kbGUID)
+{
+    return m_database->GetGroupDatabase(kbGUID);
+}
+
 QString IWizExplorerApp::TranslateString(const QString& string)
 {
     return m_mainWindow->TranslateString(string);
@@ -97,4 +102,9 @@ void IWizExplorerApp::copyLink(const QString& link)
 void IWizExplorerApp::onClickedImage(const QString& src, const QString& list)
 {
     m_mainWindow->onClickedImage(src, list);
+}
+
+QString IWizExplorerApp::Locale()
+{
+    return m_mainWindow->userSettings().locale();
 }
