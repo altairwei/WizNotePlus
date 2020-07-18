@@ -30,7 +30,7 @@ WizAboutDialog::WizAboutDialog(QWidget *parent)
 
     QLabel* labelProduct = new QLabel(this);
     labelProduct->setText(strProduct);
-    labelProduct->setTextInteractionFlags(Qt::TextBrowserInteraction | Qt::TextSelectableByKeyboard);
+    labelProduct->setTextInteractionFlags(Qt::TextBrowserInteraction);
 
     // Construct build information
     QString versionInfo = QString(

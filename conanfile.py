@@ -31,7 +31,7 @@ def parse_version():
     """
     Generate build version from local git repository.
     """
-    wiznoteplus_version = "2.8.0-stable.0"
+    wiznoteplus_version = "2.8.1-stable.0"
     if os.path.exists(".git"):
         wiznoteplus_version = subprocess.check_output(
             ["git", "describe", "--tags"]).decode("utf-8").strip()
