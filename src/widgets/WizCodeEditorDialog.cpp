@@ -2,7 +2,7 @@
 #include "WizDef.h"
 #include "utils/WizPathResolve.h"
 #include "share/WizSettings.h"
-#include "WizDocumentWebView.h"
+#include "gui/documentviewer/WizDocumentWebView.h"
 #include "share/WizGlobal.h"
 #include "share/WizWebEngineView.h"
 #include "share/WizThreads.h"

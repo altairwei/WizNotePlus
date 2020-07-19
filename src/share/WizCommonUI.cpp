@@ -7,10 +7,14 @@
 #include <QDebug>
 #include <QByteArray>
 #include <QSaveFile>
+#include <QDesktopServices>
+#include <QUrl>
+#include <QFileDialog>
 
 #include "WizMisc.h"
 #include "utils/WizPathResolve.h"
 #include "share/WizMisc.h"
+#include "share/WizSettings.h"
 
 
 WizCommonUI::WizCommonUI(QObject* parent)
@@ -78,9 +82,9 @@ bool WizCommonUI::SaveTextToFile(const QString &strFileName, const QString &strT
     return saveTextToFile(strFileName, strText, strCharset);
 }
 
-QString WizCommonUI::ClipboardToImage(int hwnd, const QString& strOptions)
+QString WizCommonUI::ClipboardToImage(const QString& strOptions)
 {
-    return clipboardToImage(hwnd, strOptions);
+    return clipboardToImage(0, strOptions);
 }
 
 QString WizCommonUI::GetSpecialFolder(const QString &bstrFolderName)
@@ -136,4 +140,42 @@ bool WizCommonUI::Base64ToFile(const QString &base64, const QString &fileName)
     file.write(buffer);
     file.commit();
     return true;
+}
+
+void WizCommonUI::OpenUrl(const QString &url)
+{
+    QDesktopServices::openUrl(QUrl(url));
+}
+
+QString WizCommonUI::SelectWindowsFile(bool isOpen, const QString &filter)
+{
+    if (isOpen) {
+        return QFileDialog::getOpenFileName(
+            nullptr, tr("Select File"), QDir::home().absolutePath(), filter);
+    } else {
+        return QFileDialog::getSaveFileName(
+            nullptr, tr("Select File"), QDir::home().absolutePath(), filter);
+    }
+}
+
+bool WizCommonUI::PathFileExists(const QString &path)
+{
+    return WizPathFileExists(path);
+}
+
+void WizCommonUI::CopyFile(const QString &existingFile, const QString &newFileName)
+{
+    QFile::copy(existingFile, newFileName);
+}
+
+QString WizCommonUI::GetValueFromIni(const QString &fileName, const QString &section, const QString &key)
+{
+    WizSettings setting(fileName);
+    return setting.getString(section, key);
+}
+
+void WizCommonUI::SetValueToIni(const QString &fileName, const QString &section, const QString &key, const QString &value)
+{
+    WizSettings setting(fileName);
+    setting.setString(section, key, value);
 }

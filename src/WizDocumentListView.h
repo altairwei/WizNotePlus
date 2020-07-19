@@ -141,6 +141,7 @@ private:
 
 public:
     void setDocuments(const CWizDocumentDataArray& arrayDocument, bool searchResult = false);
+    void setDocuments(const QStringList& documentGUIDList, bool searchResult = false);
     void appendDocuments(const CWizDocumentDataArray& arrayDocument);
     void appendDocumentsNoSort(const CWizDocumentDataArray& arrayDocument);
 

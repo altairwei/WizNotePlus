@@ -8,6 +8,7 @@ set(CMAKE_INCLUDE_CURRENT_DIR ON)
 find_package( Qt5Core CONFIG REQUIRED )
 find_package( Qt5Network CONFIG REQUIRED )
 find_package( Qt5Test CONFIG REQUIRED )
+find_package( Qt5Gui CONFIG REQUIRED )
 set(QT_VERSION ${Qt5_VERSION})
 set(CMAKE_AUTOMOC ON)
 macro(qt_use_modules)
@@ -15,8 +16,10 @@ macro(qt_use_modules)
         Qt5::Core 
         Qt5::Network 
         Qt5::Test
+        Qt5::Gui
     )
 endmacro()
 
 add_subdirectory(TestWizUpgradeChecker)
-add_subdirectory(TestCpuFeatures)
+add_subdirectory(TestHtml)
+add_subdirectory(TestJSPlugin)

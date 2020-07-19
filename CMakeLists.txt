@@ -99,6 +99,7 @@ set(CMAKE_MODULE_PATH ${CMAKE_BINARY_DIR} ${CMAKE_MODULE_PATH})
 find_package(cryptopp REQUIRED)
 find_package(quazip REQUIRED)
 find_package(zlib REQUIRED)
+find_package(Gumbo REQUIRED)
 find_package(OpenSSL)
 
 # install 3rd-party package

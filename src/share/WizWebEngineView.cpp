@@ -2,7 +2,7 @@
 #include "WizMisc.h"
 #include "utils/WizPathResolve.h"
 #include "WizMainWindow.h"
-#include "WizMainTabBrowser.h"
+#include "gui/tabbrowser/WizMainTabBrowser.h"
 
 #include <QWebEngineView>
 #include <QWebSocketServer>
@@ -27,7 +27,7 @@
 #endif
 
 #include "WizDevToolsDialog.h"
-#include "WizDocumentView.h"
+#include "gui/documentviewer/WizDocumentView.h"
 
 /*
 class WizInvisibleWebEngineView : public QWebEngineView

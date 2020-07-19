@@ -35,11 +35,11 @@
 #include "WizCategoryView.h"
 #include "WizDocumentListView.h"
 #include "WizUserCipherForm.h"
-#include "WizDocumentView.h"
-#include "WizTitleBar.h"
-#include "WizMainTabBrowser.h"
+#include "gui/documentviewer/WizDocumentView.h"
+#include "gui/documentviewer/WizTitleBar.h"
+#include "gui/tabbrowser/WizMainTabBrowser.h"
 
-#include "WizDocumentWebView.h"
+#include "gui/documentviewer/WizDocumentWebView.h"
 #include "WizActions.h"
 #include "WizPreferenceDialog.h"
 #include "WizUpgradeNotifyDialog.h"
@@ -69,7 +69,7 @@
 
 #include "WizButton.h"
 
-#include "WizEditorToolBar.h"
+#include "gui/documentviewer/WizEditorToolBar.h"
 #include "WizProgressDialog.h"
 #include "WizDocumentSelectionView.h"
 #include "WizDocumentTransitionView.h"
@@ -90,7 +90,7 @@
 #include "share/WizTranslater.h"
 #include "share/WizThreads.h"
 #include "widgets/WizShareLinkDialog.h"
-#include "widgets/WizSingleDocumentView.h"
+#include "gui/documentviewer/WizSingleDocumentView.h"
 #include "widgets/WizCustomToolBar.h"
 #include "widgets/WizTipsWidget.h"
 #include "WizPositionDelegate.h"
@@ -98,17 +98,17 @@
 #include "share/WizWebEngineView.h"
 #include "widgets/WizExecutingActionDialog.h"
 #include "widgets/WizUserServiceExprDialog.h"
-
 #include "share/jsoncpp/json/json.h"
-
 #include "WizCellButton.h"
-#include "plugins/public_apis_object/IWizExplorerApp.h"
 #include "WizFileImporter.h"
 
-#include "plugins/js_plugin_system/JSPluginManager.h"
-#include "plugins/js_plugin_system/JSPluginSpec.h"
-
+#include "plugins/public_apis_object/IWizExplorerApp.h"
+#include "jsplugin/JSPluginManager.h"
+#include "jsplugin/JSPluginSpec.h"
+#include "jsplugin/JSPlugin.h"
 #include "plugins/public_apis_server/PublicAPIsServer.h"
+
+#include "gui/tabbrowser/WizWebsiteView.h"
 
 #define MAINWINDOW  "MainWindow"
 
@@ -2019,9 +2019,9 @@ void WizMainWindow::initToolBar()
 void WizMainWindow::initToolBarPluginButtons()
 {
     JSPluginManager &jsPluginMgr = JSPluginManager::instance();
-    QList<JSPluginModuleSpec *> modules = jsPluginMgr.modulesByKeyValue("ModuleType", "Action");
+    QList<JSPluginModule *> modules = jsPluginMgr.modulesByKeyValue("ModuleType", "Action");
     for (auto moduleData : modules) {
-        if (moduleData->buttonLocation() != "Main")
+        if (moduleData->spec()->buttonLocation() != "Main")
             continue;
         QAction *ac = jsPluginMgr.createPluginAction(m_toolBar, moduleData);
         connect(ac, &QAction::triggered, 
@@ -2079,6 +2079,7 @@ void WizMainWindow::initClient()
     layoutDocument->addWidget(m_mainTabBrowser); // 将主标签栏放在文档板布局上
     connect(m_mainTabBrowser, SIGNAL(currentChanged(int)), SLOT(on_mainTabWidget_currentChanged(int)));
     //m_mainTabBrowser->createTab(QUrl::fromUserInput("https://www.wiz.cn")); // 默认打开Wiz主页
+    showHomePage();
     //
     layoutDocument->addWidget(m_documentSelection);
     m_documentSelection->hide(); // 这个是什么东西？
@@ -2681,7 +2682,9 @@ void WizMainWindow::on_actionEditingPaste_triggered()
 void WizMainWindow::on_actionEditingPastePlain_triggered()
 {
     WizDocumentView* docView = currentDocumentView();
-    if (docView->commentView()->hasFocus())
+    if (!docView)
+        return;
+    if (docView->commentView() && docView->commentView()->hasFocus())
     {
         docView->commentView()->triggerPageAction(QWebEnginePage::Paste);
     }
@@ -3700,6 +3703,19 @@ WizMainTabBrowser* WizMainWindow::mainTabView()
     return m_mainTabBrowser;
 }
 
+void WizMainWindow::showHomePage()
+{
+    // Get welcome.html
+    QString welcomeHtml = Utils::WizPathResolve::resourcesPath() + "files/welcomepage/index.html";
+    // Setup WebEngine
+    WizWebEngineView *webView = new WizWebEngineView(
+        {{"WizExplorerApp", WizMainWindow::instance()->publicAPIsObject()}}, nullptr);
+    QPointer<WizWebsiteView> websiteView = new WizWebsiteView(webView, *this);
+    websiteView->viewHtml(QUrl::fromLocalFile(welcomeHtml));
+    // Show in tab browser
+    m_mainTabBrowser->createTab(websiteView);
+}
+
 /**
  * @brief Create document view and setup signal-slot connections.
  * @return
@@ -3812,6 +3828,30 @@ void WizMainWindow::viewDocument(const WIZDOCUMENTDATAEX& data)
     //
     m_actions->actionFromName(WIZACTION_GLOBAL_SAVE_AS_MARKDOWN)->setEnabled(WizIsMarkdownNote(data));
     return;
+}
+
+void WizMainWindow::viewAttachment(const WIZDOCUMENTATTACHMENTDATA &attachment)
+{
+    WizDatabase &db = m_dbMgr.db(attachment.strKbGUID);
+    bool bIsLocal = db.isObjectDataDownloaded(attachment.strGUID, "attachment");
+    QString strFileName = db.getAttachmentFileName(attachment.strGUID);
+    bool bExists = WizPathFileExists(strFileName);
+
+    if (!bIsLocal || !bExists)
+    {
+        downloadAttachment(attachment);
+        // try to set the attachement read-only.
+        QFile file(strFileName);
+        if (file.exists() && !db.canEditAttachment(attachment) && (file.permissions() & QFileDevice::WriteUser))
+        {
+            QFile::Permissions permissions = file.permissions();
+            permissions = permissions & ~QFileDevice::WriteOwner & ~QFileDevice::WriteUser
+                    & ~QFileDevice::WriteGroup & ~QFileDevice::WriteOther;
+            file.setPermissions(permissions);
+        }
+    }
+
+    openAttachment(attachment, strFileName);
 }
 
 void WizMainWindow::titleChanged()
@@ -4118,33 +4158,10 @@ void WizMainWindow::viewAttachmentByWizKMURL(const QString& strKbGUID, const QSt
 
     WIZDOCUMENTATTACHMENTDATA attachment;
     if (db.attachmentFromGuid(strGUID, attachment))
-    {
-        bool bIsLocal = db.isObjectDataDownloaded(attachment.strGUID, "attachment");
-        QString strFileName = db.getAttachmentFileName(attachment.strGUID);
-        bool bExists = WizPathFileExists(strFileName);
-        if (!bIsLocal || !bExists)
-        {
-            downloadAttachment(attachment);
-
-#if QT_VERSION > 0x050000
-            // try to set the attachement read-only.
-            QFile file(strFileName);
-            if (file.exists() && !db.canEditAttachment(attachment) && (file.permissions() & QFileDevice::WriteUser))
-            {
-                QFile::Permissions permissions = file.permissions();
-                permissions = permissions & ~QFileDevice::WriteOwner & ~QFileDevice::WriteUser
-                        & ~QFileDevice::WriteGroup & ~QFileDevice::WriteOther;
-                file.setPermissions(permissions);
-            }
-#endif
-        }
-
-        openAttachment(attachment, strFileName);
-    }
+        viewAttachment(attachment);
     else
-    {
-        WizMessageBox::information(this, tr("Info"), tr("Can't find the specified attachment, may be it has been deleted."));
-    }
+        WizMessageBox::information(this, tr("Info"), 
+            tr("Can't find the specified attachment, may be it has been deleted."));
 }
 
 void WizMainWindow::createNoteWithAttachments(const QStringList& strAttachList)

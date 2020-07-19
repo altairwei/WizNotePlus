@@ -1,4 +1,4 @@
-project(TestWizUpgradeChecker)
+project(test-WizUpgradeChecker)
 
 include_directories(
     ${CMAKE_SOURCE_DIR}
@@ -6,20 +6,20 @@ include_directories(
     ${CMAKE_CURRENT_BINARY_DIR}
 )
 
-set(TestWizUpgradeChecker_headers
+set(test-WizUpgradeChecker_headers
     ${CMAKE_SOURCE_DIR}/src/share/WizEventLoop.h    
     ${CMAKE_SOURCE_DIR}/src/WizUpgrade.h
-    src/TestWizUpgradeChecker.h
+    test-WizUpgradeChecker.h
 )
 
-set(TestWizUpgradeChecker_sources
+set(test-WizUpgradeChecker_sources
     ${CMAKE_SOURCE_DIR}/src/share/WizEventLoop.cpp
     ${CMAKE_SOURCE_DIR}/src/WizUpgrade.cpp
-    src/TestWizUpgradeChecker.cpp
+    test-WizUpgradeChecker.cpp
 )
 
-add_executable(TestWizUpgradeChecker ${TestWizUpgradeChecker_headers} ${TestWizUpgradeChecker_sources})
+add_executable(test-WizUpgradeChecker ${test-WizUpgradeChecker_headers} ${test-WizUpgradeChecker_sources})
 
-qt_use_modules(TestWizUpgradeChecker)
+qt_use_modules(test-WizUpgradeChecker)
 
-add_test(TestWizUpgradeChecker ${CMAKE_BINARY_DIR}/bin/TestWizUpgradeChecker)
+add_test(test-WizUpgradeChecker ${CMAKE_BINARY_DIR}/bin/test-WizUpgradeChecker)

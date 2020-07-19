@@ -16,6 +16,11 @@ QObject *IWizDatabase::Database()
     return &(m_dbManager->db());
 }
 
+QObject *IWizDatabase::GetGroupDatabase(const QString &kbGUID)
+{
+    return &(m_dbManager->db(kbGUID));
+}
+
 bool IWizDatabase::CreateDocument(const QString &bstrIndexFileName, const QString &bstrTitle, 
     const QString &bstrLocation, const QStringList &tagList, const QString &bstrURL)
 {

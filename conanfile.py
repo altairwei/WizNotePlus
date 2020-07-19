@@ -31,7 +31,7 @@ def parse_version():
     """
     Generate build version from local git repository.
     """
-    wiznoteplus_version = "2.8.0-stable.0"
+    wiznoteplus_version = "2.8.1-stable.0"
     if os.path.exists(".git"):
         wiznoteplus_version = subprocess.check_output(
             ["git", "describe", "--tags"]).decode("utf-8").strip()
@@ -58,7 +58,8 @@ class WizNotePlusConan(ConanFile):
         "openssl/1.1.1d",
         "cryptopp/5.6.5@bincrafters/stable",
         "zlib/1.2.11@conan/stable",
-        "quazip/0.7.6@altairwei/testing"
+        "quazip/0.7.6@altairwei/testing",
+        "Gumbo/0.10.1@altairwei/testing"
     )
     build_requires = (
         "cmake_installer/3.12.4@conan/stable"

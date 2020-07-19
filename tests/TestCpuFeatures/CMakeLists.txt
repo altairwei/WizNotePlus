@@ -8,12 +8,12 @@ include_directories(
     ${zlib_INCLUDE_DIRS}
 )
 
-set(TestWizUpgradeChecker_headers
+set(TestCpuFeatures_headers
 
 )
 
-set(TestWizUpgradeChecker_sources
-    src/main.cpp
+set(TestCpuFeatures_sources
+    test-cpu-features.cpp
 )
 
 if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
@@ -22,7 +22,7 @@ endif()
 
 find_package( Qt5Widgets CONFIG REQUIRED )
 
-add_executable(TestCpuFeatures ${TestWizUpgradeChecker_headers} ${TestWizUpgradeChecker_sources})
+add_executable(TestCpuFeatures ${TestCpuFeatures_headers} ${TestCpuFeatures_sources})
 qt_use_modules(TestCpuFeatures)
 
 target_link_libraries(TestCpuFeatures 

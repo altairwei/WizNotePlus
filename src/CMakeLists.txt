@@ -70,7 +70,9 @@ set(wiznote_SOURCES
     share/WizEnc.cpp
     share/WizZiwReader.cpp
     html/WizHtmlReader.cpp
-    html/WizHtmlCollector.cpp    
+    html/WizHtmlCollector.cpp
+    html/WizHtmlTool.cpp
+    html/WizGumboHelper.cpp
     share/WizSearch.cpp
     widgets/WizScrollBar.cpp
     sync/WizToken.cpp
@@ -100,7 +102,6 @@ set(wiznote_SOURCES
     widgets/WizCrashReportDialog.cpp
     widgets/WizCustomToolBar.cpp
     widgets/WizTipsWidget.cpp
-    widgets/WizSingleDocumentView.cpp
     widgets/WizShareLinkDialog.cpp
     share/WizAnalyzer.cpp
     share/WizTranslater.cpp
@@ -126,32 +127,47 @@ set(wiznote_SOURCES
     share/jsoncpp/jsoncpp.cpp
     share/WizRequest.cpp
 
-    plugins/js_plugin_system/JSPluginManager.cpp
-    plugins/js_plugin_system/JSPluginSpec.cpp
-    plugins/js_plugin_system/JSPluginSelectorWindow.cpp
-    plugins/js_plugin_system/JSPluginHtmlDialog.cpp
+    jsplugin/JSPlugin.cpp
+    jsplugin/JSPluginManager.cpp
+    jsplugin/JSPluginSpec.cpp
+    jsplugin/JSPluginSelectorWindow.cpp
+    jsplugin/JSPluginHtmlDialog.cpp
 
     plugins/public_apis_server/PublicAPIsServer.cpp
     plugins/public_apis_server/WebSocketClientWrapper.cpp
     plugins/public_apis_server/WebSocketTransport.cpp
 
-    plugins/tab_browser/FullScreenWindow.cpp
-    plugins/tab_browser/FullScreenNotification.cpp
-    plugins/tab_browser/WebEngineWindow.cpp
+    gui/tabbrowser/WizMainTabBrowser.cpp
+    gui/tabbrowser/AbstractTabPage.cpp
+    gui/tabbrowser/FullScreenWindow.cpp
+    gui/tabbrowser/FullScreenNotification.cpp
+    gui/tabbrowser/WebEngineWindow.cpp
+    gui/tabbrowser/WizWebsiteView.cpp
 
-    WizCategoryView.cpp
+    WizCategoryView.cpp 
     WizCategoryViewItem.cpp
     WizDevToolsDialog.cpp
     WizDocumentListView.cpp
     WizDocumentListViewItem.cpp
-    WizDocumentView.cpp
-    WizDocumentWebView.cpp
+
+    gui/documentviewer/WizDocumentView.cpp
+    gui/documentviewer/WizDocumentWebView.cpp
+    gui/documentviewer/WizSingleDocumentView.cpp
+    gui/documentviewer/WizDocumentEditStatus.cpp
+    gui/documentviewer/WizTitleBar.cpp
+    gui/documentviewer/WizEditorToolBar.cpp
+    gui/documentviewer/WizEditorInsertLinkForm.cpp
+    gui/documentviewer/WizEditorInsertTableForm.cpp
+    gui/documentviewer/WizNoteInfoForm.cpp
+    gui/documentviewer/WizSearchReplaceWidget.cpp
+    gui/documentviewer/WizTitleEdit.cpp
+    gui/tabbrowser/TabButton.cpp
+
     WizActions.cpp
     WizNoteStyle.cpp
     WizLineInputDialog.cpp
     WizDocumentHistory.cpp
     WizAttachmentListWidget.cpp
-    WizMainTabBrowser.cpp
     WizTagListWidget.cpp
     WizConsoleDialog.cpp
     WizPreferenceDialog.cpp
@@ -159,20 +175,14 @@ set(wiznote_SOURCES
     WizCreateAccountDialog.cpp
     WizMainWindow.cpp
     WizCellButton.cpp
-    WizTitleBar.cpp
     WizInfoBar.cpp
     WizNotifyBar.cpp
-    WizTitleEdit.cpp
     WizStatusBar.cpp
     WizUpgradeNotifyDialog.cpp
     WizUserCipherForm.cpp
-    WizNoteInfoForm.cpp
     WizSearchWidget.cpp
-    WizEditorInsertLinkForm.cpp
     WizUpgrade.cpp
     WizButton.cpp
-    WizEditorToolBar.cpp
-    WizEditorInsertTableForm.cpp
     WizFileImporter.cpp
     WizFolderSelector.cpp
     WizProgressDialog.cpp
@@ -180,15 +190,12 @@ set(wiznote_SOURCES
     WizDocumentSelectionView.cpp
     WizDocumentTransitionView.cpp
     WizPopupButton.cpp
-    WizWebsiteView.cpp
     WizWebSettingsDialog.cpp
     WizUserVerifyDialog.cpp
     WizMessageListView.cpp
     WizThumbCache.cpp
     WizMessageCompleter.cpp
-    WizDocumentEditStatus.cpp
     WizLoginDialog.cpp
-    WizSearchReplaceWidget.cpp
     WizDocTemplateDialog.cpp
     WizMobileFileReceiver.cpp
     WizWebEngineInjectObject.cpp
@@ -244,6 +251,8 @@ set(wiznote_HEADERS
     share/WizGlobal.h
     html/WizHtmlReader.h
     html/WizHtmlCollector.h
+    html/WizHtmlTool.h
+    html/WizGumboHelper.h
     sync/WizKMServer.h
     sync/WizKMSync.h
     sync/WizAsyncApi.h
@@ -273,18 +282,22 @@ set(wiznote_HEADERS
     share/jsoncpp/json/json-forwards.h
     share/WizRequest.h
 
-    plugins/js_plugin_system/JSPluginManager.h
-    plugins/js_plugin_system/JSPluginSpec.h
-    plugins/js_plugin_system/JSPluginSelectorWindow.h
-    plugins/js_plugin_system/JSPluginHtmlDialog.h
+    jsplugin/JSPlugin.h
+    jsplugin/JSPluginManager.h
+    jsplugin/JSPluginSpec.h
+    jsplugin/JSPluginSelectorWindow.h
+    jsplugin/JSPluginHtmlDialog.h
 
     plugins/public_apis_server/PublicAPIsServer.h
     plugins/public_apis_server/WebSocketClientWrapper.h
     plugins/public_apis_server/WebSocketTransport.h
 
-    plugins/tab_browser/FullScreenWindow.h
-    plugins/tab_browser/FullScreenNotification.h
-    plugins/tab_browser/WebEngineWindow.h
+    gui/tabbrowser/WizMainTabBrowser.h
+    gui/tabbrowser/AbstractTabPage.h
+    gui/tabbrowser/FullScreenWindow.h
+    gui/tabbrowser/FullScreenNotification.h
+    gui/tabbrowser/WebEngineWindow.h
+    gui/tabbrowser/WizWebsiteView.h
 
     WizDef.h
     WizActions.h
@@ -294,11 +307,22 @@ set(wiznote_HEADERS
     WizDevToolsDialog.h
     WizDocumentListView.h
     WizDocumentListViewItem.h
-    WizDocumentView.h
-    WizDocumentWebView.h
+
+    gui/documentviewer/WizDocumentView.h
+    gui/documentviewer/WizDocumentWebView.h
+    gui/documentviewer/WizSingleDocumentView.h
+    gui/documentviewer/WizDocumentEditStatus.h
+    gui/documentviewer/WizTitleBar.h
+    gui/documentviewer/WizEditorToolBar.h
+    gui/documentviewer/WizEditorInsertLinkForm.h
+    gui/documentviewer/WizEditorInsertTableForm.h
+    gui/documentviewer/WizNoteInfoForm.h
+    gui/documentviewer/WizSearchReplaceWidget.h
+    gui/documentviewer/WizTitleEdit.h
+    gui/tabbrowser/TabButton.h
+
     WizDocumentHistory.h
     WizAttachmentListWidget.h
-    WizMainTabBrowser.h
     WizTagListWidget.h
     WizConsoleDialog.h
     WizPreferenceDialog.h
@@ -306,27 +330,20 @@ set(wiznote_HEADERS
     WizCreateAccountDialog.h
     WizMainWindow.h
     WizCellButton.h
-    WizTitleBar.h
     WizInfoBar.h
     WizNotifyBar.h
-    WizTitleEdit.h
     sync/WizSync.h
     sync/WizKMSync_p.h
     WizStatusBar.h
     WizUpgradeNotifyDialog.h
     WizUserCipherForm.h
-    WizNoteInfoForm.h
     WizLineInputDialog.h
     WizSearchWidget.h
-    WizEditorInsertLinkForm.h
     WizUpgrade.h
-    WizEditorToolBar.h
-    WizWebsiteView.h
     WizWebSettingsDialog.h
     WizPopupButton.h
     WizDocumentTransitionView.h
     WizButton.h
-    WizEditorInsertTableForm.h
     WizFileImporter.h
     WizFolderSelector.h
     WizProgressDialog.h
@@ -342,10 +359,8 @@ set(wiznote_HEADERS
     WizThumbCache_p.h
     WizMessageCompleter.h
     widgets/WizImageButton.h
-    WizDocumentEditStatus.h
     WizLoginDialog.h
     share/WizFileMonitor.h
-    WizSearchReplaceWidget.h
     widgets/WizCodeEditorDialog.h
     WizDocTemplateDialog.h
     WizMobileFileReceiver.h
@@ -375,7 +390,6 @@ set(wiznote_HEADERS
     widgets/WizCrashReportDialog.h
     widgets/WizCustomToolBar.h
     widgets/WizTipsWidget.cpp
-    widgets/WizSingleDocumentView.h
     widgets/WizTemplatePurchaseDialog.h
     widgets/WizExecutingActionDialog.h
     widgets/WizUserServiceExprDialog.h
@@ -441,6 +455,7 @@ include_directories(
     ${zlib_INCLUDE_DIRS}
     ${cryptopp_INCLUDE_DIRS}
     ${OpenSSL_INCLUDE_DIRS}
+    ${Gumbo_INCLUDE_DIRS}
 )
 
 #============================================================================
@@ -582,6 +597,7 @@ if(UNIX)
                 ${cryptopp_LIBRARIES}
                 ${quazip_LIBRARIES}
                 ${zlib_LIBRARIES}
+                ${Gumbo_LIBRARIES}
             )
         else(APPSTORE_BUILD)
             target_link_libraries(${PROJECT_NAME}
@@ -589,6 +605,7 @@ if(UNIX)
                 ${cryptopp_LIBRARIES}
                 ${quazip_LIBRARIES}
                 ${zlib_LIBRARIES}
+                ${Gumbo_LIBRARIES}
             )
         endif(APPSTORE_BUILD)
     else(APPLE)
@@ -601,6 +618,7 @@ if(UNIX)
             ${OpenSSL_LIBRARIES}
             ${quazip_LIBRARIES}
             ${zlib_LIBRARIES}
+            ${Gumbo_LIBRARIES}
         )
     endif(APPLE)
 else(NOT UNIX)
@@ -610,5 +628,6 @@ else(NOT UNIX)
         ${OpenSSL_LIBRARIES}
         ${quazip_LIBRARIES}
         ${zlib_LIBRARIES}
+        ${Gumbo_LIBRARIES}
     )
 endif()
