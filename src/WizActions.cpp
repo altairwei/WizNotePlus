@@ -66,7 +66,7 @@ WIZACTION* WizActions::actionsData()
         {"actionPreference",                    QObject::tr("Preference..."),               "",                                     QKeySequence()},
         {"actionAbout",                         QObject::tr("About WizNote..."),            "",                                     QKeySequence()},
         {"actionExit",                          QObject::tr("Exit"),                        "",                                     QKeySequence("Ctrl+Q")},
-        {"actionClose",                         QObject::tr("Close"),                       "",                                     QKeySequence("Ctrl+W")},
+        {"actionClose",                         QObject::tr("Close"),                       "",                                     QKeySequence()},
         {"actionLogout",                        QObject::tr("Logout..."),                   "",                                     QKeySequence()},
         {WIZACTION_GLOBAL_SYNC,                 QObject::tr("Sync"),                        "",                                     QKeySequence()},
         {WIZACTION_GLOBAL_NEW_DOCUMENT,         QObject::tr("New Note"),                    "",                                     QKeySequence("Ctrl+N")},

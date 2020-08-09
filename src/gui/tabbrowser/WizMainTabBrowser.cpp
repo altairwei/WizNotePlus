@@ -8,6 +8,8 @@
 #include <QMenu>
 #include <QTabBar>
 #include <QLayout>
+#include <QShortcut>
+#include <QKeySequence>
 
 #include "share/WizWebEngineView.h"
 #include "share/WizGlobal.h"
@@ -47,6 +49,8 @@ WizMainTabBrowser::WizMainTabBrowser(WizExplorerApp& app, QWidget *parent)
 
     connect(tabBar, &QTabBar::customContextMenuRequested, this, &WizMainTabBrowser::handleContextMenuRequested);
     connect(tabBar, &QTabBar::tabCloseRequested, this, &WizMainTabBrowser::handleTabCloseRequested);
+
+    new QShortcut(QKeySequence("Ctrl+W"), this, SLOT(closeCurrentTab()));
 }
 
 void WizMainTabBrowser::handleCurrentChanged(int index)
@@ -247,9 +251,16 @@ void WizMainTabBrowser::destroyTab(int index)
 
 void WizMainTabBrowser::closeTab(int index)
 {
-    // Only one page needed to be closed.
-    if (!isTabLocked(index))
-        tabPage(index)->RequestClose();
+    if (index != -1) {
+        // Only one page needed to be closed.
+        if (!isTabLocked(index))
+            tabPage(index)->RequestClose();
+    }
+}
+
+void WizMainTabBrowser::closeCurrentTab()
+{
+    closeTab(currentIndex());
 }
 
 void WizMainTabBrowser::closeOtherTabs(int index)

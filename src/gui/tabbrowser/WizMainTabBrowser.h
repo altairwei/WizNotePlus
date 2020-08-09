@@ -56,6 +56,7 @@ public slots:
     int createTab(AbstractTabPage *tabPage);
     void destroyTab(int index);
     void closeTab(int index);
+    void closeCurrentTab();
     void closeOtherTabs(int index);
     void closeAllTabs();
     void closeLeftTabs(int index);
