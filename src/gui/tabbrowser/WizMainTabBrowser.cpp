@@ -10,6 +10,7 @@
 #include <QLayout>
 #include <QShortcut>
 #include <QKeySequence>
+#include <QKeyEvent>
 
 #include "share/WizWebEngineView.h"
 #include "share/WizGlobal.h"
@@ -433,4 +434,18 @@ void WizMainTabBrowser::setupTabPage(AbstractTabPage *tabPage)
             destroyTab(index);
         }
     });
+}
+
+void WizMainTabBrowser::keyPressEvent(QKeyEvent* ev)
+{
+    if (ev->modifiers() && ev->key()) {
+        if (ev->modifiers() & Qt::KeyboardModifier::AltModifier
+                && ev->key() >= Qt::Key_1  && ev->key() <= Qt::Key_9) {
+            int index = ev->key() - Qt::Key_0;
+            if (index <= count() && index >= 0)
+                setCurrentIndex(index-1);
+        }
+    }
+
+    QTabWidget::keyPressEvent(ev);
 }

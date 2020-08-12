@@ -75,6 +75,9 @@ private:
     void setupTabPage(AbstractTabPage *tabPage);
     void switchTabStatus(int index, bool lock);
     void doCloseSchedule();
+
+protected:
+    void keyPressEvent(QKeyEvent* ev) override;
 };
 
 #endif // WIZTABWIDGET_H

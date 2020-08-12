@@ -103,7 +103,7 @@ WizTitleBar::WizTitleBar(WizExplorerApp& app, QWidget *parent)
     QSize iconSize = QSize(Utils::WizStyleHelper::titleIconHeight(), Utils::WizStyleHelper::titleIconHeight());
     m_editBtn = new WizEditButton(this);
     m_editBtn->setFixedHeight(nTitleHeight);
-    QString shortcut = ::WizGetShortcut("EditNote", "Alt+1");
+    QString shortcut = ::WizGetShortcut("EditNote", "");
     m_editBtn->setShortcut(QKeySequence::fromString(shortcut));
     m_editBtn->setStatefulIcon(::WizLoadSkinIcon(strTheme, "document_lock", iconSize), WizToolButton::Normal);
     m_editBtn->setStatefulText(tr("Edit"), tr("Switch to Editing View  %1%2").arg(getOptionKey()).arg(1), WizToolButton::Normal);
@@ -118,7 +118,7 @@ WizTitleBar::WizTitleBar(WizExplorerApp& app, QWidget *parent)
     // 分离窗口浏览笔记
     m_separateBtn = new WizToolButton(this, WizToolButton::ImageOnly);
     m_separateBtn->setFixedHeight(nTitleHeight);
-    QString separateShortcut = ::WizGetShortcut("EditNoteSeparate", "Alt+2");
+    QString separateShortcut = ::WizGetShortcut("EditNoteSeparate", "");
     m_separateBtn->setShortcut(QKeySequence::fromString(separateShortcut));
     m_separateBtn->setIcon(::WizLoadSkinIcon(strTheme, "document_use_separate", iconSize));
     m_separateBtn->setToolTip(tr("View note in seperate window  %1%2").arg(getOptionKey()).arg(2));
@@ -127,7 +127,7 @@ WizTitleBar::WizTitleBar(WizExplorerApp& app, QWidget *parent)
     // 标签按钮
     m_tagBtn = new WizToolButton(this, WizToolButton::ImageOnly);
     m_tagBtn->setFixedHeight(nTitleHeight);
-    QString tagsShortcut = ::WizGetShortcut("EditNoteTags", "Alt+3");
+    QString tagsShortcut = ::WizGetShortcut("EditNoteTags", "");
     m_tagBtn->setShortcut(QKeySequence::fromString(tagsShortcut));
     m_tagBtn->setCheckable(true);
     m_tagBtn->setIcon(::WizLoadSkinIcon(strTheme, "document_tag", iconSize));
@@ -140,7 +140,7 @@ WizTitleBar::WizTitleBar(WizExplorerApp& app, QWidget *parent)
     m_shareMenu = new QMenu(m_shareBtn);
     QAction *defaultAc = m_shareMenu->addAction(WIZACTION_TITLEBAR_SHARE_DOCUMENT_BY_LINK, this, SLOT(onShareActionClicked()));
     m_shareMenu->addAction(WIZACTION_TITLEBAR_SHARE_DOCUMENT_BY_EMAIL, this, SLOT(onEmailActionClicked()));
-    QString shareShortcut = ::WizGetShortcut("EditShare", "Alt+4");
+    QString shareShortcut = ::WizGetShortcut("EditShare", "");
     defaultAc->setShortcut(QKeySequence::fromString(shareShortcut));
     defaultAc->setIcon(::WizLoadSkinIcon(strTheme, "document_share", iconSize));
     defaultAc->setToolTip(tr("Share note  %1%2").arg(getOptionKey()).arg(4));
@@ -170,7 +170,7 @@ WizTitleBar::WizTitleBar(WizExplorerApp& app, QWidget *parent)
     // 笔记信息按钮
     m_infoBtn = new WizToolButton(this, WizToolButton::ImageOnly);
     m_infoBtn->setFixedHeight(nTitleHeight);
-    QString infoShortcut = ::WizGetShortcut("EditNoteInfo", "Alt+5");
+    QString infoShortcut = ::WizGetShortcut("EditNoteInfo", "");
     m_infoBtn->setCheckable(true);
     m_infoBtn->setShortcut(QKeySequence::fromString(infoShortcut));
     m_infoBtn->setIcon(::WizLoadSkinIcon(strTheme, "document_info", iconSize));
@@ -180,7 +180,7 @@ WizTitleBar::WizTitleBar(WizExplorerApp& app, QWidget *parent)
     // 附件按钮
     m_attachBtn = new WizToolButton(this, WizToolButton::WithCountInfo);
     m_attachBtn->setFixedHeight(nTitleHeight);
-    QString attachmentShortcut = ::WizGetShortcut("EditNoteAttachments", "Alt+6");
+    QString attachmentShortcut = ::WizGetShortcut("EditNoteAttachments", "");
     m_attachBtn->setCheckable(true);
     m_attachBtn->setShortcut(QKeySequence::fromString(attachmentShortcut));
     m_attachBtn->setIcon(::WizLoadSkinIcon(strTheme, "document_attachment", iconSize));
