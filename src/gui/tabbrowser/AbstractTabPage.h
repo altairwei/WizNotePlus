@@ -3,6 +3,7 @@
 
 #include <QWidget>
 #include <QString>
+#include <QKeyEvent>
 
 class AbstractTabPage : public QWidget
 {

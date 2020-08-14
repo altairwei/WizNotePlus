@@ -6,6 +6,7 @@
 #include <QDialog>
 #include <QHash>
 #include <QWebEngineProfile>
+#include <QPointer>
 
 class QWebChannel;
 class QMenu;
@@ -103,21 +104,20 @@ Q_SIGNALS:
     
 private:
     WizDevToolsDialog* m_devToolsWindow = nullptr;
+    QPointer<QWidget> m_child = nullptr;
 
 protected:
     QWebEngineView *createWindow(QWebEnginePage::WebWindowType type) override;
-    void wheelEvent(QWheelEvent *event);
     void contextMenuEvent(QContextMenuEvent *event);
-};
+    void childEvent(QChildEvent *event) override;
+    bool eventFilter(QObject *obj, QEvent *ev) override;
 
-bool WizWebEngineViewProgressKeyEvents(QKeyEvent* ev);
+};
 
 class WizWebEngineViewContainerDialog: public QDialog
 {
 public:
     WizWebEngineViewContainerDialog(QWidget *parent = Q_NULLPTR, Qt::WindowFlags f = Qt::WindowFlags());
-protected:
-    virtual void keyPressEvent(QKeyEvent* ev);
 };
 
 QWebEngineProfile* createWebEngineProfile(const WizWebEngineInjectObjectCollection& objects, QObject* parent);

@@ -514,96 +514,69 @@ static QWebEngineView* getActiveWeb()
     return nullptr;
 }
 
-bool WizWebEngineViewProgressKeyEvents(QKeyEvent* ev)
-{
-    if (ev->modifiers() && ev->key()) {
-        if (QWebEngineView* web = getActiveWeb()) {
-            if (ev->matches(QKeySequence::Copy))
-            {
-                web->page()->triggerAction(QWebEnginePage::Copy);
-                return true;
-            }
-            else if (ev->matches(QKeySequence::Cut))
-            {
-                web->page()->triggerAction(QWebEnginePage::Cut);
-                return true;
-            }
-            else if (ev->matches(QKeySequence::Paste))
-            {
-                web->page()->triggerAction(QWebEnginePage::Paste);
-                return true;
-            }
-            else if (ev->matches(QKeySequence::Undo))
-            {
-                web->page()->triggerAction(QWebEnginePage::Undo);
-                return true;
-            }
-            else if (ev->matches(QKeySequence::Redo))
-            {
-                web->page()->triggerAction(QWebEnginePage::Redo);
-                return true;
-            }
-            else if (ev->matches(QKeySequence::SelectAll))
-            {
-                web->page()->triggerAction(QWebEnginePage::SelectAll);
-                return true;
-            }
-            else if (ev->modifiers()&Qt::KeyboardModifier::ControlModifier && ev->key() == Qt::Key_Up)
-            {
-                //放大
-                qreal factor = web->zoomFactor();
-                factor += 0.1;
-                factor = (factor > 5.0) ? 5.0 : factor;
-                web->setZoomFactor(factor);
-                return true;
-            }
-            else if (ev->modifiers()&Qt::KeyboardModifier::ControlModifier && ev->key() == Qt::Key_Down)
-            {
-                //缩小
-                qreal factor = web->zoomFactor();
-                factor -= 0.1;
-                factor = (factor < 0.5) ? 0.5 : factor;
-                web->setZoomFactor(factor);
-                return true;
-            }
-        }
-    }
-    return false;
-}
-
 WizWebEngineViewContainerDialog::WizWebEngineViewContainerDialog(QWidget *parent, Qt::WindowFlags f)
     : QDialog(parent, f)
 {
 
 }
 
-void WizWebEngineViewContainerDialog::keyPressEvent(QKeyEvent* ev)
+void WizWebEngineView::childEvent(QChildEvent *ev)
 {
-    if (WizWebEngineViewProgressKeyEvents(ev))
-        return;
-    //
-    QDialog::keyPressEvent(ev);
+    if (ev->added()) {
+        QWidget *w = qobject_cast<QWidget*>(ev->child());
+        if (w) {
+            m_child = w;
+            w->installEventFilter(this);
+        }
+    }
+
+    QWebEngineView::childEvent(ev);
 }
 
-void WizWebEngineView::wheelEvent(QWheelEvent *event)
+bool WizWebEngineView::eventFilter(QObject *obj, QEvent *ev)
 {
-    qreal factor = 0;
+    // work around QTBUG-43602
+    if (obj == m_child) {
+        if (ev->type() == QEvent::KeyPress) {
+            QKeyEvent *keyEvent = static_cast<QKeyEvent *>(ev);
+            if (keyEvent->modifiers() && keyEvent->key()) {
+                if (keyEvent->modifiers() & Qt::ControlModifier
+                        && keyEvent->key() == Qt::Key_Up) {
+                    // zoom in
+                    qreal factor = page()->zoomFactor();
+                    factor += 0.1;
+                    factor = (factor > 5.0) ? 5.0 : factor;
+                    page()->setZoomFactor(factor);
 
-    if (event->modifiers()==Qt::ControlModifier) {
-        factor = zoomFactor();
-        if (event->delta() > 0) {
-            //放大
-            factor += 0.1;
-            factor = (factor > 5.0)?5.0:factor;
-        } else {
-            //缩小
-            factor -= 0.1;
-            factor = (factor < 0.5)?0.5:factor;
+                } else if (keyEvent->modifiers() & Qt::ControlModifier
+                                && keyEvent->key() == Qt::Key_Down) {
+                    // zoom out
+                    qreal factor = page()->zoomFactor();
+                    factor -= 0.1;
+                    factor = (factor < 0.5) ? 0.5 : factor;
+                    page()->setZoomFactor(factor);
+                }
+            }
+        } else if (ev->type() == QEvent::Wheel) {
+            QWheelEvent *whellEvent = static_cast<QWheelEvent *>(ev);
+            if (whellEvent->modifiers() == Qt::ControlModifier) {
+                qreal factor = 0;
+                factor = zoomFactor();
+                if (whellEvent->delta() > 0) {
+                    // zoom in
+                    factor += 0.1;
+                    factor = (factor > 5.0)?5.0:factor;
+                } else {
+                    // zoom out
+                    factor -= 0.1;
+                    factor = (factor < 0.5)?0.5:factor;
+                }
+                setZoomFactor(factor);
+            }
         }
-        //setZoomFactor(factor);
-    } else {
-        event->ignore();
     }
+
+    return QWebEngineView::eventFilter(obj, ev);
 }
 
 /**

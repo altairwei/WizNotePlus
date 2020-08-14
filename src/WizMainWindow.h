@@ -125,7 +125,6 @@ protected:
     void mouseReleaseEvent(QMouseEvent* event);
     void changeEvent(QEvent *event);
     void moveEvent(QMoveEvent* ev);
-    void keyPressEvent(QKeyEvent* ev);
 
 private:
     WizDatabaseManager& m_dbMgr;

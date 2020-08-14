@@ -439,7 +439,7 @@ void WizMainTabBrowser::setupTabPage(AbstractTabPage *tabPage)
 void WizMainTabBrowser::keyPressEvent(QKeyEvent* ev)
 {
     if (ev->modifiers() && ev->key()) {
-        if (ev->modifiers() & Qt::KeyboardModifier::AltModifier
+        if (ev->modifiers() & Qt::AltModifier
                 && ev->key() >= Qt::Key_1  && ev->key() <= Qt::Key_9) {
             int index = ev->key() - Qt::Key_0;
             if (index <= count() && index >= 0)
