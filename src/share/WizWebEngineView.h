@@ -6,7 +6,6 @@
 #include <QDialog>
 #include <QHash>
 #include <QWebEngineProfile>
-#include <QPointer>
 
 class QWebChannel;
 class QMenu;
@@ -74,6 +73,7 @@ public:
     // Do not use {{}} to initialize InjectObjectCollection.
     WizWebEngineView(QWidget* parent): WizWebEngineView({}, parent) { }
     virtual ~WizWebEngineView();
+
 public:
     WizWebEnginePage* getPage();
     QMenu* createStandardContextMenu();
@@ -92,6 +92,9 @@ public:
     Q_INVOKABLE void SetZoom(int percent);
     Q_INVOKABLE int GetZoom();
 
+    double scaleUp();
+    double scaleDown();
+
 public Q_SLOTS:
     void innerLoadFinished(bool);
     void openLinkInDefaultBrowser(QUrl url);
@@ -101,10 +104,9 @@ public Q_SLOTS:
     
 Q_SIGNALS:
     void loadFinishedEx(bool);
-    
+
 private:
     WizDevToolsDialog* m_devToolsWindow = nullptr;
-    QPointer<QWidget> m_child = nullptr;
 
 protected:
     QWebEngineView *createWindow(QWebEnginePage::WebWindowType type) override;

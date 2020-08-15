@@ -362,6 +362,28 @@ int WizWebEngineView::GetZoom()
     return percent;
 }
 
+double WizWebEngineView::scaleUp()
+{
+    // zoom in
+    qreal factor = zoomFactor();
+    factor += 0.05;
+    factor = (factor > 5.0) ? 5.0 : factor;
+    setZoomFactor(factor);
+
+    return zoomFactor();
+}
+
+double WizWebEngineView::scaleDown()
+{
+    // zoom out
+    qreal factor = zoomFactor();
+    factor -= 0.05;
+    factor = (factor < 0.5) ? 0.5 : factor;
+    setZoomFactor(factor);
+
+    return zoomFactor();
+}
+
 /**
  * @brief Create basic context menu for web view.
  * @return
@@ -523,11 +545,9 @@ WizWebEngineViewContainerDialog::WizWebEngineViewContainerDialog(QWidget *parent
 void WizWebEngineView::childEvent(QChildEvent *ev)
 {
     if (ev->added()) {
-        QWidget *w = qobject_cast<QWidget*>(ev->child());
-        if (w) {
-            m_child = w;
-            w->installEventFilter(this);
-        }
+        ev->child()->installEventFilter(this);
+    } else if (ev->removed()) {
+        ev->child()->removeEventFilter(this);
     }
 
     QWebEngineView::childEvent(ev);
@@ -536,42 +556,24 @@ void WizWebEngineView::childEvent(QChildEvent *ev)
 bool WizWebEngineView::eventFilter(QObject *obj, QEvent *ev)
 {
     // work around QTBUG-43602
-    if (obj == m_child) {
-        if (ev->type() == QEvent::KeyPress) {
-            QKeyEvent *keyEvent = static_cast<QKeyEvent *>(ev);
-            if (keyEvent->modifiers() && keyEvent->key()) {
-                if (keyEvent->modifiers() & Qt::ControlModifier
-                        && keyEvent->key() == Qt::Key_Up) {
-                    // zoom in
-                    qreal factor = page()->zoomFactor();
-                    factor += 0.1;
-                    factor = (factor > 5.0) ? 5.0 : factor;
-                    page()->setZoomFactor(factor);
-
-                } else if (keyEvent->modifiers() & Qt::ControlModifier
-                                && keyEvent->key() == Qt::Key_Down) {
-                    // zoom out
-                    qreal factor = page()->zoomFactor();
-                    factor -= 0.1;
-                    factor = (factor < 0.5) ? 0.5 : factor;
-                    page()->setZoomFactor(factor);
-                }
+    if (ev->type() == QEvent::KeyPress) {
+        QKeyEvent *keyEvent = static_cast<QKeyEvent *>(ev);
+        if (keyEvent->modifiers() && keyEvent->key()) {
+            if (keyEvent->modifiers() & Qt::ControlModifier
+                    && keyEvent->key() == Qt::Key_Up) {
+                scaleUp();
+            } else if (keyEvent->modifiers() & Qt::ControlModifier
+                            && keyEvent->key() == Qt::Key_Down) {
+                scaleDown();
             }
-        } else if (ev->type() == QEvent::Wheel) {
-            QWheelEvent *whellEvent = static_cast<QWheelEvent *>(ev);
-            if (whellEvent->modifiers() == Qt::ControlModifier) {
-                qreal factor = 0;
-                factor = zoomFactor();
-                if (whellEvent->delta() > 0) {
-                    // zoom in
-                    factor += 0.1;
-                    factor = (factor > 5.0)?5.0:factor;
-                } else {
-                    // zoom out
-                    factor -= 0.1;
-                    factor = (factor < 0.5)?0.5:factor;
-                }
-                setZoomFactor(factor);
+        }
+    } else if (ev->type() == QEvent::Wheel) {
+        QWheelEvent *whellEvent = static_cast<QWheelEvent *>(ev);
+        if (whellEvent->modifiers() == Qt::ControlModifier) {
+            if (whellEvent->delta() > 0) {
+                scaleUp();
+            } else {
+                scaleDown();
             }
         }
     }
