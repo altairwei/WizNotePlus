@@ -424,11 +424,26 @@ bool WizUserSettings::isEnableSpellCheck() const
 
     return false;
 }
+
 void WizUserSettings::setEnableSpellCheck(bool b)
 {
     set("SpellCheck", b ? "1" : "0");
 }
 
+bool WizUserSettings::isEnableOpenLinkWithDesktopBrowser() const
+{
+    QString strOpenLinkWithDesktopBrowser = get("OpenLinkWithDesktopBrowser");
+    if (!strOpenLinkWithDesktopBrowser.isEmpty()) {
+        return strOpenLinkWithDesktopBrowser.toInt() ? true : false;
+    }
+
+    return false;
+}
+
+void WizUserSettings::setEnableOpenLinkWithDesktopBrowser(bool b)
+{
+    set("OpenLinkWithDesktopBrowser", b ? "1" : "0");
+}
 
 bool WizUserSettings::receiveMobileFile() const
 {

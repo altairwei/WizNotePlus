@@ -1,8 +1,4 @@
 ﻿#include "WizWebEngineView.h"
-#include "WizMisc.h"
-#include "utils/WizPathResolve.h"
-#include "WizMainWindow.h"
-#include "gui/tabbrowser/WizMainTabBrowser.h"
 
 #include <QWebEngineView>
 #include <QWebSocketServer>
@@ -26,57 +22,14 @@
 #include <QMimeData>
 #endif
 
+#include "WizMisc.h"
+#include "utils/WizPathResolve.h"
+#include "WizMainWindow.h"
+#include "gui/tabbrowser/WizMainTabBrowser.h"
 #include "WizDevToolsDialog.h"
 #include "gui/documentviewer/WizDocumentView.h"
+#include "share/WizSettings.h"
 
-/*
-class WizInvisibleWebEngineView : public QWebEngineView
-{
-    class WizInvisibleWebEnginePage : public QWebEnginePage
-    {
-        WizWebEnginePage* m_ownerPage;
-    public:
-        explicit WizInvisibleWebEnginePage(WizWebEnginePage* ownerPage, QObject *parent = Q_NULLPTR)
-            : QWebEnginePage(parent)
-            , m_ownerPage(ownerPage)
-        {
-
-        }
-
-        bool acceptNavigationRequest(const QUrl &url, QWebEnginePage::NavigationType type, bool isMainFrame)
-        {
-            emit m_ownerPage->openLinkInNewWindow(url);
-            //
-            parent()->deleteLater();
-            //
-            return false;
-        }
-
-    };
-
-public:
-    explicit WizInvisibleWebEngineView(WizWebEnginePage* ownerPage, QWidget* parent = Q_NULLPTR)
-        : QWebEngineView(parent)
-    {
-        WizInvisibleWebEnginePage* page = new WizInvisibleWebEnginePage(ownerPage, this);
-        setPage(page);
-    }
-    virtual ~WizInvisibleWebEngineView()
-    {
-
-    }
-
-public:
-    static QWebEnginePage* create(WizWebEnginePage* ownerPage)
-    {
-        WizInvisibleWebEngineView* web = new WizInvisibleWebEngineView(ownerPage, nullptr);
-        //
-        web->setVisible(false);
-        //
-        return web->page();
-    }
-};
-*/
 
 WizWebEngineAsyncMethodResultObject::WizWebEngineAsyncMethodResultObject(QObject* parent)
     : QObject(parent)
@@ -648,18 +601,25 @@ bool WizNavigationForwarderPage::acceptNavigationRequest(const QUrl &url, QWebEn
         }
     } else {
         // http or file url
+        bool openInDesktop = mainWindow->userSettings().isEnableOpenLinkWithDesktopBrowser();
         switch (m_windowType) {
             // A web browser tab.
             case QWebEnginePage::WebBrowserTab:
             {
-                mainWindow->mainTabView()->createTab(url);
+                if (openInDesktop) {
+                    QDesktopServices::openUrl(url);
+                } else {
+                    mainWindow->mainTabView()->createTab(url);
+                }
                 break;
             }
-            // A web browser tab without hiding the current visible WebEngineView.
+            // A web browser tab without hiding the current visible WebEngineView. (Ctrl+ mouse left click)
             case QWebEnginePage::WebBrowserBackgroundTab: 
             {
-                WizWebEngineView * view = mainWindow->mainTabView()->createBackgroundTab();
-                view->load(url);
+                //WizWebEngineView * view = mainWindow->mainTabView()->createBackgroundTab();
+                //view->load(url);
+                QDesktopServices::openUrl(url);
+ 
                 break;
             }
             // A window without decoration.
@@ -667,8 +627,12 @@ bool WizNavigationForwarderPage::acceptNavigationRequest(const QUrl &url, QWebEn
             // A complete web browser window.
             case QWebEnginePage::WebBrowserWindow: 
             {
-                WizWebEngineView * view = mainWindow->mainTabView()->createWindow();
-                view->load(url);
+                if (openInDesktop) {
+                    QDesktopServices::openUrl(url);
+                } else {
+                    WizWebEngineView * view = mainWindow->mainTabView()->createWindow();
+                    view->load(url);
+                }
                 break;
             }
         }
