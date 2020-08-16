@@ -674,6 +674,15 @@ void WizCategoryBaseView::dropEvent(QDropEvent * event)
     else
     {
     // Handle the movement of folder themselves
+
+        QMessageBox::StandardButton res = QMessageBox::question(this, 
+            tr("Confirm"), tr("Do you want to move folder?"));
+        if (res != QMessageBox::Yes)
+        {
+            event->ignore();
+            return;
+        }
+
         if (WizKMSyncThread::isBusy())
         {
             QString title = QObject::tr("Syncing");
