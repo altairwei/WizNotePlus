@@ -6,3 +6,8 @@ AbstractTabPage::~AbstractTabPage()
 {
 
 }
+
+QList<QAction *> AbstractTabPage::TabContextMenuActions()
+{
+    return QList<QAction *>();
+}

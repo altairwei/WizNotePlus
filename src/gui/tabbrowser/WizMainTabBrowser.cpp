@@ -105,8 +105,16 @@ void WizMainTabBrowser::handleContextMenuRequested(const QPoint &pos)
                this->lockTab(index);
             });
         }
+
+        auto page = tabPage(index);
+        auto page_actions = page->TabContextMenuActions();
+        if (!page_actions.isEmpty()) {
+            menu.addSeparator();
+            menu.addActions(page_actions);
+        }
+
+        menu.exec(QCursor::pos());
     }
-    menu.exec(QCursor::pos());
 }
 
 void WizMainTabBrowser::triggeredFullScreen()

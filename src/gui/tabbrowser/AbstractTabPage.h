@@ -4,6 +4,8 @@
 #include <QWidget>
 #include <QString>
 #include <QKeyEvent>
+#include <QVector>
+#include <QList>
 
 class AbstractTabPage : public QWidget
 {
@@ -15,6 +17,7 @@ public:
 
     virtual void RequestClose() = 0;
     virtual QString Title() = 0;
+    virtual QList<QAction *> TabContextMenuActions();
 
 signals:
     void pageCloseRequested();

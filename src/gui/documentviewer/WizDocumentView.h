@@ -55,6 +55,7 @@ public:
     WizTitleBar* titleBar() { return m_title; }
 
     QString Title() override { return m_note.strTitle; }
+    QList<QAction *> TabContextMenuActions() override;
 
     void waitForDone();
     void waitForSave();
@@ -96,6 +97,8 @@ private:
     //
     int m_editStatus;  // document edit or version status
     QSize m_sizeHint;
+    QAction *m_locateAction;
+    QAction *m_copyInternalLinkAction;
 
 public:
     const WIZDOCUMENTDATAEX& note() const { return m_note; }
