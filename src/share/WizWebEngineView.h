@@ -98,9 +98,11 @@ public:
 public Q_SLOTS:
     void innerLoadFinished(bool);
     void openLinkInDefaultBrowser(QUrl url);
+#if QT_VERSION >= 0x051100
     void openDevTools();
-    void handleSavePageTriggered();
     void handleOpenDevToolsTriggered();
+#endif
+    void handleSavePageTriggered();
     
 Q_SIGNALS:
     void loadFinishedEx(bool);
