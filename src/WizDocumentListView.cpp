@@ -25,7 +25,7 @@
 #include "WizMainWindow.h"
 #include "WizNoteStyle.h"
 #include "WizTagListWidget.h"
-#include "WizCategoryView.h"
+#include "gui/categoryviewer/WizCategoryView.h"
 #include "WizCombineNotesDialog.h"
 #include "WizLineInputDialog.h"
 

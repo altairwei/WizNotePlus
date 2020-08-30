@@ -144,8 +144,8 @@ set(wiznote_SOURCES
     gui/tabbrowser/WebEngineWindow.cpp
     gui/tabbrowser/WizWebsiteView.cpp
 
-    WizCategoryView.cpp 
-    WizCategoryViewItem.cpp
+    gui/categoryviewer/WizCategoryView.cpp 
+    gui/categoryviewer/WizCategoryViewItem.cpp
     WizDevToolsDialog.cpp
     WizDocumentListView.cpp
     WizDocumentListViewItem.cpp
@@ -302,8 +302,8 @@ set(wiznote_HEADERS
     WizDef.h
     WizActions.h
     WizNoteStyle.h
-    WizCategoryView.h
-    WizCategoryViewItem.h
+    gui/categoryviewer/WizCategoryView.h
+    gui/categoryviewer/WizCategoryViewItem.h
     WizDevToolsDialog.h
     WizDocumentListView.h
     WizDocumentListViewItem.h

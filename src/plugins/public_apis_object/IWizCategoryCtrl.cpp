@@ -1,6 +1,6 @@
 #include "IWizCategoryCtrl.h"
 
-#include "WizCategoryView.h"
+#include "gui/categoryviewer/WizCategoryView.h"
 
 IWizCategoryCtrl::IWizCategoryCtrl(WizCategoryView* cv, QObject* parent)
     : QObject(parent)

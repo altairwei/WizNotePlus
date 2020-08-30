@@ -7,7 +7,7 @@
 #include <QApplication>
 #include <QRect>
 
-#include "WizCategoryView.h"
+#include "gui/categoryviewer/WizCategoryView.h"
 #include "WizDocumentListView.h"
 #include "WizDocumentListViewItem.h"
 #include "WizAttachmentListWidget.h"

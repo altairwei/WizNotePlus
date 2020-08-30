@@ -4,7 +4,7 @@
 #include <QTreeWidget>
 
 #include "share/WizDatabaseManager.h"
-#include "WizCategoryViewItem.h"
+#include "gui/categoryviewer/WizCategoryViewItem.h"
 
 class WizExplorerApp;
 class WizScrollBar;
