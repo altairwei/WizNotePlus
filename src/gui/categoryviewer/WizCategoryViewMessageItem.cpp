@@ -4,6 +4,7 @@
 #include "share/WizMisc.h"
 #include "share/WizSettings.h"
 #include "utils/WizStyleHelper.h"
+#include "utils/WizNotify.h"
 #include "gui/categoryviewer/WizCategoryView.h"
 
 
