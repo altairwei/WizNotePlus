@@ -35,7 +35,7 @@
 #include "WizMainWindow.h"
 #include "WizProgressDialog.h"
 #include "WizNoteStyle.h"
-#include "WizFolderSelector.h"
+#include "gui/categoryviewer/WizFolderSelector.h"
 #include "WizLineInputDialog.h"
 #include "WizWebSettingsDialog.h"
 #include "WizFileImporter.h"

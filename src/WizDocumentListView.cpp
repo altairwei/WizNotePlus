@@ -20,7 +20,7 @@
 #include "WizLineInputDialog.h"
 #include "WizWebSettingsDialog.h"
 #include "WizPopupButton.h"
-#include "WizFolderSelector.h"
+#include "gui/categoryviewer/WizFolderSelector.h"
 #include "WizProgressDialog.h"
 #include "WizMainWindow.h"
 #include "WizNoteStyle.h"

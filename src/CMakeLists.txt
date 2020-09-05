@@ -154,6 +154,8 @@ set(wiznote_SOURCES
     gui/categoryviewer/WizCategoryViewTagItem.cpp
     gui/categoryviewer/WizCategoryViewGroupItem.cpp
     gui/categoryviewer/WizCategoryViewItem.cpp
+    gui/categoryviewer/WizFolderView.cpp
+    gui/categoryviewer/WizFolderSelector.cpp
 
     WizDevToolsDialog.cpp
     WizDocumentListView.cpp
@@ -193,9 +195,7 @@ set(wiznote_SOURCES
     WizUpgrade.cpp
     WizButton.cpp
     WizFileImporter.cpp
-    WizFolderSelector.cpp
     WizProgressDialog.cpp
-    WizFolderView.cpp
     WizDocumentSelectionView.cpp
     WizDocumentTransitionView.cpp
     WizPopupButton.cpp
@@ -322,6 +322,8 @@ set(wiznote_HEADERS
     gui/categoryviewer/WizCategoryViewTagItem.h
     gui/categoryviewer/WizCategoryViewGroupItem.h
     gui/categoryviewer/WizCategoryViewItem.h
+    gui/categoryviewer/WizFolderView.h
+    gui/categoryviewer/WizFolderSelector.h
 
     WizDevToolsDialog.h
     WizDocumentListView.h
@@ -364,9 +366,7 @@ set(wiznote_HEADERS
     WizDocumentTransitionView.h
     WizButton.h
     WizFileImporter.h
-    WizFolderSelector.h
     WizProgressDialog.h
-    WizFolderView.h
     WizDocumentSelectionView.h
     WizUserVerifyDialog.h
     utils/WizLogger.h
