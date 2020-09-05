@@ -1,27 +1,27 @@
-#include "IWizDatabase.h"
+#include "ApiWizDatabase.h"
 #include "share/WizDatabaseManager.h"
 #include "share/WizDatabase.h"
 #include "WizFileImporter.h"
 #include <QDebug>
 
-IWizDatabase::IWizDatabase(WizDatabaseManager* dbManager, QObject* parent)
+ApiWizDatabase::ApiWizDatabase(WizDatabaseManager* dbManager, QObject* parent)
     : QObject(parent)
     , m_dbManager(dbManager)
 {
 
 }
 
-QObject *IWizDatabase::Database()
+QObject *ApiWizDatabase::Database()
 {
     return &(m_dbManager->db());
 }
 
-QObject *IWizDatabase::GetGroupDatabase(const QString &kbGUID)
+QObject *ApiWizDatabase::GetGroupDatabase(const QString &kbGUID)
 {
     return &(m_dbManager->db(kbGUID));
 }
 
-bool IWizDatabase::CreateDocument(const QString &bstrIndexFileName, const QString &bstrTitle, 
+bool ApiWizDatabase::CreateDocument(const QString &bstrIndexFileName, const QString &bstrTitle, 
     const QString &bstrLocation, const QStringList &tagList, const QString &bstrURL)
 {
     WizDatabase &db = m_dbManager->db();

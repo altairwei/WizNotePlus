@@ -1,22 +1,22 @@
-#include "IWizExplorerWindow.h"
+#include "ApiWizExplorerWindow.h"
 #include "WizMainWindow.h"
 #include "gui/documentviewer/WizDocumentView.h"
 #include "share/WizDatabaseManager.h"
 #include "share/WizDatabase.h"
 
-IWizExplorerWindow::IWizExplorerWindow(WizMainWindow* mw, QObject* parent)
+ApiWizExplorerWindow::ApiWizExplorerWindow(WizMainWindow* mw, QObject* parent)
     : QObject(parent)
     , m_mainWindow(mw)
 {
 
 }
 
-QObject* IWizExplorerWindow::CurrentDocumentBrowserObject()
+QObject* ApiWizExplorerWindow::CurrentDocumentBrowserObject()
 {
     return m_mainWindow->CurrentDocumentBrowserObject();
 }
 
-QObject *IWizExplorerWindow::CurrentDocument()
+QObject *ApiWizExplorerWindow::CurrentDocument()
 {
     WizDocumentView *docView = m_mainWindow->documentView();
     if (!docView) 
@@ -33,7 +33,7 @@ QObject *IWizExplorerWindow::CurrentDocument()
     }
 }
 
-void IWizExplorerWindow::ViewDocument(QObject *pWizDocument, bool vbOpenInNewTab /* = true */)
+void ApiWizExplorerWindow::ViewDocument(QObject *pWizDocument, bool vbOpenInNewTab /* = true */)
 {
     WizDocument *doc = qobject_cast<WizDocument *>(pWizDocument);
     if (doc) {
@@ -42,7 +42,7 @@ void IWizExplorerWindow::ViewDocument(QObject *pWizDocument, bool vbOpenInNewTab
     }
 }
 
-void IWizExplorerWindow::ViewAttachment(QObject *pWizDocumentAttachment)
+void ApiWizExplorerWindow::ViewAttachment(QObject *pWizDocumentAttachment)
 {
     WizDocumentAttachment *att = qobject_cast<WizDocumentAttachment *>(pWizDocumentAttachment);
     if (att) {

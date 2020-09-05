@@ -1,29 +1,29 @@
-#ifndef IWIZEXPLORERAPP_H
-#define IWIZEXPLORERAPP_H
+#ifndef API_APIWIZEXPLORERAPP_H
+#define API_APIWIZEXPLORERAPP_H
 
 #include <QObject>
 
 class WizMainWindow;
 class WizCommonUI;
-class IWizExplorerWindow;
-class IWizCategoryCtrl;
-class IWizDocumentListCtrl;
-class IWizDatabase;
+class ApiWizExplorerWindow;
+class ApiWizCategoryCtrl;
+class ApiWizDocumentListCtrl;
+class ApiWizDatabase;
 
-class IWizExplorerApp : public QObject
+class ApiWizExplorerApp : public QObject
 {
     Q_OBJECT
 
 private:
     WizMainWindow* m_mainWindow;
     WizCommonUI* m_commonUI;
-    IWizExplorerWindow* m_window;
-    IWizCategoryCtrl* m_categoryCtrl;
-    IWizDocumentListCtrl* m_docListCtrl;
-    IWizDatabase* m_database;
+    ApiWizExplorerWindow* m_window;
+    ApiWizCategoryCtrl* m_categoryCtrl;
+    ApiWizDocumentListCtrl* m_docListCtrl;
+    ApiWizDatabase* m_database;
 
 public:
-    IWizExplorerApp(WizMainWindow* mw, QObject* parent);
+    ApiWizExplorerApp(WizMainWindow* mw, QObject* parent);
 
     //WizExplorerApp API:
     QObject* Window();
@@ -68,4 +68,4 @@ signals:
     void CommonUIChanged();
 };
 
-#endif // WIZEXPLORERAPP_H
+#endif // API_APIWIZEXPLORERAPP_H

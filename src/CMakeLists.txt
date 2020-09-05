@@ -133,9 +133,9 @@ set(wiznote_SOURCES
     jsplugin/JSPluginSelectorWindow.cpp
     jsplugin/JSPluginHtmlDialog.cpp
 
-    plugins/public_apis_server/PublicAPIsServer.cpp
-    plugins/public_apis_server/WebSocketClientWrapper.cpp
-    plugins/public_apis_server/WebSocketTransport.cpp
+    api/PublicAPIsServer.cpp
+    api/WebSocketClientWrapper.cpp
+    api/WebSocketTransport.cpp
 
     gui/tabbrowser/WizMainTabBrowser.cpp
     gui/tabbrowser/AbstractTabPage.cpp
@@ -220,12 +220,12 @@ set(wiznote_SOURCES
     WizInitBizCertDialog.cpp
     share/WizDocumentStyle.cpp
 
-    plugins/public_apis_object/IWizHtmlEditorApp.cpp
-    plugins/public_apis_object/IWizExplorerWindow.cpp
-    plugins/public_apis_object/IWizCategoryCtrl.cpp
-    plugins/public_apis_object/IWizDocumentListCtrl.cpp
-    plugins/public_apis_object/IWizDatabase.cpp
-    plugins/public_apis_object/IWizExplorerApp.cpp
+    api/ApiWizHtmlEditorApp.cpp
+    api/ApiWizExplorerWindow.cpp
+    api/ApiWizCategoryCtrl.cpp
+    api/ApiWizDocumentListCtrl.cpp
+    api/ApiWizDatabase.cpp
+    api/ApiWizExplorerApp.cpp
 )
 
 set(wiznote_HEADERS
@@ -297,9 +297,9 @@ set(wiznote_HEADERS
     jsplugin/JSPluginSelectorWindow.h
     jsplugin/JSPluginHtmlDialog.h
 
-    plugins/public_apis_server/PublicAPIsServer.h
-    plugins/public_apis_server/WebSocketClientWrapper.h
-    plugins/public_apis_server/WebSocketTransport.h
+    api/PublicAPIsServer.h
+    api/WebSocketClientWrapper.h
+    api/WebSocketTransport.h
 
     gui/tabbrowser/WizMainTabBrowser.h
     gui/tabbrowser/AbstractTabPage.h
@@ -422,12 +422,12 @@ set(wiznote_HEADERS
     share/WizDocumentStyle.h
     WizCombineNotesDialog.h
 
-    plugins/public_apis_object/IWizHtmlEditorApp.h
-    plugins/public_apis_object/IWizExplorerWindow.h
-    plugins/public_apis_object/IWizCategoryCtrl.h
-    plugins/public_apis_object/IWizDocumentListCtrl.h
-    plugins/public_apis_object/IWizDatabase.h
-    plugins/public_apis_object/IWizExplorerApp.h
+    api/ApiWizHtmlEditorApp.h
+    api/ApiWizExplorerWindow.h
+    api/ApiWizCategoryCtrl.h
+    api/ApiWizDocumentListCtrl.h
+    api/ApiWizDatabase.h
+    api/ApiWizExplorerApp.h
 )
 
 set(wiznote_FORMS

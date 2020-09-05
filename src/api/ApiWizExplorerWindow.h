@@ -1,18 +1,18 @@
-#ifndef IWIZEXPLORERWINDOW_H
-#define IWIZEXPLORERWINDOW_H
+#ifndef API_APIWIZEXPLORERWINDOW_H
+#define API_APIWIZEXPLORERWINDOW_H
 
 #include <QObject>
 
 class WizMainWindow;
 
-class IWizExplorerWindow : public QObject
+class ApiWizExplorerWindow : public QObject
 {
     Q_OBJECT
 private:
     WizMainWindow* m_mainWindow;
 
 public:
-    IWizExplorerWindow(WizMainWindow* mw, QObject* parent);
+    ApiWizExplorerWindow(WizMainWindow* mw, QObject* parent);
 
     Q_INVOKABLE QObject *CurrentDocument();
     Q_INVOKABLE QObject* CurrentDocumentBrowserObject();
@@ -21,4 +21,4 @@ public:
 
 };
 
-#endif // WIZEXPLORERWINDOW_H
+#endif // API_APIWIZEXPLORERWINDOW_H

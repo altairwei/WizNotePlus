@@ -73,7 +73,7 @@ class WizDocumentWebViewSaverThread;
 class WizSingleDocumentViewDelegate;
 class QWebEngineView;
 
-class IWizExplorerApp;
+class ApiWizExplorerApp;
 class PublicAPIsServer;
 
 #ifdef Q_OS_MAC
@@ -204,7 +204,7 @@ private:
     //
     WIZDOCUMENTDATA m_documentForEditing;
 
-    IWizExplorerApp* m_IWizExplorerApp;
+    ApiWizExplorerApp* m_IWizExplorerApp;
     //
     QFileSystemWatcher* m_extFileWatcher;
     QMap<QString, WizExternalEditTask> m_watchedFileData;

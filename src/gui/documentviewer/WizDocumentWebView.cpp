@@ -73,7 +73,7 @@
 #include "html/WizHtmlReader.h"
 
 #include "gui/documentviewer/WizTitleBar.h"
-#include "plugins/public_apis_object/IWizHtmlEditorApp.h"
+#include "api/ApiWizHtmlEditorApp.h"
 #include "jsplugin/JSPluginManager.h"
 
 enum WizLinkType {
@@ -162,7 +162,7 @@ WizDocumentWebView::WizDocumentWebView(WizExplorerApp& app, QWidget* parent)
     setAcceptDrops(true);
 
     //
-    m_htmlEditorApp = new IWizHtmlEditorApp(this, this);
+    m_htmlEditorApp = new ApiWizHtmlEditorApp(this, this);
 
     // refers
     qRegisterMetaType<WizEditorMode>("WizEditorMode");

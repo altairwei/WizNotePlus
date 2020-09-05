@@ -1,12 +1,12 @@
-#ifndef IWIZDATABASE_H
-#define IWIZDATABASE_H
+#ifndef API_APIWIZDATABASE_H
+#define API_APIWIZDATABASE_H
 
 #include <QObject>
 
 class WizDatabaseManager;
 class WizDatabase;
 
-class IWizDatabase : public QObject
+class ApiWizDatabase : public QObject
 {
     Q_OBJECT
 
@@ -14,7 +14,7 @@ private:
     WizDatabaseManager* m_dbManager;
 
 public:
-    IWizDatabase(WizDatabaseManager* dbManager, QObject* parent);
+    ApiWizDatabase(WizDatabaseManager* dbManager, QObject* parent);
 
     Q_INVOKABLE QObject *Database();
     Q_INVOKABLE bool CreateDocument(const QString &bstrIndexFileName, const QString &bstrTitle,
@@ -22,4 +22,4 @@ public:
     Q_INVOKABLE QObject *GetGroupDatabase(const QString &kbGUID);
 };
 
-#endif // WIZDATABASE_H
+#endif // API_APIWIZDATABASE_H

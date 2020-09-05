@@ -1,4 +1,4 @@
-#include "IWizHtmlEditorApp.h"
+#include "ApiWizHtmlEditorApp.h"
 #include "gui/documentviewer/WizDocumentWebView.h"
 #include "gui/documentviewer/WizDocumentView.h"
 
@@ -7,98 +7,98 @@
 #include "share/WizMisc.h"
 #include "sync/WizAvatarHost.h"
 
-IWizHtmlEditorApp::IWizHtmlEditorApp(WizDocumentWebView* webView, QObject *parent)
+ApiWizHtmlEditorApp::ApiWizHtmlEditorApp(WizDocumentWebView* webView, QObject *parent)
     : QObject(parent)
     , m_documentWebView(webView)
 {
 
 }
 
-QString IWizHtmlEditorApp::getUserGuid()
+QString ApiWizHtmlEditorApp::getUserGuid()
 {
     return m_documentWebView->getUserGuid();
 }
 
-QString IWizHtmlEditorApp::getUserAvatarFilePath()
+QString ApiWizHtmlEditorApp::getUserAvatarFilePath()
 {
     return m_documentWebView->getUserAvatarFilePath();
 }
 
-QString IWizHtmlEditorApp::getUserAlias()
+QString ApiWizHtmlEditorApp::getUserAlias()
 {
     return m_documentWebView->getUserAlias();
 }
 
-bool IWizHtmlEditorApp::isPersonalDocument()
+bool ApiWizHtmlEditorApp::isPersonalDocument()
 {
     return m_documentWebView->isPersonalDocument();
 }
 
-QString IWizHtmlEditorApp::getCurrentNoteHtml()
+QString ApiWizHtmlEditorApp::getCurrentNoteHtml()
 {
     return m_documentWebView->getCurrentNoteHtml();
 }
 
-bool IWizHtmlEditorApp::hasEditPermissionOnCurrentNote()
+bool ApiWizHtmlEditorApp::hasEditPermissionOnCurrentNote()
 {
     return m_documentWebView->hasEditPermissionOnCurrentNote();
 }
 
-void IWizHtmlEditorApp::changeCurrentDocumentType(const QString &strType)
+void ApiWizHtmlEditorApp::changeCurrentDocumentType(const QString &strType)
 {
     m_documentWebView->changeCurrentDocumentType(strType);
 }
 
-bool IWizHtmlEditorApp::checkListClickable()
+bool ApiWizHtmlEditorApp::checkListClickable()
 {
     return m_documentWebView->checkListClickable();
 }
 
-bool IWizHtmlEditorApp::shouldAddCustomCSS()
+bool ApiWizHtmlEditorApp::shouldAddCustomCSS()
 {
     return m_documentWebView->shouldAddCustomCSS();
 }
 
-bool IWizHtmlEditorApp::canRenderMarkdown()
+bool ApiWizHtmlEditorApp::canRenderMarkdown()
 {
     return m_documentWebView->canRenderMarkdown();
 }
 
-bool IWizHtmlEditorApp::canEditNote()
+bool ApiWizHtmlEditorApp::canEditNote()
 {
     return m_documentWebView->canEditNote();
 }
 
-QString IWizHtmlEditorApp::getLocalLanguage()
+QString ApiWizHtmlEditorApp::getLocalLanguage()
 {
     return m_documentWebView->getLocalLanguage();
 }
 
-void IWizHtmlEditorApp::OnSelectionChange(const QString& currentStyle)
+void ApiWizHtmlEditorApp::OnSelectionChange(const QString& currentStyle)
 {
     m_documentWebView->OnSelectionChange(currentStyle);
 }
 
-void IWizHtmlEditorApp::saveCurrentNote()
+void ApiWizHtmlEditorApp::saveCurrentNote()
 {
     m_documentWebView->saveCurrentNote();
 }
 
-void IWizHtmlEditorApp::setModified(bool b)
+void ApiWizHtmlEditorApp::setModified(bool b)
 {
     m_documentWebView->setModified(b);
 }
 
-void IWizHtmlEditorApp::onNoteLoadFinished()
+void ApiWizHtmlEditorApp::onNoteLoadFinished()
 {
     m_documentWebView->onNoteLoadFinished();
 }
 
-void IWizHtmlEditorApp::onReturn(){
+void ApiWizHtmlEditorApp::onReturn(){
     m_documentWebView->onReturn();
 }
 
-void IWizHtmlEditorApp::doPaste()
+void ApiWizHtmlEditorApp::doPaste()
 {
     m_documentWebView->doPaste();
 }

@@ -1,22 +1,22 @@
-#ifndef IWIZCATEGORYCTRL_H
-#define IWIZCATEGORYCTRL_H
+#ifndef API_APIWIZCATEGORYCTRL_H
+#define API_APIWIZCATEGORYCTRL_H
 
 #include <QObject>
 
 class WizFolder;
 class WizCategoryView;
 
-class IWizCategoryCtrl : public QObject
+class ApiWizCategoryCtrl : public QObject
 {
     Q_OBJECT
 private:
     WizCategoryView* m_categoryView;
 
 public:
-    IWizCategoryCtrl(WizCategoryView* cv, QObject* parent);
+    ApiWizCategoryCtrl(WizCategoryView* cv, QObject* parent);
 
     // for the present, just noly one api.
     Q_INVOKABLE WizFolder* SelectedFolder();
 };
 
-#endif // WIZCATEGORYCTRL_H
+#endif // API_APIWIZCATEGORYCTRL_H

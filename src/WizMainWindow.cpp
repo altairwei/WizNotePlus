@@ -102,11 +102,11 @@
 #include "WizCellButton.h"
 #include "WizFileImporter.h"
 
-#include "plugins/public_apis_object/IWizExplorerApp.h"
+#include "api/ApiWizExplorerApp.h"
 #include "jsplugin/JSPluginManager.h"
 #include "jsplugin/JSPluginSpec.h"
 #include "jsplugin/JSPlugin.h"
-#include "plugins/public_apis_server/PublicAPIsServer.h"
+#include "api/PublicAPIsServer.h"
 
 #include "gui/tabbrowser/WizWebsiteView.h"
 
@@ -158,7 +158,7 @@ WizMainWindow::WizMainWindow(WizDatabaseManager& dbMgr, QWidget *parent)
     , m_mobileFileReceiver(nullptr)
     , m_bQuickDownloadMessageEnable(false)
     , m_quiting(false)
-    , m_IWizExplorerApp(new IWizExplorerApp(this, this))
+    , m_IWizExplorerApp(new ApiWizExplorerApp(this, this))
     , m_extFileWatcher(new QFileSystemWatcher)
 {
 #ifdef QT_DEBUG
@@ -2265,7 +2265,7 @@ WizIAPDialog*WizMainWindow::iapDialog()
 }
 
 /**
- * @brief Get IWizExplorerApp for the main window.
+ * @brief Get ApiWizExplorerApp for the main window.
  * @return
  */
 QObject* WizMainWindow::publicAPIsObject()

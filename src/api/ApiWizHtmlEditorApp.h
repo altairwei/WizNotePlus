@@ -1,11 +1,11 @@
-#ifndef IWIZHTMLEDITORAPP_H
-#define IWIZHTMLEDITORAPP_H
+#ifndef API_APIWIZHTMLEDITORAPP_H
+#define API_APIWIZHTMLEDITORAPP_H
 
 #include <QObject>
 
 class WizDocumentWebView;
 
-class IWizHtmlEditorApp : public QObject
+class ApiWizHtmlEditorApp : public QObject
 {
     Q_OBJECT
 
@@ -13,7 +13,7 @@ private:
     WizDocumentWebView* m_documentWebView;
 
 public:
-    IWizHtmlEditorApp(WizDocumentWebView* webView, QObject *parent);
+    ApiWizHtmlEditorApp(WizDocumentWebView* webView, QObject *parent);
 
     // WizHtmlEditor Properties:
     //
@@ -62,4 +62,4 @@ signals:
     void hasEditPermissionOnCurrentNoteChanged();
 };
 
-#endif // WIZHTMLEDITORAPP_H
+#endif // API_APIWIZHTMLEDITORAPP_H

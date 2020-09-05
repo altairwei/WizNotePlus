@@ -1,4 +1,4 @@
-#include "IWizDocumentListCtrl.h"
+#include "ApiWizDocumentListCtrl.h"
 
 #include <QVariant>
 #include <QDebug>
@@ -6,7 +6,7 @@
 #include "WizDocumentListView.h"
 #include "share/WizDatabase.h"
 
-IWizDocumentListCtrl::IWizDocumentListCtrl(WizDocumentListView* docListView, QObject* parent)
+ApiWizDocumentListCtrl::ApiWizDocumentListCtrl(WizDocumentListView* docListView, QObject* parent)
     : QObject(parent)
     , m_documentListView(docListView)
 {
@@ -18,7 +18,7 @@ IWizDocumentListCtrl::IWizDocumentListCtrl(WizDocumentListView* docListView, QOb
  * 
  * @param documentGUIDs 
  */
-void IWizDocumentListCtrl::SetDocuments(QStringList documentGUIDs)
+void ApiWizDocumentListCtrl::SetDocuments(QStringList documentGUIDs)
 {
     if (documentGUIDs.isEmpty())
         return;
