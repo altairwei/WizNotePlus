@@ -144,8 +144,17 @@ set(wiznote_SOURCES
     gui/tabbrowser/WebEngineWindow.cpp
     gui/tabbrowser/WizWebsiteView.cpp
 
-    gui/categoryviewer/WizCategoryView.cpp 
+    gui/categoryviewer/WizCategoryView.cpp
+    gui/categoryviewer/WizCategoryViewItemBase.cpp
+    gui/categoryviewer/WizCategoryViewSectionItem.cpp
+    gui/categoryviewer/WizCategoryViewMessageItem.cpp
+    gui/categoryviewer/WizCategoryViewShortcutItem.cpp
+    gui/categoryviewer/WizCategoryViewSearchItem.cpp
+    gui/categoryviewer/WizCategoryViewFolderItem.cpp
+    gui/categoryviewer/WizCategoryViewTagItem.cpp
+    gui/categoryviewer/WizCategoryViewGroupItem.cpp
     gui/categoryviewer/WizCategoryViewItem.cpp
+
     WizDevToolsDialog.cpp
     WizDocumentListView.cpp
     WizDocumentListViewItem.cpp
@@ -302,8 +311,18 @@ set(wiznote_HEADERS
     WizDef.h
     WizActions.h
     WizNoteStyle.h
+
     gui/categoryviewer/WizCategoryView.h
+    gui/categoryviewer/WizCategoryViewItemBase.h
+    gui/categoryviewer/WizCategoryViewSectionItem.h
+    gui/categoryviewer/WizCategoryViewMessageItem.h
+    gui/categoryviewer/WizCategoryViewShortcutItem.h
+    gui/categoryviewer/WizCategoryViewSearchItem.h
+    gui/categoryviewer/WizCategoryViewFolderItem.h
+    gui/categoryviewer/WizCategoryViewTagItem.h
+    gui/categoryviewer/WizCategoryViewGroupItem.h
     gui/categoryviewer/WizCategoryViewItem.h
+
     WizDevToolsDialog.h
     WizDocumentListView.h
     WizDocumentListViewItem.h
@@ -389,7 +408,7 @@ set(wiznote_HEADERS
     widgets/WizLocalProgressWebView.h
     widgets/WizCrashReportDialog.h
     widgets/WizCustomToolBar.h
-    widgets/WizTipsWidget.cpp
+    widgets/WizTipsWidget.h
     widgets/WizTemplatePurchaseDialog.h
     widgets/WizExecutingActionDialog.h
     widgets/WizUserServiceExprDialog.h
