@@ -113,7 +113,7 @@ void WizDocumentWebViewPage::triggerAction(QWebEnginePage::WebAction typeAction,
         if (m_engineView->onPasteCommand())
             return;
     } else if (typeAction == QWebEnginePage::Undo || typeAction == QWebEnginePage::Redo) {
-        //FIXME: 在QT5.4.2之后无法禁止webpage的快捷键，webpage的快捷键会覆盖menubar上的
+        //FIXME: cannot forbid webpage short cutter key after QT5.4.2, webpage short cutter will override menubar short cutter
         Q_EMIT actionTriggered(typeAction);
         return;
     }
@@ -268,8 +268,7 @@ void WizDocumentWebView::inputMethodEvent(QInputMethodEvent* event)
 
 #ifdef Q_OS_MAC
     /*
-    ///暂时注释代码，移动输入光标会导致极高的CPU占用率，导致输入卡顿。
-
+    /// comment below code, for move cursor will cause extrem high cpu, made input stop
     //int nLength = 0;
     int nOffset = 0;
     for (int i = 0; i < event->attributes().size(); i++) {
@@ -327,7 +326,7 @@ void WizDocumentWebView::keyPressEvent(QKeyEvent* event)
 //    {
 //        return;
 //    }
-    //FIXME: QT5.4.2之后无法触发全局的保存按钮
+    //FIXME: cannot use global save button after QT5.4.2 
     else if (event->key() == Qt::Key_V && event->modifiers() == Qt::ControlModifier)
     {
         WizGetAnalyzer().logAction("paste");
@@ -397,8 +396,8 @@ void WizDocumentWebView::focusOutEvent(QFocusEvent *event)
     }
     else if (m_ignoreActiveWindowEvent && event->reason() == Qt::ActiveWindowFocusReason)
     {
-        //NOTE:显示CWizTipsWidget的时候会造成编辑器失去焦点，进而导致toolbar关联的tips消失。此处通过
-        //忽略tips显示时产生的ActiveWindowFocusReason来进行tips的显示
+        //NOTE:when display CWizTipsWidget will let editor lose focus, then tips on toolbar disappear
+        // use ignore produced ActiveWindowFocusReason when display tips to display tips
         return;
     }
 
@@ -407,7 +406,7 @@ void WizDocumentWebView::focusOutEvent(QFocusEvent *event)
 }
 
 /**
- * @brief 处理右键菜单事件
+ * @brief handle right menu event
  * 
  * @param event 
  */
@@ -423,7 +422,7 @@ void WizDocumentWebView::contextMenuEvent(QContextMenuEvent *event)
 }
 
 /**
- * @brief 生成阅读模式下的右键菜单
+ * @brief generate right menu under read pattern
  * 
  */
 void WizDocumentWebView::createReadModeContextMenu(QContextMenuEvent *event)
@@ -538,8 +537,8 @@ void WizDocumentWebView::dragMoveEvent(QDragMoveEvent* event)
 
 void WizDocumentWebView::onActionTriggered(QWebEnginePage::WebAction act)
 {
-    //在QT5.4.2之后webpage会覆盖menubar的快捷键，且无法禁止。某些操作需要由编辑器进行操作(undo, redo)，
-   //需要webpage将操作反馈给webview来执行编辑器操作
+    // webpage will override menubar short cutter after qt5.4.2, and cannot avoid this action, some operation (undo, redo et.) need operat by editer
+    // need webpage feedback operation to webview to operate
     if (act == QWebEnginePage::Paste)
     {
         tryResetTitle();
@@ -601,7 +600,7 @@ void WizDocumentWebView::dropEvent(QDropEvent* event)
 //            QImageReader reader(strFileName);
             QFileInfo info(strFileName);
 
-            //FIXME: //TODO:  应该和附件列表中的添加附件合并
+            //FIXME: //TODO: should merged with add attachment in attachment list
             if (info.size() == 0)
             {
                 WizMessageBox::warning(nullptr , tr("Info"), tr("Can not add a 0 bit size file as attachment! File name : ' %1 '").arg(strFileName));
@@ -748,7 +747,7 @@ void WizDocumentWebView::viewDocument(const WIZDOCUMENTDATA& doc, WizEditorMode 
     if (!m_docLoadThread)
         return;
     // set data
-    //FIXME: 通过创建时间的长短来判断是否为新文档根本就不稳健!!
+    // FIXME: not very well to decide a file is new through create time
     qint64 seconds = doc.tCreated.secsTo(QDateTime::currentDateTime());
     m_bNewNote = (seconds >= 0 && seconds <= 1) ? true : false;
     m_bNewNoteTitleInited = m_bNewNote ? false : true;
@@ -806,13 +805,13 @@ void WizDocumentWebView::clearExtEditorTask()
 }
 
 /**
- * @brief 在外置编辑器中浏览和编辑文档
+ *  @brief view and edit in outer edit
  *
- * 编辑状态下不允许使用外置编辑器
+ *  cannot use outer edit under edittable status
  */
 void WizDocumentWebView::viewDocumentInExternalEditor(const WizExternalEditorData &editorData)
 {
-    // 准备笔记数据
+    // prepare note data
     WIZDOCUMENTDATA docData;
     WizDatabase& db = m_dbMgr.db(view()->note().strKbGUID);
     if (!db.documentFromGuid(view()->note().strGUID, docData))
@@ -824,7 +823,7 @@ void WizDocumentWebView::viewDocumentInExternalEditor(const WizExternalEditorDat
 }
 
 void WizDocumentWebView::loadDocumentToExternalEditor(const WIZDOCUMENTDATA &docData, const WizExternalEditorData &editorData) {
-    // 准备文件与目录
+    // prepare file and directory
     QString strFileName = m_mapFile.value(docData.strGUID);
     QDir noteTempDir = QFileInfo(strFileName).absoluteDir();
     CString strTitle = view()->note().strTitle;
@@ -915,7 +914,7 @@ void WizDocumentWebView::editorFocus()
 }
 
 /**
- * @brief 打开原生富文本编辑器
+ * @brief open native rich text edit
  * @param enalbe
  */
 void WizDocumentWebView::enableEditor(bool enalbe)
@@ -958,7 +957,7 @@ void WizDocumentWebView::on_insertCommentToNote_request(const QString& docGUID, 
         return;
     }
     //
-    //应该优化，对于模版类型的笔记，插入位置不应该是最前面
+    // beblow should optimize, for template style note, insert position should not be the front
     if (isEditing())
     {
         QString htmlBody = "<div>" + comment + "</div><hr>";
@@ -1087,7 +1086,7 @@ void WizDocumentWebView::getMailSender(std::function<void(QString)> callback)
 }
 
 ///*
-// * 是否添加用户自定义的样式，目前有字体类型、字体大小、背景颜色等信息等信息
+// * judge should add user self define style, current has font style, font size, bg color et.
 // */
 //bool CWizDocumentWebView::shouldAddUserDefaultCSS()
 //{
@@ -1254,7 +1253,7 @@ void WizDocumentWebView::onEditorLoadFinished(bool ok)
 }
 
 /**
- * @brief 处理笔记页面超链接点击事件
+ * @brief handle click event on note page hyperlink
  * @param url
  * @param navigationType
  * @param isMainFrame
@@ -1331,7 +1330,7 @@ void WizDocumentWebView::viewDocumentByUrl(const QString& strUrl)
 }
 
 /**
- * @brief 通过笔记页面内的wiz协议链接打开附件
+ * @brief open attachment through wiz protocol on note page
  * @param strKbGUID
  * @param strUrl
  */
@@ -1354,10 +1353,10 @@ void getHtmlBodyStyle(const QString& strHtml, QString& strBodyStyle)
 }
 
 /**
- * @brief 保存编辑中的笔记
- * @param data 笔记数据
- * @param force 是否强制编辑
- * @param callback 保存后的回调函数，传入是否保存成功
+ * @brief save editting note
+ * @param data note data
+ * @param force weather edit force
+ * @param callback callback function after save, 
  */
 void WizDocumentWebView::saveEditingViewDocument(const WIZDOCUMENTDATA &data, bool force, std::function<void(const QVariant &)> callback)
 {
@@ -1378,12 +1377,12 @@ void WizDocumentWebView::saveEditingViewDocument(const WIZDOCUMENTDATA &data, bo
         {
             if (!modified)
             {
-                // 不强制保存且没有发生变化时返回成功
+                // return sucess if not force save and no change 
                 callback(QVariant(true));
                 return;
             }
         }
-        // 重置保存标记？
+        // reset save flag?
         setModified(false);
         //
         QString strFileName = m_mapFile.value(data.strGUID);
@@ -1425,10 +1424,11 @@ void WizDocumentWebView::saveEditingViewDocument(const WIZDOCUMENTDATA &data, bo
 }
 
 /**
- * @brief 保存阅读模式下的笔记
- * @param data 笔记数据
- * @param force 是否强制保存
- * @param callback 失败或成功后的回调
+ * @brief save note under read pattern
+ * @param data note data
+ * @param force save force
+ * @param callback callback after failure or sucess 
+
  */
 void WizDocumentWebView::saveReadingViewDocument(const WIZDOCUMENTDATA &data, bool force, std::function<void(const QVariant &)> callback)
 {
@@ -1437,13 +1437,13 @@ void WizDocumentWebView::saveReadingViewDocument(const WIZDOCUMENTDATA &data, bo
 
     QString strScript = QString("WizReader.closeDocument();");
     page()->runJavaScript(strScript, [=](const QVariant& vRet) {
-        // 获得返回的笔记内容
+        // get return note content
         QString strHtml = vRet.toString();
-        // 判断是否有修改内容？
+        // has made change?
         if (!strHtml.isEmpty())
         {
             if (!doc.strGUID.isEmpty())
-            {   // 获得储存的文件名
+            {   // get save file name
                 QString strFileName = m_mapFile.value(doc.strGUID);
                 if (!strFileName.isEmpty())
                 {
@@ -1513,7 +1513,7 @@ void WizDocumentWebView::getAllEditorScriptAndStyleFileName(std::map<QString, QS
     //
     /*
      *
-     * 渐变式加载笔记，暂时不需要
+     * load note gradually, not need now
     QString tempCss = QUrl::fromLocalFile(strHtmlEditorPath + "tempeditorstyle.css").toString();
     QString tempCssLoadOnly = QUrl::fromLocalFile(strHtmlEditorPath + "tempeditorstyle_loadonly.css").toString();
     //
@@ -1595,7 +1595,7 @@ void WizDocumentWebView::insertScriptAndStyleCore(QString& strHtml, const std::m
 }
 
 /**
- * @brief 从笔记文件读取文本、插入样式表、插入富文本编辑器脚本，最后将修改好的HTML加载入页面
+ * @brief read text and insert style table and insert rich editter script from note file, then load changed html to page
  * @param editorMode
  */
 void WizDocumentWebView::loadDocumentInWeb(WizEditorMode editorMode)
@@ -1649,7 +1649,7 @@ void WizDocumentWebView::onNoteLoadFinished()
 }
 
 /**
- * @brief 设置文档编辑状态
+ * @brief set editor state
  * @param editorMode
  */
 void WizDocumentWebView::setEditorMode(WizEditorMode editorMode)
@@ -1693,28 +1693,28 @@ void WizDocumentWebView::setEditorMode(WizEditorMode editorMode)
 }
 
 /**
- * @brief 保存笔记
- * @param data 笔记数据
- * @param force 是否强制保存
- * @param callback 失败后的回调函数
+ * @brief save note
+ * @param data note data
+ * @param force save force
+ * @param callback callback if fail
  */
 void WizDocumentWebView::trySaveDocument(const WIZDOCUMENTDATA& data, bool force, std::function<void(const QVariant &)> callback)
 {
     if (!view()->noteLoaded())  //encrypting note & has been loaded
     {
-        // 失败后的回调
+        // callback after fail
         callback(QVariant(false));
         return;
     }
 
     if (m_currentEditorMode == modeEditor)
     {
-        // 保存编辑模式下的笔记
+        // save note under editable pattern
         saveEditingViewDocument(data, force, callback);
     }
     else
     {
-        // 保存阅读模式下的笔记
+        // save note under read pattern
         saveReadingViewDocument(data, force, callback);
     }
 }
@@ -2310,12 +2310,12 @@ void WizDocumentWebView::saveAsPDF()
 
 void WizDocumentWebView::saveAsMarkdown()
 {
-    // 准备文件与目录
+    // prepare file and dir
     CString strTitle = view()->note().strTitle;
     WizMakeValidFileNameNoPath(strTitle);
     static QString strInitPath = QDir::homePath();
     QString strInitFileName = Utils::WizMisc::addBackslash2(strInitPath) + strTitle;
-    // 目的文件地址
+    // destination file address
     QString strIndexFileName = QFileDialog::getSaveFileName(this, QString(),
                                                        strInitFileName,
                                                        tr("Markdown Files (*.md)"));
@@ -2332,14 +2332,14 @@ void WizDocumentWebView::saveAsMarkdown(QString& strIndexFileName, bool bSaveRes
     {
         ::WizDeleteFile(strIndexFileName);
     }
-    // 准备笔记数据
+    // prepare note data
     const WIZDOCUMENTDATA& doc = view()->note();
     WizDatabase& db = m_dbMgr.db(doc.strKbGUID);
     // 导出HTML和资源文件到目标文件地址
     if (!db.exportToHtmlFile(doc, strIndexFileName)) {
         return;
     }
-    // 因为存在内置的表格，todo，图片，导致无法正常输出成标准的markdown
+    // cannot be standard markdown for inner contanined table, todo, picture
     page()->runJavaScript(QString("WizEditor.getMarkdownSrc({unEscapeHtml: true});"), [=](const QVariant& vModified){
         //
         QString source = vModified.toString();
@@ -2375,14 +2375,14 @@ void WizDocumentWebView::saveAsPlainMarkdown(QString& destFileName, std::functio
 
 void WizDocumentWebView::saveAsPlainText(QString& destFileName, std::function<void(QString fileName)> callback)
 {
-    // 准备笔记数据
+    // prepare note data
     WIZDOCUMENTDATA docData;
     WizDatabase& db = m_dbMgr.db(view()->note().strKbGUID);
     if (!db.documentFromGuid(view()->note().strGUID, docData))
         return;
     trySaveDocument(docData, false, [=](const QVariant&){
-        //FIXME: 无法保证笔记临时文件是最新的
-        // 确保目的为止没有文件
+        //FIXME: cannot asure note temp file is newest
+        // make sure current donot have file
         if (destFileName.isEmpty())
             return;
         //
@@ -2390,7 +2390,7 @@ void WizDocumentWebView::saveAsPlainText(QString& destFileName, std::function<vo
         {
             ::WizDeleteFile(destFileName);
         }
-        // 读取HTML
+        // read html
         QString strHtml;
         QString strFileName = m_mapFile.value(docData.strGUID);
         bool ret = WizLoadUnicodeTextFromFile(strFileName, strHtml);
@@ -2398,12 +2398,12 @@ void WizDocumentWebView::saveAsPlainText(QString& destFileName, std::function<vo
         {
             return;
         }
-        // 获取纯文本
+        // get pure text
         QTextDocument doc;
         doc.setHtml(strHtml);
         QString strText = doc.toPlainText(); //auto deHtmlEscaped
-        strText.replace("&nbsp", " "); // 旧版本中存在一些不规范的&nbsp无法被QTextDocument跳转
-        // 写入文件
+        strText.replace("&nbsp", " "); // older version exsits unnomarlly &ngsp, so cannot be jump by QTextDocument
+        // write file 
         if(WizSaveUnicodeTextToUtf8File(destFileName, strText, false))
         {
             callback(destFileName);
@@ -2412,7 +2412,7 @@ void WizDocumentWebView::saveAsPlainText(QString& destFileName, std::function<vo
 }
 
 /**
- * @brief 将笔记另存为HTML，包括资源文件
+ * @brief save note be html, include resource file
  */
 void WizDocumentWebView::saveAsHtml()
 {
@@ -2461,7 +2461,7 @@ void WizDocumentWebView::saveAsHtml()
 }
 
 /**
- * @brief 将当前笔记另存为渲染后的HTML，没有资源文件。
+ * @brief save note be rendered html, exclude resource file
  * @param destFileName
  * @param callback
  */
@@ -2473,7 +2473,7 @@ void WizDocumentWebView::saveAsRenderedHtml(QString& destFileName, std::function
     //          id="wiz_tmp_style_reader_block_scroll", id="wiz_tmp_style_code_common", name="wiz_tmp_editor_style"
     //          id="wiz_tmp_style_code_reader"
     //Tags: wiz_tmp_tag
-    // 现在不需要去除这些东西了，因为本就要渲染后的页面
+    // not need remove those staff, for need rendered html page
     page()->toHtml([=](const QString& strHtml){
         //
         if(::WizSaveUnicodeTextToUtf8File(destFileName, strHtml, false))
@@ -2482,8 +2482,8 @@ void WizDocumentWebView::saveAsRenderedHtml(QString& destFileName, std::function
 }
 
 /**
- * @brief 判断笔记内容是否修改
- * @param callback 获取是否保存成功信息的回调函数
+ * @brief is note content modified
+ * @param callback callback to judge wether saved succefully
  */
 void WizDocumentWebView::isModified(std::function<void(bool modified)> callback)
 {
@@ -2492,7 +2492,7 @@ void WizDocumentWebView::isModified(std::function<void(bool modified)> callback)
         callback(true);
         return;
     }
-    // 通过JS原生编辑器函数判断文档是否改变
+    // judge modify through native js edit function
     page()->runJavaScript(QString("WizEditor.isModified();"), [=](const QVariant& vModified){
         //
         callback(vModified.toBool());
@@ -2501,8 +2501,8 @@ void WizDocumentWebView::isModified(std::function<void(bool modified)> callback)
 }
 
 /**
- * @brief 设置该笔记内容发生改变
- * @param b 是否发生改变
+ * @brief set note content changed
+ * @param b changed?
  */
 void WizDocumentWebView::setModified(bool b)
 {
@@ -2617,7 +2617,7 @@ bool WizDocumentWebView::checkListClickable()
 bool WizDocumentWebView::shouldAddCustomCSS()
 {
     const WIZDOCUMENTDATA& data = view()->note();
-    // 通过网页剪辑的笔记不添加自定义的样式
+    // note from web page canot add self define style 
     bool styledNote = data.strURL.startsWith("http");
     if (styledNote)
         return false;
@@ -2653,7 +2653,7 @@ bool WizDocumentWebView::canEditNote()
     return view()->isEditing();
 }
 
-//编辑器初始化时使用
+// used in editor initialize
 QString WizDocumentWebView::getLocalLanguage()
 {
     QLocale locale;
