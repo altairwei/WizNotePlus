@@ -15,7 +15,7 @@
 #include "WizDef.h"
 #include "share/WizObject.h"
 #include "share/WizWebEngineView.h"
-#include "plugins/public_apis_object/IWizHtmlEditorApp.h"
+#include "api/ApiWizHtmlEditorApp.h"
 
 
 class WizObjectDownloaderHost;
@@ -317,7 +317,7 @@ private:
     QPointer<WizEditorInsertLinkForm> m_editorInsertLinkForm;
 
     WizSearchReplaceWidget* m_searchReplaceWidget;
-    IWizHtmlEditorApp* m_htmlEditorApp;
+    ApiWizHtmlEditorApp* m_htmlEditorApp;
 
     QList<WizExternalEditorData> m_extEditorTask;
 
@@ -444,7 +444,7 @@ private:
 //    bool shouldAddUserDefaultCSS();
 
     friend class WizDocumentWebViewPage;
-    friend class IWizHtmlEditorApp;
+    friend class ApiWizHtmlEditorApp;
 };
 
 

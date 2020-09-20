@@ -73,7 +73,7 @@ class WizDocumentWebViewSaverThread;
 class WizSingleDocumentViewDelegate;
 class QWebEngineView;
 
-class IWizExplorerApp;
+class ApiWizExplorerApp;
 class PublicAPIsServer;
 
 #ifdef Q_OS_MAC
@@ -125,7 +125,6 @@ protected:
     void mouseReleaseEvent(QMouseEvent* event);
     void changeEvent(QEvent *event);
     void moveEvent(QMoveEvent* ev);
-    void keyPressEvent(QKeyEvent* ev);
 
 private:
     WizDatabaseManager& m_dbMgr;
@@ -205,7 +204,7 @@ private:
     //
     WIZDOCUMENTDATA m_documentForEditing;
 
-    IWizExplorerApp* m_IWizExplorerApp;
+    ApiWizExplorerApp* m_IWizExplorerApp;
     //
     QFileSystemWatcher* m_extFileWatcher;
     QMap<QString, WizExternalEditTask> m_watchedFileData;

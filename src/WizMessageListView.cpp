@@ -39,8 +39,8 @@
 #include "core/WizAccountManager.h"
 
 #include "WizNoteStyle.h"
-#include "WizCategoryView.h"
-#include "WizCategoryViewItem.h"
+#include "gui/categoryviewer/WizCategoryView.h"
+#include "gui/categoryviewer/WizCategoryViewItem.h"
 #include "WizMainWindow.h"
 
 #define ALLMENBERS QObject::tr("All Members")

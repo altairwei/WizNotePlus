@@ -9,6 +9,7 @@
 #include <QWebEngineView>
 #include <QWebEnginePage>
 #include <QWebEngineSettings>
+#include <QAction>
 
 #include "share/WizGlobal.h"
 
@@ -39,6 +40,7 @@
 #include "share/WizThreads.h"
 #include "share/WizWebEngineView.h"
 #include "share/WizEnc.h"
+#include "share/WizMisc.h"
 
 
 #define DOCUMENT_STATUS_NOSTATUS            0x0000
@@ -209,6 +211,21 @@ WizDocumentView::WizDocumentView(WizExplorerApp& app, QWidget* parent)
     connect(checkThread, SIGNAL(finished()), m_editStatusChecker, SLOT(clearTimers()));
     m_editStatusChecker->moveToThread(checkThread);
     checkThread->start();
+
+    m_locateAction = new QAction(tr("Locate this document in category"), this);
+    connect(m_locateAction, &QAction::triggered, [this] {
+        WizMainWindow *mainWindow = WizMainWindow::instance();
+        if (mainWindow)
+        {
+            mainWindow->locateDocument(
+                this->note().strKbGUID, this->note().strGUID);
+        }
+    });
+
+    m_copyInternalLinkAction = new QAction(tr("Copy internal link"), this);
+    connect(m_copyInternalLinkAction, &QAction::triggered, [this] {
+        WizCopyNoteAsInternalLink(this->note());
+    });
 }
 
 WizDocumentView::~WizDocumentView()
@@ -269,6 +286,15 @@ void WizDocumentView::RequestClose()
     // We can not runJavaScript after RequestClose.
     waitForSave();
     m_web->triggerPageAction(QWebEnginePage::RequestClose);
+}
+
+QList<QAction *> WizDocumentView::TabContextMenuActions()
+{
+    QList<QAction *> actions;
+    actions.append(m_locateAction);
+    actions.append(m_copyInternalLinkAction);
+
+    return actions;
 }
 
 void WizDocumentView::handleWindowCloseRequested()

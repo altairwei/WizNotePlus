@@ -66,7 +66,7 @@ WIZACTION* WizActions::actionsData()
         {"actionPreference",                    QObject::tr("Preference..."),               "",                                     QKeySequence()},
         {"actionAbout",                         QObject::tr("About WizNote..."),            "",                                     QKeySequence()},
         {"actionExit",                          QObject::tr("Exit"),                        "",                                     QKeySequence("Ctrl+Q")},
-        {"actionClose",                         QObject::tr("Close"),                       "",                                     QKeySequence("Ctrl+W")},
+        {"actionClose",                         QObject::tr("Close"),                       "",                                     QKeySequence()},
         {"actionLogout",                        QObject::tr("Logout..."),                   "",                                     QKeySequence()},
         {WIZACTION_GLOBAL_SYNC,                 QObject::tr("Sync"),                        "",                                     QKeySequence()},
         {WIZACTION_GLOBAL_NEW_DOCUMENT,         QObject::tr("New Note"),                    "",                                     QKeySequence("Ctrl+N")},
@@ -98,7 +98,7 @@ WIZACTION* WizActions::actionsData()
         {WIZACTION_EDITOR_SELECT_ALL,           QObject::tr("Select All"),                  "",                                     QKeySequence()},
 
         // view
-        {WIZACTION_GLOBAL_TOGGLE_CATEGORY,      QObject::tr("Hide Sidebar"),                QObject::tr("Show Sidebar"),            QKeySequence("Alt+Ctrl+S")},
+        {WIZACTION_GLOBAL_TOGGLE_CATEGORY,      QObject::tr("Hide Sidebar"),                QObject::tr("Show Sidebar"),            QKeySequence("F3")},
 #ifdef Q_OS_MAC
         {WIZACTION_GLOBAL_CLIENT_FULLSCREEN,    QObject::tr("Enter Client Fullscreen"),     QObject::tr("Leave Client Fullscreen"), QKeySequence("Ctrl+Meta+F")},
         {WIZACTION_GLOBAL_TOGGLE_FULLSCREEN,    QObject::tr("Enter Fullscreen"),            QObject::tr("Leave Fullscreen"),        QKeySequence("Shift+Meta+F")},

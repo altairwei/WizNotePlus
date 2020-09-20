@@ -133,9 +133,9 @@ set(wiznote_SOURCES
     jsplugin/JSPluginSelectorWindow.cpp
     jsplugin/JSPluginHtmlDialog.cpp
 
-    plugins/public_apis_server/PublicAPIsServer.cpp
-    plugins/public_apis_server/WebSocketClientWrapper.cpp
-    plugins/public_apis_server/WebSocketTransport.cpp
+    api/PublicAPIsServer.cpp
+    api/WebSocketClientWrapper.cpp
+    api/WebSocketTransport.cpp
 
     gui/tabbrowser/WizMainTabBrowser.cpp
     gui/tabbrowser/AbstractTabPage.cpp
@@ -144,8 +144,19 @@ set(wiznote_SOURCES
     gui/tabbrowser/WebEngineWindow.cpp
     gui/tabbrowser/WizWebsiteView.cpp
 
-    WizCategoryView.cpp 
-    WizCategoryViewItem.cpp
+    gui/categoryviewer/WizCategoryView.cpp
+    gui/categoryviewer/WizCategoryViewItemBase.cpp
+    gui/categoryviewer/WizCategoryViewSectionItem.cpp
+    gui/categoryviewer/WizCategoryViewMessageItem.cpp
+    gui/categoryviewer/WizCategoryViewShortcutItem.cpp
+    gui/categoryviewer/WizCategoryViewSearchItem.cpp
+    gui/categoryviewer/WizCategoryViewFolderItem.cpp
+    gui/categoryviewer/WizCategoryViewTagItem.cpp
+    gui/categoryviewer/WizCategoryViewGroupItem.cpp
+    gui/categoryviewer/WizCategoryViewItem.cpp
+    gui/categoryviewer/WizFolderView.cpp
+    gui/categoryviewer/WizFolderSelector.cpp
+
     WizDevToolsDialog.cpp
     WizDocumentListView.cpp
     WizDocumentListViewItem.cpp
@@ -184,9 +195,7 @@ set(wiznote_SOURCES
     WizUpgrade.cpp
     WizButton.cpp
     WizFileImporter.cpp
-    WizFolderSelector.cpp
     WizProgressDialog.cpp
-    WizFolderView.cpp
     WizDocumentSelectionView.cpp
     WizDocumentTransitionView.cpp
     WizPopupButton.cpp
@@ -211,12 +220,12 @@ set(wiznote_SOURCES
     WizInitBizCertDialog.cpp
     share/WizDocumentStyle.cpp
 
-    plugins/public_apis_object/IWizHtmlEditorApp.cpp
-    plugins/public_apis_object/IWizExplorerWindow.cpp
-    plugins/public_apis_object/IWizCategoryCtrl.cpp
-    plugins/public_apis_object/IWizDocumentListCtrl.cpp
-    plugins/public_apis_object/IWizDatabase.cpp
-    plugins/public_apis_object/IWizExplorerApp.cpp
+    api/ApiWizHtmlEditorApp.cpp
+    api/ApiWizExplorerWindow.cpp
+    api/ApiWizCategoryCtrl.cpp
+    api/ApiWizDocumentListCtrl.cpp
+    api/ApiWizDatabase.cpp
+    api/ApiWizExplorerApp.cpp
 )
 
 set(wiznote_HEADERS
@@ -288,9 +297,9 @@ set(wiznote_HEADERS
     jsplugin/JSPluginSelectorWindow.h
     jsplugin/JSPluginHtmlDialog.h
 
-    plugins/public_apis_server/PublicAPIsServer.h
-    plugins/public_apis_server/WebSocketClientWrapper.h
-    plugins/public_apis_server/WebSocketTransport.h
+    api/PublicAPIsServer.h
+    api/WebSocketClientWrapper.h
+    api/WebSocketTransport.h
 
     gui/tabbrowser/WizMainTabBrowser.h
     gui/tabbrowser/AbstractTabPage.h
@@ -302,8 +311,20 @@ set(wiznote_HEADERS
     WizDef.h
     WizActions.h
     WizNoteStyle.h
-    WizCategoryView.h
-    WizCategoryViewItem.h
+
+    gui/categoryviewer/WizCategoryView.h
+    gui/categoryviewer/WizCategoryViewItemBase.h
+    gui/categoryviewer/WizCategoryViewSectionItem.h
+    gui/categoryviewer/WizCategoryViewMessageItem.h
+    gui/categoryviewer/WizCategoryViewShortcutItem.h
+    gui/categoryviewer/WizCategoryViewSearchItem.h
+    gui/categoryviewer/WizCategoryViewFolderItem.h
+    gui/categoryviewer/WizCategoryViewTagItem.h
+    gui/categoryviewer/WizCategoryViewGroupItem.h
+    gui/categoryviewer/WizCategoryViewItem.h
+    gui/categoryviewer/WizFolderView.h
+    gui/categoryviewer/WizFolderSelector.h
+
     WizDevToolsDialog.h
     WizDocumentListView.h
     WizDocumentListViewItem.h
@@ -345,9 +366,7 @@ set(wiznote_HEADERS
     WizDocumentTransitionView.h
     WizButton.h
     WizFileImporter.h
-    WizFolderSelector.h
     WizProgressDialog.h
-    WizFolderView.h
     WizDocumentSelectionView.h
     WizUserVerifyDialog.h
     utils/WizLogger.h
@@ -389,7 +408,7 @@ set(wiznote_HEADERS
     widgets/WizLocalProgressWebView.h
     widgets/WizCrashReportDialog.h
     widgets/WizCustomToolBar.h
-    widgets/WizTipsWidget.cpp
+    widgets/WizTipsWidget.h
     widgets/WizTemplatePurchaseDialog.h
     widgets/WizExecutingActionDialog.h
     widgets/WizUserServiceExprDialog.h
@@ -403,12 +422,12 @@ set(wiznote_HEADERS
     share/WizDocumentStyle.h
     WizCombineNotesDialog.h
 
-    plugins/public_apis_object/IWizHtmlEditorApp.h
-    plugins/public_apis_object/IWizExplorerWindow.h
-    plugins/public_apis_object/IWizCategoryCtrl.h
-    plugins/public_apis_object/IWizDocumentListCtrl.h
-    plugins/public_apis_object/IWizDatabase.h
-    plugins/public_apis_object/IWizExplorerApp.h
+    api/ApiWizHtmlEditorApp.h
+    api/ApiWizExplorerWindow.h
+    api/ApiWizCategoryCtrl.h
+    api/ApiWizDocumentListCtrl.h
+    api/ApiWizDatabase.h
+    api/ApiWizExplorerApp.h
 )
 
 set(wiznote_FORMS

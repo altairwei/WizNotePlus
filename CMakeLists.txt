@@ -87,6 +87,7 @@ if(NOT CONAN_INSTALL_MANUALLY)
         INSTALL_FOLDER ${CMAKE_BINARY_DIR}
         BUILD_TYPE ${CMAKE_BUILD_TYPE}
         BUILD missing
+        OPTIONS qtdir=${CMAKE_PREFIX_PATH}
     )
     include(${CMAKE_BINARY_DIR}/conan_paths.cmake)
 endif()
