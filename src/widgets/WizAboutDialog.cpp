@@ -36,7 +36,7 @@ WizAboutDialog::WizAboutDialog(QWidget *parent)
     QString versionInfo = QString(
         tr("<span style='font-size:11px'>Version: %1</span><br/>")).arg(WIZ_CLIENT_VERSION);
     QString devInfo = QString(
-        tr("<span style='font-size:11px'>Development Stage: %1.%2</span><br/>").arg(WIZ_DEV_STAGE, WIZ_DEV_STAGE_VERSION));
+        tr("<span style='font-size:11px'>Development Stage: %1</span><br/>").arg(WIZ_DEV_STAGE));
     QString qtInfo = QString(
         tr("<span style='font-size:11px'>Build against: Qt %1</span><br/>").arg(QT_VERSION_STR));
     QString buildTime = QString(

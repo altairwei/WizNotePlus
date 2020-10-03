@@ -3927,10 +3927,9 @@ void WizMainWindow::checkWizUpdate()
 #ifndef BUILD4APPSTORE
     WizExecuteOnThread(WIZ_THREAD_NETWORK, [=](){
         WizUpgradeChecker m_upgrade;
-        QString currentTagName = QString("v%1-%2.%3")
+        QString currentTagName = QString("v%1-%2")
                                             .arg(WIZ_CLIENT_VERSION)
-                                            .arg(WIZ_DEV_STAGE)
-                                            .arg(WIZ_DEV_STAGE_VERSION);
+                                            .arg(WIZ_DEV_STAGE);
         m_upgrade.setTagName(currentTagName);
         connect(&m_upgrade, &WizUpgradeChecker::checkFinished, this, &WizMainWindow::on_checkUpgrade_finished);
         m_upgrade.checkUpgrade();
