@@ -169,7 +169,7 @@ WizWebEngineView::WizWebEngineView(const WizWebEngineInjectObjectCollection& obj
     //
     connect(this, SIGNAL(loadFinished(bool)), this, SLOT(innerLoadFinished(bool)));
 
-#if QT_VERSION >= 0x051100
+#if (QT_VERSION >= QT_VERSION_CHECK(5, 11, 0))
     // Initialize actions
     QAction* action = new QAction(tr("Open DevTools"), this);
     action->setShortcut(QKeySequence("F12"));
@@ -353,7 +353,7 @@ QMenu* WizWebEngineView::createStandardContextMenu()
     if (viewSource != actions.cend())
         menu->removeAction(*viewSource);
 
-#if QT_VERSION >= 0x051100
+#if (QT_VERSION >= QT_VERSION_CHECK(5, 11, 0))
     // add Open DevTools action
     auto inspectElement = std::find(actions.cbegin(), actions.cend(), page()->action(QWebEnginePage::InspectElement));
     if (inspectElement == actions.cend()) {
@@ -418,7 +418,7 @@ void WizWebEngineView::addObjectToJavaScriptClient(QString name, QObject* obj)
         channel->registerObject(name, obj);
 }
 
-#if QT_VERSION >= 0x051100
+#if (QT_VERSION >= QT_VERSION_CHECK(5, 11, 0))
 void WizWebEngineView::openDevTools()
 {
     if (!m_devToolsWindow)
@@ -447,7 +447,7 @@ void WizWebEngineView::openDevTools()
 }
 #endif
 
-#if QT_VERSION >= 0x051100
+#if (QT_VERSION >= QT_VERSION_CHECK(5, 11, 0))
 void WizWebEngineView::handleOpenDevToolsTriggered()
 {
     openDevTools();

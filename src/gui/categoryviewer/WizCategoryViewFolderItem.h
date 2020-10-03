@@ -5,6 +5,7 @@
 #include "gui/categoryviewer/WizCategoryViewItemBase.h"
 
 
+/** The root of all folder items. */
 class WizCategoryViewAllFoldersItem : public WizCategoryViewItemBase
 {
 public:

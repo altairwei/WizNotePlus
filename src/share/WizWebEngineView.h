@@ -98,7 +98,7 @@ public:
 public Q_SLOTS:
     void innerLoadFinished(bool);
     void openLinkInDefaultBrowser(QUrl url);
-#if QT_VERSION >= 0x051100
+#if (QT_VERSION >= QT_VERSION_CHECK(5, 11, 0))
     void openDevTools();
     void handleOpenDevToolsTriggered();
 #endif
