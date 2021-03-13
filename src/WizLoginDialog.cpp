@@ -106,11 +106,11 @@ WizLoginDialog::WizLoginDialog(const QString &strLocale, const QList<WizLocalUse
     ui->setupUi(this);
 #else
     layoutTitleBar();
-    //
+
     QWidget* uiWidget = new QWidget(clientWidget());
     clientLayout()->addWidget(uiWidget);
     ui->setupUi(uiWidget);
-    //
+
     //  init style for wizbox
     ui->btn_selectServer->setMaximumHeight(::WizSmartScaleUI(20));
     ui->layout_titleBar->setContentsMargins(0, 0, 0, 0);
@@ -120,7 +120,7 @@ WizLoginDialog::WizLoginDialog(const QString &strLocale, const QList<WizLocalUse
     ui->btn_max->setVisible(false);
     ui->btn_min->setVisible(false);
     ui->btn_close->setVisible(false);
-    //
+
     WizWindowTitleBar* title = titleBar();
     title->setPalette(QPalette(QColor::fromRgb(0x44, 0x8A, 0xFF)));
     title->setContentsMargins(QMargins(0, 2, 2 ,0));
@@ -152,10 +152,9 @@ WizLoginDialog::WizLoginDialog(const QString &strLocale, const QList<WizLocalUse
     connect(ui->wgt_usercontainer, SIGNAL(rightIconClicked()), SLOT(showUserListMenu()));
     connect(ui->btn_selectServer, SIGNAL(clicked()), SLOT(showServerListMenu()));
     connect(m_lineEditUserName, SIGNAL(textEdited(QString)), SLOT(onUserNameEdited(QString)));
-    //
 
-    //
     connect(&m_wizBoxSearchingTimer, SIGNAL(timeout()), SLOT(onWizBoxSearchingTimeOut()));
+
 #ifndef Q_OS_MAC
     // 登录按钮信号槽
     connect(m_buttonLogin, SIGNAL(clicked()), SLOT(on_btn_login_clicked()));
@@ -178,35 +177,30 @@ WizLoginDialog::WizLoginDialog(const QString &strLocale, const QList<WizLocalUse
     m_menuServers->addAction(tr("About WizBox..."))->setData(WIZ_SERVERACTION_HELP);
     m_menuServers->setDefaultAction(actionWizServer);
 
-    //
     applyElementStyles(strLocale);
 
     loadDefaultUser();
-    //
+
 //#ifndef Q_OS_MAC
-    //
     QSize totalSizeHint = layout()->totalSizeHint();
-    //
+
     QSize minSize = QSize(totalSizeHint.width(), totalSizeHint.height() + ::WizSmartScaleUI(10));
-    //
+
     if (minSize.height() > minSize.width() * 1.4)
     {
         minSize.setWidth(int(minSize.height() / 1.4));
-        //
+
         int buttonMinimumWidth = minSize.width() - 2 * ::WizSmartScaleUI(40);
         ui->btn_login->setMinimumWidth(buttonMinimumWidth);
     }
     setMinimumSize(minSize);
-    //
-    //
+
     ::WizExecuteOnThread(WIZ_THREAD_MAIN, [=]{
-        //
         QSize sz = ui->btn_login->size();
         ui->btn_singUp->setMinimumSize(sz);
-
     }, 300, 30000, [=]{});
 //#endif
-    //
+
     initSateMachine();
 }
 
@@ -222,8 +216,6 @@ WizLoginDialog::~WizLoginDialog()
         m_udpClient->deleteLater();
     }
 }
-
-
 
 QString WizLoginDialog::userId() const
 {
@@ -266,7 +258,7 @@ void WizLoginDialog::resetUserList()
             m_menuUsers->addAction(userItem);
         }
     }
-    //
+
     QSettings* settings = WizGlobal::globalSettings();
     QString strDefault = (WizServer == m_serverType) ? settings->value("Users/DefaultWizUserGuid").toString()
                                                      : settings->value("Users/DefaultWizBoxUserGuid").toString();
@@ -352,11 +344,12 @@ void WizLoginDialog::setUser(const QString &strUserGuid)
 }
 
 void WizLoginDialog::doAccountVerify()
-{   // 在线验证账号密码
+{
     QString strUserGUID;
     QString strAccountFolder;
     for (WizLocalUser user : m_userList)
-    {   // 遍历本地账号，如果有则不在线验证
+    {
+        // Check if the user has logged in locally
         if (user.strUserId == userId())
         {
             strAccountFolder = user.strDataFolderName;
@@ -366,8 +359,9 @@ void WizLoginDialog::doAccountVerify()
     }
 
     if (strAccountFolder.isEmpty())
-    {   // 如果不是本地账号，则在线验证
-        emit accountCheckStart(); // 发送账号检查信号
+    {
+        // Check if the user exists on the server
+        emit accountCheckStart();
         doOnlineVerify();
         return;
     }
@@ -396,7 +390,7 @@ bool WizLoginDialog::updateUserProfile(bool bLogined)
 {
     QString localUserId = WizGetLocalUserId(m_userList, m_loginUserGuid);
     QString strUserAccount = WizGetLocalFolderName(m_userList, m_loginUserGuid);
-    qDebug() << "udate user profile , userid  " << localUserId;
+    qDebug() << "update user profile , userid  " << localUserId;
     strUserAccount.isEmpty() ? (strUserAccount = userId()) : 0;
     WizUserSettings userSettings(strUserAccount);
 
@@ -1057,7 +1051,8 @@ void WizLoginDialog::on_btn_fogetpass_clicked()
 }
 
 void WizLoginDialog::on_btn_login_clicked()
-{   // 处理登录信号
+{
+    // 处理登录信号
     if (m_lineEditUserName->text().isEmpty()) {
         ui->label_passwordError->setText(tr("Please enter user id"));
         return;
@@ -1069,7 +1064,8 @@ void WizLoginDialog::on_btn_login_clicked()
     }
 
     if (EnterpriseServer == m_serverType)
-    {   // 企业 WizBox
+    {
+        // 企业 WizBox
         if (m_lineEditServer->text().isEmpty())
         {
             ui->label_passwordError->setText(tr("Please enter server address"));
@@ -1105,7 +1101,7 @@ void WizLoginDialog::onLoginInputChanged()
 void WizLoginDialog::onTokenAcquired(const QString &strToken)
 {
     closeAnimationWaitingDialog();
-    //
+
     WizToken::instance()->disconnect(this);
 
     qDebug() << "on tonken acquired : " << strToken;

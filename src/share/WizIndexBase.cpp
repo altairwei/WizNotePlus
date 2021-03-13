@@ -28,15 +28,15 @@ WizIndexBase::~WizIndexBase(void)
 bool WizIndexBase::open(const CString& strFileName)
 {
     m_strFileName = strFileName;
-    //m_strDatabasePath = WizExtractFilePath(strFileName);
 
     try {
         m_db.open(strFileName);
-        //
+
         for (int i = 0; i < TABLE_COUNT; i++) {
             if (!checkTable(g_arrayTableName[i]))
                 return false;
         }
+
         // upgrade table structure if table structure have been changed
         if (m_db.tableExists(TABLE_NAME_WIZ_META)) {
             int nVersion = getTableStructureVersion().toInt();

@@ -277,7 +277,9 @@ public:
     QString bizGuid() const { return m_info.bizGUID; }
     int permission() const { return m_info.nPermission; }
 
-    // IWizSyncableDatabase interface implementations
+    // START: IWizSyncableDatabase interface implementations
+    //-------------------------------------------------------------------
+
     virtual QString getUserId();
     virtual QString getUserGuid();
     virtual QString getPassword();
@@ -455,11 +457,13 @@ public:
     void setFoldersPosModified();
     void setGroupTagsPosModified();
 
-    //
     virtual bool getAllNotesOwners(CWizStdStringArray &arrayOwners);
-    //
+
     virtual bool deleteDocumentFromLocal(const QString& strDocumentGuid);
     virtual bool deleteAttachmentFromLocal(const QString& strAttachmentGuid);
+
+    // END: IWizSyncableDatabase interface implementations
+    //-------------------------------------------------------------------
 
 public:
     bool open(const QString& strAccountFolderName, const QString& strKbGUID = NULL);
@@ -507,14 +511,14 @@ public:
 
     bool getAllGroupInfo(CWizGroupDataArray& arrayGroup);
     bool setAllGroupInfo(const CWizGroupDataArray& arrayGroup);
-    //
+
     bool getAllBizInfo(CWizBizDataArray& arrayBiz);
     bool setAllBizInfo(const CWizBizDataArray& arrayBiz);
-    //
+
     bool getBizData(const QString& bizGUID, WIZBIZDATA& biz);
     bool getBizGuid(const QString& strGroupGUID, QString& strBizGUID);
     bool getGroupData(const QString& groupGUID, WIZGROUPDATA& group);
-    //
+
     static bool isEmptyBiz(const CWizGroupDataArray& arrayGroup, const QString& bizGUID);
     static bool getOwnGroups(const CWizGroupDataArray& arrayAllGroup, CWizGroupDataArray& arrayOwnGroup);
     static bool getJionedGroups(const CWizGroupDataArray& arrayAllGroup, CWizGroupDataArray& arrayJionedGroup);
@@ -532,7 +536,7 @@ public:
     bool updateDocuments(const std::deque<WIZDOCUMENTDATAEX>& arrayDocument);
     bool updateAttachment(const WIZDOCUMENTATTACHMENTDATAEX& data);
     bool updateAttachments(const CWizDocumentAttachmentDataArray& arrayAttachment);
-    //
+
     bool setDocumentFlags(const QString& strDocumentGuid, const QString& strFlags);
 
     bool updateDocumentData(WIZDOCUMENTDATA& data, const QString& strHtml,
@@ -567,7 +571,7 @@ public:
     bool loadDocumentDecryptedData(const QString& strDocumentGUID, QByteArray& arrayData);
     //load raw data, for upload to server
     bool loadDocumentZiwData(const QString& strDocumentGUID, QByteArray& arrayData);
-    //
+
     bool loadFileData(const QString& strFileName, QByteArray& arrayData);
     bool writeDataToDocument(const QString& strDocumentGUID, const QByteArray &arrayData);
     bool loadAttachmentData(const CString& strDocumentGUID,
@@ -637,11 +641,11 @@ public:
 
     // CWizZiwReader passthrough methods
     bool loadUserCert();
-    //
+
     bool refreshCertFromServer();
     bool hasCert();
     bool initCert(bool queryPassword);
-    //
+
     bool isEncryptAllData();
     bool prepareBizCert();
     bool initBizCert();
@@ -649,10 +653,10 @@ public:
     bool verifyCertPassword(QString password);
     QString getCertPassword();
     QString getCertPasswordHint();
-    //
+
     static void clearCertPassword();
 
-    //
+
     bool tryAccessDocument(const WIZDOCUMENTDATA &doc);
 
 public:
@@ -695,12 +699,11 @@ private:
 
     bool getBizMetaName(const QString& strBizGUID, QString& strMetaName);
 
-    //
     bool initZiwReaderForEncryption();
-    //
+
     bool getAllGroupInfoCore(CWizGroupDataArray& arrayGroup);
     bool setAllGroupInfoCore(const CWizGroupDataArray& arrayGroup);
-    //
+
     bool getAllBizInfoCore(const CWizGroupDataArray& arrayGroup, CWizBizDataArray& arrayBiz);
     bool setAllBizInfoCore(const CWizBizDataArray& arrayBiz);
     QVariantList packDocumentsToList(const CWizDocumentDataArray &docDataArray);

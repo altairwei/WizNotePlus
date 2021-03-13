@@ -41,7 +41,7 @@ bool WizDatabaseManager::openWithInfo(const QString& strKbGUID, const WIZDATABAS
         delete db;
         return false;
     }
-    //
+
     if (pInfo)
     {
         db->initDatabaseInfo(*pInfo);
@@ -63,6 +63,7 @@ bool WizDatabaseManager::openWithInfo(const QString& strKbGUID, const WIZDATABAS
     Q_EMIT databaseOpened(strKbGUID);
     return true;
 }
+
 bool WizDatabaseManager::open(const QString& strKbGUID)
 {
     return openWithInfo(strKbGUID, NULL);
@@ -107,11 +108,12 @@ bool WizDatabaseManager::isOpened(const QString& strKbGUID)
 
     return false;
 }
+
 WizDatabase& WizDatabaseManager::addDb(const QString& strKbGUID, const WIZDATABASEINFO& info)
 {
 //    QMutexLocker locker(&m_mutex);
 //    Q_UNUSED(locker);
-    //
+
     Q_ASSERT(m_dbPrivate);
 
     if (strKbGUID.isEmpty() || m_dbPrivate->kbGUID() == strKbGUID) {
@@ -140,7 +142,7 @@ WizDatabase& WizDatabaseManager::db(const QString& strKbGUID)
 {
     QMutexLocker locker(&m_mutex);
     Q_UNUSED(locker);
-    //
+
     Q_ASSERT(m_dbPrivate);
 
     if (strKbGUID.isEmpty() || m_dbPrivate->kbGUID() == strKbGUID) {
