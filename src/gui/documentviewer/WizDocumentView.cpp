@@ -390,6 +390,8 @@ void WizDocumentView::initStat(const WIZDOCUMENTDATA& data, bool forceEdit)
         }
     }
 
+    emit m_web->canEditNoteChanged();
+
     bool bGroup = m_dbMgr.db(data.strKbGUID).isGroup();
     m_editStatus = m_editStatus & DOCUMENT_STATUS_PERSONAL;
     if (bGroup)
@@ -413,16 +415,16 @@ void WizDocumentView::initStat(const WIZDOCUMENTDATA& data, bool forceEdit)
 }
 
 /**
- * @brief 在当前视图中浏览笔记
- * @param wizDoc 笔记数据
- * @param forceEdit 是否强制编辑
+ * @brief View note in current document view.
+ * @param wizDoc Note meta data.
+ * @param forceEdit Force to edit or not.
  */
 void WizDocumentView::viewNote(const WIZDOCUMENTDATAEX& wizDoc, bool forceEdit)
 {
     WIZDOCUMENTDATAEX dataTemp = wizDoc;
-    //
+
     m_web->trySaveDocument(m_note, false, [=](const QVariant& ret){
-        //
+
         WIZDOCUMENTDATAEX data = dataTemp;
 
         if (m_dbMgr.db(m_note.strKbGUID).isGroup())
@@ -449,7 +451,6 @@ void WizDocumentView::viewNote(const WIZDOCUMENTDATAEX& wizDoc, bool forceEdit)
         }
 
         // ask user cipher if needed
-        //
         data.nProtected = WizZiwReader::isEncryptedFile(strDocumentFileName) ? 1 : 0;
         if (data.nProtected || db.isEncryptAllData()) {
             //
@@ -477,6 +478,10 @@ void WizDocumentView::viewNote(const WIZDOCUMENTDATAEX& wizDoc, bool forceEdit)
         }
         //
         m_stack->setCurrentWidget(m_docView);
+
+        // Emit notification of change regarding ownership of this note
+        emit m_web->isPersonalDocumentChanged();
+        emit m_web->hasEditPermissionOnCurrentNoteChanged();
 
         loadNote(data);
         WIZDOCUMENTDATA docData = data;
@@ -527,25 +532,24 @@ void WizDocumentView::reviewCurrentNote()
 }
 
 /**
- * @brief 设置编辑模式
+ * @brief Set the mode of editor.
  * @param editorMode
  */
 void WizDocumentView::setEditorMode(WizEditorMode editorMode)
 {
     if (m_bLocked)
         return;
-    //
+
     if (m_editorMode == editorMode)
         return;
-    //
+
     bool edit = editorMode == modeEditor;
     bool read = !edit;
+
     // 检查文档的团队编辑状态
     bool isGroupNote = m_dbMgr.db(m_note.strKbGUID).isGroup();
     if (edit && isGroupNote)
     {
-        // don not use message tips when check document editable
-//        m_title->showMessageTips(Qt::PlainText, tr("Checking whether note is eiditable..."));
         m_title->startEditButtonAnimation();
         if (!checkDocumentEditable(false))
         {
@@ -554,6 +558,7 @@ void WizDocumentView::setEditorMode(WizEditorMode editorMode)
         // stop check document edit status while enter editing mode
         stopCheckDocumentEditStatus();
     }
+
     // 设置文档视图编辑器状态
     m_editorMode = editorMode;
 
@@ -566,8 +571,9 @@ void WizDocumentView::setEditorMode(WizEditorMode editorMode)
         m_title->hideMessageTips(false);
     }
     m_title->setEditorMode(editorMode);
-    //
+
     m_web->setEditorMode(editorMode);
+
     // 发送团队文档编辑状态
     if (isGroupNote)
     {
@@ -581,6 +587,8 @@ void WizDocumentView::setEditorMode(WizEditorMode editorMode)
             startCheckDocumentEditStatus();
         }
     }
+
+    emit m_web->canEditNoteChanged();
 }
 
 void WizDocumentView::setDefaultViewMode(WizDocumentViewMode mode)
@@ -726,12 +734,12 @@ void WizDocumentView::loadNote(const WIZDOCUMENTDATAEX& doc)
 {
     m_web->viewDocument(doc, m_editorMode);
     m_title->setNote(doc, m_editorMode, m_bLocked);
-    //
+
     // save last
     m_note = doc;
-    //
+
     m_noteLoaded = true;
-    //
+
     if (m_editorMode == modeEditor && m_web->hasFocus())
     {
         sendDocumentEditingStatus();
@@ -1051,11 +1059,13 @@ void WizDocumentView::on_viewNoteInExternalEditor_request(QString& Name, QString
 void WizDocumentView::handleDiscardChangesRequest()
 {
     // Change editor state
-    m_editorMode = modeReader;
+    setEditorMode(modeReader);
     m_editStatus = DOCUMENT_STATUS_NOSTATUS;
     m_title->setEditorMode(modeReader);
+
     // Discard changes
     m_web->discardChanges();
+
     // Notify group status
     bool isGroupNote = m_dbMgr.db(m_note.strKbGUID).isGroup();
     if (isGroupNote) {

@@ -16,25 +16,25 @@ public:
     ApiWizHtmlEditorApp(WizDocumentWebView* webView, QObject *parent);
 
     // WizHtmlEditor Properties:
-    //
+
     Q_INVOKABLE QString getUserGuid();
-    Q_PROPERTY(QString userGuid READ getUserGuid NOTIFY userGuidChanged)
-    //
-    Q_INVOKABLE QString getUserAvatarFilePath();
-    Q_PROPERTY(QString userAlias READ getUserAlias NOTIFY userAliasChanged)
-    //
+    Q_PROPERTY(QString userGuid READ getUserGuid)
+
     Q_INVOKABLE QString getUserAlias();
-    Q_PROPERTY(QString userAvatarFilePath READ getUserAvatarFilePath NOTIFY userAvatarFilePathChanged)
-    //
+    Q_PROPERTY(QString userAlias READ getUserAlias)
+
+    Q_INVOKABLE QString getUserAvatarFilePath();
+    Q_PROPERTY(QString userAvatarFilePath READ getUserAvatarFilePath)
+
     Q_INVOKABLE bool isPersonalDocument();
     Q_PROPERTY(bool isPersonalDocument READ isPersonalDocument NOTIFY isPersonalDocumentChanged)
-    //
+
     Q_INVOKABLE bool canEditNote();
-    Q_PROPERTY(QString canEditNote READ canEditNote NOTIFY canEditNoteChanged)
-    //
+    Q_PROPERTY(bool canEditNote READ canEditNote NOTIFY canEditNoteChanged)
+
     Q_INVOKABLE QString getCurrentNoteHtml();
     Q_PROPERTY(QString currentNoteHtml READ getCurrentNoteHtml NOTIFY currentHtmlChanged STORED false)
-    //
+
     Q_INVOKABLE bool hasEditPermissionOnCurrentNote();
     Q_PROPERTY(bool hasEditPermissionOnCurrentNote READ hasEditPermissionOnCurrentNote NOTIFY hasEditPermissionOnCurrentNoteChanged)
 
@@ -53,9 +53,6 @@ public:
 
 
 signals:
-    void userGuidChanged();
-    void userAliasChanged();
-    void userAvatarFilePathChanged();
     void isPersonalDocumentChanged();
     void canEditNoteChanged();
     void currentHtmlChanged();

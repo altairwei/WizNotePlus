@@ -161,15 +161,23 @@ WizDocumentWebView::WizDocumentWebView(WizExplorerApp& app, QWidget* parent)
     // FIXME: should accept drop picture, attachment, link etc.
     setAcceptDrops(true);
 
-    //
     m_htmlEditorApp = new ApiWizHtmlEditorApp(this, this);
+    connect(this, &WizDocumentWebView::isPersonalDocumentChanged,
+        m_htmlEditorApp, &ApiWizHtmlEditorApp::isPersonalDocumentChanged);
+    connect(this, &WizDocumentWebView::hasEditPermissionOnCurrentNoteChanged,
+        m_htmlEditorApp, &ApiWizHtmlEditorApp::hasEditPermissionOnCurrentNoteChanged);
+    connect(this, &WizDocumentWebView::canEditNoteChanged,
+        m_htmlEditorApp, &ApiWizHtmlEditorApp::canEditNoteChanged);
+    connect(this, &WizDocumentWebView::currentHtmlChanged,
+        m_htmlEditorApp, &ApiWizHtmlEditorApp::currentHtmlChanged);
+
 
     // refers
     qRegisterMetaType<WizEditorMode>("WizEditorMode");
     m_docLoadThread = new WizDocumentWebViewLoaderThread(m_dbMgr, this);
     connect(m_docLoadThread, SIGNAL(loaded(const QString&, const QString, const QString, WizEditorMode)),
             SLOT(onDocumentReady(const QString&, const QString, const QString, WizEditorMode)), Qt::QueuedConnection);
-    //
+
     m_docSaverThread = new WizDocumentWebViewSaverThread(m_dbMgr, this);
     connect(m_docSaverThread, SIGNAL(saved(const QString, const QString,bool)),
             SLOT(onDocumentSaved(const QString, const QString,bool)), Qt::QueuedConnection);
@@ -177,14 +185,13 @@ WizDocumentWebView::WizDocumentWebView(WizExplorerApp& app, QWidget* parent)
     // loading and saving thread
     m_timerAutoSave.setInterval(1*60*1000); // 1 minutes
     connect(&m_timerAutoSave, SIGNAL(timeout()), SLOT(onTimerAutoSaveTimout()));
-    //
+
     WizMainWindow* mainWindow = qobject_cast<WizMainWindow*>(m_app.mainWindow());
     addObjectToJavaScriptClient("WizExplorerApp", mainWindow->publicAPIsObject());
     addObjectToJavaScriptClient("WizQtEditor", m_htmlEditorApp);
 
     connect(this, SIGNAL(loadFinishedEx(bool)), SLOT(onEditorLoadFinished(bool)));
-    //
-    //
+
     if (m_app.userSettings().isEnableSpellCheck()) {
         QWebEngineProfile *profile = page->profile();
         profile->setSpellCheckEnabled(true);

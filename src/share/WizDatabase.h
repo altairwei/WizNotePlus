@@ -23,10 +23,10 @@ public:
     WizDocument(WizDatabase& db, const WIZDOCUMENTDATA& data, QObject *parent = nullptr);
 
     QString GUID() const { return m_data.strGUID; }
-    Q_PROPERTY(QString GUID READ GUID NOTIFY GUIDChanged)
+    Q_PROPERTY(QString GUID READ GUID)
 
     QString Title() const { return m_data.strTitle; }
-    void setTitle(const QString &strTitle);
+    bool setTitle(const QString &strTitle);
     Q_PROPERTY(QString Title READ Title WRITE setTitle NOTIFY TitleChanged)
 
     QString Author() const { return m_data.strAuthor; }
@@ -56,19 +56,19 @@ public:
     long ReadCount() const { return m_data.nReadCount; }
     Q_PROPERTY(long ReadCount READ ReadCount NOTIFY ReadCountChanged)
 
-    long AtachmentCount() const { return m_data.nAttachmentCount; }
-    Q_PROPERTY(long AtachmentCount READ AtachmentCount NOTIFY AtachmentCountChanged)
+    long AttachmentCount() const { return m_data.nAttachmentCount; }
+    Q_PROPERTY(long AttachmentCount READ AttachmentCount NOTIFY AttachmentCountChanged)
 
     QString DateCreated() const { return m_data.tCreated.toString(Qt::ISODate); }
     Q_PROPERTY(QString DateCreated READ DateCreated NOTIFY DateCreatedChanged)
 
     QString DateModified() const { return m_data.tModified.toString(Qt::ISODate); }
-    void setDateModified(const QString &strDateModified);
+    bool setDateModified(const QString &strDateModified);
     Q_PROPERTY(QString DateModified READ DateModified WRITE setDateModified NOTIFY DateModifiedChanged)
 
     QString DateAccessed() const { return m_data.tAccessed.toString(Qt::ISODate); }
     Q_PROPERTY(QString DateAccessed READ DateAccessed NOTIFY DateAccessedChanged)
-    
+
     QString DataDateModified() const { return m_data.tDataModified.toString(Qt::ISODate); }
     Q_PROPERTY(QString DataDateModified READ DataDateModified NOTIFY DataDateModifiedChanged)
 
@@ -76,9 +76,8 @@ public:
     Q_PROPERTY(QString DataMD5 READ DataMD5 NOTIFY DataMD5Changed)
 
     QObject *Database() const;
-    Q_PROPERTY(QObject *Database READ Database NOTIFY DatabaseChanged)
+    Q_PROPERTY(QObject *Database READ Database)
 
-    //
     bool isProtected() const { return m_data.nProtected; }
     bool encryptDocument() { return false; }
 
@@ -97,9 +96,7 @@ public:
 
     WIZDOCUMENTDATA data() { return m_data; }
 
-    //
 signals:
-    void GUIDChanged();
     void TitleChanged();
     void AuthorChanged();
     void KeywordsChanged();
@@ -110,17 +107,16 @@ signals:
     void OwnerChanged();
     void FileTypeChanged();
     void ReadCountChanged();
-    void AtachmentCountChanged();
+    void AttachmentCountChanged();
     void DateCreatedChanged();
     void DateModifiedChanged();
     void DateAccessedChanged();
     void DataDateModifiedChanged();
     void DataMD5Changed();
-    void DatabaseChanged();
 
 public:
     Q_INVOKABLE void Delete();
-    Q_INVOKABLE void PermanentlyDelete(void);
+    Q_INVOKABLE void PermanentlyDelete();
     Q_INVOKABLE void moveTo(QObject* pFolder);
     Q_INVOKABLE bool UpdateDocument3(const QString& strHtml, int nFlags);
     Q_INVOKABLE bool UpdateDocument4(const QString& strHtml, const QString& strURL, int nFlags);
@@ -161,7 +157,7 @@ public:
         const WIZDOCUMENTATTACHMENTDATA &data, QObject *parent = nullptr);
 
     QString GUID() const { return m_data.strGUID; }
-    Q_PROPERTY(QString GUID READ GUID NOTIFY GUIDChanged)
+    Q_PROPERTY(QString GUID READ GUID)
 
     QString Name() const { return m_data.strName; }
     Q_PROPERTY(QString Name READ Name NOTIFY NameChanged)
@@ -191,7 +187,6 @@ public:
     WIZDOCUMENTATTACHMENTDATA data() { return m_data; }
 
 signals:
-    void GUIDChanged();
     void NameChanged();
     void DescriptionChanged();
     void URLChanged();
@@ -211,7 +206,7 @@ class WizFolder : public QObject
 {
     Q_OBJECT
 
-    Q_PROPERTY(QString location READ location)
+    Q_PROPERTY(QString location READ location NOTIFY locationChanged)
 
 public:
     WizFolder(WizDatabase& db, const QString& strLocation, QObject *parent = nullptr);
@@ -241,6 +236,8 @@ Q_SIGNALS:
                       const QString& strOldLocation,
                       const QString& strNewLocation,
                       const WIZDOCUMENTDATA& data);
+
+    void locationChanged();
 };
 
 /*

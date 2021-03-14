@@ -412,6 +412,9 @@ Q_SIGNALS:
     void viewDocumentFinished();
     //
     void shareDocumentByLinkRequest(const QString& strKbGUID, const QString& strGUID);
+    void isPersonalDocumentChanged();
+    void hasEditPermissionOnCurrentNoteChanged();
+    void canEditNoteChanged();
     void currentHtmlChanged();
 
     // signal connect to checklist in javascript

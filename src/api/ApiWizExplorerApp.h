@@ -27,22 +27,22 @@ public:
 
     //WizExplorerApp API:
     QObject* Window();
-    Q_PROPERTY(QObject* Window READ Window NOTIFY WindowChanged)
+    Q_PROPERTY(QObject* Window READ Window)
 
     QObject* CategoryCtrl();
-    Q_PROPERTY(QObject* CategoryCtrl READ CategoryCtrl NOTIFY CategoryCtrlChanged)
+    Q_PROPERTY(QObject* CategoryCtrl READ CategoryCtrl)
 
     QObject* DocumentsCtrl();
-    Q_PROPERTY(QObject* DocumentsCtrl READ DocumentsCtrl NOTIFY DocumentsCtrlChanged)
+    Q_PROPERTY(QObject* DocumentsCtrl READ DocumentsCtrl)
 
     QObject* CommonUI();
-    Q_PROPERTY(QObject* CommonUI READ CommonUI NOTIFY CommonUIChanged)
+    Q_PROPERTY(QObject* CommonUI READ CommonUI)
 
     QObject* DatabaseManager();
-    Q_PROPERTY(QObject* DatabaseManager READ DatabaseManager NOTIFY DatabaseManagerChanged)
+    Q_PROPERTY(QObject* DatabaseManager READ DatabaseManager)
 
     QObject* Database();
-    Q_PROPERTY(QObject* Database READ Database NOTIFY DatabaseChanged)
+    Q_PROPERTY(QObject* Database READ Database)
 
     Q_INVOKABLE QObject* CreateWizObject(const QString& strObjectID);
     Q_INVOKABLE void SetSavingDocument(bool saving);
@@ -58,14 +58,6 @@ public:
     Q_INVOKABLE void AppStoreIAP();
     Q_INVOKABLE void copyLink(const QString& link);
     Q_INVOKABLE void onClickedImage(const QString& src, const QString& list);
-
-signals:
-    void WindowChanged();
-    void CategoryCtrlChanged();
-    void DocumentsCtrlChanged();
-    void DatabaseManagerChanged();
-    void DatabaseChanged();
-    void CommonUIChanged();
 };
 
 #endif // API_APIWIZEXPLORERAPP_H

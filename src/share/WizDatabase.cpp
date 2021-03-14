@@ -25,7 +25,6 @@
 #include "utils/WizMisc.h"
 #include "utils/WizLogger.h"
 #include "sync/WizAvatarHost.h"
-#include "WizObjectDataDownloader.h"
 #include "WizProgressDialog.h"
 #include "WizUserCipherForm.h"
 #include "WizDatabaseManager.h"
@@ -34,7 +33,6 @@
 #include "WizEnc.h"
 #include "widgets/WizExecutingActionDialog.h"
 #include "sync/WizKMServer.h"
-#include "sync/WizApiEntry.h"
 #include "share/WizThreads.h"
 #include "share/WizMisc.h"
 #include "WizMessageBox.h"
@@ -122,24 +120,41 @@ WizDocument::WizDocument(WizDatabase& db, const WIZDOCUMENTDATA& data, QObject *
 {
 }
 
-void WizDocument::setTitle(const QString &strTitle)
+bool WizDocument::setTitle(const QString &strTitle)
 {
     if (reloadDocumentInfo()) {
         if (!m_db.canEditDocument(m_data))
-            return;
+            return false;
         if (strTitle.isEmpty())
-            return;
+            return false;
 
         QString strNewTitle = strTitle.left(255);
         strNewTitle.replace("\n", " ");
         strNewTitle.replace("\r", " ");
         strNewTitle = strNewTitle.trimmed();
-        if (strNewTitle != m_data.strTitle) {
+
+        QString strOldTitle = m_data.strTitle;
+        WizOleDateTime tOldMotified = m_data.tModified;
+
+        if (strNewTitle != strOldTitle) {
             m_data.strTitle = strNewTitle;
-            m_data.tDataModified = WizGetCurrentTime();
-            m_db.modifyDocumentInfo(m_data);
+            m_data.tModified = WizGetCurrentTime();
+
+            if (!m_db.modifyDocumentInfo(m_data)) {
+                m_data.strTitle = strOldTitle;
+                m_data.tModified = tOldMotified;
+
+                return false;
+            }
+
+            emit TitleChanged();
+            emit DateModifiedChanged();
         }
+
+        return true;
     }
+
+    return false;
 }
 
 /**
@@ -147,23 +162,36 @@ void WizDocument::setTitle(const QString &strTitle)
  * 
  * @param strDateModified 
  */
-void WizDocument::setDateModified(const QString &strDateModified)
+bool WizDocument::setDateModified(const QString &strDateModified)
 {
     if (strDateModified.isEmpty())
-        return;
+        return false;
 
     if (!m_db.canEditDocument(m_data))
-        return;
+        return false;
 
     QDateTime dm = QDateTime::fromString(strDateModified, Qt::ISODate);
     if (!dm.isValid())
-        return;
+        return false;
 
     if (reloadDocumentInfo()) {
         WizOleDateTime dateModified(dm);
-        m_data.tDataModified = dateModified;
-        m_db.modifyDocumentInfo(m_data);
+        WizOleDateTime oldDateModified = m_data.tModified;
+
+        m_data.tModified = dateModified;
+
+        if (!m_db.modifyDocumentInfo(m_data)) {
+            m_data.tModified = oldDateModified;
+
+            return false;
+        }
+
+        emit DateModifiedChanged();
+
+        return true;
     }
+
+    return false;
 }
 
 QObject *WizDocument::Database() const
@@ -193,6 +221,7 @@ bool WizDocument::UpdateDocument3(const QString& strHtml, int nFlags)
 
 bool WizDocument::UpdateDocument4(const QString& strHtml, const QString& strURL, int nFlags)
 {
+    //TODO: update m_data
     return m_db.updateDocumentData(m_data, strHtml, strURL, nFlags);
 }
 
@@ -215,6 +244,7 @@ bool WizDocument::UpdateDocument6(const QString &strHtmlFileName, const QString 
 
     QString strHtml;
     if (WizLoadUnicodeTextFromFile(strHtmlFileName, strHtml)) {
+        //TODO: update m_data
         return m_db.updateDocumentData(m_data, strHtml, strURL, nFlags);
     } else {
         return false;
@@ -312,6 +342,8 @@ bool WizDocument::RemoveParam(const QString &strParamName)
 /**
  * @brief Delete WizDocument instance to release memories.
  * 
+ *     DEPRECATED! Use deleteLater() instead!
+ *     
  *     This method should be called by javascrip client when
  *     the WizDocument object of specific document would no 
  *     longer be used.
@@ -392,6 +424,8 @@ bool WizDocument::moveTo(WizFolder* pFolder)
         TOLOG1("Failed to modify document location %1.", m_data.strLocation);
         return false;
     }
+
+    emit LocationChanged();
 
     return true;
 }
@@ -608,7 +642,62 @@ bool WizDocument::copyDocumentAttachment(const WIZDOCUMENTDATA& sourceDoc,
  */
 bool WizDocument::reloadDocumentInfo()
 {
-    return m_db.documentFromGuid(m_data.strGUID, m_data);
+    WIZDOCUMENTDATA old_data = m_data;
+
+    if (!m_db.documentFromGuid(m_data.strGUID, m_data)) {
+        m_data  = old_data;
+        return false;
+    }
+
+    if (m_data.strTitle != old_data.strTitle)
+        emit TitleChanged();
+
+    if (m_data.strAuthor != old_data.strAuthor)
+        emit AuthorChanged();
+
+    if (m_data.strKeywords != old_data.strKeywords)
+        emit KeywordsChanged();
+
+    if (m_data.strName != old_data.strName)
+        emit NameChanged();
+
+    if (m_data.strLocation != old_data.strLocation)
+        emit LocationChanged();
+
+    if (m_data.strURL != old_data.strURL)
+        emit URLChanged();
+
+    if (m_data.strType != old_data.strType)
+        emit TypeChanged();
+
+    if (m_data.strOwner != old_data.strOwner)
+        emit OwnerChanged();
+
+    if (m_data.strFileType != old_data.strFileType)
+        emit FileTypeChanged();
+
+    if (m_data.nReadCount != old_data.nReadCount)
+        emit ReadCountChanged();
+
+    if (m_data.nAttachmentCount != old_data.nAttachmentCount)
+        emit AttachmentCountChanged();
+
+    if (m_data.tCreated != old_data.tCreated)
+        emit DateCreatedChanged();
+
+    if (m_data.tModified != old_data.tModified)
+        emit DateModifiedChanged();
+    
+    if (m_data.tAccessed != old_data.tAccessed)
+        emit DateAccessedChanged();
+
+    if (m_data.tDataModified != old_data.tDataModified)
+        emit DataDateModified();
+
+    if (m_data.strDataMD5 != old_data.strDataMD5)
+        emit DataMD5Changed();
+
+    return true;
 }
 
 WizDocumentAttachment::WizDocumentAttachment(
@@ -786,6 +875,8 @@ void WizFolder::moveToLocation(const QString& strDestLocation)
     qDebug() << "Delete old location ; " << strOldLocation;
     m_db.deleteExtraFolder(strOldLocation);
     m_db.setLocalValueVersion("folders", -1);
+
+    //TODO: emit locationChanged()
 }
 
 
