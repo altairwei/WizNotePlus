@@ -55,6 +55,7 @@ set(wiznote_SOURCES
     database/sqlite3.c
     database/cppsqlite3.cpp
     database/WizDatabaseManager.cpp
+    database/WizOnlineDatabase.cpp
 
     share/WizSettings.cpp
     share/WizUI.cpp
@@ -246,6 +247,7 @@ set(wiznote_HEADERS
     database/sqlite3.h
     database/cppsqlite3.h
     database/WizDatabaseManager.h
+    database/WizOnlineDatabase.h
 
     share/WizSettings.h
     share/WizUI.h
