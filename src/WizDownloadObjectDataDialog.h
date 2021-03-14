@@ -4,7 +4,7 @@
 #include <QDialog>
 #include <QPointer>
 
-#include "share/WizDatabaseManager.h"
+#include "database/WizDatabaseManager.h"
 #include "share/WizDownloadObjectData.h"
 
 namespace Ui {

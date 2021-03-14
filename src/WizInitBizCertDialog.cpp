@@ -4,7 +4,7 @@
 #include "sync/WizKMServer.h"
 #include "widgets/WizExecutingActionDialog.h"
 #include "share/WizThreads.h"
-#include "share/WizDatabase.h"
+#include "database/WizDatabase.h"
 #include "share/WizEnc.h"
 #include "sync/WizApiEntry.h"
 

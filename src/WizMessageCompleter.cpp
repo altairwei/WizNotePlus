@@ -12,8 +12,8 @@
 #include <QDebug>
 
 #include "sync/WizAvatarHost.h"
-#include "share/WizDatabaseManager.h"
-#include "share/WizDatabase.h"
+#include "database/WizDatabaseManager.h"
+#include "database/WizDatabase.h"
 #include "share/WizGlobal.h"
 #include "utils/WizPinyin.h"
 #include "utils/WizStyleHelper.h"

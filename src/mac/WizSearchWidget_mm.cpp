@@ -19,8 +19,8 @@
 
 #include "utils/WizStyleHelper.h"
 #include "share/WizThreads.h"
-#include "share/WizDatabaseManager.h"
-#include "share/WizDatabase.h"
+#include "database/WizDatabaseManager.h"
+#include "database/WizDatabase.h"
 #include "share/WizSettings.h"
 #include "sync/WizApiEntry.h"
 #include "WizPositionDelegate.h"

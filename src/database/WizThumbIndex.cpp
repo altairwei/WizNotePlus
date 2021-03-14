@@ -4,7 +4,7 @@
 #include <QDebug>
 
 #include "WizDef.h"
-#include "WizMisc.h"
+#include "share/WizMisc.h"
 #include "WizIndex.h"
 #include "utils/WizLogger.h"
 

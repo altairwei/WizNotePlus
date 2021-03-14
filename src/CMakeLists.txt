@@ -44,13 +44,18 @@ set(wiznote_SOURCES
     share/WizZip.cpp
     share/WizQtHelper.cpp
     share/WizMisc.cpp
-    share/sqlite3.c
-    share/cppsqlite3.cpp
     share/WizObject.cpp
     share/WizKMCore.cpp
     share/WizGlobal.cpp
-    share/WizDatabase.cpp
-    share/WizDatabaseManager.cpp
+
+    database/WizDatabase.cpp
+    database/WizIndex.cpp
+    database/WizIndexBase.cpp
+    database/WizThumbIndex.cpp
+    database/sqlite3.c
+    database/cppsqlite3.cpp
+    database/WizDatabaseManager.cpp
+
     share/WizSettings.cpp
     share/WizUI.cpp
     share/WizMd5.cpp
@@ -64,9 +69,6 @@ set(wiznote_SOURCES
     share/WizMultiLineListWidget.cpp
     share/WizFileIconProvider.cpp
     share/WizWindowsHelper.cpp
-    share/WizIndexBase.cpp
-    share/WizIndex.cpp
-    share/WizThumbIndex.cpp
     share/WizEnc.cpp
     share/WizZiwReader.cpp
     html/WizHtmlReader.cpp
@@ -232,13 +234,19 @@ set(wiznote_HEADERS
     share/WizZip.h
     share/WizQtHelper.h
     share/WizMisc.h
-    share/sqlite3ext.h
-    share/sqlite3.h
-    share/cppsqlite3.h
     share/WizObject.h
     share/WizKMCore.h
-    share/WizDatabase.h
-    share/WizDatabaseManager.h
+
+    database/WizDatabase.h
+    database/WizIndex.h
+    database/WizIndexBase.h
+    database/WizThumbIndex.h
+    database/WizSyncableDatabase.h
+    database/sqlite3ext.h
+    database/sqlite3.h
+    database/cppsqlite3.h
+    database/WizDatabaseManager.h
+
     share/WizSettings.h
     share/WizUI.h
     share/WizHtml2Zip.h
@@ -252,9 +260,6 @@ set(wiznote_HEADERS
     share/WizMultiLineListWidget.h
     share/WizFileIconProvider.h
     share/WizWindowsHelper.h
-    share/WizIndexBase.h
-    share/WizIndex.h
-    share/WizThumbIndex.h
     share/WizEnc.h
     share/WizZiwReader.h
     share/WizGlobal.h
@@ -266,7 +271,6 @@ set(wiznote_HEADERS
     sync/WizKMSync.h
     sync/WizAsyncApi.h
     sync/WizAvatarUploader.h
-    share/WizSyncableDatabase.h
     share/WizSearch.h
     widgets/WizAboutDialog.h
     widgets/WizSegmentedButton.h

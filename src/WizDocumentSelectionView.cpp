@@ -6,7 +6,7 @@
 
 #include "WizDef.h"
 #include "WizMainWindow.h"
-#include "share/WizDatabaseManager.h"
+#include "database/WizDatabaseManager.h"
 
 
 #define WIZ_SELECTION_ITEM_MAX 5

@@ -7,7 +7,7 @@
 #include <QDebug>
 
 #include "WizDef.h"
-#include "share/WizDatabase.h"
+#include "database/WizDatabase.h"
 #include "share/WizMessageBox.h"
 #include "WizFolderView.h"
 

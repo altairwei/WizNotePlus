@@ -8,8 +8,8 @@
 
 #include "utils/WizStyleHelper.h"
 #include "share/WizObject.h"
-#include "share/WizDatabaseManager.h"
-#include "share/WizDatabase.h"
+#include "database/WizDatabaseManager.h"
+#include "database/WizDatabase.h"
 #include "share/WizMisc.h"
 #include "WizDef.h"
 

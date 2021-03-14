@@ -13,7 +13,7 @@
 #include "sync/WizApiEntry.h"
 #include "sync/WizToken.h"
 #include "share/WizSettings.h"
-#include "share/WizDatabaseManager.h"
+#include "database/WizDatabaseManager.h"
 #include "share/jsoncpp/json/json.h"
 #include "utils/WizStyleHelper.h"
 

@@ -10,8 +10,8 @@
 #include "sync/WizKMSync.h"
 #include "WizProgressDialog.h"
 #include "WizObjectDataDownloader.h"
-#include "WizDatabaseManager.h"
-#include "WizDatabase.h"
+#include "database/WizDatabaseManager.h"
+#include "database/WizDatabase.h"
 #include "WizLineInputDialog.h"
 
 WizDocumentOperatorPrivate::WizDocumentOperatorPrivate(OperatorData* data, QObject* parent)

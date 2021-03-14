@@ -27,7 +27,7 @@
 #include "gui/documentviewer/WizNoteInfoForm.h"
 #include "WizNoteStyle.h"
 #include "share/WizMisc.h"
-#include "share/WizDatabase.h"
+#include "database/WizDatabase.h"
 #include "share/WizSettings.h"
 #include "share/WizAnimateAction.h"
 #include "share/WizAnalyzer.h"

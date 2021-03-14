@@ -8,7 +8,7 @@
 #include "WizApiEntry.h"
 #include "WizAvatarHost.h"
 
-#include "share/WizSyncableDatabase.h"
+#include "database/WizSyncableDatabase.h"
 #include "share/WizAnalyzer.h"
 #include "share/WizEventLoop.h"
 

@@ -14,7 +14,7 @@
 #include "share/WizGlobal.h"
 
 #include "share/WizObjectDataDownloader.h"
-#include "share/WizDatabaseManager.h"
+#include "database/WizDatabaseManager.h"
 #include "share/WizSettings.h"
 #include "share/WizUIHelper.h"
 #include "sync/WizToken.h"

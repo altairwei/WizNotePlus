@@ -1,7 +1,7 @@
 ﻿#ifndef WIZSERVICE_SYNC_H
 #define WIZSERVICE_SYNC_H
 
-#include "../share/WizSyncableDatabase.h"
+#include "../database/WizSyncableDatabase.h"
 
 bool WizSyncDatabase(const WIZUSERINFO& info,
                      IWizKMSyncEvents* pEvents,

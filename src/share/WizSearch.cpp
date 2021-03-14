@@ -15,7 +15,7 @@
 #include "WizMisc.h"
 #include "WizSettings.h"
 #include "html/WizHtmlCollector.h"
-#include "WizDatabase.h"
+#include "database/WizDatabase.h"
 #include "utils/WizLogger.h"
 #include "utils/WizPathResolve.h"
 #include "sync/WizApiEntry.h"

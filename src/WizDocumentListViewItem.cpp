@@ -8,8 +8,8 @@
 #include <QStyleOptionViewItem>
 
 #include "WizDocumentListView.h"
-#include "share/WizDatabaseManager.h"
-#include "share/WizDatabase.h"
+#include "database/WizDatabaseManager.h"
+#include "database/WizDatabase.h"
 #include "share/WizSettings.h"
 #include "WizPopupButton.h"
 

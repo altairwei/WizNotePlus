@@ -12,30 +12,34 @@
 #include <QClipboard>
 #include <QDateTime>
 
-#include "WizHtml2Zip.h"
+#include "share/WizHtml2Zip.h"
 #include "share/WizZip.h"
 #include "share/WizGlobal.h"
+#include "share/WizObjectDataDownloader.h"
+#include "database/WizDatabaseManager.h"
+#include "share/WizEnc.h"
+#include "share/WizThreads.h"
+#include "share/WizMisc.h"
+#include "share/WizMessageBox.h"
+#include "share/jsoncpp/json/json.h"
 
 #include "sync/WizToken.h"
+#include "sync/WizKMServer.h"
+#include "sync/WizApiEntry.h"
+#include "sync/WizAvatarHost.h"
 
 #include "html/WizHtmlCollector.h"
-#include "share/jsoncpp/json/json.h"
 
 #include "utils/WizPathResolve.h"
 #include "utils/WizMisc.h"
 #include "utils/WizLogger.h"
-#include "sync/WizAvatarHost.h"
+
+#include "widgets/WizExecutingActionDialog.h"
+
 #include "WizProgressDialog.h"
 #include "WizUserCipherForm.h"
-#include "WizDatabaseManager.h"
 #include "WizLineInputDialog.h"
 #include "WizInitBizCertDialog.h"
-#include "WizEnc.h"
-#include "widgets/WizExecutingActionDialog.h"
-#include "sync/WizKMServer.h"
-#include "share/WizThreads.h"
-#include "share/WizMisc.h"
-#include "WizMessageBox.h"
 
 #define WIZNOTE_THUMB_VERSION "3"
 

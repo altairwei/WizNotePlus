@@ -3,8 +3,8 @@
 #include <QFile>
 #include <QDebug>
 #include "utils/WizPathResolve.h"
-#include "share/WizDatabase.h"
-#include "share/WizDatabaseManager.h"
+#include "database/WizDatabase.h"
+#include "database/WizDatabaseManager.h"
 #include "share/jsoncpp/json/json.h"
 
 

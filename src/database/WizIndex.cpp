@@ -3,10 +3,10 @@
 #include <QDebug>
 
 #include <algorithm>
-#include "WizKMCore.h"
+#include "share/WizKMCore.h"
 #include "utils/WizLogger.h"
 #include "utils/WizMisc.h"
-#include "WizMisc.h"
+#include "share/WizMisc.h"
 
 
 WizIndex::WizIndex(void)

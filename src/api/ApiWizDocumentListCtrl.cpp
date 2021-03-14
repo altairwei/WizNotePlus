@@ -4,7 +4,7 @@
 #include <QDebug>
 
 #include "WizDocumentListView.h"
-#include "share/WizDatabase.h"
+#include "database/WizDatabase.h"
 
 ApiWizDocumentListCtrl::ApiWizDocumentListCtrl(WizDocumentListView* docListView, QObject* parent)
     : QObject(parent)

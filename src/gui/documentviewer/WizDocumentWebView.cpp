@@ -47,7 +47,7 @@
 #include "share/WizAnalyzer.h"
 #include "share/WizMessageBox.h"
 #include "share/WizObjectDataDownloader.h"
-#include "share/WizDatabaseManager.h"
+#include "database/WizDatabaseManager.h"
 #include "share/WizThreads.h"
 #include "sync/WizAvatarHost.h"
 #include "sync/WizToken.h"

@@ -9,7 +9,7 @@
 #include "share/WizGlobal.h"
 #include "utils/WizPathResolve.h"
 #include "share/WizMessageBox.h"
-#include "share/WizDatabaseManager.h"
+#include "database/WizDatabaseManager.h"
 #include "share/WizThreads.h"
 #include "share/WizRequest.h"
 
