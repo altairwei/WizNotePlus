@@ -1,8 +1,13 @@
 #include "ApiWizDatabase.h"
+
+#include <QDebug>
+
 #include "share/WizDatabaseManager.h"
 #include "share/WizDatabase.h"
+#include "share/WizMisc.h"
+
 #include "WizFileImporter.h"
-#include <QDebug>
+
 
 ApiWizDatabase::ApiWizDatabase(WizDatabaseManager* dbManager, QObject* parent)
     : QObject(parent)
@@ -64,4 +69,14 @@ bool ApiWizDatabase::CreateDocument(const QString &bstrIndexFileName, const QStr
     }
 
     return bRet;
+}
+
+bool ApiWizDatabase::CheckDocumentData(QObject *pDoc)
+{
+    WizDocument *doc = qobject_cast<WizDocument *>(pDoc);
+    if (doc) {
+        return WizMakeSureDocumentExistAndBlockWidthDialog(doc->db(), doc->data());
+    } else {
+        return false;
+    }
 }

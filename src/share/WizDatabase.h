@@ -53,6 +53,12 @@ public:
     QString FileType() const { return m_data.strFileType; }
     Q_PROPERTY(QString FileType READ FileType NOTIFY FileTypeChanged)
 
+    QString FileName() const;
+    Q_PROPERTY(QString FileName READ FileName)
+
+    bool Downloaded() const;
+    Q_PROPERTY(QString Downloaded READ Downloaded NOTIFY DownloadedChanged)
+
     long ReadCount() const { return m_data.nReadCount; }
     Q_PROPERTY(long ReadCount READ ReadCount NOTIFY ReadCountChanged)
 
@@ -80,6 +86,7 @@ public:
 
     bool isProtected() const { return m_data.nProtected; }
     bool encryptDocument() { return false; }
+    WizDatabase &db() { return m_db; }
 
     void makeSureObjectDataExists();
 
@@ -106,6 +113,7 @@ signals:
     void TypeChanged();
     void OwnerChanged();
     void FileTypeChanged();
+    void DownloadedChanged();
     void ReadCountChanged();
     void AttachmentCountChanged();
     void DateCreatedChanged();

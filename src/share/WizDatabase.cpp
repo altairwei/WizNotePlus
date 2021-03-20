@@ -194,6 +194,16 @@ bool WizDocument::setDateModified(const QString &strDateModified)
     return false;
 }
 
+QString WizDocument::FileName() const
+{
+    return m_db.getDocumentFileName(m_data.strGUID);
+}
+
+bool WizDocument::Downloaded() const
+{
+    return m_db.isDocumentDownloaded(m_data.strGUID);
+}
+
 QObject *WizDocument::Database() const
 {
     return &m_db;
@@ -202,6 +212,8 @@ QObject *WizDocument::Database() const
 void WizDocument::makeSureObjectDataExists()
 {
     ::WizMakeSureDocumentExistAndBlockWidthDialog(m_db, m_data);
+
+    emit DownloadedChanged();
 
     CWizDocumentAttachmentDataArray arrayAttach;
     if (m_db.getDocumentAttachments(m_data.strGUID, arrayAttach))

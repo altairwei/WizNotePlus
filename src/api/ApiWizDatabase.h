@@ -5,6 +5,7 @@
 
 class WizDatabaseManager;
 class WizDatabase;
+class WizDocument;
 
 class ApiWizDatabase : public QObject
 {
@@ -20,6 +21,7 @@ public:
     Q_INVOKABLE bool CreateDocument(const QString &bstrIndexFileName, const QString &bstrTitle,
         const QString &bstrLocation, const QStringList &tagList, const QString &bstrURL);
     Q_INVOKABLE QObject *GetGroupDatabase(const QString &kbGUID);
+    Q_INVOKABLE bool CheckDocumentData(QObject *doc);
 };
 
 #endif // API_APIWIZDATABASE_H
