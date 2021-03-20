@@ -452,6 +452,8 @@ void WizMainTabBrowser::keyPressEvent(QKeyEvent* ev)
             int index = ev->key() - Qt::Key_0;
             if (index <= count() && index >= 0)
                 setCurrentIndex(index-1);
+
+            return;
         }
     }
 
