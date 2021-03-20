@@ -12,7 +12,7 @@
 #include "share/WizGlobal.h"
 
 #include "WizDef.h"
-#include "share/WizDatabaseManager.h"
+#include "database/WizDatabaseManager.h"
 #include "share/WizFileMonitor.h"
 #include "share/WizMisc.h"
 #include "share/WizUIHelper.h"

@@ -1,8 +1,8 @@
 #include "ApiWizExplorerWindow.h"
 #include "WizMainWindow.h"
 #include "gui/documentviewer/WizDocumentView.h"
-#include "share/WizDatabaseManager.h"
-#include "share/WizDatabase.h"
+#include "database/WizDatabaseManager.h"
+#include "database/WizDatabase.h"
 
 ApiWizExplorerWindow::ApiWizExplorerWindow(WizMainWindow* mw, QObject* parent)
     : QObject(parent)

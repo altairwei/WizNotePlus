@@ -6,8 +6,8 @@
 #include <QNetworkReply>
 #include <QNetworkAccessManager>
 #include "share/jsoncpp/json/json.h"
-#include "share/WizDatabase.h"
-#include "share/WizDatabaseManager.h"
+#include "database/WizDatabase.h"
+#include "database/WizDatabaseManager.h"
 #include "share/WizMessageBox.h"
 #include "sync/WizApiEntry.h"
 

@@ -6,7 +6,7 @@
 #include "WizApiEntry.h"
 #include "WizToken.h"
 
-#include "../share/WizDatabase.h"
+#include "../database/WizDatabase.h"
 #include "WizKMSync_p.h"
 
 

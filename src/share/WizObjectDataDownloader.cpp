@@ -9,8 +9,8 @@
 #include "sync/WizToken.h"
 #include "sync/WizApiEntry.h"
 #include "WizMisc.h"
-#include "WizDatabaseManager.h"
-#include "WizDatabase.h"
+#include "database/WizDatabaseManager.h"
+#include "database/WizDatabase.h"
 
 // to avoid to much load for remote serser
 #define WIZ_OBJECTDATA_DOWNLOADER_MAX 1

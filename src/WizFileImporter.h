@@ -1,7 +1,7 @@
 ﻿#ifndef WIZFILEREADER_H
 #define WIZFILEREADER_H
 
-#include "share/WizDatabaseManager.h"
+#include "database/WizDatabaseManager.h"
 
 struct WIZTAGDATA;
 

@@ -9,7 +9,7 @@
 #include "utils/WizStyleHelper.h"
 #include "utils/WizLogger.h"
 #include "utils/WizPathResolve.h"
-#include "share/WizDatabaseManager.h"
+#include "database/WizDatabaseManager.h"
 #include "share/WizSettings.h"
 #include "share/WizAnalyzer.h"
 #include "share/WizObjectOperator.h"

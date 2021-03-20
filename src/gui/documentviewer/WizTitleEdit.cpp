@@ -6,8 +6,8 @@
 #include <QScrollBar>
 #include <QDebug>
 
-#include "share/WizDatabaseManager.h"
-#include "share/WizDatabase.h"
+#include "database/WizDatabaseManager.h"
+#include "database/WizDatabase.h"
 #include "gui/documentviewer/WizDocumentView.h"
 #include "WizMainWindow.h"
 #include "gui/documentviewer/WizDocumentWebView.h"

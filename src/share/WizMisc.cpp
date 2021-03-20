@@ -34,7 +34,7 @@
 #include "share/WizAnalyzer.h"
 #include "share/WizObjectOperator.h"
 #include "share/WizEventLoop.h"
-#include "WizDatabaseManager.h"
+#include "database/WizDatabaseManager.h"
 #include "WizObjectDataDownloader.h"
 #include "WizProgressDialog.h"
 

@@ -19,8 +19,8 @@
 #include "share/WizThreads.h"
 #include "share/jsoncpp/json/json.h"
 #include "WizMainWindow.h"
-#include "WizDatabase.h"
-#include "WizDatabaseManager.h"
+#include "database/WizDatabase.h"
+#include "database/WizDatabaseManager.h"
 
 WizAnalyzer::WizAnalyzer(const CString& strRecordFileName)
     : m_strRecordFileName(strRecordFileName)

@@ -7,8 +7,8 @@
 #include <QDir>
 
 #include "share/WizMisc.h"
-#include "share/WizDatabaseManager.h"
-#include "share/WizDatabase.h"
+#include "database/WizDatabaseManager.h"
+#include "database/WizDatabase.h"
 #include "utils/WizPathResolve.h"
 
 

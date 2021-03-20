@@ -6,7 +6,7 @@
 #include "WizQtHelper.h"
 #include "WizMisc.h"
 
-#include "WizDatabase.h"
+#include "database/WizDatabase.h"
 
 enum WizProxyType
 {

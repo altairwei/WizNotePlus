@@ -7,8 +7,9 @@
 
 #include "WizIndex.h"
 #include "WizThumbIndex.h"
-#include "WizZiwReader.h"
 #include "WizSyncableDatabase.h"
+
+#include "share/WizZiwReader.h"
 
 class WizDatabase;
 class WizFolder;

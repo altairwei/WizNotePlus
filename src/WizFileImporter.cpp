@@ -10,7 +10,7 @@
 #include "html/WizHtmlCollector.h"
 #include "share/WizMisc.h"
 #include "share/WizRtfReader.h"
-#include "share/WizDatabase.h"
+#include "database/WizDatabase.h"
 #include "core/WizNoteManager.h"
 #include "mac/WizMacHelper.h"
 

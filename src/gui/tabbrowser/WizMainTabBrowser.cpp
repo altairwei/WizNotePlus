@@ -18,7 +18,7 @@
 #include "share/WizMisc.h"
 #include "utils/WizStyleHelper.h"
 #include "utils/WizPathResolve.h"
-#include "share/WizDatabaseManager.h"
+#include "database/WizDatabaseManager.h"
 #include "gui/documentviewer/WizTitleBar.h"
 #include "gui/documentviewer/WizDocumentView.h"
 #include "gui/tabbrowser/WizWebsiteView.h"

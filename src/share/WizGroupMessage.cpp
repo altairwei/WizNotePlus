@@ -1,6 +1,6 @@
 ﻿#include "WizGroupMessage.h"
 
-#include "WizDatabase.h"
+#include "database/WizDatabase.h"
 #include "WizApiEntry.h"
 #include "rapidjson/document.h"
 

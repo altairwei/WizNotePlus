@@ -24,8 +24,8 @@
 #include "sync/WizApiEntry.h"
 #include "sync/WizToken.h"
 
-#include "share/WizDatabaseManager.h"
-#include "share/WizDatabase.h"
+#include "database/WizDatabaseManager.h"
+#include "database/WizDatabase.h"
 #include "share/WizObject.h"
 #include "share/WizSettings.h"
 #include "share/WizSettings.h"

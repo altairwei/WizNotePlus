@@ -22,7 +22,7 @@
 #include "utils/WizStyleHelper.h"
 #include "share/WizSettings.h"
 #include "share/WizWin32Helper.h"
-#include "share/WizDatabaseManager.h"
+#include "database/WizDatabaseManager.h"
 #include "share/WizSingleApplication.h"
 #include "share/WizThreads.h"
 #include "share/WizGlobal.h"

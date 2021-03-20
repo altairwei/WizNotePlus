@@ -26,7 +26,7 @@
 
 #include "share/WizSettings.h"
 #include "share/WizGlobal.h"
-#include "share/WizDatabaseManager.h"
+#include "database/WizDatabaseManager.h"
 #include "share/WizMisc.h"
 
 

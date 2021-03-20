@@ -6,7 +6,7 @@
 #include "WizMisc.h"
 #include "WizEnc.h"
 #include "utils/WizLogger.h"
-#include "WizDatabase.h"
+#include "database/WizDatabase.h"
 
 
 WizZiwReader::WizZiwReader(QObject *parent)

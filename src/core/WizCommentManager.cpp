@@ -11,8 +11,8 @@
 #include "share/WizEventLoop.h"
 #include "share/WizThreads.h"
 #include "sync/WizKMServer.h"
-#include "share/WizDatabase.h"
-#include "share/WizDatabaseManager.h"
+#include "database/WizDatabase.h"
+#include "database/WizDatabaseManager.h"
 
 #define QUERY_DELAY 3
 

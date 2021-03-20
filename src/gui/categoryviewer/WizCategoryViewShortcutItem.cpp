@@ -5,8 +5,8 @@
 #include "WizDef.h"
 #include "utils/WizStyleHelper.h"
 #include "share/WizSettings.h"
-#include "share/WizDatabase.h"
-#include "share/WizDatabaseManager.h"
+#include "database/WizDatabase.h"
+#include "database/WizDatabaseManager.h"
 #include "share/WizMisc.h"
 #include "gui/categoryviewer/WizCategoryView.h"
 

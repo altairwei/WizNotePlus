@@ -2,8 +2,8 @@
 
 #include <QDebug>
 
-#include "WizDatabase.h"
-#include "WizObject.h"
+#include "database/WizDatabase.h"
+#include "share/WizObject.h"
 #include "utils/WizLogger.h"
 
 static WizDatabaseManager* m_instance = 0;

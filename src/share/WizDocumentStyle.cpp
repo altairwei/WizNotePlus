@@ -1,6 +1,6 @@
 ﻿#include "WizDocumentStyle.h"
-#include "WizDatabase.h"
-#include "WizDatabaseManager.h"
+#include "database/WizDatabase.h"
+#include "database/WizDatabaseManager.h"
 #include "../utils/WizLogger.h"
 
 #include <QMutex>

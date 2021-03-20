@@ -1,7 +1,7 @@
 ﻿#ifndef WIZDOWNLOADOBJECTDATA_H
 #define WIZDOWNLOADOBJECTDATA_H
 
-#include "WizDatabaseManager.h"
+#include "database/WizDatabaseManager.h"
 
 class WizDownloadObjectData
 {

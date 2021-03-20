@@ -4,7 +4,7 @@
 #include "utils/WizPinyin.h"
 #include "utils/WizStyleHelper.h"
 #include "share/WizObjectOperator.h"
-#include "share/WizDatabaseManager.h"
+#include "database/WizDatabaseManager.h"
 #include "share/WizSettings.h"
 #include "share/WizMisc.h"
 

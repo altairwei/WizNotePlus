@@ -2,9 +2,9 @@
 
 #include <QDebug>
 
-#include "share/WizDatabaseManager.h"
-#include "share/WizDatabase.h"
 #include "share/WizMisc.h"
+#include "database/WizDatabaseManager.h"
+#include "database/WizDatabase.h"
 
 #include "WizFileImporter.h"
 

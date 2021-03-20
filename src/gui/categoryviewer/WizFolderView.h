@@ -3,7 +3,7 @@
 
 #include <QTreeWidget>
 
-#include "share/WizDatabaseManager.h"
+#include "database/WizDatabaseManager.h"
 #include "gui/categoryviewer/WizCategoryViewItem.h"
 
 class WizExplorerApp;

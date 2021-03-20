@@ -3,8 +3,8 @@
 #include "sync/WizToken.h"
 #include "share/WizMisc.h"
 #include "share/jsoncpp/json/json.h"
-#include "share/WizDatabase.h"
-#include "share/WizDatabaseManager.h"
+#include "database/WizDatabase.h"
+#include "database/WizDatabaseManager.h"
 #include "sync/WizToken.h"
 #include "sync/WizKMServer.h"
 

@@ -3,7 +3,7 @@
 //#include "WizKMDatabase.h"
 
 #include "WizQtHelper.h"
-#include "WizDatabase.h"
+#include "database/WizDatabase.h"
 #include "WizDef.h"
 #include <QDir>
 #include <QMutex>
