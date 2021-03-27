@@ -42,11 +42,11 @@ function strToDate(str) {
     var a = str.split('-');
     if (a.length != 3)
         return null;
-    //
+
     var year = parseInt(a[0], 10);
     var month = parseInt(a[1], 10);
     var day = parseInt(a[2], 10);
-    //
+
     var ret = new Date();
     ret.setFullYear(year, month - 1, day);
     return ret;
@@ -73,9 +73,10 @@ function getMetaInt(objDatabase, metaName, metaKey, defVal) {
         return defVal;
     }
 }
-//
+
 async function listDocuments() {
     const documents = await objDatabase.GetRecentDocuments("", ITEM_LIMITS);
+    listRecent.innerHTML = "";
     for (const doc of documents) {
         const item = document.createElement("li");
         const docDate = doc.DateModified == "1970-01-01T08:00:00" ? doc.DateCreated : doc.DateModified;
@@ -99,6 +100,7 @@ async function listUnreadDocuments() {
         ` order by random() limit ${ITEM_LIMITS}`;
 
     const documents = await objDatabase.DocumentsFromSQLWhere(sql);
+    listUnread.innerHTML = "";
     if (documents.length == 0) {
         const item = document.createElement("li");
         item.innerHTML = "No documents";
@@ -130,26 +132,34 @@ async function listEvents() {
     sql += and2;
     sql += and1;
     // Get documents which contains events data
+    // Wait for event creation
+    await new Promise(r => setTimeout(r, 1000));
     const events = await objDatabase.DocumentsFromSQLWhere(sql);
+    let liItems = [];
     if (events == undefined || events.length == 0) {
         const item = document.createElement("li");
         item.innerHTML = "No events";
-        listTodo.appendChild(item);
+        liItems.push(item)
     } else {
         for (const doc of events) {
-            var item = document.createElement("li");
             // Get start date of event
             const eventBegin = strToDate(await doc.GetParamValue("CALENDAR_START"));
             const eventBeginString = eventBegin.toLocaleDateString();
-            //
+
+            const item = document.createElement("li");
             item.innerHTML = "<a href=\"javascript:void(0);\" onclick=\"viewDocument('" + doc.GUID + "');\" >" + doc.Title + "</a>&nbsp;(" + eventBeginString + ")";
-            listTodo.appendChild(item);
-            //
+            liItems.push(item)
+
             doc.deleteLater();
         }
     }
+
+    listTodo.innerHTML = "";
+    for (const liItem of liItems) {
+        listTodo.appendChild(liItem);
+    }
 }
-//
+
 function formatInt(val) {
     if (val < 10)
         return "0" + val;
@@ -163,22 +173,22 @@ async function listDocumentsByDate(dt) {
 
     var begin_date_string = dt.getFullYear() + "-" + formatInt(dt.getMonth() + 1) + "-" + formatInt(dt.getDate()) + " 00:00:00";
     var end_date_string = dt.getFullYear() + "-" + formatInt(dt.getMonth() + 1) + "-" + formatInt(dt.getDate()) + " 23:59:59";
-    //
+
     var sql = "DT_CREATED >='" + begin_date_string + "' and DT_CREATED <='" + end_date_string + "'"; //  and DOCUMENT_TYPE='journal'";
-    //
+
     var documents = await objDatabase.DocumentsFromSQLWhere(sql);
-    //
+
     if (documents == null)
         return 0;
-    //
+
     const guidList = new Array();
     for (const doc of documents) {
         guidList.push(doc.GUID);
         doc.deleteLater();
     }
-    //
+
     objApp.DocumentsCtrl.SetDocuments(guidList);
-    //
+
     return 0;
 }
 
@@ -237,7 +247,7 @@ $(document).ready(function() {
                 document.title = t("Title");
                 continue;
             }
-            //
+
             const elem = document.getElementById(id);
             if (elem)
                 elem.innerHTML = t(id);
@@ -245,7 +255,14 @@ $(document).ready(function() {
         $('#datepicker').datepicker(
             $.datepicker.regional[lang.replace(/_/, "-")]
         );
-        // 
+
+        objDatabase.documentCreated.connect(listDocuments)
+        objDatabase.documentDeleted.connect(listDocuments)
+        objDatabase.documentDeleted.connect(listEvents)
+        objDatabase.documentModified.connect(listDocuments)
+        objDatabase.documentModified.connect(listEvents)
+        objDatabase.documentDataModified.connect(listDocuments)
+
         await listDocuments();
         await listEvents();
         await listUnreadDocuments();
