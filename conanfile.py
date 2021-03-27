@@ -65,7 +65,7 @@ class WizNotePlusConan(ConanFile):
     generators = "cmake_find_package", "cmake_paths", "cmake"
     requires = (
         "cryptopp/5.6.5@bincrafters/stable",
-        "zlib/1.2.11@conan/stable",
+        "zlib/1.2.11",
         "quazip/0.7.6@altairwei/testing",
         "Gumbo/0.10.1@altairwei/testing"
     )
@@ -111,7 +111,7 @@ class WizNotePlusConan(ConanFile):
 
     def requirements(self):
         if self.settings.os == "Linux":
-            self.requires("fcitx-qt5/1.1.1@altairwei/testing")
+            self.requires("fcitx-qt5/1.2.4@altairwei/testing")
             #self.requires("fcitx5-qt/0.0.0@altairwei/testing")
         if self.options.qtdir:
             qt_version = get_qt_version(os.path.join(str(self.options.qtdir), "bin"))
