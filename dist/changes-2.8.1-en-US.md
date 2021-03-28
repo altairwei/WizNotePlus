@@ -10,7 +10,7 @@ Now precompiled WizNotePlus package is built against Qt 5.14.2, and minimum syst
 
 More details: [Supported Platforms](https://doc-snapshots.qt.io/qt5-5.14/supported-platforms.html).
 
-# New features:
+## New features:
 
 * A welcome page will open after the client is started.
 * [Wiz.Editor.md](https://github.com/altairwei/Wiz.Editor.md/releases) plugin is ported to WizNotePlus.
