@@ -7,7 +7,7 @@
 #include  <deque>
 #include <QWaitCondition>
 
-#include "WizDatabaseManager.h"
+#include "database/WizDatabaseManager.h"
 #include "share/WizQtHelper.h"
 
 struct WIZDOCUMENTDATAEX;

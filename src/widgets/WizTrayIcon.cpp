@@ -2,7 +2,7 @@
 #include <QApplication>
 #include <QWidget>
 #include <QDebug>
-#include "share/WizSyncableDatabase.h"
+#include "database/WizSyncableDatabase.h"
 #include "WizDef.h"
 
 WizTrayIcon::WizTrayIcon(WizExplorerApp& app, QObject* parent)

@@ -18,8 +18,8 @@ class WizNoteManager
 public:
     WizNoteManager(WizDatabaseManager& dbMgr);
 
-    //
     void createIntroductionNoteForNewRegisterAccount();
+
     // create note
     bool createNote(WIZDOCUMENTDATA& data);
     bool createNote(WIZDOCUMENTDATA& data, const QString& strKbGUID);
@@ -42,7 +42,7 @@ public:
 
     void updateTemplateJS(const QString& local);
     void downloadTemplatePurchaseRecord();
-    //
+
     static bool downloadTemplateBlocked(const TemplateData& tempData);
 
 private:

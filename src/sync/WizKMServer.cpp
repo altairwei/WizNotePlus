@@ -13,8 +13,8 @@
 
 #include "utils/WizMisc.h"
 #include "utils/WizLogger.h"
-#include "share/WizDatabase.h"
-#include "share/WizDatabaseManager.h"
+#include "database/WizDatabase.h"
+#include "database/WizDatabaseManager.h"
 
 #include "WizMainWindow.h"
 

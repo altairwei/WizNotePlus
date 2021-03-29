@@ -7,8 +7,8 @@
 #include <QDesktopServices>
 #include <QUrl>
 
-#include "share/WizDatabaseManager.h"
-#include "share/WizDatabase.h"
+#include "database/WizDatabaseManager.h"
+#include "database/WizDatabase.h"
 #include "share/WizMisc.h"
 #include "share/WizHtml2Zip.h"
 #include "share/WizSettings.h"

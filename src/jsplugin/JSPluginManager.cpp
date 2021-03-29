@@ -22,7 +22,7 @@
 #include "WizMainWindow.h"
 #include "share/WizMisc.h"
 #include "share/WizGlobal.h"
-#include "share/WizDatabaseManager.h"
+#include "database/WizDatabaseManager.h"
 #include "utils/WizPathResolve.h"
 #include "widgets/WizLocalProgressWebView.h"
 #include "html/WizHtmlTool.h"

@@ -9,6 +9,7 @@ class WizDatabase;
 class WizProgressDialog;
 class WizDatabaseManager;
 
+/** A tool used to move or copy documents. */
 class WizDocumentOperator : public QObject
 {
     Q_OBJECT

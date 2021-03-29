@@ -32,7 +32,7 @@
 
 #include "WizUpgrade.h"
 #include "WizConsoleDialog.h"
-#include "WizCategoryView.h"
+#include "gui/categoryviewer/WizCategoryView.h"
 #include "WizDocumentListView.h"
 #include "WizUserCipherForm.h"
 #include "gui/documentviewer/WizDocumentView.h"
@@ -102,11 +102,11 @@
 #include "WizCellButton.h"
 #include "WizFileImporter.h"
 
-#include "plugins/public_apis_object/IWizExplorerApp.h"
+#include "api/ApiWizExplorerApp.h"
 #include "jsplugin/JSPluginManager.h"
 #include "jsplugin/JSPluginSpec.h"
 #include "jsplugin/JSPlugin.h"
-#include "plugins/public_apis_server/PublicAPIsServer.h"
+#include "api/PublicAPIsServer.h"
 
 #include "gui/tabbrowser/WizWebsiteView.h"
 
@@ -158,7 +158,7 @@ WizMainWindow::WizMainWindow(WizDatabaseManager& dbMgr, QWidget *parent)
     , m_mobileFileReceiver(nullptr)
     , m_bQuickDownloadMessageEnable(false)
     , m_quiting(false)
-    , m_IWizExplorerApp(new IWizExplorerApp(this, this))
+    , m_IWizExplorerApp(new ApiWizExplorerApp(this, this))
     , m_extFileWatcher(new QFileSystemWatcher)
 {
 #ifdef QT_DEBUG
@@ -583,14 +583,6 @@ void WizMainWindow::moveEvent(QMoveEvent* ev)
 
     WizPositionDelegate& delegate = WizPositionDelegate::instance();
     delegate.mainwindowPositionChanged(ev->oldPos(), ev->pos());
-}
-
-void WizMainWindow::keyPressEvent(QKeyEvent* ev)
-{
-    if (WizWebEngineViewProgressKeyEvents(ev))
-        return;
-    //
-    _baseClass::keyPressEvent(ev);
 }
 
 void WizMainWindow::on_actionExit_triggered()
@@ -2273,7 +2265,7 @@ WizIAPDialog*WizMainWindow::iapDialog()
 }
 
 /**
- * @brief Get IWizExplorerApp for the main window.
+ * @brief Get ApiWizExplorerApp for the main window.
  * @return
  */
 QObject* WizMainWindow::publicAPIsObject()
@@ -3935,10 +3927,9 @@ void WizMainWindow::checkWizUpdate()
 #ifndef BUILD4APPSTORE
     WizExecuteOnThread(WIZ_THREAD_NETWORK, [=](){
         WizUpgradeChecker m_upgrade;
-        QString currentTagName = QString("v%1-%2.%3")
+        QString currentTagName = QString("v%1-%2")
                                             .arg(WIZ_CLIENT_VERSION)
-                                            .arg(WIZ_DEV_STAGE)
-                                            .arg(WIZ_DEV_STAGE_VERSION);
+                                            .arg(WIZ_DEV_STAGE);
         m_upgrade.setTagName(currentTagName);
         connect(&m_upgrade, &WizUpgradeChecker::checkFinished, this, &WizMainWindow::on_checkUpgrade_finished);
         m_upgrade.checkUpgrade();

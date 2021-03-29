@@ -6,11 +6,11 @@
 #include <QVBoxLayout>
 #include <QLabel>
 
-#include "share/WizDatabaseManager.h"
+#include "database/WizDatabaseManager.h"
 #include "share/WizUIHelper.h"
 #include "share/WizKMCore.h"
 #include "share/WizObject.h"
-#include "share/WizDatabase.h"
+#include "database/WizDatabase.h"
 #include "widgets/WizScrollBar.h"
 
 

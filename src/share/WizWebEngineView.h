@@ -73,6 +73,7 @@ public:
     // Do not use {{}} to initialize InjectObjectCollection.
     WizWebEngineView(QWidget* parent): WizWebEngineView({}, parent) { }
     virtual ~WizWebEngineView();
+
 public:
     WizWebEnginePage* getPage();
     QMenu* createStandardContextMenu();
@@ -91,33 +92,36 @@ public:
     Q_INVOKABLE void SetZoom(int percent);
     Q_INVOKABLE int GetZoom();
 
+    double scaleUp();
+    double scaleDown();
+
 public Q_SLOTS:
     void innerLoadFinished(bool);
     void openLinkInDefaultBrowser(QUrl url);
+#if (QT_VERSION >= QT_VERSION_CHECK(5, 11, 0))
     void openDevTools();
-    void handleSavePageTriggered();
     void handleOpenDevToolsTriggered();
+#endif
+    void handleSavePageTriggered();
     
 Q_SIGNALS:
     void loadFinishedEx(bool);
-    
+
 private:
     WizDevToolsDialog* m_devToolsWindow = nullptr;
 
 protected:
     QWebEngineView *createWindow(QWebEnginePage::WebWindowType type) override;
-    void wheelEvent(QWheelEvent *event);
     void contextMenuEvent(QContextMenuEvent *event);
-};
+    void childEvent(QChildEvent *event) override;
+    bool eventFilter(QObject *obj, QEvent *ev) override;
 
-bool WizWebEngineViewProgressKeyEvents(QKeyEvent* ev);
+};
 
 class WizWebEngineViewContainerDialog: public QDialog
 {
 public:
     WizWebEngineViewContainerDialog(QWidget *parent = Q_NULLPTR, Qt::WindowFlags f = Qt::WindowFlags());
-protected:
-    virtual void keyPressEvent(QKeyEvent* ev);
 };
 
 QWebEngineProfile* createWebEngineProfile(const WizWebEngineInjectObjectCollection& objects, QObject* parent);

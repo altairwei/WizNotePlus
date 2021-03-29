@@ -7,8 +7,8 @@
 #include <QPainter>
 #include <QButtonGroup>
 #include <QDebug>
-#include "share/WizDatabase.h"
-#include "share/WizDatabaseManager.h"
+#include "database/WizDatabase.h"
+#include "database/WizDatabaseManager.h"
 #include "share/WizMisc.h"
 #include "WizNoteStyle.h"
 #include "utils/WizStyleHelper.h"

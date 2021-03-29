@@ -8,30 +8,39 @@ import json
 import contextlib
 import warnings
 from conans import ConanFile, CMake, tools, __version__ as conan_version
+from conans.tools import Version
 from conans.errors import ConanInvalidConfiguration
-from conans.model.version import Version
 
-def get_qt_dir():
+
+def qmake_query(prop, prefix=None):
+    value = subprocess.check_output(
+        ["qmake" if not prefix else os.path.join(prefix, "qmake"),
+         "-query", prop]).decode("utf-8")
+    return value.strip()
+
+def get_qt_dir(prefix=None):
     """
     Use qmake in $PATH to locate Qt library.
     """
-    qt_dir = subprocess.check_output(
-        ["qmake", "-query", "QT_INSTALL_PREFIX"]).decode("utf-8")
-    return qt_dir.strip()
+    return qmake_query("QT_INSTALL_PREFIX", prefix)
 
-def get_qt_bin():
+def get_qt_bin(prefix=None):
     """
     Use qmake in $PATH to locate deployqt tools.
     """
-    qt_bin = subprocess.check_output(
-        ["qmake", "-query", "QT_INSTALL_BINS"]).decode("utf-8")
-    return qt_bin.strip()
+    return qmake_query("QT_INSTALL_BINS", prefix)
+
+def get_qt_version(prefix=None):
+    """
+    Use qmake in $PATH to locate deployqt tools.
+    """
+    return qmake_query("QT_VERSION", prefix)
 
 def parse_version():
     """
     Generate build version from local git repository.
     """
-    wiznoteplus_version = "2.8.1-stable.0"
+    wiznoteplus_version = "2.8.2-stable.0"
     if os.path.exists(".git"):
         wiznoteplus_version = subprocess.check_output(
             ["git", "describe", "--tags"]).decode("utf-8").strip()
@@ -55,9 +64,8 @@ class WizNotePlusConan(ConanFile):
     settings = "os", "compiler", "build_type", "arch"
     generators = "cmake_find_package", "cmake_paths", "cmake"
     requires = (
-        "openssl/1.1.1d",
         "cryptopp/5.6.5@bincrafters/stable",
-        "zlib/1.2.11@conan/stable",
+        "zlib/1.2.11",
         "quazip/0.7.6@altairwei/testing",
         "Gumbo/0.10.1@altairwei/testing"
     )
@@ -103,13 +111,24 @@ class WizNotePlusConan(ConanFile):
 
     def requirements(self):
         if self.settings.os == "Linux":
-            self.requires("fcitx-qt5/1.1.1@altairwei/testing")
+            self.requires("fcitx-qt5/1.2.4@altairwei/testing")
             #self.requires("fcitx5-qt/0.0.0@altairwei/testing")
-        if not self.options.qtdir:
+        if self.options.qtdir:
+            qt_version = get_qt_version(os.path.join(str(self.options.qtdir), "bin"))
+        else:
             #TODO: Current conan-qt was not ready for building QtWebEngine module
             # QtWebEngine requires python >= 2.7.5 & < 3.0.0
             #self.requires("qt/5.14.1@bincrafters/stable")
-            pass
+            if tools.which("qmake"):
+                qt_version = get_qt_version()
+            else:
+                raise ConanInvalidConfiguration("Qt library is required!")
+        # Different Qt was built against different OpenSSL
+        if qt_version < Version("5.12"):
+            self.requires("openssl/1.0.2u")
+        else:
+            self.requires("openssl/1.1.1g")
+
 
     def build_requirements(self):
         if tools.os_info.is_windows and self.settings.compiler == "Visual Studio":
@@ -131,7 +150,7 @@ class WizNotePlusConan(ConanFile):
             if tools.which("qmake"):
                 self.options.qtdir = get_qt_dir()
             else:
-                raise ConanInvalidConfiguration("Qt library is required !")
+                raise ConanInvalidConfiguration("Qt library is required!")
         # QuaZIP should depend on the same Qt library with WizNotePlus
         if self.options.qtdir:
             self.options["quazip"].qtdir = self.options.qtdir

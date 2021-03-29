@@ -10,7 +10,7 @@
 
 详情可见 [Supported Platforms](https://doc-snapshots.qt.io/qt5-5.14/supported-platforms.html) 。
 
-### 新的特征：
+## 新的特征
 
 * 客户端启动后将会打开一个欢迎页面。
 * 移植 [Wiz.Editor.md](https://github.com/altairwei/Wiz.Editor.md/releases) 插件到 WizNotePlus

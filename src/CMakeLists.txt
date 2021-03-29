@@ -44,13 +44,19 @@ set(wiznote_SOURCES
     share/WizZip.cpp
     share/WizQtHelper.cpp
     share/WizMisc.cpp
-    share/sqlite3.c
-    share/cppsqlite3.cpp
     share/WizObject.cpp
     share/WizKMCore.cpp
     share/WizGlobal.cpp
-    share/WizDatabase.cpp
-    share/WizDatabaseManager.cpp
+
+    database/WizDatabase.cpp
+    database/WizIndex.cpp
+    database/WizIndexBase.cpp
+    database/WizThumbIndex.cpp
+    database/sqlite3.c
+    database/cppsqlite3.cpp
+    database/WizDatabaseManager.cpp
+    database/WizOnlineDatabase.cpp
+
     share/WizSettings.cpp
     share/WizUI.cpp
     share/WizMd5.cpp
@@ -64,9 +70,6 @@ set(wiznote_SOURCES
     share/WizMultiLineListWidget.cpp
     share/WizFileIconProvider.cpp
     share/WizWindowsHelper.cpp
-    share/WizIndexBase.cpp
-    share/WizIndex.cpp
-    share/WizThumbIndex.cpp
     share/WizEnc.cpp
     share/WizZiwReader.cpp
     html/WizHtmlReader.cpp
@@ -133,9 +136,9 @@ set(wiznote_SOURCES
     jsplugin/JSPluginSelectorWindow.cpp
     jsplugin/JSPluginHtmlDialog.cpp
 
-    plugins/public_apis_server/PublicAPIsServer.cpp
-    plugins/public_apis_server/WebSocketClientWrapper.cpp
-    plugins/public_apis_server/WebSocketTransport.cpp
+    api/PublicAPIsServer.cpp
+    api/WebSocketClientWrapper.cpp
+    api/WebSocketTransport.cpp
 
     gui/tabbrowser/WizMainTabBrowser.cpp
     gui/tabbrowser/AbstractTabPage.cpp
@@ -144,8 +147,19 @@ set(wiznote_SOURCES
     gui/tabbrowser/WebEngineWindow.cpp
     gui/tabbrowser/WizWebsiteView.cpp
 
-    WizCategoryView.cpp 
-    WizCategoryViewItem.cpp
+    gui/categoryviewer/WizCategoryView.cpp
+    gui/categoryviewer/WizCategoryViewItemBase.cpp
+    gui/categoryviewer/WizCategoryViewSectionItem.cpp
+    gui/categoryviewer/WizCategoryViewMessageItem.cpp
+    gui/categoryviewer/WizCategoryViewShortcutItem.cpp
+    gui/categoryviewer/WizCategoryViewSearchItem.cpp
+    gui/categoryviewer/WizCategoryViewFolderItem.cpp
+    gui/categoryviewer/WizCategoryViewTagItem.cpp
+    gui/categoryviewer/WizCategoryViewGroupItem.cpp
+    gui/categoryviewer/WizCategoryViewItem.cpp
+    gui/categoryviewer/WizFolderView.cpp
+    gui/categoryviewer/WizFolderSelector.cpp
+
     WizDevToolsDialog.cpp
     WizDocumentListView.cpp
     WizDocumentListViewItem.cpp
@@ -184,9 +198,7 @@ set(wiznote_SOURCES
     WizUpgrade.cpp
     WizButton.cpp
     WizFileImporter.cpp
-    WizFolderSelector.cpp
     WizProgressDialog.cpp
-    WizFolderView.cpp
     WizDocumentSelectionView.cpp
     WizDocumentTransitionView.cpp
     WizPopupButton.cpp
@@ -211,25 +223,32 @@ set(wiznote_SOURCES
     WizInitBizCertDialog.cpp
     share/WizDocumentStyle.cpp
 
-    plugins/public_apis_object/IWizHtmlEditorApp.cpp
-    plugins/public_apis_object/IWizExplorerWindow.cpp
-    plugins/public_apis_object/IWizCategoryCtrl.cpp
-    plugins/public_apis_object/IWizDocumentListCtrl.cpp
-    plugins/public_apis_object/IWizDatabase.cpp
-    plugins/public_apis_object/IWizExplorerApp.cpp
+    api/ApiWizHtmlEditorApp.cpp
+    api/ApiWizExplorerWindow.cpp
+    api/ApiWizCategoryCtrl.cpp
+    api/ApiWizDocumentListCtrl.cpp
+    api/ApiWizDatabase.cpp
+    api/ApiWizExplorerApp.cpp
 )
 
 set(wiznote_HEADERS
     share/WizZip.h
     share/WizQtHelper.h
     share/WizMisc.h
-    share/sqlite3ext.h
-    share/sqlite3.h
-    share/cppsqlite3.h
     share/WizObject.h
     share/WizKMCore.h
-    share/WizDatabase.h
-    share/WizDatabaseManager.h
+
+    database/WizDatabase.h
+    database/WizIndex.h
+    database/WizIndexBase.h
+    database/WizThumbIndex.h
+    database/WizSyncableDatabase.h
+    database/sqlite3ext.h
+    database/sqlite3.h
+    database/cppsqlite3.h
+    database/WizDatabaseManager.h
+    database/WizOnlineDatabase.h
+
     share/WizSettings.h
     share/WizUI.h
     share/WizHtml2Zip.h
@@ -243,9 +262,6 @@ set(wiznote_HEADERS
     share/WizMultiLineListWidget.h
     share/WizFileIconProvider.h
     share/WizWindowsHelper.h
-    share/WizIndexBase.h
-    share/WizIndex.h
-    share/WizThumbIndex.h
     share/WizEnc.h
     share/WizZiwReader.h
     share/WizGlobal.h
@@ -257,7 +273,6 @@ set(wiznote_HEADERS
     sync/WizKMSync.h
     sync/WizAsyncApi.h
     sync/WizAvatarUploader.h
-    share/WizSyncableDatabase.h
     share/WizSearch.h
     widgets/WizAboutDialog.h
     widgets/WizSegmentedButton.h
@@ -288,9 +303,9 @@ set(wiznote_HEADERS
     jsplugin/JSPluginSelectorWindow.h
     jsplugin/JSPluginHtmlDialog.h
 
-    plugins/public_apis_server/PublicAPIsServer.h
-    plugins/public_apis_server/WebSocketClientWrapper.h
-    plugins/public_apis_server/WebSocketTransport.h
+    api/PublicAPIsServer.h
+    api/WebSocketClientWrapper.h
+    api/WebSocketTransport.h
 
     gui/tabbrowser/WizMainTabBrowser.h
     gui/tabbrowser/AbstractTabPage.h
@@ -302,8 +317,20 @@ set(wiznote_HEADERS
     WizDef.h
     WizActions.h
     WizNoteStyle.h
-    WizCategoryView.h
-    WizCategoryViewItem.h
+
+    gui/categoryviewer/WizCategoryView.h
+    gui/categoryviewer/WizCategoryViewItemBase.h
+    gui/categoryviewer/WizCategoryViewSectionItem.h
+    gui/categoryviewer/WizCategoryViewMessageItem.h
+    gui/categoryviewer/WizCategoryViewShortcutItem.h
+    gui/categoryviewer/WizCategoryViewSearchItem.h
+    gui/categoryviewer/WizCategoryViewFolderItem.h
+    gui/categoryviewer/WizCategoryViewTagItem.h
+    gui/categoryviewer/WizCategoryViewGroupItem.h
+    gui/categoryviewer/WizCategoryViewItem.h
+    gui/categoryviewer/WizFolderView.h
+    gui/categoryviewer/WizFolderSelector.h
+
     WizDevToolsDialog.h
     WizDocumentListView.h
     WizDocumentListViewItem.h
@@ -345,9 +372,7 @@ set(wiznote_HEADERS
     WizDocumentTransitionView.h
     WizButton.h
     WizFileImporter.h
-    WizFolderSelector.h
     WizProgressDialog.h
-    WizFolderView.h
     WizDocumentSelectionView.h
     WizUserVerifyDialog.h
     utils/WizLogger.h
@@ -389,7 +414,7 @@ set(wiznote_HEADERS
     widgets/WizLocalProgressWebView.h
     widgets/WizCrashReportDialog.h
     widgets/WizCustomToolBar.h
-    widgets/WizTipsWidget.cpp
+    widgets/WizTipsWidget.h
     widgets/WizTemplatePurchaseDialog.h
     widgets/WizExecutingActionDialog.h
     widgets/WizUserServiceExprDialog.h
@@ -403,12 +428,12 @@ set(wiznote_HEADERS
     share/WizDocumentStyle.h
     WizCombineNotesDialog.h
 
-    plugins/public_apis_object/IWizHtmlEditorApp.h
-    plugins/public_apis_object/IWizExplorerWindow.h
-    plugins/public_apis_object/IWizCategoryCtrl.h
-    plugins/public_apis_object/IWizDocumentListCtrl.h
-    plugins/public_apis_object/IWizDatabase.h
-    plugins/public_apis_object/IWizExplorerApp.h
+    api/ApiWizHtmlEditorApp.h
+    api/ApiWizExplorerWindow.h
+    api/ApiWizCategoryCtrl.h
+    api/ApiWizDocumentListCtrl.h
+    api/ApiWizDatabase.h
+    api/ApiWizExplorerApp.h
 )
 
 set(wiznote_FORMS
@@ -452,7 +477,7 @@ include_directories(
     ${CMAKE_CURRENT_SOURCE_DIR}
     ${CMAKE_CURRENT_BINARY_DIR}
     ${quazip_INCLUDE_DIRS}
-    ${zlib_INCLUDE_DIRS}
+    ${ZLIB_INCLUDE_DIRS}
     ${cryptopp_INCLUDE_DIRS}
     ${OpenSSL_INCLUDE_DIRS}
     ${Gumbo_INCLUDE_DIRS}
@@ -596,7 +621,7 @@ if(UNIX)
                 ${CMAKE_DL_LIBS}
                 ${cryptopp_LIBRARIES}
                 ${quazip_LIBRARIES}
-                ${zlib_LIBRARIES}
+                ${ZLIB_LIBRARIES}
                 ${Gumbo_LIBRARIES}
             )
         else(APPSTORE_BUILD)
@@ -604,7 +629,7 @@ if(UNIX)
                 ${CMAKE_DL_LIBS}
                 ${cryptopp_LIBRARIES}
                 ${quazip_LIBRARIES}
-                ${zlib_LIBRARIES}
+                ${ZLIB_LIBRARIES}
                 ${Gumbo_LIBRARIES}
             )
         endif(APPSTORE_BUILD)
@@ -617,7 +642,7 @@ if(UNIX)
             ${cryptopp_LIBRARIES}
             ${OpenSSL_LIBRARIES}
             ${quazip_LIBRARIES}
-            ${zlib_LIBRARIES}
+            ${ZLIB_LIBRARIES}
             ${Gumbo_LIBRARIES}
         )
     endif(APPLE)
@@ -627,7 +652,7 @@ else(NOT UNIX)
         ${cryptopp_LIBRARIES}
         ${OpenSSL_LIBRARIES}
         ${quazip_LIBRARIES}
-        ${zlib_LIBRARIES}
+        ${ZLIB_LIBRARIES}
         ${Gumbo_LIBRARIES}
     )
 endif()

@@ -8,6 +8,9 @@
 #include <QMenu>
 #include <QTabBar>
 #include <QLayout>
+#include <QShortcut>
+#include <QKeySequence>
+#include <QKeyEvent>
 
 #include "share/WizWebEngineView.h"
 #include "share/WizGlobal.h"
@@ -15,7 +18,7 @@
 #include "share/WizMisc.h"
 #include "utils/WizStyleHelper.h"
 #include "utils/WizPathResolve.h"
-#include "share/WizDatabaseManager.h"
+#include "database/WizDatabaseManager.h"
 #include "gui/documentviewer/WizTitleBar.h"
 #include "gui/documentviewer/WizDocumentView.h"
 #include "gui/tabbrowser/WizWebsiteView.h"
@@ -47,6 +50,8 @@ WizMainTabBrowser::WizMainTabBrowser(WizExplorerApp& app, QWidget *parent)
 
     connect(tabBar, &QTabBar::customContextMenuRequested, this, &WizMainTabBrowser::handleContextMenuRequested);
     connect(tabBar, &QTabBar::tabCloseRequested, this, &WizMainTabBrowser::handleTabCloseRequested);
+
+    new QShortcut(QKeySequence("Ctrl+W"), this, SLOT(closeCurrentTab()));
 }
 
 void WizMainTabBrowser::handleCurrentChanged(int index)
@@ -100,8 +105,16 @@ void WizMainTabBrowser::handleContextMenuRequested(const QPoint &pos)
                this->lockTab(index);
             });
         }
+
+        auto page = tabPage(index);
+        auto page_actions = page->TabContextMenuActions();
+        if (!page_actions.isEmpty()) {
+            menu.addSeparator();
+            menu.addActions(page_actions);
+        }
+
+        menu.exec(QCursor::pos());
     }
-    menu.exec(QCursor::pos());
 }
 
 void WizMainTabBrowser::triggeredFullScreen()
@@ -247,9 +260,16 @@ void WizMainTabBrowser::destroyTab(int index)
 
 void WizMainTabBrowser::closeTab(int index)
 {
-    // Only one page needed to be closed.
-    if (!isTabLocked(index))
-        tabPage(index)->RequestClose();
+    if (index != -1) {
+        // Only one page needed to be closed.
+        if (!isTabLocked(index))
+            tabPage(index)->RequestClose();
+    }
+}
+
+void WizMainTabBrowser::closeCurrentTab()
+{
+    closeTab(currentIndex());
 }
 
 void WizMainTabBrowser::closeOtherTabs(int index)
@@ -422,4 +442,20 @@ void WizMainTabBrowser::setupTabPage(AbstractTabPage *tabPage)
             destroyTab(index);
         }
     });
+}
+
+void WizMainTabBrowser::keyPressEvent(QKeyEvent* ev)
+{
+    if (ev->modifiers() && ev->key()) {
+        if (ev->modifiers() & Qt::AltModifier
+                && ev->key() >= Qt::Key_1  && ev->key() <= Qt::Key_9) {
+            int index = ev->key() - Qt::Key_0;
+            if (index <= count() && index >= 0)
+                setCurrentIndex(index-1);
+
+            return;
+        }
+    }
+
+    QTabWidget::keyPressEvent(ev);
 }

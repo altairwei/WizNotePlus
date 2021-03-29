@@ -24,8 +24,8 @@
 #include "sync/WizApiEntry.h"
 #include "sync/WizToken.h"
 
-#include "share/WizDatabaseManager.h"
-#include "share/WizDatabase.h"
+#include "database/WizDatabaseManager.h"
+#include "database/WizDatabase.h"
 #include "share/WizObject.h"
 #include "share/WizSettings.h"
 #include "share/WizSettings.h"
@@ -39,8 +39,8 @@
 #include "core/WizAccountManager.h"
 
 #include "WizNoteStyle.h"
-#include "WizCategoryView.h"
-#include "WizCategoryViewItem.h"
+#include "gui/categoryviewer/WizCategoryView.h"
+#include "gui/categoryviewer/WizCategoryViewItem.h"
 #include "WizMainWindow.h"
 
 #define ALLMENBERS QObject::tr("All Members")

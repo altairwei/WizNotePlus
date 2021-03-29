@@ -1,8 +1,4 @@
 ﻿#include "WizWebEngineView.h"
-#include "WizMisc.h"
-#include "utils/WizPathResolve.h"
-#include "WizMainWindow.h"
-#include "gui/tabbrowser/WizMainTabBrowser.h"
 
 #include <QWebEngineView>
 #include <QWebSocketServer>
@@ -26,57 +22,14 @@
 #include <QMimeData>
 #endif
 
+#include "WizMisc.h"
+#include "utils/WizPathResolve.h"
+#include "WizMainWindow.h"
+#include "gui/tabbrowser/WizMainTabBrowser.h"
 #include "WizDevToolsDialog.h"
 #include "gui/documentviewer/WizDocumentView.h"
+#include "share/WizSettings.h"
 
-/*
-class WizInvisibleWebEngineView : public QWebEngineView
-{
-    class WizInvisibleWebEnginePage : public QWebEnginePage
-    {
-        WizWebEnginePage* m_ownerPage;
-    public:
-        explicit WizInvisibleWebEnginePage(WizWebEnginePage* ownerPage, QObject *parent = Q_NULLPTR)
-            : QWebEnginePage(parent)
-            , m_ownerPage(ownerPage)
-        {
-
-        }
-
-        bool acceptNavigationRequest(const QUrl &url, QWebEnginePage::NavigationType type, bool isMainFrame)
-        {
-            emit m_ownerPage->openLinkInNewWindow(url);
-            //
-            parent()->deleteLater();
-            //
-            return false;
-        }
-
-    };
-
-public:
-    explicit WizInvisibleWebEngineView(WizWebEnginePage* ownerPage, QWidget* parent = Q_NULLPTR)
-        : QWebEngineView(parent)
-    {
-        WizInvisibleWebEnginePage* page = new WizInvisibleWebEnginePage(ownerPage, this);
-        setPage(page);
-    }
-    virtual ~WizInvisibleWebEngineView()
-    {
-
-    }
-
-public:
-    static QWebEnginePage* create(WizWebEnginePage* ownerPage)
-    {
-        WizInvisibleWebEngineView* web = new WizInvisibleWebEngineView(ownerPage, nullptr);
-        //
-        web->setVisible(false);
-        //
-        return web->page();
-    }
-};
-*/
 
 WizWebEngineAsyncMethodResultObject::WizWebEngineAsyncMethodResultObject(QObject* parent)
     : QObject(parent)
@@ -215,12 +168,15 @@ WizWebEngineView::WizWebEngineView(const WizWebEngineInjectObjectCollection& obj
     connect(p, SIGNAL(openLinkInNewWindow(QUrl)), this, SLOT(openLinkInDefaultBrowser(QUrl)));
     //
     connect(this, SIGNAL(loadFinished(bool)), this, SLOT(innerLoadFinished(bool)));
-    
+
+#if (QT_VERSION >= QT_VERSION_CHECK(5, 11, 0))
     // Initialize actions
     QAction* action = new QAction(tr("Open DevTools"), this);
     action->setShortcut(QKeySequence("F12"));
     connect(action, &QAction::triggered, this, &WizWebEngineView::handleOpenDevToolsTriggered);
     addAction(action);
+#endif
+
 }
 
 WizWebEngineView::~WizWebEngineView()
@@ -362,6 +318,28 @@ int WizWebEngineView::GetZoom()
     return percent;
 }
 
+double WizWebEngineView::scaleUp()
+{
+    // zoom in
+    qreal factor = zoomFactor();
+    factor += 0.05;
+    factor = (factor > 5.0) ? 5.0 : factor;
+    setZoomFactor(factor);
+
+    return zoomFactor();
+}
+
+double WizWebEngineView::scaleDown()
+{
+    // zoom out
+    qreal factor = zoomFactor();
+    factor -= 0.05;
+    factor = (factor < 0.5) ? 0.5 : factor;
+    setZoomFactor(factor);
+
+    return zoomFactor();
+}
+
 /**
  * @brief Create basic context menu for web view.
  * @return
@@ -374,6 +352,8 @@ QMenu* WizWebEngineView::createStandardContextMenu()
     auto viewSource = std::find(actions.cbegin(), actions.cend(), page()->action(QWebEnginePage::ViewSource));
     if (viewSource != actions.cend())
         menu->removeAction(*viewSource);
+
+#if (QT_VERSION >= QT_VERSION_CHECK(5, 11, 0))
     // add Open DevTools action
     auto inspectElement = std::find(actions.cbegin(), actions.cend(), page()->action(QWebEnginePage::InspectElement));
     if (inspectElement == actions.cend()) {
@@ -385,6 +365,8 @@ QMenu* WizWebEngineView::createStandardContextMenu()
         (*inspectElement)->setText(tr("Inspect element"));
         connect(*inspectElement, &QAction::triggered, this, &WizWebEngineView::openDevTools, Qt::UniqueConnection);
     }
+#endif
+
     return menu;
 }
 
@@ -436,6 +418,7 @@ void WizWebEngineView::addObjectToJavaScriptClient(QString name, QObject* obj)
         channel->registerObject(name, obj);
 }
 
+#if (QT_VERSION >= QT_VERSION_CHECK(5, 11, 0))
 void WizWebEngineView::openDevTools()
 {
     if (!m_devToolsWindow)
@@ -462,11 +445,14 @@ void WizWebEngineView::openDevTools()
     m_devToolsWindow->show();
     m_devToolsWindow->raise();
 }
+#endif
 
+#if (QT_VERSION >= QT_VERSION_CHECK(5, 11, 0))
 void WizWebEngineView::handleOpenDevToolsTriggered()
 {
     openDevTools();
 }
+#endif
 
 void WizWebEngineView::handleSavePageTriggered()
 {
@@ -514,96 +500,49 @@ static QWebEngineView* getActiveWeb()
     return nullptr;
 }
 
-bool WizWebEngineViewProgressKeyEvents(QKeyEvent* ev)
-{
-    if (ev->modifiers() && ev->key()) {
-        if (QWebEngineView* web = getActiveWeb()) {
-            if (ev->matches(QKeySequence::Copy))
-            {
-                web->page()->triggerAction(QWebEnginePage::Copy);
-                return true;
-            }
-            else if (ev->matches(QKeySequence::Cut))
-            {
-                web->page()->triggerAction(QWebEnginePage::Cut);
-                return true;
-            }
-            else if (ev->matches(QKeySequence::Paste))
-            {
-                web->page()->triggerAction(QWebEnginePage::Paste);
-                return true;
-            }
-            else if (ev->matches(QKeySequence::Undo))
-            {
-                web->page()->triggerAction(QWebEnginePage::Undo);
-                return true;
-            }
-            else if (ev->matches(QKeySequence::Redo))
-            {
-                web->page()->triggerAction(QWebEnginePage::Redo);
-                return true;
-            }
-            else if (ev->matches(QKeySequence::SelectAll))
-            {
-                web->page()->triggerAction(QWebEnginePage::SelectAll);
-                return true;
-            }
-            else if (ev->modifiers()&Qt::KeyboardModifier::ControlModifier && ev->key() == Qt::Key_Up)
-            {
-                //放大
-                qreal factor = web->zoomFactor();
-                factor += 0.1;
-                factor = (factor > 5.0) ? 5.0 : factor;
-                web->setZoomFactor(factor);
-                return true;
-            }
-            else if (ev->modifiers()&Qt::KeyboardModifier::ControlModifier && ev->key() == Qt::Key_Down)
-            {
-                //缩小
-                qreal factor = web->zoomFactor();
-                factor -= 0.1;
-                factor = (factor < 0.5) ? 0.5 : factor;
-                web->setZoomFactor(factor);
-                return true;
-            }
-        }
-    }
-    return false;
-}
-
 WizWebEngineViewContainerDialog::WizWebEngineViewContainerDialog(QWidget *parent, Qt::WindowFlags f)
     : QDialog(parent, f)
 {
 
 }
 
-void WizWebEngineViewContainerDialog::keyPressEvent(QKeyEvent* ev)
+void WizWebEngineView::childEvent(QChildEvent *ev)
 {
-    if (WizWebEngineViewProgressKeyEvents(ev))
-        return;
-    //
-    QDialog::keyPressEvent(ev);
+    if (ev->added()) {
+        ev->child()->installEventFilter(this);
+    } else if (ev->removed()) {
+        ev->child()->removeEventFilter(this);
+    }
+
+    QWebEngineView::childEvent(ev);
 }
 
-void WizWebEngineView::wheelEvent(QWheelEvent *event)
+bool WizWebEngineView::eventFilter(QObject *obj, QEvent *ev)
 {
-    qreal factor = 0;
-
-    if (event->modifiers()==Qt::ControlModifier) {
-        factor = zoomFactor();
-        if (event->delta() > 0) {
-            //放大
-            factor += 0.1;
-            factor = (factor > 5.0)?5.0:factor;
-        } else {
-            //缩小
-            factor -= 0.1;
-            factor = (factor < 0.5)?0.5:factor;
+    // work around QTBUG-43602
+    if (ev->type() == QEvent::KeyPress) {
+        QKeyEvent *keyEvent = static_cast<QKeyEvent *>(ev);
+        if (keyEvent->modifiers() && keyEvent->key()) {
+            if (keyEvent->modifiers() & Qt::ControlModifier
+                    && keyEvent->key() == Qt::Key_Up) {
+                scaleUp();
+            } else if (keyEvent->modifiers() & Qt::ControlModifier
+                            && keyEvent->key() == Qt::Key_Down) {
+                scaleDown();
+            }
         }
-        //setZoomFactor(factor);
-    } else {
-        event->ignore();
+    } else if (ev->type() == QEvent::Wheel) {
+        QWheelEvent *whellEvent = static_cast<QWheelEvent *>(ev);
+        if (whellEvent->modifiers() == Qt::ControlModifier) {
+            if (whellEvent->delta() > 0) {
+                scaleUp();
+            } else {
+                scaleDown();
+            }
+        }
     }
+
+    return QWebEngineView::eventFilter(obj, ev);
 }
 
 /**
@@ -673,18 +612,25 @@ bool WizNavigationForwarderPage::acceptNavigationRequest(const QUrl &url, QWebEn
         }
     } else {
         // http or file url
+        bool openInDesktop = mainWindow->userSettings().isEnableOpenLinkWithDesktopBrowser();
         switch (m_windowType) {
             // A web browser tab.
             case QWebEnginePage::WebBrowserTab:
             {
-                mainWindow->mainTabView()->createTab(url);
+                if (openInDesktop) {
+                    QDesktopServices::openUrl(url);
+                } else {
+                    mainWindow->mainTabView()->createTab(url);
+                }
                 break;
             }
-            // A web browser tab without hiding the current visible WebEngineView.
+            // A web browser tab without hiding the current visible WebEngineView. (Ctrl+ mouse left click)
             case QWebEnginePage::WebBrowserBackgroundTab: 
             {
-                WizWebEngineView * view = mainWindow->mainTabView()->createBackgroundTab();
-                view->load(url);
+                //WizWebEngineView * view = mainWindow->mainTabView()->createBackgroundTab();
+                //view->load(url);
+                QDesktopServices::openUrl(url);
+ 
                 break;
             }
             // A window without decoration.
@@ -692,8 +638,12 @@ bool WizNavigationForwarderPage::acceptNavigationRequest(const QUrl &url, QWebEn
             // A complete web browser window.
             case QWebEnginePage::WebBrowserWindow: 
             {
-                WizWebEngineView * view = mainWindow->mainTabView()->createWindow();
-                view->load(url);
+                if (openInDesktop) {
+                    QDesktopServices::openUrl(url);
+                } else {
+                    WizWebEngineView * view = mainWindow->mainTabView()->createWindow();
+                    view->load(url);
+                }
                 break;
             }
         }

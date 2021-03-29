@@ -12,6 +12,8 @@
 #include <QAction>
 #include <QVariant>
 #include <QMap>
+#include <QShortcut>
+
 #include "share/jsoncpp/json/json.h"
 
 #include "widgets/WizTagBar.h"
@@ -27,7 +29,7 @@
 #include "gui/documentviewer/WizNoteInfoForm.h"
 #include "WizNoteStyle.h"
 #include "share/WizMisc.h"
-#include "share/WizDatabase.h"
+#include "database/WizDatabase.h"
 #include "share/WizSettings.h"
 #include "share/WizAnimateAction.h"
 #include "share/WizAnalyzer.h"
@@ -103,35 +105,38 @@ WizTitleBar::WizTitleBar(WizExplorerApp& app, QWidget *parent)
     QSize iconSize = QSize(Utils::WizStyleHelper::titleIconHeight(), Utils::WizStyleHelper::titleIconHeight());
     m_editBtn = new WizEditButton(this);
     m_editBtn->setFixedHeight(nTitleHeight);
-    QString shortcut = ::WizGetShortcut("EditNote", "Alt+1");
-    m_editBtn->setShortcut(QKeySequence::fromString(shortcut));
+    QString shortcut = ::WizGetShortcut("EditNote", "Alt+R");
+    // FIXME: why shortcut for WizEditButton not work?
+    //m_editBtn->setShortcut(QKeySequence::fromString(shortcut));
     m_editBtn->setStatefulIcon(::WizLoadSkinIcon(strTheme, "document_lock", iconSize), WizToolButton::Normal);
-    m_editBtn->setStatefulText(tr("Edit"), tr("Switch to Editing View  %1%2").arg(getOptionKey()).arg(1), WizToolButton::Normal);
+    m_editBtn->setStatefulText(tr("Edit"), tr("Switch to Editing View  %1").arg(shortcut), WizToolButton::Normal);
     m_editBtn->setStatefulIcon(::WizLoadSkinIcon(strTheme, "document_unlock", iconSize), WizToolButton::Checked);
-    m_editBtn->setStatefulText(tr("Read") , tr("Switch to Reading View  %1%2").arg(getOptionKey()).arg(1), WizToolButton::Checked);
+    m_editBtn->setStatefulText(tr("Read") , tr("Switch to Reading View  %1").arg(shortcut), WizToolButton::Checked);
     // 准备外置编辑器菜单
     QMenu* extEditorMenu = createEditorMenu();
     m_editBtn->setMenu(extEditorMenu);
     m_editBtn->setPopupMode(QToolButton::MenuButtonPopup);
     connect(m_editBtn, SIGNAL(clicked()), SLOT(onEditButtonClicked()));
+    auto edit_shortcut = new QShortcut(shortcut, this);
+    connect(edit_shortcut, &QShortcut::activated, this, &WizTitleBar::onEditButtonClicked);
 
     // 分离窗口浏览笔记
     m_separateBtn = new WizToolButton(this, WizToolButton::ImageOnly);
     m_separateBtn->setFixedHeight(nTitleHeight);
-    QString separateShortcut = ::WizGetShortcut("EditNoteSeparate", "Alt+2");
+    QString separateShortcut = ::WizGetShortcut("EditNoteSeparate", "");
     m_separateBtn->setShortcut(QKeySequence::fromString(separateShortcut));
     m_separateBtn->setIcon(::WizLoadSkinIcon(strTheme, "document_use_separate", iconSize));
-    m_separateBtn->setToolTip(tr("View note in seperate window  %1%2").arg(getOptionKey()).arg(2));
+    m_separateBtn->setToolTip(tr("View note in seperate window  %1").arg(separateShortcut));
     connect(m_separateBtn, SIGNAL(clicked()), SLOT(onSeparateButtonClicked()));
 
     // 标签按钮
     m_tagBtn = new WizToolButton(this, WizToolButton::ImageOnly);
     m_tagBtn->setFixedHeight(nTitleHeight);
-    QString tagsShortcut = ::WizGetShortcut("EditNoteTags", "Alt+3");
+    QString tagsShortcut = ::WizGetShortcut("EditNoteTags", "");
     m_tagBtn->setShortcut(QKeySequence::fromString(tagsShortcut));
     m_tagBtn->setCheckable(true);
     m_tagBtn->setIcon(::WizLoadSkinIcon(strTheme, "document_tag", iconSize));
-    m_tagBtn->setToolTip(tr("View and add tags  %1%2").arg(getOptionKey()).arg(3));
+    m_tagBtn->setToolTip(tr("View and add tags  %1").arg(tagsShortcut));
     connect(m_tagBtn, SIGNAL(clicked()), SLOT(onTagButtonClicked()));
 
     // 分享按钮
@@ -140,10 +145,10 @@ WizTitleBar::WizTitleBar(WizExplorerApp& app, QWidget *parent)
     m_shareMenu = new QMenu(m_shareBtn);
     QAction *defaultAc = m_shareMenu->addAction(WIZACTION_TITLEBAR_SHARE_DOCUMENT_BY_LINK, this, SLOT(onShareActionClicked()));
     m_shareMenu->addAction(WIZACTION_TITLEBAR_SHARE_DOCUMENT_BY_EMAIL, this, SLOT(onEmailActionClicked()));
-    QString shareShortcut = ::WizGetShortcut("EditShare", "Alt+4");
+    QString shareShortcut = ::WizGetShortcut("EditShare", "");
     defaultAc->setShortcut(QKeySequence::fromString(shareShortcut));
     defaultAc->setIcon(::WizLoadSkinIcon(strTheme, "document_share", iconSize));
-    defaultAc->setToolTip(tr("Share note  %1%2").arg(getOptionKey()).arg(4));
+    defaultAc->setToolTip(tr("Share note  %1").arg(shareShortcut));
     connect(m_shareBtn, SIGNAL(clicked()), SLOT(onShareButtonClicked()));
     WizOEMSettings oemSettings(m_app.databaseManager().db().getAccountPath());
     m_shareBtn->setVisible(!oemSettings.isHideShare());
@@ -170,31 +175,31 @@ WizTitleBar::WizTitleBar(WizExplorerApp& app, QWidget *parent)
     // 笔记信息按钮
     m_infoBtn = new WizToolButton(this, WizToolButton::ImageOnly);
     m_infoBtn->setFixedHeight(nTitleHeight);
-    QString infoShortcut = ::WizGetShortcut("EditNoteInfo", "Alt+5");
+    QString infoShortcut = ::WizGetShortcut("EditNoteInfo", "");
     m_infoBtn->setCheckable(true);
     m_infoBtn->setShortcut(QKeySequence::fromString(infoShortcut));
     m_infoBtn->setIcon(::WizLoadSkinIcon(strTheme, "document_info", iconSize));
-    m_infoBtn->setToolTip(tr("View and modify note's info  %1%2").arg(getOptionKey()).arg(5));
+    m_infoBtn->setToolTip(tr("View and modify note's info  %1").arg(infoShortcut));
     connect(m_infoBtn, SIGNAL(clicked()), SLOT(onInfoButtonClicked()));
 
     // 附件按钮
     m_attachBtn = new WizToolButton(this, WizToolButton::WithCountInfo);
     m_attachBtn->setFixedHeight(nTitleHeight);
-    QString attachmentShortcut = ::WizGetShortcut("EditNoteAttachments", "Alt+6");
+    QString attachmentShortcut = ::WizGetShortcut("EditNoteAttachments", "");
     m_attachBtn->setCheckable(true);
     m_attachBtn->setShortcut(QKeySequence::fromString(attachmentShortcut));
     m_attachBtn->setIcon(::WizLoadSkinIcon(strTheme, "document_attachment", iconSize));
-    m_attachBtn->setToolTip(tr("Add attachments  %1%2").arg(getOptionKey()).arg(6));
+    m_attachBtn->setToolTip(tr("Add attachments  %1").arg(attachmentShortcut));
     connect(m_attachBtn, SIGNAL(clicked()), SLOT(onAttachButtonClicked()));
 
     // comments
     m_commentsBtn = new WizToolButton(this, WizToolButton::WithCountInfo);
     m_commentsBtn->setFixedHeight(nTitleHeight);
-    QString commentShortcut = ::WizGetShortcut("ShowComment", "Alt+c");
+    QString commentShortcut = ::WizGetShortcut("ShowComment", "Alt+C");
     m_commentsBtn->setShortcut(QKeySequence::fromString(commentShortcut));
     m_commentsBtn->setCheckable(true);
     m_commentsBtn->setIcon(::WizLoadSkinIcon(strTheme, "comments", iconSize));
-    m_commentsBtn->setToolTip(tr("Add comments  %1C").arg(getOptionKey()));
+    m_commentsBtn->setToolTip(tr("Add comments  %1").arg(commentShortcut));
     connect(m_commentsBtn, SIGNAL(clicked()), SLOT(onCommentsButtonClicked()));
     connect(WizGlobal::instance(), SIGNAL(viewNoteLoaded(WizDocumentView*,const WIZDOCUMENTDATAEX&,bool)),
             SLOT(onViewNoteLoaded(WizDocumentView*,const WIZDOCUMENTDATAEX&,bool)));

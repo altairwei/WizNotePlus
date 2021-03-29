@@ -3,10 +3,9 @@
 
 #include <QtGlobal>
 
-#define WIZ_CLIENT_VERSION  "2.8.1"
+#define WIZ_CLIENT_VERSION  "2.8.2"
 // Development stage could be "alpha", "beta", "rc" and "stable"
-#define WIZ_DEV_STAGE "stable"
-#define WIZ_DEV_STAGE_VERSION "0"
+#define WIZ_DEV_STAGE "stable.0"
 
 #define WIZNOTE_FTS_VERSION "5"
 #define WIZNOTE_THUMB_VERSION "3"

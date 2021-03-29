@@ -1,5 +1,5 @@
 ﻿#include "WizAccountManager.h"
-#include "share/WizDatabase.h"
+#include "database/WizDatabase.h"
 #include "share/WizMessageBox.h"
 
 const QString g_strAccountSection = "Account";

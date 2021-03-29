@@ -75,18 +75,19 @@ endif(APPLE)
 message("\nStart generate 3rdparty dependencies as ${CMAKE_BUILD_TYPE}:\n")
 
 if(NOT CONAN_INSTALL_MANUALLY)
-    if(NOT EXISTS "${CMAKE_BINARY_DIR}/conan.cmake")
-        message(STATUS "Downloading conan.cmake from https://github.com/conan-io/cmake-conan")
-        file(DOWNLOAD "https://raw.githubusercontent.com/conan-io/cmake-conan/master/conan.cmake"
-                        "${CMAKE_BINARY_DIR}/conan.cmake")
-    endif()
-    include(${CMAKE_BINARY_DIR}/conan.cmake)
+    # if(NOT EXISTS "${CMAKE_BINARY_DIR}/conan.cmake")
+    #     message(STATUS "Downloading conan.cmake from https://github.com/conan-io/cmake-conan")
+    #     file(DOWNLOAD "https://raw.githubusercontent.com/conan-io/cmake-conan/master/conan.cmake"
+    #                     "${CMAKE_BINARY_DIR}/conan.cmake")
+    # endif()
+    include(conan)
     conan_check(REQUIRED)
     conan_cmake_run(
         CONANFILE conanfile.py
         INSTALL_FOLDER ${CMAKE_BINARY_DIR}
         BUILD_TYPE ${CMAKE_BUILD_TYPE}
         BUILD missing
+        OPTIONS qtdir=${CMAKE_PREFIX_PATH}
     )
     include(${CMAKE_BINARY_DIR}/conan_paths.cmake)
 endif()
@@ -98,7 +99,7 @@ set(CMAKE_MODULE_PATH ${CMAKE_BINARY_DIR} ${CMAKE_MODULE_PATH})
 # setup 3rd-party package
 find_package(cryptopp REQUIRED)
 find_package(quazip REQUIRED)
-find_package(zlib REQUIRED)
+find_package(ZLIB REQUIRED)
 find_package(Gumbo REQUIRED)
 find_package(OpenSSL)
 

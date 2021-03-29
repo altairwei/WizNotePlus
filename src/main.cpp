@@ -22,7 +22,7 @@
 #include "utils/WizStyleHelper.h"
 #include "share/WizSettings.h"
 #include "share/WizWin32Helper.h"
-#include "share/WizDatabaseManager.h"
+#include "database/WizDatabaseManager.h"
 #include "share/WizSingleApplication.h"
 #include "share/WizThreads.h"
 #include "share/WizGlobal.h"
@@ -125,11 +125,6 @@ void installOnLinux()
 // 登录与启动
 //-------------------------------------------------------------------
 
-/** 
- * @brief 初始化内核
- * @param argc 命令行参数数量
- * @param argv 命令行参数数组
- */
 int mainCore(int argc, char *argv[])
 {
     // 设置高分屏支持
@@ -161,25 +156,31 @@ int mainCore(int argc, char *argv[])
         return 0;
     }
 #else
+
     // create application for Windows and MacOS
     QApplication app(argc, argv);
-    //
+
 #ifdef BUILD4APPSTORE
     QDir dir(QApplication::applicationDirPath());
     dir.cdUp();
     dir.cd("PlugIns");
     QApplication::setLibraryPaths(QStringList(dir.absolutePath()));
-#endif
+#endif // BUILD4APPSTORE
 
 #ifdef BUILD4APPSTORE
     WizIAPHelper helper;
     helper.validteReceiptOnLauch();
-#endif
-#endif
+#endif // BUILD4APPSTORE
+
+#endif // Q_OS_LINUX
 
     QtWebEngine::initialize();
     QWebEngineSettings::defaultSettings()->setAttribute(QWebEngineSettings::FocusOnNavigationEnabled, true);
+
+#if QT_VERSION >= 0x051000
     QWebEngineSettings::defaultSettings()->setAttribute(QWebEngineSettings::AllowWindowActivationFromJavaScript, true);
+#endif
+
     QWebEngineSettings::defaultSettings()->setAttribute(QWebEngineSettings::LocalContentCanAccessRemoteUrls, true);
     QWebEngineSettings::defaultSettings()->setAttribute(QWebEngineSettings::FullScreenSupportEnabled, true);
 
@@ -189,7 +190,8 @@ int mainCore(int argc, char *argv[])
 #ifdef Q_OS_WIN
     QFont appFont = WizCreateWindowsUIFont(app);
     QApplication::setFont(appFont);
-#endif
+#endif // Q_OS_WIN
+
     // Debug 输出
     qInstallMessageHandler(Utils::WizLogger::messageHandler); // 输出到 Wiznote 消息控制台
     //qInstallMessageHandler(nullptr); // 输出到 Qt Debug console
@@ -240,31 +242,30 @@ int mainCore(int argc, char *argv[])
                     background-color: #F8F8F8; \
                     border:0px;}");
 
-    // 初始化用户设置
+    // 获取默认用户设置
     //-------------------------------------------------------------------
 
-    // setup settings
     QSettings::setDefaultFormat(QSettings::IniFormat);
 
-    /// 全局设置
-    /** 设置文件在～/.wiznote/wiznote.ini或者%HOMEPATH%/Wiznote/wiznote.ini里面. */
+    /** Global INI setting. File is located at ~/.wiznote/wiznote.ini or %HOMEPATH%/Wiznote/wiznote.ini */
     QSettings* globalSettings = new QSettings(Utils::WizPathResolve::globalSettingsFile(), QSettings::IniFormat);
     WizGlobal::setGlobalSettings(globalSettings);
-    //
 
     // use 3 times(30M) of Qt default usage
     int nCacheSize = globalSettings->value("Common/Cache", 10240*3).toInt();
     QPixmapCache::setCacheLimit(nCacheSize);
 
+    /** GUID of default user. */
     QString strUserGuid = globalSettings->value("Users/DefaultUserGuid").toString();
     QList<WizLocalUser> localUsers;
-    WizGetLocalUsers(localUsers);    
+    WizGetLocalUsers(localUsers);
+    /** Folder name of default user. */
     QString strAccountFolderName = WizGetLocalFolderName(localUsers, strUserGuid);
 
-    QString strPassword;
+    /** Setting from META table within user sqlite database. */
     WizUserSettings userSettings(strAccountFolderName);
 
-    /// 获取用户设置
+    /** User specific INI setting. */
     QSettings* settings = new QSettings(Utils::WizPathResolve::userSettingsFile(strAccountFolderName), QSettings::IniFormat);
     WizGlobal::setSettings(settings);
 
@@ -303,16 +304,13 @@ int mainCore(int argc, char *argv[])
     // FIXME: move to WizService initialize
     WizToken token;
 
+    QString strPassword = userSettings.password();
 
     bool bAutoLogin = userSettings.autoLogin();
-    strPassword = userSettings.password(); // 竟然用base64加密解密 (╬￣皿￣)
-
     if (bAutoLogin && !strPassword.isEmpty()) {
-        // 当勾选自动登录且密码不为空时，自动登录
         bFallback = false;
-    }    
+    }
 
-    //
     //set network proxy
     WizSettings wizSettings(Utils::WizPathResolve::globalSettingsFile());
     if (wizSettings.getProxyStatus())
@@ -326,37 +324,39 @@ int mainCore(int argc, char *argv[])
         QNetworkProxy::setApplicationProxy(proxy);
     }
 
-    //
+    // Login procedure
+
     QString strUserId = WizGetLocalUserId(localUsers, strUserGuid);
     bool isNewRegisterAccount = false;
-    // manually login 手动登录
+
     if (bFallback)
     {
-        // 创建登录窗口，并启动事件循环
         WizLoginDialog loginDialog(strLocale, localUsers);
         if (QDialog::Accepted != loginDialog.exec())
             return 0;
 
-        // 如果默认UserId为空，或者登录ID不等于默认UserId
         if (strUserId.isEmpty() || loginDialog.loginUserGuid() != strUserGuid)
-        {   // 重新获取用户文件夹
+        {
+            // 获取另一个用户的账户文件夹
             strAccountFolderName = WizGetLocalFolderName(localUsers, loginDialog.loginUserGuid());
             if (strAccountFolderName.isEmpty())
             {
                 strAccountFolderName = loginDialog.userId();
             }
             qDebug() << "login user id : " << loginDialog.userId();
-            // 写入新用户设置
+
+            // 写入另一个用户设置
             settings = new QSettings(Utils::WizPathResolve::userSettingsFile(strAccountFolderName), QSettings::IniFormat);
             WizGlobal::setSettings(settings);
         }
-        // 获取用户输入账号密码
+
         strPassword = loginDialog.password();
         strUserId = loginDialog.userId();
         isNewRegisterAccount = loginDialog.isNewRegisterAccount();
     }
     else
-    { // WizBox企业登录设置
+    {
+        // WizBox企业登录设置
         if (userSettings.serverType() == EnterpriseServer)
         {
             WizCommonApiEntry::setEnterpriseServerIP(userSettings.enterpriseServerIP());
@@ -368,9 +368,7 @@ int mainCore(int argc, char *argv[])
         }
     }
 
-    //
-    //
-    // reset locale for current user. 将设置重置到当前用户
+    // Reset locale for current user.
     userSettings.setAccountFolderName(strAccountFolderName);
     userSettings.setUserId(strUserId);
     strLocale = userSettings.locale();
@@ -384,10 +382,10 @@ int mainCore(int argc, char *argv[])
     strLocaleFile = Utils::WizPathResolve::qtLocaleFileName(strLocale);
     translatorQt.load(strLocaleFile);
     app.installTranslator(&translatorQt);
-    // 设置用户语言
+
     WizCommonApiEntry::setLanguage(strLocale);
 
-    // 登录数据库管理
+    // 登录数据库管理器
     WizDatabaseManager dbMgr(strAccountFolderName);
     if (!dbMgr.openAll()) {
         QMessageBox::critical(NULL, "", QObject::tr("Can not open database"));
@@ -406,15 +404,14 @@ int mainCore(int argc, char *argv[])
 
     // FIXME: move to core plugin initialize
     WizThumbCache cache;
+
     // 启动Wiz主窗口
     WizMainWindow window(dbMgr);
+
 #ifdef Q_OS_LINUX
-    // 绑定消息通知
     QObject::connect(&app, SIGNAL(messageAvailable(QString)), &window,
                      SLOT(on_application_messageAvailable(QString)));
 #endif
-
-    //settings->setValue("Users/DefaultUser", strUserId);
 
     window.show();
     window.init();
@@ -440,7 +437,6 @@ int mainCore(int argc, char *argv[])
 
     int ret = app.exec();
     if (window.isLogout()) {
-        // 清理密码？
         userSettings.setPassword("");
 #ifndef BUILD4APPSTORE
         QProcess::startDetached(argv[0], QStringList());
@@ -460,8 +456,7 @@ int main(int argc, char *argv[])
 {
     int ret = mainCore(argc, argv);
 
-    //WizQueuedThreadsShutdown();
-    // clean up 清理临时文件
+    // clean up the last temporary files
     QString strTempPath = Utils::WizPathResolve::tempPath();
     ::WizDeleteAllFilesInFolder(strTempPath);
 

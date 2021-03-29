@@ -6,7 +6,7 @@
 
 #include "WizDef.h"
 #include "share/WizSettings.h"
-#include "share/WizDatabaseManager.h"
+#include "database/WizDatabaseManager.h"
 #include "share/WizThreads.h"
 #include "share/WizMisc.h"
 #include "sync/WizApiEntry.h"

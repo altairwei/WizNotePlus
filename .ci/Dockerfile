@@ -26,7 +26,7 @@ RUN apt-get install -y -qq --no-install-recommends python3 python3-pip python3-s
 RUN pip3 install conan \
     && conan remote add bincrafters https://api.bintray.com/conan/bincrafters/public-conan \
     && conan remote add conan-community https://api.bintray.com/conan/conan-community/conan \
-    && conan remote add wiznoteplus https://api.bintray.com/conan/altairwei/conan \
+    && conan remote add wiznoteplus https://wiznoteplus.jfrog.io/artifactory/api/conan/wiznoteplus \
     && conan profile new default --detect \
     && conan profile update settings.compiler.libcxx=libstdc++11 default
 

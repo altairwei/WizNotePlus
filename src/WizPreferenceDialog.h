@@ -48,6 +48,7 @@ public Q_SLOTS:
     void onButtonFontSelect_confirmed();
     //
     void on_enableSpellCheck(bool checked);
+    void on_enableOpenLinkWithDesktopBrowser(bool checked);
 
 private slots:
     void on_checkBox_stateChanged(int arg1);

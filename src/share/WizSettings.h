@@ -6,7 +6,7 @@
 #include "WizQtHelper.h"
 #include "WizMisc.h"
 
-#include "WizDatabase.h"
+#include "database/WizDatabase.h"
 
 enum WizProxyType
 {
@@ -73,6 +73,7 @@ enum WizOptionsType
     wizoptionsFont,
     wizoptionsFolders,
     wizoptionsSpellCheck,
+    wizoptionsOpenLinkWithDesktopBrowser
 };
 
 enum WizPositionType
@@ -142,6 +143,9 @@ public:
 
     bool isEnableSpellCheck() const;
     void setEnableSpellCheck(bool b);
+
+    bool isEnableOpenLinkWithDesktopBrowser() const;
+    void setEnableOpenLinkWithDesktopBrowser(bool b);
 
     bool receiveMobileFile() const;
     void setReceiveMobileFile(bool bReceiveFile);

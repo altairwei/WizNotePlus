@@ -1,7 +1,7 @@
 ﻿#include "WizThumbCache.h"
 #include "WizThumbCache_p.h"
-#include "share/WizDatabaseManager.h"
-#include "share/WizDatabase.h"
+#include "database/WizDatabaseManager.h"
+#include "database/WizDatabase.h"
 #include "share/WizThreads.h"
 
 

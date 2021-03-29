@@ -2,7 +2,7 @@
 #define WIZDOCUMENTHISTORY_H
 
 
-#include "share/WizDatabase.h"
+#include "database/WizDatabase.h"
 
 class WizDocumentViewHistory
 {

@@ -9,7 +9,7 @@
 #include "share/WizGlobal.h"
 #include "utils/WizPathResolve.h"
 #include "share/WizMessageBox.h"
-#include "share/WizDatabaseManager.h"
+#include "database/WizDatabaseManager.h"
 #include "share/WizThreads.h"
 #include "share/WizRequest.h"
 
@@ -84,9 +84,13 @@ WizPreferenceWindow::WizPreferenceWindow(WizExplorerApp& app, QWidget* parent)
             ui->radioAuto->setChecked(true);
             break;
     }
-    //
+
     ui->spellCheck->setChecked(userSettings().isEnableSpellCheck());
     connect(ui->spellCheck, SIGNAL(toggled(bool)), this, SLOT(on_enableSpellCheck(bool)));
+
+    ui->openLinkWithDesktopBrowser->setChecked(userSettings().isEnableOpenLinkWithDesktopBrowser());
+    connect(ui->openLinkWithDesktopBrowser, SIGNAL(toggled(bool)), this, SLOT(on_enableOpenLinkWithDesktopBrowser(bool)));
+
 
     // syncing tab
     int nInterval = userSettings().syncInterval();
@@ -475,4 +479,10 @@ void WizPreferenceWindow::on_enableSpellCheck(bool checked)
 {
     userSettings().setEnableSpellCheck(checked);
     Q_EMIT settingsChanged(wizoptionsSpellCheck);
+}
+
+void WizPreferenceWindow::on_enableOpenLinkWithDesktopBrowser(bool checked)
+{
+    userSettings().setEnableOpenLinkWithDesktopBrowser(checked);
+    Q_EMIT settingsChanged(wizoptionsOpenLinkWithDesktopBrowser);
 }
