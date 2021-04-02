@@ -385,10 +385,13 @@ QMenu* WizTitleBar::createEditorMenu()
         data["Arguments"] = extEditorSettings->value("Arguments", "%1");
         data["TextEditor"] = extEditorSettings->value("TextEditor", 0);
         data["UTF8Encoding"] = extEditorSettings->value("UTF8Encoding", 0);
+        data["OpenShortCut"] = extEditorSettings->value("OpenShortCut", 0);
         // Create actions
         QAction* editorAction = editorMenu->addAction(data.value("Name").toString(), this, SLOT(onExternalEditorMenuSelected()));
         QVariant var(data);
         editorAction->setData(var);
+        if (!data["OpenShortCut"].toString().isEmpty() && data["OpenShortCut"].toString()!="0")
+            editorAction->setShortcut(data["OpenShortCut"].toString());
         //
         extEditorSettings->endGroup();
     }

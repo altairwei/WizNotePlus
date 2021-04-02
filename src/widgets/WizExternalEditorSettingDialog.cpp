@@ -36,6 +36,7 @@ WizExternalEditorInfoDialog::WizExternalEditorInfoDialog(QWidget *parent) :
     m_editArguments = ui->editArguments;
     m_checkTextEditor = ui->checkTextEditor;
     m_checkUTF8 = ui->checkUTF8;
+    m_editOpenShortCut = ui->editOpenShortCut;
     // Program File line
     connect(ui->pushBrowse, SIGNAL(clicked()), this, SLOT(setSelectedProgramFile()));
     // Arguments line
@@ -61,10 +62,12 @@ void WizExternalEditorInfoDialog::initForm(SettingMap& data)
     m_editProgram->setText(data["ProgramFile"]);
     m_editName->setText(data["Name"]);
     m_editArguments->setText(data["Arguments"]);
+    m_editOpenShortCut->setText(data["OpenShortCut"]);
     if (data["TextEditor"].toInt() != 0)
         m_checkTextEditor->setCheckState(Qt::Checked);
     if (data["UTF8Encoding"].toInt() != 0)
         m_checkUTF8->setCheckState(Qt::Checked);
+    
 }
 
 void WizExternalEditorInfoDialog::accept()
@@ -96,6 +99,7 @@ void WizExternalEditorInfoDialog::accept()
     data["Arguments"] = m_editArguments->text();
     data["TextEditor"] = QString::number(static_cast<int>(m_checkTextEditor->checkState()));
     data["UTF8Encoding"] = QString::number(static_cast<int>(m_checkUTF8->checkState()));
+    data["OpenShortCut"] = m_editOpenShortCut->text();
 
     if (m_isEditing) {
         emit dataEdited(m_dataRow, data);
@@ -157,12 +161,14 @@ void WizExternalEditorSettingDialog::loadDataFromIni(QSettings* settings)
         QString Arguments = settings->value("Arguments", "%1").toString();
         QString TextEditor = settings->value("TextEditor", 0).toString();
         QString UTF8Encoding = settings->value("UTF8Encoding", 0).toString();
+        QString OpenShortCut = settings->value("OpenShortCut",0).toString();
         //
         m_extEditorTable->setItem(row, 0, new QTableWidgetItem(Name));
         m_extEditorTable->setItem(row, 1, new QTableWidgetItem(ProgramFile));
         m_extEditorTable->setItem(row, 2, new QTableWidgetItem(Arguments));
         m_extEditorTable->setItem(row, 3, new QTableWidgetItem(TextEditor));
         m_extEditorTable->setItem(row, 4, new QTableWidgetItem(UTF8Encoding));
+        m_extEditorTable->setItem(row, 5, new QTableWidgetItem(OpenShortCut));
         //
         ++row;
         //
@@ -181,6 +187,7 @@ void WizExternalEditorSettingDialog::writeDataToIni(QSettings* settings)
         QString Arguments = m_extEditorTable->item(i, 2)->text();
         QString TextEditor = m_extEditorTable->item(i, 3)->text();
         QString UTF8Encoding = m_extEditorTable->item(i, 4)->text();
+        QString OpenShortCut = m_extEditorTable->item(i, 5)->text();
         //
         settings->beginGroup("Editor_" + QString::number(i));
         settings->setValue("Name", Name);
@@ -188,6 +195,7 @@ void WizExternalEditorSettingDialog::writeDataToIni(QSettings* settings)
         settings->setValue("Arguments", Arguments);
         settings->setValue("TextEditor", TextEditor);
         settings->setValue("UTF8Encoding", UTF8Encoding);
+        settings->setValue("OpenShortCut", OpenShortCut);
         settings->endGroup();
     }
     settings->sync();
@@ -211,6 +219,7 @@ void WizExternalEditorSettingDialog::modifyRowContent(int row, SettingMap& data)
     m_extEditorTable->setItem(row, 2, new QTableWidgetItem(data["Arguments"]));
     m_extEditorTable->setItem(row, 3, new QTableWidgetItem(data["TextEditor"]));
     m_extEditorTable->setItem(row, 4, new QTableWidgetItem(data["UTF8Encoding"]));
+    m_extEditorTable->setItem(row, 5, new QTableWidgetItem(data["OpenShortCut"]));
 }
 
 void WizExternalEditorSettingDialog::addEditor(SettingMap& data)
@@ -248,6 +257,7 @@ void WizExternalEditorSettingDialog::on_btnEditSetting_clicked()
     data["Arguments"] = m_extEditorTable->item(row, 2)->text();
     data["TextEditor"] = m_extEditorTable->item(row, 3)->text();
     data["UTF8Encoding"] = m_extEditorTable->item(row, 4)->text();
+    data["OpenShortCut"] = m_extEditorTable->item(row, 5)->text();
     // Open Dialog
     WizExternalEditorInfoDialog* infoDialog = new WizExternalEditorInfoDialog(row, data, this);
     infoDialog->setAttribute(Qt::WA_DeleteOnClose);

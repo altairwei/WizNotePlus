@@ -79,6 +79,20 @@
       </layout>
      </item>
      <item>
+      <widget class="QLabel" name="labelEditOpenShortCut">
+       <property name="text">
+        <string>Open editor shortcut:</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <layout class="QHBoxLayout" name="horizontalLayout_3">
+       <item>
+        <widget class="QLineEdit" name="editOpenShortCut"/>
+       </item>
+      </layout>
+     </item>
+     <item>
       <widget class="QCheckBox" name="checkTextEditor">
        <property name="text">
         <string>Use for text editor</string>

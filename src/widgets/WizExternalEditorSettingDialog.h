@@ -38,6 +38,7 @@ private:
     QLineEdit* m_editArguments;
     QCheckBox* m_checkTextEditor;
     QCheckBox* m_checkUTF8;
+    QLineEdit* m_editOpenShortCut;
     int m_dataRow;
     bool m_isEditing = false;
 
