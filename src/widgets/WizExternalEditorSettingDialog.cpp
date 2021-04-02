@@ -18,6 +18,7 @@
 #include <QFileDialog>
 #include <QMessageBox>
 #include <QFileInfo>
+#include <QKeySequenceEdit>
 
 #include "utils/WizPathResolve.h"
 
@@ -37,8 +38,10 @@ WizExternalEditorInfoDialog::WizExternalEditorInfoDialog(QWidget *parent) :
     m_checkTextEditor = ui->checkTextEditor;
     m_checkUTF8 = ui->checkUTF8;
     m_editOpenShortCut = ui->editOpenShortCut;
+    m_clearOpenShortCut = ui->clearOpenShortCut;
     // Program File line
     connect(ui->pushBrowse, SIGNAL(clicked()), this, SLOT(setSelectedProgramFile()));
+    connect(m_clearOpenShortCut, &QPushButton::clicked, m_editOpenShortCut, &QKeySequenceEdit::clear);
     // Arguments line
     m_editArguments->setText(QString("%1"));
 
@@ -62,7 +65,7 @@ void WizExternalEditorInfoDialog::initForm(SettingMap& data)
     m_editProgram->setText(data["ProgramFile"]);
     m_editName->setText(data["Name"]);
     m_editArguments->setText(data["Arguments"]);
-    m_editOpenShortCut->setText(data["OpenShortCut"]);
+    m_editOpenShortCut->setKeySequence(QKeySequence::fromString(data["OpenShortCut"]));
     if (data["TextEditor"].toInt() != 0)
         m_checkTextEditor->setCheckState(Qt::Checked);
     if (data["UTF8Encoding"].toInt() != 0)
@@ -99,7 +102,7 @@ void WizExternalEditorInfoDialog::accept()
     data["Arguments"] = m_editArguments->text();
     data["TextEditor"] = QString::number(static_cast<int>(m_checkTextEditor->checkState()));
     data["UTF8Encoding"] = QString::number(static_cast<int>(m_checkUTF8->checkState()));
-    data["OpenShortCut"] = m_editOpenShortCut->text();
+    data["OpenShortCut"] = m_editOpenShortCut->keySequence().toString();
 
     if (m_isEditing) {
         emit dataEdited(m_dataRow, data);
@@ -161,17 +164,17 @@ void WizExternalEditorSettingDialog::loadDataFromIni(QSettings* settings)
         QString Arguments = settings->value("Arguments", "%1").toString();
         QString TextEditor = settings->value("TextEditor", 0).toString();
         QString UTF8Encoding = settings->value("UTF8Encoding", 0).toString();
-        QString OpenShortCut = settings->value("OpenShortCut",0).toString();
-        //
+        QString OpenShortCut = settings->value("OpenShortCut", "").toString();
+
         m_extEditorTable->setItem(row, 0, new QTableWidgetItem(Name));
         m_extEditorTable->setItem(row, 1, new QTableWidgetItem(ProgramFile));
         m_extEditorTable->setItem(row, 2, new QTableWidgetItem(Arguments));
         m_extEditorTable->setItem(row, 3, new QTableWidgetItem(TextEditor));
         m_extEditorTable->setItem(row, 4, new QTableWidgetItem(UTF8Encoding));
         m_extEditorTable->setItem(row, 5, new QTableWidgetItem(OpenShortCut));
-        //
+
         ++row;
-        //
+
         settings->endGroup();
     }
 }

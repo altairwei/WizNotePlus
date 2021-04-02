@@ -9,6 +9,7 @@ class QSettings;
 class QPushButton;
 class QLineEdit;
 class QCheckBox;
+class QKeySequenceEdit;
 
 typedef QMap<QString, QString> SettingMap;
 
@@ -38,7 +39,8 @@ private:
     QLineEdit* m_editArguments;
     QCheckBox* m_checkTextEditor;
     QCheckBox* m_checkUTF8;
-    QLineEdit* m_editOpenShortCut;
+    QKeySequenceEdit* m_editOpenShortCut;
+    QPushButton* m_clearOpenShortCut;
     int m_dataRow;
     bool m_isEditing = false;
 
