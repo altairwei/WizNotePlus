@@ -86,7 +86,7 @@ WizDocumentWebViewPage::WizDocumentWebViewPage(WizDocumentWebView* parent)
     , m_engineView(parent)
 {
     Q_ASSERT(m_engineView);
-    //
+
     action(QWebEnginePage::Undo)->setShortcut(QKeySequence());
     action(QWebEnginePage::Redo)->setShortcut(QKeySequence());
     action(QWebEnginePage::Copy)->setShortcut(QKeySequence());
@@ -170,6 +170,8 @@ WizDocumentWebView::WizDocumentWebView(WizExplorerApp& app, QWidget* parent)
         m_htmlEditorApp, &ApiWizHtmlEditorApp::canEditNoteChanged);
     connect(this, &WizDocumentWebView::currentHtmlChanged,
         m_htmlEditorApp, &ApiWizHtmlEditorApp::currentHtmlChanged);
+    connect(this, &WizDocumentWebView::clickingTodoCallBack,
+        m_htmlEditorApp, &ApiWizHtmlEditorApp::clickingTodoCallBack);
 
 
     // refers

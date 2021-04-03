@@ -57,6 +57,8 @@ signals:
     void canEditNoteChanged();
     void currentHtmlChanged();
     void hasEditPermissionOnCurrentNoteChanged();
+
+    void clickingTodoCallBack(bool cancel, bool needCallAgain);
 };
 
 #endif // API_APIWIZHTMLEDITORAPP_H
