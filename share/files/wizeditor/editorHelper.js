@@ -33,61 +33,54 @@ function WizStopEditorAmend() {
   function for C++ execute
 */
 function WizEditorInit(basePath, browserLang, userGUID, userAlias, ignoreTable, noteType, enableNightMode) {
-  return new Promise( (resolve, reject) => {
-    // Build web channel to C++ side
-    new QWebChannel(qt.webChannelTransport, channel => {
-      // Init WizNotePlus APIs
-      const objectNames = ["WizExplorerApp", "WizQtEditor"];
-      for (let i = 0; i < objectNames.length; i++) {
-          const key = objectNames[i];
-          window[key] = channel.objects[key];
-      }
-      // Init WizEditor
-      try {
-        if (!WizEditor) {
-          alert("WizEditor is null!");
-          return;
+  try {
+    if (!WizEditor) {
+      alert("WizEditor is null!");
+      return;
+    }
+    var user = {
+      user_guid: userGUID,
+      user_name: userAlias
+    };
+    //
+    var editorOptions = {
+      document: document,
+      lang: browserLang,
+      noteType: noteType,
+      userInfo: user,
+      clientType: "mac",
+      ignoreTable: ignoreTable,
+      dependencyUrl: basePath + 'dependency',
+      nightMode: {
+        enable: enableNightMode,
+        color: '#a6a6a6',
+        bgColor: '#272727',
+      },
+      editor: {
+        callback: {
+          onKeyDown: WizOnKeyDown,
+          markerUndo: WizOnUndoStatusChanged,
+          markerInitiated: WizOnMarkerInitiated,
         }
-        var user = {
-          user_guid: userGUID,
-          user_name: userAlias
-        };
-        //
-        var editorOptions = {
-          document: document,
-          lang: browserLang,
-          noteType: noteType,
-          userInfo: user,
-          clientType: "mac",
-          ignoreTable: ignoreTable,
-          dependencyUrl: basePath + 'dependency',
-          nightMode: {
-            enable: enableNightMode,
-            color: '#a6a6a6',
-            bgColor: '#272727',
-          },
-          editor: {
-            callback: {
-              onKeyDown: WizOnKeyDown,
-            }
-          }
-        }
-        //
-        WizEditor.init(editorOptions);
-        WizEditor.addListener(WizEditor.ListenerType.SelectionChange, WizOnSelectionChange)
-        resolve(true);
+      },
+      reader: {
+        type: noteType
       }
-      catch (e) {
-        console.log(e.toString());
-        reject(false);
-      }    
-    });
-  });
+    }
+    //
+    WizEditor.init(editorOptions);
+    WizEditor.addListener(WizEditor.ListenerType.SelectionChange, WizOnSelectionChange)
+    return true;
+  }
+  catch (e) {
+    console.log(e.toString());
+    return false;
+  }
 }
 
 function WizOnSelectionChange(style) {
   try {
-    WizQtEditor.OnSelectionChange(JSON.stringify(style));
+    WizQtEditor.onSelectionChange(JSON.stringify(style));
   } catch (e) {
 
   }
@@ -106,6 +99,12 @@ function WizOnKeyDown(event) {
           console.error(err);
         }
       }
+    } else if (event.charCode === 99 && event.metaKey) {
+        try {
+            WizQtEditor.doCopy();
+        } catch (err) {
+            console.error(err);
+        }
     }
   } catch (e) {
     console.error(e);
@@ -113,6 +112,15 @@ function WizOnKeyDown(event) {
     return true;
   }
 }
+
+function WizOnUndoStatusChanged(data) {
+  WizQtEditor.onMarkerUndoStatusChanged(data);
+}
+
+function WizOnMarkerInitiated(data) {
+  WizQtEditor.onMarkerInitiated(data);
+}
+
 
 
 function WizAddCssForCode(cssFile) {
