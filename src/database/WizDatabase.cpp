@@ -4047,7 +4047,10 @@ bool WizDatabase::createDocumentByTemplate(const QString& templateZiwFile, const
     {
         newDoc.strTitle = strTitle;
     }
-    newDoc.strType = "TemplateNote";
+
+    if (newDoc.strType.isEmpty()) {
+        newDoc.strType = "TemplateNote";
+    }
 
     return createDocumentAndInit(newDoc, ba, strLocation, tag, newDoc);
 }
@@ -4933,3 +4936,55 @@ QObject* WizDatabase::GetDeletedItemsFolder()
 //    CWizDocument* pDoc = new CWizDocument(*this, data);
 //    return pDoc;
 //}
+
+
+class WizDocumentDataMutexes
+{
+    QMutex m_globalLocker;
+    std::map<QString, QMutex*> m_lockers;
+
+    QMutex* getDocumentMutexesCore(QString docGuid)
+    {
+        QMutexLocker locker(&m_globalLocker);
+        auto it = m_lockers.find(docGuid);
+        if (it != m_lockers.end()) {
+            return it->second;
+        }
+
+        QMutex* mutex = new QMutex();
+        m_lockers[docGuid] = mutex;
+        return mutex;
+    }
+
+public:
+    static QMutex* getDocumentMutexes(QString docGuid) {
+        static WizDocumentDataMutexes g;
+        return g.getDocumentMutexesCore(docGuid);
+    }
+};
+
+WizDocumentDataLocker::WizDocumentDataLocker(QString docGuid)
+{
+
+#ifdef QT_DEBUG
+    m_docGuid = docGuid;
+    DEBUG_TOLOG1("try access doc: %1", docGuid);
+#endif
+
+    m_mutex = WizDocumentDataMutexes::getDocumentMutexes(docGuid);
+    m_mutex->lock();
+
+#ifdef QT_DEBUG
+    DEBUG_TOLOG1("begin access doc: %1", docGuid);
+#endif
+
+}
+WizDocumentDataLocker::~WizDocumentDataLocker()
+{
+
+#ifdef QT_DEBUG
+    DEBUG_TOLOG1("end access doc: %1", m_docGuid);
+#endif
+
+    m_mutex->unlock();
+}

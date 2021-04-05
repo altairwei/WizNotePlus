@@ -2364,6 +2364,20 @@ void WizShowWebDialogWithToken(const QString& windowTitle, const QString& url, Q
 }
 
 
+void WizShowWebDialogWithTokenDelayed(const QString& windowTitle, const QString& url, QWidget* parent, const QSize& sz, bool dialogResizable)
+{
+    QString strFuncName = windowTitle;
+    strFuncName = "Dialog"+strFuncName.replace(" ", "");
+    WizFunctionDurationLogger logger(strFuncName);
+
+    WizWebSettingsWithTokenDialog* pDlg = WizWebSettingsWithTokenDialog::delayShow(windowTitle, url, sz, parent);
+    if (dialogResizable)
+    {
+        pDlg->setMaximumSize(QSize(QWIDGETSIZE_MAX, QWIDGETSIZE_MAX));
+    }
+}
+
+
 bool WizIsOffline()
 {
     QNetworkConfigurationManager mgr;

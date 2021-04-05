@@ -7,13 +7,25 @@
 #include <QPalette>
 #include "share/WizWebEngineView.h"
 
+WizLocalProgressWebView::WizLocalProgressWebView(const WizWebEngineInjectObjectCollection &objects, QWidget *parent)
+{
+    init(objects);
+}
+
+
 WizLocalProgressWebView::WizLocalProgressWebView(QWidget *parent) : QWidget(parent)
+{
+    init({});
+}
+
+
+void WizLocalProgressWebView::init(const WizWebEngineInjectObjectCollection &objects)
 {
     setContentsMargins(0, 0, 0, 0);
 
-    m_web = new WizWebEngineView(this);
+    m_web = new WizWebEngineView(objects, this);
     m_web->settings()->setAttribute(QWebEngineSettings::LocalStorageEnabled, true);
-    //
+
     QVBoxLayout* layout = new QVBoxLayout;
     layout->setContentsMargins(0, 0, 0, 0);
     layout->setSpacing(0);
@@ -22,10 +34,13 @@ WizLocalProgressWebView::WizLocalProgressWebView(QWidget *parent) : QWidget(pare
     layout->addWidget(m_web);
 }
 
+
 WizLocalProgressWebView::~WizLocalProgressWebView()
 {
 
 }
+
+
 WizWebEngineView* WizLocalProgressWebView::web()
 {
     return m_web;

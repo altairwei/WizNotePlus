@@ -146,6 +146,7 @@ set(wiznote_SOURCES
     gui/tabbrowser/FullScreenNotification.cpp
     gui/tabbrowser/WebEngineWindow.cpp
     gui/tabbrowser/WizWebsiteView.cpp
+    gui/tabbrowser/TabButton.cpp
 
     gui/categoryviewer/WizCategoryView.cpp
     gui/categoryviewer/WizCategoryViewItemBase.cpp
@@ -175,7 +176,7 @@ set(wiznote_SOURCES
     gui/documentviewer/WizNoteInfoForm.cpp
     gui/documentviewer/WizSearchReplaceWidget.cpp
     gui/documentviewer/WizTitleEdit.cpp
-    gui/tabbrowser/TabButton.cpp
+    gui/documentviewer/WizSvgEditorDialog.cpp
 
     WizActions.cpp
     WizNoteStyle.cpp
@@ -313,6 +314,7 @@ set(wiznote_HEADERS
     gui/tabbrowser/FullScreenNotification.h
     gui/tabbrowser/WebEngineWindow.h
     gui/tabbrowser/WizWebsiteView.h
+    gui/tabbrowser/TabButton.h
 
     WizDef.h
     WizActions.h
@@ -346,7 +348,7 @@ set(wiznote_HEADERS
     gui/documentviewer/WizNoteInfoForm.h
     gui/documentviewer/WizSearchReplaceWidget.h
     gui/documentviewer/WizTitleEdit.h
-    gui/tabbrowser/TabButton.h
+    gui/documentviewer/WizSvgEditorDialog.h
 
     WizDocumentHistory.h
     WizAttachmentListWidget.h
