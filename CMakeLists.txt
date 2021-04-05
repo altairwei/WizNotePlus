@@ -43,7 +43,7 @@ if(APPLE)
     set(WIZNOTE_RESOURCE_DIR ${WIZNOTE_ROOT_DIR}/Contents/Resources)
 else(APPLE)
     set(WIZNOTE_ROOT_DIR ${CMAKE_BINARY_DIR})
-    set(WIZNOTE_RESOURCE_DIR ${WIZNOTE_ROOT_DIR}/share)
+    set(WIZNOTE_RESOURCE_DIR ${WIZNOTE_ROOT_DIR}/share/wiznote)
 endif(APPLE)
 
 #============================================================================

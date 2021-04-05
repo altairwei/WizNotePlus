@@ -495,6 +495,13 @@ qt_add_translation(wiznote_QM ${wiznote_TRANSLATIONS})
 
 message("WizNote whill compiling as ${CMAKE_BUILD_TYPE}, use Qt: ${QT_VERSION}")
 
+# Monitor file content changes in share directory
+file(GLOB_RECURSE share_files LIST_DIRECTORIES false ${CMAKE_SOURCE_DIR}/share/**/*)
+foreach(filename IN LISTS share_files)
+    string(REPLACE "${CMAKE_SOURCE_DIR}/share" "${WIZNOTE_RESOURCE_DIR}" dest_filename "${filename}")
+    configure_file(${filename} ${dest_filename} COPYONLY)
+endforeach(filename IN LISTS share_files)
+
 # build
 if(UNIX)
     if(APPLE)
@@ -543,8 +550,7 @@ if(UNIX)
         # copy resources to bundle
         #set(wiznote_BUNDLE ${CMAKE_BINARY_DIR}/bundle/${PROJECT_NAME}.app)
         #set(wiznote_BUNDLE_CONTENTS ${CMAKE_BINARY_DIR}/bundle/${PROJECT_NAME}.app/Contents)
-        add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
-            COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_SOURCE_DIR}/share/ ${WIZNOTE_RESOURCE_DIR})
+
         add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
             COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_SOURCE_DIR}/build/osx/localize/ ${WIZNOTE_RESOURCE_DIR})
 
@@ -562,9 +568,6 @@ if(UNIX)
         foreach(ICON_SIZE 8 16 24 32 48 64 128 256 512)
             install(FILES ${CMAKE_SOURCE_DIR}/build/common/logo/wiznote${ICON_SIZE}.png DESTINATION share/icons/hicolor/${ICON_SIZE}x${ICON_SIZE}/apps RENAME wiznote.png)
         endforeach(ICON_SIZE)
-
-        add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
-            COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_SOURCE_DIR}/share/ ${CMAKE_BINARY_DIR}/share/wiznote)
 
         foreach(_file ${wiznote_QM})
             add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
@@ -587,9 +590,6 @@ else()
     install(DIRECTORY ${CMAKE_SOURCE_DIR}/share/ DESTINATION share/wiznote PATTERN ".DS_Store" EXCLUDE)
     install(FILES ${wiznote_QM} DESTINATION share/wiznote/locales)
     install(FILES ${CMAKE_SOURCE_DIR}/LICENSE DESTINATION share/licenses/wiznote)
-
-    add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
-        COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_SOURCE_DIR}/share/ ${CMAKE_BINARY_DIR}/share/wiznote)
 
     foreach(_file ${wiznote_QM})
         add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
