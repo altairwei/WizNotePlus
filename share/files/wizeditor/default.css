@@ -284,6 +284,6 @@ body.wiz-editor-body li {
 body,
 .wiz-editor-body {
   padding-top: 8px !important;
-  /*padding-left: 48px;*/
-  /*padding-right: 48px;*/
+  padding-left: 48px;
+  padding-right: 48px;
 }

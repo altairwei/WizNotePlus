@@ -47,8 +47,9 @@ public:
         QObject* parent = nullptr): WizWebEnginePage(objects, QWebEngineProfile::defaultProfile(), parent) { }
     WizWebEnginePage(const WizWebEngineInjectObjectCollection& objects, 
         QWebEngineProfile *profile, QObject* parent = nullptr);
-    //
+
     void stopCurrentNavigation() { m_continueNavigate = false; }
+    static void processCopiedData();
 
 protected:
     virtual void javaScriptConsoleMessage(JavaScriptConsoleMessageLevel level, const QString& message, int lineNumber, const QString& sourceID);

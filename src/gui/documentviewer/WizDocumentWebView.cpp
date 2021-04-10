@@ -36,45 +36,50 @@
 #endif
 
 #include "share/WizGlobal.h"
+#include "share/WizMisc.h"
+#include "share/WizAnalyzer.h"
+#include "share/WizMessageBox.h"
+#include "share/WizObjectDataDownloader.h"
+#include "share/WizThreads.h"
 
 #include "WizDef.h"
+
 #include "utils/WizPathResolve.h"
 #include "utils/WizLogger.h"
 #include "utils/WizMisc.h"
 #include "utils/WizStyleHelper.h"
 
-#include "share/WizMisc.h"
-#include "share/WizAnalyzer.h"
-#include "share/WizMessageBox.h"
-#include "share/WizObjectDataDownloader.h"
 #include "database/WizDatabaseManager.h"
-#include "share/WizThreads.h"
+
 #include "sync/WizAvatarHost.h"
 #include "sync/WizToken.h"
 #include "sync/WizApiEntry.h"
 #include "core/WizAccountManager.h"
 #include "core/WizNoteManager.h"
+
 #include "widgets/WizCodeEditorDialog.h"
 #include "widgets/WizScreenShotWidget.h"
 #include "widgets/WizEmailShareDialog.h"
 #include "widgets/WizShareLinkDialog.h"
 #include "widgets/WizScrollBar.h"
 #include "widgets/WizExecutingActionDialog.h"
+
 #include "mac/WizMacHelper.h"
 
 #include "WizMainWindow.h"
-#include "gui/documentviewer/WizEditorInsertLinkForm.h"
-#include "gui/documentviewer/WizEditorInsertTableForm.h"
 #include "WizDocumentTransitionView.h"
-#include "gui/documentviewer/WizDocumentView.h"
-#include "gui/documentviewer/WizSearchReplaceWidget.h"
 #include "WizFileImporter.h"
 
 #include "html/WizHtmlReader.h"
-
-#include "gui/documentviewer/WizTitleBar.h"
 #include "api/ApiWizHtmlEditorApp.h"
 #include "jsplugin/JSPluginManager.h"
+
+#include "WizTitleBar.h"
+#include "WizDocumentView.h"
+#include "WizSearchReplaceWidget.h"
+#include "WizEditorInsertLinkForm.h"
+#include "WizEditorInsertTableForm.h"
+#include "WizSvgEditorDialog.h"
 
 enum WizLinkType {
     WizLink_Doucment,
@@ -872,23 +877,25 @@ void WizDocumentWebView::replaceDefaultCss(QString& strHtml)
         qDebug() << "[Editor]Failed to get default css code";
         return;
     }
-    //
+
     QString strCss;
     if (!WizLoadUnicodeTextFromFile(strFileName, strCss))
         return;
-    //
+
     QString strFont = m_app.userSettings().defaultFontFamily();
     int nSize = m_app.userSettings().defaultFontSize();
+    QString backgroundColor = m_app.userSettings().editorBackgroundColor();
 
     strCss.replace("/*default-font-family*/", QString("font-family:%1;").arg(strFont));
     strCss.replace("/*default-font-size*/", QString("font-size:%1px;").arg(nSize));
-    QString backgroundColor = m_app.userSettings().editorBackgroundColor();
+
     if (backgroundColor.isEmpty())
     {
         backgroundColor = m_bInSeperateWindow ? "#F5F5F5" : "#FFFFFF";
     }
+
     strCss.replace("/*default-background-color*/", QString("background-color:%1;").arg(backgroundColor));
-    //
+
     const QString customCssId("wiz_custom_css");
 
     WizHtmlRemoveStyle(strHtml, customCssId);
@@ -1409,6 +1416,7 @@ void WizDocumentWebView::saveEditingViewDocument(const WIZDOCUMENTDATA &data, bo
                 {
                     succeeded = true;
                     m_currentNoteHtml = html;
+                    WizSaveUnicodeTextToUtf8File(m_strNoteHtmlFileName, m_currentNoteHtml);
                     emit currentHtmlChanged();
                     //
                     //qDebug() << m_currentNoteHtml;
@@ -1603,6 +1611,31 @@ void WizDocumentWebView::insertScriptAndStyleCore(QString& strHtml, const std::m
     }
 }
 
+
+void WizDocumentWebView::addDefaultScriptsToDocumentHtml(QString htmlFileName)
+{
+    QString strHtml;
+    bool ret = WizLoadUnicodeTextFromFile(htmlFileName, strHtml);
+    if (!ret) {
+        // hide client and show error
+        return;
+    }
+
+    m_currentNoteHtml = strHtml;
+    emit currentHtmlChanged();
+
+    std::map<QString, QString> files;
+    getAllEditorScriptAndStyleFileName(files);
+    qDebug() << files;
+    insertScriptAndStyleCore(strHtml, files);
+
+    replaceDefaultCss(strHtml);
+
+    ::WizSaveUnicodeTextToUtf8File(htmlFileName, strHtml, true);
+
+}
+
+
 /**
  * @brief read text and insert style table and insert rich editter script from note file, then load changed html to page
  * @param editorMode
@@ -1621,9 +1654,8 @@ void WizDocumentWebView::loadDocumentInWeb(WizEditorMode editorMode)
         // hide client and show error
         return;
     }
-    //
-    m_currentNoteHtml = strHtml;
-    emit currentHtmlChanged();
+
+    addDefaultScriptsToDocumentHtml(strFileName);
 
     WizEditorMode oldMode = m_currentEditorMode;
     m_currentEditorMode = editorMode;
@@ -1634,18 +1666,10 @@ void WizDocumentWebView::loadDocumentInWeb(WizEditorMode editorMode)
         } else {
             Q_EMIT focusOut();
         }
-        //
+
         view()->titleBar()->setEditorMode(m_currentEditorMode);
     }
-    //
-    std::map<QString, QString> files;
-    getAllEditorScriptAndStyleFileName(files);
-    insertScriptAndStyleCore(strHtml, files);
-    //
-    replaceDefaultCss(strHtml);
-    //
-    ::WizSaveUnicodeTextToUtf8File(strFileName, strHtml, true);
-    //
+
     m_strNoteHtmlFileName = strFileName;
     load(QUrl::fromLocalFile(strFileName));
 
@@ -1815,10 +1839,10 @@ void WizDocumentWebView::editorCommandExecutePastePlainText()
     if (!data)
         return;
     QString text = data->text();
-    //
-    QString html = WizText2Html(text);
 
-    editorCommandExecuteInsertHtml(html, false);
+    QString base64Text = WizStringToBase64(text);
+    QString js = QString("WizEditor.pasteB64('', '%1')").arg(base64Text);
+    page()->runJavaScript(js);
 }
 
 void WizDocumentWebView::editorCommandExecuteIndent()
@@ -2179,6 +2203,14 @@ void WizDocumentWebView::editorCommandExecuteInsertImage()
 
     WizAnalyzer& analyzer = WizAnalyzer::getAnalyzer();
     analyzer.logAction("insertImage");
+}
+
+
+void WizDocumentWebView::editorCommandExecuteInsertPainter()
+{
+    view()->changeType("svgpainter");
+    QString js = QString("WizEditor.createSvg()");
+    page()->runJavaScript(js);
 }
 
 
@@ -2677,9 +2709,35 @@ QString WizDocumentWebView::getLocalLanguage()
     return "en";
 }
 
-void WizDocumentWebView::OnSelectionChange(const QString& currentStyle)
+void WizDocumentWebView::onSelectionChange(const QString& currentStyle)
 {
     Q_EMIT statusChanged(currentStyle);
+}
+
+
+void WizDocumentWebView::onClickedSvg(const QString& data)
+{
+    const WIZDOCUMENTDATA note = view()->note();
+    //
+    trySaveDocument(note, true, [=] (const QVariant) {
+        //
+        ::WizExecuteOnThread(WIZ_THREAD_MAIN, [=] {
+            //
+            editHandwritingNote(m_dbMgr, note, m_strNoteHtmlFileName, data, WizMainWindow::instance());
+            addDefaultScriptsToDocumentHtml(m_strNoteHtmlFileName);
+            load(QUrl::fromLocalFile(m_strNoteHtmlFileName));
+        });
+    });
+
+}
+
+void WizDocumentWebView::updateSvg(QString data)
+{
+    //
+    data = data.replace("\\", "\\\\");
+    QString js = QString("WizEditor.replaceSvg(`%1`)").arg(data);
+    page()->runJavaScript(js);
+    //
 }
 
 
@@ -2701,6 +2759,13 @@ void WizDocumentWebView::onReturn()
     });
 }
 
+
+void WizDocumentWebView::doCopy()
+{
+    page()->triggerAction(QWebEnginePage::Copy, false);
+}
+
+
 void WizDocumentWebView::doPaste()
 {
     WizExecuteOnThread(WIZ_THREAD_MAIN, [=]{
@@ -2708,6 +2773,12 @@ void WizDocumentWebView::doPaste()
         onPasteCommand();
         //
     });
+}
+
+
+void WizDocumentWebView::afterCopied()
+{
+    WizWebEnginePage::processCopiedData();
 }
 
 

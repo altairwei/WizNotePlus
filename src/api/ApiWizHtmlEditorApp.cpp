@@ -74,9 +74,14 @@ QString ApiWizHtmlEditorApp::getLocalLanguage()
     return m_documentWebView->getLocalLanguage();
 }
 
-void ApiWizHtmlEditorApp::OnSelectionChange(const QString& currentStyle)
+void ApiWizHtmlEditorApp::onSelectionChange(const QString& currentStyle)
 {
-    m_documentWebView->OnSelectionChange(currentStyle);
+    m_documentWebView->onSelectionChange(currentStyle);
+}
+
+void ApiWizHtmlEditorApp::onClickedSvg(const QString& data)
+{
+    m_documentWebView->onClickedSvg(data);
 }
 
 void ApiWizHtmlEditorApp::saveCurrentNote()
@@ -101,4 +106,14 @@ void ApiWizHtmlEditorApp::onReturn(){
 void ApiWizHtmlEditorApp::doPaste()
 {
     m_documentWebView->doPaste();
+}
+
+void ApiWizHtmlEditorApp::doCopy()
+{
+    m_documentWebView->doCopy();
+}
+
+void ApiWizHtmlEditorApp::afterCopied()
+{
+    m_documentWebView->afterCopied();
 }

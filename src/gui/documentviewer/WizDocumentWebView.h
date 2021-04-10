@@ -189,6 +189,7 @@ public:
     void editorFocus();
     void enableEditor(bool enalbe);
     QString noteResourcesPath();
+    void updateSvg(QString data);
 
     void editorResetSpellCheck();
 
@@ -246,16 +247,20 @@ public:
     bool canRenderMarkdown();
     bool canEditNote();
     QString getLocalLanguage();
-    void OnSelectionChange(const QString& currentStyle);
+    void onSelectionChange(const QString& currentStyle);
+    void onClickedSvg(const QString& data);
     void saveCurrentNote();
     void onReturn();
     void doPaste();
+    void doCopy();
+    void afterCopied();
 
     QObject *publicAPIsObject() { return m_htmlEditorApp; }
 
 private:
     void initEditorActions();
 
+    void addDefaultScriptsToDocumentHtml(QString htmlFileName);
     void loadDocumentInWeb(WizEditorMode editorMode);
 
     void getAllEditorScriptAndStyleFileName(std::map<QString, QString>& arrayFile);
@@ -312,10 +317,11 @@ private:
 
     WizDocumentWebViewLoaderThread* m_docLoadThread;
     WizDocumentWebViewSaverThread* m_docSaverThread;
-    //
+
     QPointer<WizEditorInsertLinkForm> m_editorInsertLinkForm;
 
     WizSearchReplaceWidget* m_searchReplaceWidget;
+
     ApiWizHtmlEditorApp* m_htmlEditorApp;
 
     QList<WizExternalEditorData> m_extEditorTask;
@@ -390,6 +396,7 @@ public Q_SLOTS:
     void editorCommandExecuteInsertHorizontal();
     void editorCommandExecuteInsertCheckList();
     void editorCommandExecuteInsertImage();
+    void editorCommandExecuteInsertPainter();
     void editorCommandExecuteInsertCode();
     void editorCommandExecuteMobileImage(bool bReceiveImage);
     void editorCommandExecuteScreenShot();

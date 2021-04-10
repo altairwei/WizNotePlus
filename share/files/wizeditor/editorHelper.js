@@ -33,49 +33,61 @@ function WizStopEditorAmend() {
   function for C++ execute
 */
 function WizEditorInit(basePath, browserLang, userGUID, userAlias, ignoreTable, noteType, enableNightMode) {
-  try {
-    if (!WizEditor) {
-      alert("WizEditor is null!");
-      return;
-    }
-    var user = {
-      user_guid: userGUID,
-      user_name: userAlias
-    };
-    //
-    var editorOptions = {
-      document: document,
-      lang: browserLang,
-      noteType: noteType,
-      userInfo: user,
-      clientType: "mac",
-      ignoreTable: ignoreTable,
-      dependencyUrl: basePath + 'dependency',
-      nightMode: {
-        enable: enableNightMode,
-        color: '#a6a6a6',
-        bgColor: '#272727',
-      },
-      editor: {
-        callback: {
-          onKeyDown: WizOnKeyDown,
-          markerUndo: WizOnUndoStatusChanged,
-          markerInitiated: WizOnMarkerInitiated,
-        }
-      },
-      reader: {
-        type: noteType
+  return new Promise( (resolve, reject) => {
+    // Build web channel to C++ side
+    new QWebChannel(qt.webChannelTransport, channel => {
+      // Init WizNotePlus APIs
+      const objectNames = ["WizExplorerApp", "WizQtEditor"];
+      for (let i = 0; i < objectNames.length; i++) {
+          const key = objectNames[i];
+          window[key] = channel.objects[key];
       }
-    }
-    //
-    WizEditor.init(editorOptions);
-    WizEditor.addListener(WizEditor.ListenerType.SelectionChange, WizOnSelectionChange)
-    return true;
-  }
-  catch (e) {
-    console.log(e.toString());
-    return false;
-  }
+      // Init WizEditor
+      try {
+        if (!WizEditor) {
+          alert("WizEditor is null!");
+          return;
+        }
+        var user = {
+          user_guid: userGUID,
+          user_name: userAlias
+        };
+        //
+        var editorOptions = {
+          document: document,
+          lang: browserLang,
+          noteType: noteType,
+          userInfo: user,
+          clientType: "mac",
+          ignoreTable: ignoreTable,
+          dependencyUrl: basePath + 'dependency',
+          nightMode: {
+            enable: enableNightMode,
+            color: '#a6a6a6',
+            bgColor: '#272727',
+          },
+          editor: {
+            callback: {
+              onKeyDown: WizOnKeyDown,
+              markerUndo: WizOnUndoStatusChanged,
+              markerInitiated: WizOnMarkerInitiated,
+            }
+          },
+          reader: {
+            type: noteType
+          }
+        }
+        //
+        WizEditor.init(editorOptions);
+        WizEditor.addListener(WizEditor.ListenerType.SelectionChange, WizOnSelectionChange)
+        resolve(true);
+      }
+      catch (e) {
+        console.log(e.toString());
+        reject(false);
+      }
+    });
+  });
 }
 
 function WizOnSelectionChange(style) {
