@@ -884,6 +884,9 @@ void WizDocumentWebView::replaceDefaultCss(QString& strHtml)
 
     QString strFont = m_app.userSettings().defaultFontFamily();
     int nSize = m_app.userSettings().defaultFontSize();
+    QString lineHeight = m_app.userSettings().editorLineHeight();
+    QString paraSpacing = m_app.userSettings().editorParaSpacing();
+    QString pagePadding = m_app.userSettings().editorPagePadding();
     QString backgroundColor = m_app.userSettings().editorBackgroundColor();
 
     strCss.replace("/*default-font-family*/", QString("font-family:%1;").arg(strFont));
@@ -894,6 +897,9 @@ void WizDocumentWebView::replaceDefaultCss(QString& strHtml)
         backgroundColor = m_bInSeperateWindow ? "#F5F5F5" : "#FFFFFF";
     }
 
+    strCss.replace("/*default-line-height*/", QString("line-height:%1;").arg(lineHeight));
+    strCss.replace("/*default-para-spacing*/", QString("margin-top:%1px; margin-bottom:%1px").arg(paraSpacing));
+    strCss.replace("/*default-page-padding*/", QString("padding-left:%1px; padding-right:%1px;").arg(pagePadding));
     strCss.replace("/*default-background-color*/", QString("background-color:%1;").arg(backgroundColor));
 
     const QString customCssId("wiz_custom_css");

@@ -565,6 +565,61 @@ void WizUserSettings::setEditorBackgroundColor(const QString& strColor)
     set("EditorBackgroundColor", strColor);
 }
 
+
+QString WizUserSettings::editorLineHeight()
+{
+    QString strLineHeight = get("EditorLineHeight");
+
+    if (strLineHeight.isEmpty()) {
+        return "1.7";
+    }
+
+    return strLineHeight;
+}
+
+
+void WizUserSettings::setEditorLineHeight(const QString& strLineHeight)
+{
+    set("EditorLineHeight", strLineHeight);
+}
+
+
+QString WizUserSettings::editorParaSpacing()
+{
+    QString strLineHeight = get("EditorParaSpacing");
+
+    if (strLineHeight.isEmpty()) {
+        return "8";
+    }
+
+    return strLineHeight;
+}
+
+
+void WizUserSettings::setEditorParaSpacing(const QString& spacing)
+{
+    set("EditorParaSpacing", spacing);
+}
+
+
+QString WizUserSettings::editorPagePadding()
+{
+    QString strPagePadding = get("EditorPagePadding");
+
+    if (strPagePadding.isEmpty()) {
+        return "48";
+    }
+
+    return strPagePadding;
+}
+
+
+void WizUserSettings::setEditorPagePadding(const QString& strPadding)
+{
+    set("EditorPagePadding", strPadding);
+}
+
+
 bool WizUserSettings::isManualSortingEnabled()
 {
     QString strManualSortingEnable = get("ManualSortingEnable");

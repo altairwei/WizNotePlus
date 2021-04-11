@@ -26,6 +26,7 @@ WizPreferenceWindow::WizPreferenceWindow(WizExplorerApp& app, QWidget* parent)
     , ui(new Ui::WizPreferenceWindow)
     , m_app(app)
     , m_dbMgr(app.databaseManager())
+    , m_biniting(true)
 {
     ui->setupUi(this);
     setWindowIcon(QIcon());
@@ -180,19 +181,45 @@ WizPreferenceWindow::WizPreferenceWindow(WizExplorerApp& app, QWidget* parent)
 
     connect(ui->buttonFontSelect, SIGNAL(clicked()), SLOT(onButtonFontSelect_clicked()));
 
-    //
     ui->comboBox_unit->setCurrentIndex(m_app.userSettings().printMarginUnit());
     ui->spinBox_bottom->setValue(m_app.userSettings().printMarginValue(wizPositionBottom));
     ui->spinBox_left->setValue(m_app.userSettings().printMarginValue(wizPositionLeft));
     ui->spinBox_right->setValue(m_app.userSettings().printMarginValue(wizPositionRight));
     ui->spinBox_top->setValue(m_app.userSettings().printMarginValue(wizPositionTop));
 
+    ui->comboLineHeight->addItem("1");
+    ui->comboLineHeight->addItem("1.2");
+    ui->comboLineHeight->addItem("1.5");
+    ui->comboLineHeight->addItem("1.7");
+    ui->comboLineHeight->addItem("2.0");
+    ui->comboLineHeight->setCurrentText(m_app.userSettings().editorLineHeight());
+
+    ui->comboParaSpacing->addItem("5");
+    ui->comboParaSpacing->addItem("8");
+    ui->comboParaSpacing->addItem("12");
+    ui->comboParaSpacing->addItem("15");
+    ui->comboParaSpacing->setCurrentText(m_app.userSettings().editorParaSpacing());
+
+    ui->spinPagePadding->setValue(m_app.userSettings().editorPagePadding().toInt());
+
+    ui->tabWidget->setCurrentIndex(0);
+
     QString strColor = m_app.userSettings().editorBackgroundColor();
     updateEditorBackgroundColor(strColor);
 
     bool manuallySortFolders = m_app.userSettings().isManualSortingEnabled();
     ui->checkBoxManuallySort->setChecked(manuallySortFolders);
+
+    m_biniting = false;
 }
+
+
+void WizPreferenceWindow::showEvent(QShowEvent*)
+{
+    QSize size = ui->pushButtonClearBackground->size();
+    ui->btnResetLineHeight->setFixedSize(size);
+}
+
 
 void WizPreferenceWindow::showPrintMarginPage()
 {
@@ -414,7 +441,10 @@ void WizPreferenceWindow::on_checkBoxSystemStyle_toggled(bool checked)
 void WizPreferenceWindow::on_pushButtonBackgroundColor_clicked()
 {
     QColorDialog dlg;
-    dlg.setCurrentColor(m_app.userSettings().editorBackgroundColor());
+    QString color = m_app.userSettings().editorBackgroundColor();
+    if (!color.isEmpty()) {
+        dlg.setCurrentColor(color);
+    }
     if (dlg.exec() == QDialog::Accepted)
     {
         QString strColor = dlg.currentColor().name();
@@ -485,4 +515,84 @@ void WizPreferenceWindow::on_enableOpenLinkWithDesktopBrowser(bool checked)
 {
     userSettings().setEnableOpenLinkWithDesktopBrowser(checked);
     Q_EMIT settingsChanged(wizoptionsOpenLinkWithDesktopBrowser);
+}
+
+// Line Height
+
+void WizPreferenceWindow::updateEditorLineHeight(const QString& strLineHeight, bool save)
+{
+    if (save) {
+        m_app.userSettings().setEditorLineHeight(strLineHeight);
+    }
+
+    Q_EMIT settingsChanged(wizoptionsSpacing);
+}
+
+void WizPreferenceWindow::on_comboLineHeight_currentIndexChanged(int index)
+{
+    if (m_biniting)
+        return;
+
+    QString LineHeight = ui->comboLineHeight->itemText(index);
+    updateEditorLineHeight(LineHeight, true);
+}
+
+void WizPreferenceWindow::on_btnResetLineHeight_clicked()
+{
+    ui->comboLineHeight->setCurrentText("1.7");
+    updateEditorLineHeight("1.7", true);
+}
+
+
+// Para Spacing
+
+void WizPreferenceWindow::updateEditorParaSpacing(const QString& spacing, bool save)
+{
+    if (save) {
+        m_app.userSettings().setEditorParaSpacing(spacing);
+    }
+
+    Q_EMIT settingsChanged(wizoptionsSpacing);
+}
+
+void WizPreferenceWindow::on_comboParaSpacing_currentIndexChanged(int index)
+{
+    if (m_biniting)
+        return;
+
+    QString ParaSpacing = ui->comboParaSpacing->itemText(index);
+    updateEditorParaSpacing(ParaSpacing, true);
+}
+
+void WizPreferenceWindow::on_btnResetParaSpacing_clicked()
+{
+    ui->comboParaSpacing->setCurrentText("8");
+    updateEditorParaSpacing("8", true);
+}
+
+
+// Page Padding
+
+void WizPreferenceWindow::updateEditorPagePadding(const QString& padding, bool save)
+{
+    if (save) {
+        m_app.userSettings().setEditorPagePadding(padding);
+    }
+
+    Q_EMIT settingsChanged(wizoptionsSpacing);
+}
+
+void WizPreferenceWindow::on_spinPagePadding_valueChanged(int val)
+{
+    if (m_biniting)
+        return;
+
+    QString PagePadding = QString::number(ui->spinPagePadding->value());
+    updateEditorPagePadding(PagePadding, true);
+}
+
+void WizPreferenceWindow::on_btnResetPagePadding_clicked()
+{
+    ui->spinPagePadding->setValue(48);
+    updateEditorPagePadding("48", true);
 }
