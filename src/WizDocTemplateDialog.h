@@ -25,6 +25,8 @@ enum TemplateType
 
 struct TemplateData
 {
+    TemplateData();
+
     TemplateType type;
     int id;
     QString strName;
@@ -33,6 +35,7 @@ struct TemplateData
     QString strFolder;
     QString strFileName;
     QString strVersion;
+    QString buildInName;
 
     //
     QString strThumbUrl;

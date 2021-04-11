@@ -1626,7 +1626,6 @@ void WizDocumentWebView::addDefaultScriptsToDocumentHtml(QString htmlFileName)
 
     std::map<QString, QString> files;
     getAllEditorScriptAndStyleFileName(files);
-    qDebug() << files;
     insertScriptAndStyleCore(strHtml, files);
 
     replaceDefaultCss(strHtml);
