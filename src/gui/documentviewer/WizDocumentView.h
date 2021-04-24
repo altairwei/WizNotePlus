@@ -60,7 +60,7 @@ public:
     void waitForDone();
     void waitForSave();
     void waitForThread();
-    void RequestClose() override;
+    void RequestClose(bool force = false) override;
 
 protected:
     WizExplorerApp& m_app;

@@ -58,9 +58,13 @@ QString WizWebsiteView::Title()
     return m_webView->title();
 }
 
-void WizWebsiteView::RequestClose()
+void WizWebsiteView::RequestClose(bool force /*= false*/)
 {
-    m_webView->triggerPageAction(QWebEnginePage::RequestClose);
+    if (force) {
+        handleWindowCloseRequested();
+    } else {
+        m_webView->triggerPageAction(QWebEnginePage::RequestClose);
+    }
 }
 
 void WizWebsiteView::handleWindowCloseRequested()

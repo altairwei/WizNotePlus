@@ -28,7 +28,7 @@ public:
     void viewHtml(const QUrl &url);
 
     QString Title() override;
-    void RequestClose() override;
+    void RequestClose(bool force = false) override;
 
 public slots:
     void handleWindowCloseRequested();
