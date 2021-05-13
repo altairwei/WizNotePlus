@@ -19,7 +19,7 @@
 #include <QDebug>
 #include <QWidgetAction>
 #include <QActionGroup>
-
+#include <QShortcut>
 #include <QPixmap>
 
 #include "share/WizMisc.h"
@@ -1444,6 +1444,13 @@ WizEditorToolBar::WizEditorToolBar(WizExplorerApp& app, QWidget *parent)
 
     m_delayUpdateUITimer.setInterval(100);
     connect(&m_delayUpdateUITimer, SIGNAL(timeout()), SLOT(on_delay_updateToolbar()));
+
+    new QShortcut(QKeySequence("Ctrl+1"), this, SLOT(on_comboParagraph_shortcutActivated()));
+    new QShortcut(QKeySequence("Ctrl+2"), this, SLOT(on_comboParagraph_shortcutActivated()));
+    new QShortcut(QKeySequence("Ctrl+3"), this, SLOT(on_comboParagraph_shortcutActivated()));
+    new QShortcut(QKeySequence("Ctrl+4"), this, SLOT(on_comboParagraph_shortcutActivated()));
+    new QShortcut(QKeySequence("Ctrl+5"), this, SLOT(on_comboParagraph_shortcutActivated()));
+    new QShortcut(QKeySequence("Ctrl+6"), this, SLOT(on_comboParagraph_shortcutActivated()));
 }
 
 void WizEditorToolBar::resetToolbar(const QString& currentStyle)
@@ -2530,6 +2537,14 @@ void WizEditorToolBar::on_editor_justifyRight_triggered()
     m_editor->editorCommandExecuteJustifyRight();
 }
 
+void WizEditorToolBar::on_comboParagraph_shortcutActivated()
+{
+    QShortcut* shortcut = qobject_cast<QShortcut*>(sender());
+    QKeySequence seq = shortcut->key();
+    QString key_string = seq.toString();
+    int index = 56 - (int)key_string.back().toLatin1();
+    on_comboParagraph_indexChanged(index);
+}
 
 void WizEditorToolBar::on_comboParagraph_indexChanged(int index)
 {
