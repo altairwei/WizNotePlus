@@ -1248,7 +1248,7 @@ WizEditorToolBar::WizEditorToolBar(WizExplorerApp& app, QWidget *parent)
     m_btnCheckList->setIcon(::WizLoadSkinIcon(skin, "actionFormatInsertCheckList", editIconSize));
     //m_btnCheckList->setIconSize(QPixmap(WizGetSkinResourceFileName(skin, "actionFormatInsertCheckList")).size());
     m_btnCheckList->setToolTip(tr("Insert Checklist %1O").arg(commandKey()));
-    m_btnCheckList->setPosition(CWizToolButton::Left);
+    m_btnCheckList->setPosition(CWizToolButton::Center);
     connect(m_btnCheckList, SIGNAL(clicked()), SLOT(on_btnCheckList_clicked()));
 
     m_btnInsertLink = new CWizToolButton(this);
@@ -1308,7 +1308,6 @@ WizEditorToolBar::WizEditorToolBar(WizExplorerApp& app, QWidget *parent)
     m_btnInsertCode = new CWizToolButton(this);
     m_btnInsertCode->setCheckable(false);
     m_btnInsertCode->setIcon(::WizLoadSkinIcon(skin, "actionFormatInsertCode", editIconSize));
-    //m_btnInsertCode->setIconSize(QPixmap(WizGetSkinResourceFileName(skin, "actionFormatInsertCode")).size());
     m_btnInsertCode->setToolTip(tr("Insert code %1%2C").arg(shiftKey()).arg(commandKey()));
     m_btnInsertCode->setPosition(CWizToolButton::Left);
     connect(m_btnInsertCode, SIGNAL(clicked()), SLOT(on_btnInsertCode_clicked()));
@@ -1349,7 +1348,7 @@ WizEditorToolBar::WizEditorToolBar(WizExplorerApp& app, QWidget *parent)
     containerLayout1->addSpacing(12);
 
     layout->addWidget(buttonContainer1);
-    //
+
     setMinimumWidth(firstLineWidth() - 20);
 
     QWidget*  moveableButtonContainer1 = createMoveAbleWidget(this);
@@ -1371,11 +1370,6 @@ WizEditorToolBar::WizEditorToolBar(WizExplorerApp& app, QWidget *parent)
     QWidget* firstLineWidget = createMoveAbleWidget(this);
     firstLineWidget->layout()->addWidget(m_firstLineButtonContainer);
     qobject_cast<QHBoxLayout*>(firstLineWidget->layout())->addStretch();
-
-    //m_buttonContainersInFirstLine.append(buttonContainer0);
-   // m_buttonContainersInFirstLine.append(buttonContainer1);
-    //m_buttonContainersInFirstLine.append(moveableButtonContainer1);
-    //m_buttonContainersInFirstLine.append(moveableButtonContainer2);
 
     m_secondLineButtonContainer = new QWidget(this);
     QHBoxLayout* hLayout = new QHBoxLayout(m_secondLineButtonContainer);
@@ -1402,7 +1396,7 @@ WizEditorToolBar::WizEditorToolBar(WizExplorerApp& app, QWidget *parent)
 
     QWidget*  moveableButtonContainer4 = createMoveAbleWidget(this);
     QHBoxLayout* moveableLayout4 = qobject_cast<QHBoxLayout*>(moveableButtonContainer4->layout());
-    //
+
     moveableLayout4->addWidget(m_btnFormatPainter);
     moveableLayout4->addWidget(new CWizEditorButtonSpliter(this));
     moveableLayout4->addWidget(m_btnRemoveFormat);
@@ -1415,7 +1409,7 @@ WizEditorToolBar::WizEditorToolBar(WizExplorerApp& app, QWidget *parent)
     QHBoxLayout* moveableLayout5 = qobject_cast<QHBoxLayout*>(moveableButtonContainer5->layout());
     moveableLayout5->addWidget(m_btnInsertCode);
 #ifndef Q_OS_MAC
-    hLayout->addWidget(m_btnScreenShot);
+    moveableLayout5->addWidget(m_btnScreenShot);
 #endif
     moveableLayout5->addWidget(new CWizEditorButtonSpliter(this));
     moveableLayout5->addWidget(m_btnSearchReplace);
