@@ -53,7 +53,8 @@ public:
     Q_INVOKABLE void doPaste();
     Q_INVOKABLE void doCopy();
     Q_INVOKABLE void afterCopied();
-
+    Q_INVOKABLE void onMarkerUndoStatusChanged(QString data);
+    Q_INVOKABLE void onMarkerInitiated(QString data);
 
 signals:
     void isPersonalDocumentChanged();

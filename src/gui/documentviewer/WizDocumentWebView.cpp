@@ -2211,6 +2211,26 @@ void WizDocumentWebView::editorCommandExecuteInsertImage()
 }
 
 
+void WizDocumentWebView::editorCommandExecuteStartMarkup()
+{
+    QString js = QString("WizEditor.marker.start();");
+    page()->runJavaScript(js);
+}
+
+
+void WizDocumentWebView::editorCommandExecuteStopMarkup()
+{
+    QString js = QString("WizEditor.marker.quit();");
+    page()->runJavaScript(js);
+}
+
+
+void WizDocumentWebView::editorExecJs(QString js)
+{
+    page()->runJavaScript(js);
+}
+
+
 void WizDocumentWebView::editorCommandExecuteInsertPainter()
 {
     view()->changeType("svgpainter");
@@ -2785,6 +2805,17 @@ void WizDocumentWebView::afterCopied()
 {
     WizWebEnginePage::processCopiedData();
 }
+
+void WizDocumentWebView::onMarkerUndoStatusChanged(QString data)
+{
+    emit markerUndoStatusChanged(data);
+
+}
+void WizDocumentWebView::onMarkerInitiated(QString data)
+{
+    emit markerInitiated(data);
+}
+
 
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////

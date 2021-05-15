@@ -117,3 +117,13 @@ void ApiWizHtmlEditorApp::afterCopied()
 {
     m_documentWebView->afterCopied();
 }
+
+void ApiWizHtmlEditorApp::onMarkerUndoStatusChanged(QString data)
+{
+    m_documentWebView->onMarkerUndoStatusChanged(data);
+}
+
+void ApiWizHtmlEditorApp::onMarkerInitiated(QString data)
+{
+    m_documentWebView->onMarkerInitiated(data);
+}

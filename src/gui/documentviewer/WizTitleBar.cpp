@@ -567,9 +567,11 @@ void WizTitleBar::setEditorMode(WizEditorMode editorMode)
     if (editorMode == modeReader)
     {
         showInfoBar();
+        m_editorBar->switchToNormalMode();
     }
     else
     {
+        m_editorBar->switchToNormalMode();
         showEditorBar();
     }
 }

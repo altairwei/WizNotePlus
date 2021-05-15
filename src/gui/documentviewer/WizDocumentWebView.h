@@ -255,6 +255,9 @@ public:
     void doCopy();
     void afterCopied();
 
+    void onMarkerUndoStatusChanged(QString data);
+    void onMarkerInitiated(QString data);
+
     QObject *publicAPIsObject() { return m_htmlEditorApp; }
 
 private:
@@ -396,6 +399,8 @@ public Q_SLOTS:
     void editorCommandExecuteInsertHorizontal();
     void editorCommandExecuteInsertCheckList();
     void editorCommandExecuteInsertImage();
+    void editorCommandExecuteStartMarkup();
+    void editorCommandExecuteStopMarkup();
     void editorCommandExecuteInsertPainter();
     void editorCommandExecuteInsertCode();
     void editorCommandExecuteMobileImage(bool bReceiveImage);
@@ -403,9 +408,14 @@ public Q_SLOTS:
     void on_editorCommandExecuteScreenShot_imageAccepted(QPixmap pix);
     void on_editorCommandExecuteScreenShot_finished();
 
+    void editorExecJs(QString js);
+
 Q_SIGNALS:
     // signals for notify command reflect status, triggered when selection, focus, editing mode changed
     void statusChanged(const QString& currentStyle);
+    void markerUndoStatusChanged(const QString& data);
+    void markerInitiated(const QString& data);
+
     void selectAllKeyPressed();
     // signals used request reset info toolbar and editor toolbar
     void focusIn();
