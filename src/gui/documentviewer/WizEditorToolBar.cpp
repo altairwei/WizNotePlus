@@ -2540,10 +2540,14 @@ void WizEditorToolBar::on_editor_justifyRight_triggered()
 void WizEditorToolBar::on_comboParagraph_shortcutActivated()
 {
     QShortcut* shortcut = qobject_cast<QShortcut*>(sender());
-    QKeySequence seq = shortcut->key();
-    QString key_string = seq.toString();
-    int index = 56 - (int)key_string.back().toLatin1();
-    on_comboParagraph_indexChanged(index);
+    if (shortcut) {
+        QString key_string = shortcut->key().toString();
+        if (!key_string.isEmpty()) {
+            int para_level = key_string.back().digitValue();
+            if (para_level >= 1 && para_level <= 6)
+                on_comboParagraph_indexChanged(nParagraphItemCount - para_level);
+        }
+    }
 }
 
 void WizEditorToolBar::on_comboParagraph_indexChanged(int index)
