@@ -704,13 +704,13 @@ private:
 
 class CWizToolButtonColor : public CWizToolButton
 {
+
 public:
     CWizToolButtonColor(QWidget* parent = 0) : CWizToolButton(parent)
       , m_menu(NULL)
       , m_color(Qt::transparent)
     {
         setCheckable(false);
-//        setIconSize(QSize(Utils::WizStyleHelper::editorButtonHeight(), Utils::WizStyleHelper::editorButtonHeight()));
         setPopupMode(QToolButton::MenuButtonPopup);
     }
 
@@ -738,6 +738,7 @@ public:
     }
 
 protected:
+
     virtual void paintEvent(QPaintEvent *event)
     {
         Q_UNUSED(event);
@@ -956,9 +957,16 @@ public:
     {
     }
 
-    //
-    void setColor(QColor color) { m_color = color; }
-    QColor color() const { return m_color; }
+    void setColor(QColor color) 
+    {
+        m_color = color;
+        repaint();
+    }
+
+    QColor color() const 
+    {
+        return m_color;
+    }
 
 protected:
 
@@ -971,22 +979,23 @@ protected:
 
         opt.currentText = m_strText;
         drawCombo(this, opt, m_position);
-        //
+
         int lineWidth = currentText().toInt();
         if (lineWidth != 0) {
-            //
+
             QPainter painter(this);
-            //
+
             QPoint center = opt.rect.center();
             center.setX(center.x() - WizSmartScaleUI(8));
             QRect ellipse(center.x() - lineWidth / 2, center.y() - lineWidth / 2 + 1, lineWidth, lineWidth);
-            //
+
             painter.setBrush(QBrush(m_color));
             painter.setPen(QPen(m_color));
             painter.setRenderHint(QPainter::Antialiasing);
             painter.drawEllipse(ellipse);
         }
     }
+
 protected:
     QColor m_color;
 };
@@ -3467,9 +3476,11 @@ void WizEditorToolBar::on_btnPencilColor_changed()
     if (m_editor) {
         on_btnPencil_clicked();
         m_editor->editorExecJs(QString("WizEditor.marker.setColor('%1');").arg(color.name()));
+        m_btnPencil->setColor(color);
         m_comboPencil->setColor(color);
     }
 }
+
 void WizEditorToolBar::on_btnHighlighterColor_changed()
 {
     QAction *pColorAction = qobject_cast<QAction *>(sender());
@@ -3482,9 +3493,11 @@ void WizEditorToolBar::on_btnHighlighterColor_changed()
     if (m_editor) {
         on_btnHighlighter_clicked();
         m_editor->editorExecJs(QString("WizEditor.marker.setColor('%1');").arg(color.name()));
+        m_btnHighlighter->setColor(color);
         m_comboHighlighter->setColor(color);
     }
 }
+
 void WizEditorToolBar::on_btnShapeColor_changed()
 {
     QAction *pColorAction = qobject_cast<QAction *>(sender());
@@ -3497,6 +3510,7 @@ void WizEditorToolBar::on_btnShapeColor_changed()
     if (m_editor) {
         on_btnShape_clicked();
         m_editor->editorExecJs(QString("WizEditor.marker.setColor('%1');").arg(color.name()));
+        m_btnShape->setColor(color);
         m_comboShape->setColor(color);
     }
 }
