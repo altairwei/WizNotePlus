@@ -58,7 +58,7 @@ jobs:
           pip install conan
           conan remote add bincrafters https://api.bintray.com/conan/bincrafters/public-conan
           conan remote add conan-community https://api.bintray.com/conan/conan-community/conan
-          conan remote add wiznoteplus https://wiznoteplus.jfrog.io/artifactory/api/conan/wiznoteplus
+          conan remote add wiznoteplus https://altairwei.jfrog.io/artifactory/api/conan/wiznoteplus-conan
           conan profile new default --detect
           conan profile update settings.compiler.libcxx=libstdc++11 default
       - name: Build project
@@ -93,7 +93,7 @@ jobs:
           python -m pip install conan
           conan remote add bincrafters https://api.bintray.com/conan/bincrafters/public-conan
           conan remote add conan-community https://api.bintray.com/conan/conan-community/conan
-          conan remote add wiznoteplus https://wiznoteplus.jfrog.io/artifactory/api/conan/wiznoteplus
+          conan remote add wiznoteplus https://altairwei.jfrog.io/artifactory/api/conan/wiznoteplus-conan
           conan profile new default --detect
       - name: Cache Qt
         id: cache-qt
@@ -146,7 +146,7 @@ jobs:
           python -m pip install conan
           conan remote add bincrafters https://api.bintray.com/conan/bincrafters/public-conan
           conan remote add conan-community https://api.bintray.com/conan/conan-community/conan
-          conan remote add wiznoteplus https://wiznoteplus.jfrog.io/artifactory/api/conan/wiznoteplus
+          conan remote add wiznoteplus https://altairwei.jfrog.io/artifactory/api/conan/wiznoteplus-conan
           conan profile new default --detect
       - name: Cache Qt
         id: cache-qt

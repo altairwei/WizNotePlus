@@ -607,7 +607,7 @@ QString WizUserSettings::editorPagePadding()
     QString strPagePadding = get("EditorPagePadding");
 
     if (strPagePadding.isEmpty()) {
-        return "48";
+        return WIZSETTINGS_DEFAULT_PAGEPADDING;
     }
 
     return strPagePadding;
@@ -754,7 +754,7 @@ int WizUserSettings::defaultFontSize()
     if (nSize)
         return nSize;
 
-    return 15; // default 15px
+    return 16; // default 16px
 }
 
 void WizUserSettings::setDefaultFontSize(int nSize)

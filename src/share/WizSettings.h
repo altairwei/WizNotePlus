@@ -8,6 +8,8 @@
 
 #include "database/WizDatabase.h"
 
+#define WIZSETTINGS_DEFAULT_PAGEPADDING "16"
+
 enum WizProxyType
 {
     WizProxy_NoProxy,

@@ -283,6 +283,6 @@ body.wiz-editor-body li {
 }
 body,
 .wiz-editor-body {
-  padding-top: 8px !important;
+  padding-top: 20px !important;
   /*default-page-padding*/
 }

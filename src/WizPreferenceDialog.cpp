@@ -593,6 +593,6 @@ void WizPreferenceWindow::on_spinPagePadding_valueChanged(int val)
 
 void WizPreferenceWindow::on_btnResetPagePadding_clicked()
 {
-    ui->spinPagePadding->setValue(48);
-    updateEditorPagePadding("48", true);
+    ui->spinPagePadding->setValue(QString(WIZSETTINGS_DEFAULT_PAGEPADDING).toInt());
+    updateEditorPagePadding(WIZSETTINGS_DEFAULT_PAGEPADDING, true);
 }
