@@ -174,9 +174,11 @@
     margin: 0;
 }
 
+/*
 .markdown-body ul :first-child, .markdown-body ol :first-child {
     margin-top: 0;
 }
+*/
 
 .markdown-body dl {
     padding: 0;
