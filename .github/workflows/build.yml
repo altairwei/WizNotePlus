@@ -57,8 +57,7 @@ jobs:
         run: |
           pip install conan
           conan remote add wiznoteplus https://altairwei.jfrog.io/artifactory/api/conan/wiznoteplus-conan
-          conan remote add bincrafters https://api.bintray.com/conan/bincrafters/public-conan
-          conan remote add conan-community https://api.bintray.com/conan/conan-community/conan
+          conan remote add bincrafters https://bincrafters.jfrog.io/artifactory/api/conan/public-conan
           conan config set general.revisions_enabled=1
           conan profile new default --detect
           conan profile update settings.compiler.libcxx=libstdc++11 default
@@ -93,8 +92,7 @@ jobs:
         run: |
           python -m pip install conan
           conan remote add wiznoteplus https://altairwei.jfrog.io/artifactory/api/conan/wiznoteplus-conan
-          conan remote add bincrafters https://api.bintray.com/conan/bincrafters/public-conan
-          conan remote add conan-community https://api.bintray.com/conan/conan-community/conan
+          conan remote add bincrafters https://bincrafters.jfrog.io/artifactory/api/conan/public-conan
           conan config set general.revisions_enabled=1
           conan profile new default --detect
       - name: Cache Qt
@@ -147,8 +145,7 @@ jobs:
         run: |
           python -m pip install conan
           conan remote add wiznoteplus https://altairwei.jfrog.io/artifactory/api/conan/wiznoteplus-conan
-          conan remote add bincrafters https://api.bintray.com/conan/bincrafters/public-conan
-          conan remote add conan-community https://api.bintray.com/conan/conan-community/conan
+          conan remote add bincrafters https://bincrafters.jfrog.io/artifactory/api/conan/public-conan
           conan config set general.revisions_enabled=1
           conan profile new default --detect
       - name: Cache Qt
