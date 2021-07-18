@@ -145,7 +145,7 @@ public:
 
 private:
     bool copyDocumentTo(const QString &sourceGUID, WizDatabase &targetDB, const QString &strTargetLocation,
-                        const WIZTAGDATA &targetTag, QString &resultGUID, bool keepDocTime);
+                        const WIZTAGDATA &targetTag, QString &resultGUID, bool keepDocTime, bool keepOtherInfo = true);
     bool copyDocumentAttachment(const WIZDOCUMENTDATA& sourceDoc, WizDatabase& targetDB,
                                 WIZDOCUMENTDATA& targetDoc);
     bool reloadDocumentInfo();

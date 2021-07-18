@@ -570,8 +570,14 @@ void WizDocument::Delete()
 }
 
 
-bool WizDocument::copyDocumentTo(const QString& sourceGUID, WizDatabase& targetDB,
-                                  const QString& strTargetLocation, const WIZTAGDATA& targetTag, QString& resultGUID, bool keepDocTime)
+bool WizDocument::copyDocumentTo(
+    const QString& sourceGUID,
+    WizDatabase& targetDB,
+    const QString& strTargetLocation,
+    const WIZTAGDATA& targetTag,
+    QString& resultGUID,
+    bool keepDocTime,
+    bool keepOtherInfo /*= true*/)
 {
     TOLOG("Copy document");
     WIZDOCUMENTDATA sourceDoc;
@@ -589,8 +595,7 @@ bool WizDocument::copyDocumentTo(const QString& sourceGUID, WizDatabase& targetD
         return false;
 
     WIZDOCUMENTDATA newDoc;
-    if (!targetDB.createDocumentAndInit(sourceDoc, ba, strTargetLocation, targetTag, newDoc))
-    {
+    if (!targetDB.createDocumentAndInit(sourceDoc, ba, strTargetLocation, targetTag, newDoc)) {
         TOLOG("Failed to new document!");
         return false;
     }
@@ -600,13 +605,17 @@ bool WizDocument::copyDocumentTo(const QString& sourceGUID, WizDatabase& targetD
     if (!copyDocumentAttachment(sourceDoc, targetDB, newDoc))
         return false;
 
-    if (keepDocTime)
-    {
+    if (keepDocTime) {
         newDoc.tCreated = sourceDoc.tCreated;
         newDoc.tAccessed = sourceDoc.tAccessed;
         newDoc.tDataModified = sourceDoc.tDataModified;
         newDoc.tModified = sourceDoc.tModified;
     }
+
+    if (keepOtherInfo) {
+        newDoc.strURL = sourceDoc.strURL;
+    }
+
     newDoc.nAttachmentCount = targetDB.getDocumentAttachmentCount(newDoc.strGUID);
     targetDB.modifyDocumentInfoEx(newDoc);
 
@@ -3976,13 +3985,13 @@ bool WizDatabase::createDocumentAndInit(const WIZDOCUMENTDATA& sourceDoc, const 
     {
         if (!initCert(true))
             return false;
-        //
+
         if (!initZiwReaderForEncryption())
             return false;
-        //
+
         newDoc.nProtected = 1;
     }
-    //
+
     bool bRet = false;
     try
     {
