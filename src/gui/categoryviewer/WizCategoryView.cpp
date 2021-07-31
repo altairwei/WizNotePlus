@@ -3021,11 +3021,17 @@ void WizCategoryView::on_itemChanged(QTreeWidgetItem* item, int column)
     if (item->type() == Category_FolderItem)
     {
         WizCategoryViewFolderItem* pFolder = dynamic_cast<WizCategoryViewFolderItem*>(item);
-        if (pFolder == nullptr || pFolder->text(0) == pFolder->name())
+        if (WizIsPredefinedLocation(pFolder->location())) {
             return;
+        }
+        if (pFolder == nullptr
+            || pFolder->text(0) == pFolder->name()
+            || pFolder->text(0) == WizDatabase::getLocationDisplayName(pFolder->location()))
+            return;
+
         qDebug() << "folder changed text " << pFolder->text(0) << "  name : " << pFolder->name();
 
-       renameFolder(pFolder, pFolder->text(0));
+        renameFolder(pFolder, pFolder->text(0));
     }
     else if (item->type() == Category_TagItem)
     {

@@ -113,6 +113,15 @@ private:
     CWizToolButton* m_btnRedo;
     CWizToolButton* m_btnGoback;
 
+    //outline tools
+    CWizToolButton* m_btnUndoOutline;
+    CWizToolButton* m_btnRedoOutline;
+    CWizToolButton* m_btnOutdentOutline;
+    CWizToolButton* m_btnIndentOutline;
+    CWizToolButton* m_btnNotesOutline;
+    CWizToolButton* m_btnInsertImagesOutline;
+    CWizToolButton* m_btnCompleteOutline;
+
     //text input would call resetToolbar and cause input delay, lock to ignore reset request
     QString m_currentStyle;
 #ifdef Q_OS_WIN
@@ -228,6 +237,13 @@ protected Q_SLOTS:
     void on_btnUndo_clicked();
     void on_btnRedo_clicked();
     void on_btnGoback_clicked();
+
+    void on_btnUndoOutline_clicked();
+    void on_btnRedoOutline_clicked();
+    void on_btnIndentOutline_clicked();
+    void on_btnOutdentOutline_clicked();
+    void on_btnNotesOutline_clicked();
+    void on_btnCompleteOutline_clicked();
 
     void on_pencilSize_activated(int);
     void on_highlighterSize_activated(int);

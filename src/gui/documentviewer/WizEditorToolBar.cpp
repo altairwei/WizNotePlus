@@ -1180,6 +1180,7 @@ QString shiftKey()
 
 
 #define TOOLBARTYPE_HIGHLIGHTER "highlighter"
+#define TOOLBARTYPE_OUTLINE     "outline"
 #define TOOLBARTYPE_NORMAL      "normal"
 
 QColor getColorFromSettings(WizExplorerApp& app, QString name, QColor def)
@@ -1683,6 +1684,70 @@ WizEditorToolBar::WizEditorToolBar(WizExplorerApp& app, QWidget *parent)
     layout->addWidget(buttonContainerMarkup5);
     setAvaliableInToolbar(buttonContainerMarkup5, TOOLBARTYPE_HIGHLIGHTER);
 
+    //outline tool bar
+    m_btnUndoOutline = new CWizToolButton(this);
+    m_btnUndoOutline->setCheckable(false);
+    m_btnUndoOutline->setIcon(::WizLoadSkinIcon(skin, "actionMarkupUndo", editIconSize));
+    m_btnUndoOutline->setPosition(ButtonPosition::Left);
+    connect(m_btnUndoOutline, SIGNAL(clicked()), SLOT(on_btnUndoOutline_clicked()));
+
+    m_btnRedoOutline = new CWizToolButton(this);
+    m_btnRedoOutline->setCheckable(false);
+    m_btnRedoOutline->setIcon(::WizLoadSkinIcon(skin, "actionMarkupRedo", editIconSize));
+    m_btnRedoOutline->setPosition(ButtonPosition::Right);
+    connect(m_btnRedoOutline, SIGNAL(clicked()), SLOT(on_btnRedoOutline_clicked()));
+
+    m_btnOutdentOutline = new CWizToolButton(this);
+    m_btnOutdentOutline->setCheckable(false);
+    m_btnOutdentOutline->setIcon(::WizLoadSkinIcon(skin, "outline_outdent", editIconSize));
+    m_btnOutdentOutline->setPosition(ButtonPosition::Left);
+    connect(m_btnOutdentOutline, SIGNAL(clicked()), SLOT(on_btnOutdentOutline_clicked()));
+
+    m_btnIndentOutline = new CWizToolButton(this);
+    m_btnIndentOutline->setCheckable(false);
+    m_btnIndentOutline->setIcon(::WizLoadSkinIcon(skin, "outline_indent", editIconSize));
+    m_btnIndentOutline->setPosition(ButtonPosition::Right);
+    connect(m_btnIndentOutline, SIGNAL(clicked()), SLOT(on_btnIndentOutline_clicked()));
+
+    m_btnNotesOutline = new CWizToolButton(this);
+    m_btnNotesOutline->setCheckable(false);
+    m_btnNotesOutline->setIcon(::WizLoadSkinIcon(skin, "outline_notes", editIconSize));
+    m_btnNotesOutline->setPosition(ButtonPosition::Left);
+    connect(m_btnNotesOutline, SIGNAL(clicked()), SLOT(on_btnNotesOutline_clicked()));
+
+    m_btnInsertImagesOutline = new CWizToolButton(this);
+    m_btnInsertImagesOutline->setCheckable(false);
+    m_btnInsertImagesOutline->setHorizontalPadding(8);
+    m_btnInsertImagesOutline->setIcon(::WizLoadSkinIcon(skin, "actionFormatInsertImage", editIconSize));
+    m_btnInsertImagesOutline->setToolTip(tr("Insert Image %1%2I").arg(shiftKey()).arg(commandKey()));
+    m_btnInsertImagesOutline->setPosition(ButtonPosition::Right);
+    connect(m_btnInsertImagesOutline, SIGNAL(clicked()), SLOT(on_btnInsertImage_clicked()));
+
+    m_btnCompleteOutline = new CWizToolButton(this);
+    m_btnCompleteOutline->setCheckable(false);
+    m_btnCompleteOutline->setIcon(::WizLoadSkinIcon(skin, "outline_complete", editIconSize));
+    m_btnCompleteOutline->setPosition(ButtonPosition::NoPosition);
+    connect(m_btnCompleteOutline, SIGNAL(clicked()), SLOT(on_btnCompleteOutline_clicked()));
+
+    QWidget*  buttonContainerOutline = createMoveAbleWidget(this);
+    QHBoxLayout* outlineLayout = qobject_cast<QHBoxLayout*>(buttonContainerOutline->layout());
+    outlineLayout->addWidget(m_btnUndoOutline);
+    outlineLayout->addWidget(m_btnRedoOutline);
+    outlineLayout->addSpacing(16);
+    outlineLayout->addWidget(m_btnOutdentOutline);
+    outlineLayout->addWidget(m_btnIndentOutline);
+    outlineLayout->addSpacing(16);
+    outlineLayout->addWidget(m_btnNotesOutline);
+    outlineLayout->addWidget(m_btnInsertImagesOutline);
+    outlineLayout->addSpacing(16);
+    outlineLayout->addWidget(m_btnCompleteOutline);
+
+    layout->addWidget(buttonContainerOutline);
+    setAvaliableInToolbar(buttonContainerOutline, TOOLBARTYPE_OUTLINE);
+    //markupLayout5->addSpacing(16);
+    //markupLayout5->addWidget(m_btnGoback);
+
+    //normal tools
     QWidget*  buttonContainer0 = createMoveAbleWidget(this);
     QHBoxLayout* containerLayout = qobject_cast<QHBoxLayout*>(buttonContainer0->layout());
     containerLayout->addWidget(m_comboParagraph);
@@ -1821,7 +1886,11 @@ WizEditorToolBar::WizEditorToolBar(WizExplorerApp& app, QWidget *parent)
 }
 
 void WizEditorToolBar::switchToNormalMode() {
-    setToolbarType(TOOLBARTYPE_NORMAL);
+    if (m_editor->isOutline()) {
+        setToolbarType(TOOLBARTYPE_OUTLINE);
+    } else {
+        setToolbarType(TOOLBARTYPE_NORMAL);
+    }
 }
 
 void WizEditorToolBar::setToolbarType(QString type) {
@@ -1960,6 +2029,7 @@ void WizEditorToolBar::resetToolbar(const QString& currentStyle)
     m_btnFormatPainter->setEnabled(canFormatPainter);
     m_btnHorizontal->setEnabled(canInsertHorizontalRule);
     m_btnInsertImage->setEnabled(canInsertImage);
+    m_btnInsertImagesOutline->setEnabled(canInsertImage);
     m_btnInsertLink->setEnabled(canSetLink);
 }
 
@@ -3307,9 +3377,10 @@ void WizEditorToolBar::on_btnCheckList_clicked()
 void WizEditorToolBar::on_btnInsertImage_clicked()
 {
     WizAnalyzer::getAnalyzer().logAction("editorToolBarImage");
-    if (m_editor) {
-        m_editor->editorCommandExecuteInsertImage();
-    }
+    if (!m_editor)
+        return;
+
+    m_editor->editorCommandExecuteInsertImage();
 }
 
 void WizEditorToolBar::on_btnStartMarkup_clicked()
@@ -3567,5 +3638,49 @@ void WizEditorToolBar::on_shapeSize_activated(int index)
             on_btnShape_clicked();
             m_editor->editorExecJs(QString("WizEditor.marker.setLineWidth(%1);").arg(text));
         }
+    }
+}
+
+
+//outline
+void WizEditorToolBar::on_btnUndoOutline_clicked()
+{
+    if (m_editor) {
+        m_editor->editorExecJs(QString("WizEditor.undo();"));
+    }
+}
+
+void WizEditorToolBar::on_btnRedoOutline_clicked()
+{
+    if (m_editor) {
+        m_editor->editorExecJs(QString("WizEditor.redo();"));
+    }
+}
+
+void WizEditorToolBar::on_btnIndentOutline_clicked()
+{
+    if (m_editor) {
+        m_editor->editorExecJs(QString("WizEditor.outline.indent();"));
+    }
+}
+
+void WizEditorToolBar::on_btnOutdentOutline_clicked()
+{
+    if (m_editor) {
+        m_editor->editorExecJs(QString("WizEditor.outline.outdent();"));
+    }
+}
+
+void WizEditorToolBar::on_btnNotesOutline_clicked()
+{
+    if (m_editor) {
+        m_editor->editorExecJs(QString("WizEditor.outline.addNotes();"));
+    }
+}
+
+void WizEditorToolBar::on_btnCompleteOutline_clicked()
+{
+    if (m_editor) {
+        m_editor->editorExecJs(QString("WizEditor.outline.setCompleted();"));
     }
 }

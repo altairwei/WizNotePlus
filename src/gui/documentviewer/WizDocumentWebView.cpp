@@ -198,13 +198,14 @@ WizDocumentWebView::WizDocumentWebView(WizExplorerApp& app, QWidget* parent)
     addObjectToJavaScriptClient("WizQtEditor", m_htmlEditorApp);
 
     connect(this, SIGNAL(loadFinishedEx(bool)), SLOT(onEditorLoadFinished(bool)));
+    connect(view()->titleBar(), SIGNAL(onViewMindMap(bool)), SLOT(onViewMindMap(bool)));
 
     if (m_app.userSettings().isEnableSpellCheck()) {
         QWebEngineProfile *profile = page->profile();
         profile->setSpellCheckEnabled(true);
         profile->setSpellCheckLanguages({"en-US"});
     }
-    //
+
     initEditorActions();
 }
 
@@ -685,7 +686,7 @@ void WizDocumentWebView::dropEvent(QDropEvent* event)
     }
 }
 
-WizDocumentView* WizDocumentWebView::view()
+WizDocumentView* WizDocumentWebView::view() const
 {
     QWidget* pParent = parentWidget();
     while(pParent) {
@@ -948,7 +949,7 @@ void WizDocumentWebView::enableEditor(bool enalbe)
     }
     else
     {
-        QString code = QString("WizEditor.off({noteType:'%1'});").arg(getNoteType());
+        QString code = QString("WizEditor.off({reader: {type:'%1'}});").arg(getNoteType());
         //
         page()->runJavaScript(code);
         //
@@ -1146,26 +1147,35 @@ void WizDocumentWebView::shareNoteByLink()
 QString WizDocumentWebView::getNoteType()
 {
     const WIZDOCUMENTDATA& doc = view()->note();
-    //
+
+    if (doc.strType == "outline") {
+        return "outline";
+    }
+
     QString title = doc.strTitle;
     if (title.endsWith(".md"))
         return "markdown";
     if (title.endsWith(".mj"))
         return "mathjax";
-    //
+
     if (title.indexOf(".md@") != -1)
         return "markdown";
     if (title.indexOf(".mj@") != -1)
         return "mathjax";
-    //
+
     if (title.indexOf(".md ") != -1)
         return "markdown";
     if (title.indexOf(".mj ") != -1)
         return "mathjax";
-    //
+
     return "common";
 }
 
+bool WizDocumentWebView::isOutline() const
+{
+    const WIZDOCUMENTDATA& doc = view()->note();
+    return doc.strType == "outline";
+}
 
 QString WizDocumentWebView::getHighlightKeywords()
 {
@@ -2202,7 +2212,7 @@ void WizDocumentWebView::editorCommandExecuteInsertImage()
     //
     CString param;
     WizStringArrayToText(files, param, "*");
-    //
+    //WizEditor.img.insertByPath('./img01.jpg');
     QString script = QString("WizEditor.img.insertByPath('%1');").arg(param);
     page()->runJavaScript(script);
 
@@ -2230,6 +2240,17 @@ void WizDocumentWebView::editorExecJs(QString js)
     page()->runJavaScript(js);
 }
 
+void WizDocumentWebView::onViewMindMap(bool on)
+{
+    if (on) {
+        QString title = view()->note().strTitle;
+        QString js = QString("WizEditor.outline.showMinder(`%1`);").arg(title.replace("`", "\\`"));
+        editorExecJs(js);
+    } else {
+        QString js = "WizEditor.outline.hideMinder();";
+        editorExecJs(js);
+    }
+}
 
 void WizDocumentWebView::editorCommandExecuteInsertPainter()
 {

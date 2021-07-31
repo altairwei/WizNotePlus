@@ -155,7 +155,7 @@ public:
     WizDocumentWebView(WizExplorerApp& app, QWidget* parent);
     ~WizDocumentWebView();
 
-    WizDocumentView* view();
+    WizDocumentView* view() const;
 
     void clear();
 
@@ -239,6 +239,7 @@ public:
     QString getUserAvatarFilePath();
     QString getUserAlias();
     bool isPersonalDocument();
+    bool isOutline() const;
     QString getCurrentNoteHtml();
     bool hasEditPermissionOnCurrentNote();
     void changeCurrentDocumentType(const QString& strType);
@@ -409,6 +410,7 @@ public Q_SLOTS:
     void on_editorCommandExecuteScreenShot_finished();
 
     void editorExecJs(QString js);
+    void onViewMindMap(bool on);
 
 Q_SIGNALS:
     // signals for notify command reflect status, triggered when selection, focus, editing mode changed
