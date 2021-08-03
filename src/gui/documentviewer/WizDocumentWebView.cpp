@@ -1947,6 +1947,7 @@ void WizDocumentWebView::editorCommandExecuteFindReplace()
     QRect rect = geometry();
     rect.moveTo(mapToGlobal(pos()));
     m_searchReplaceWidget->showInEditor(rect);
+    m_searchReplaceWidget->setSourceText(selectedText());
 
     WizAnalyzer& analyzer = WizAnalyzer::getAnalyzer();
     analyzer.logAction("findReplace");
