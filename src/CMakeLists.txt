@@ -162,8 +162,12 @@ set(wiznote_SOURCES
     gui/categoryviewer/WizFolderSelector.cpp
 
     WizDevToolsDialog.cpp
-    WizDocumentListView.cpp
-    WizDocumentListViewItem.cpp
+
+    gui/doclistviewer/WizDocumentListView.cpp
+    gui/doclistviewer/WizDocumentListViewBaseItem.cpp
+    gui/doclistviewer/WizDocumentListViewDocumentItem.cpp
+    gui/doclistviewer/WizDocumentListViewSectionItem.cpp
+    gui/doclistviewer/WizDocumentListViewItem.cpp
 
     gui/documentviewer/WizDocumentView.cpp
     gui/documentviewer/WizDocumentWebView.cpp
@@ -334,8 +338,12 @@ set(wiznote_HEADERS
     gui/categoryviewer/WizFolderSelector.h
 
     WizDevToolsDialog.h
-    WizDocumentListView.h
-    WizDocumentListViewItem.h
+
+    gui/doclistviewer/WizDocumentListView.h
+    gui/doclistviewer/WizDocumentListViewBaseItem.h
+    gui/doclistviewer/WizDocumentListViewDocumentItem.h
+    gui/doclistviewer/WizDocumentListViewSectionItem.h
+    gui/doclistviewer/WizDocumentListViewItem.h
 
     gui/documentviewer/WizDocumentView.h
     gui/documentviewer/WizDocumentWebView.h

@@ -33,7 +33,7 @@
 #include "WizUpgrade.h"
 #include "WizConsoleDialog.h"
 #include "gui/categoryviewer/WizCategoryView.h"
-#include "WizDocumentListView.h"
+#include "gui/doclistviewer/WizDocumentListView.h"
 #include "WizUserCipherForm.h"
 
 #include "WizActions.h"
