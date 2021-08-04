@@ -570,8 +570,14 @@ void WizDocument::Delete()
 }
 
 
-bool WizDocument::copyDocumentTo(const QString& sourceGUID, WizDatabase& targetDB,
-                                  const QString& strTargetLocation, const WIZTAGDATA& targetTag, QString& resultGUID, bool keepDocTime)
+bool WizDocument::copyDocumentTo(
+    const QString& sourceGUID,
+    WizDatabase& targetDB,
+    const QString& strTargetLocation,
+    const WIZTAGDATA& targetTag,
+    QString& resultGUID,
+    bool keepDocTime,
+    bool keepOtherInfo /*= true*/)
 {
     TOLOG("Copy document");
     WIZDOCUMENTDATA sourceDoc;
@@ -589,8 +595,7 @@ bool WizDocument::copyDocumentTo(const QString& sourceGUID, WizDatabase& targetD
         return false;
 
     WIZDOCUMENTDATA newDoc;
-    if (!targetDB.createDocumentAndInit(sourceDoc, ba, strTargetLocation, targetTag, newDoc))
-    {
+    if (!targetDB.createDocumentAndInit(sourceDoc, ba, strTargetLocation, targetTag, newDoc)) {
         TOLOG("Failed to new document!");
         return false;
     }
@@ -600,13 +605,17 @@ bool WizDocument::copyDocumentTo(const QString& sourceGUID, WizDatabase& targetD
     if (!copyDocumentAttachment(sourceDoc, targetDB, newDoc))
         return false;
 
-    if (keepDocTime)
-    {
+    if (keepDocTime) {
         newDoc.tCreated = sourceDoc.tCreated;
         newDoc.tAccessed = sourceDoc.tAccessed;
         newDoc.tDataModified = sourceDoc.tDataModified;
         newDoc.tModified = sourceDoc.tModified;
     }
+
+    if (keepOtherInfo) {
+        newDoc.strURL = sourceDoc.strURL;
+    }
+
     newDoc.nAttachmentCount = targetDB.getDocumentAttachmentCount(newDoc.strGUID);
     targetDB.modifyDocumentInfoEx(newDoc);
 
@@ -2464,6 +2473,29 @@ bool WizDatabase::getGroupData(const QString& groupGUID, WIZGROUPDATA& group)
     return !group.strGroupName.isEmpty();
 }
 
+QString WizDatabase::getKbServer(const QString &kbGuid) {
+
+    IWizSyncableDatabase* pDatabase = this;
+    if (isGroup()) {
+        pDatabase = getPersonalDatabase();
+    }
+
+    WizDatabase* db = dynamic_cast<WizDatabase*>(pDatabase);
+    if (!db) {
+        return QString();
+    }
+
+    WIZUSERINFO userInfo;
+    db->getUserInfo(userInfo);
+    if (userInfo.strKbGUID == kbGuid || kbGuid.isEmpty()) {
+        return userInfo.strKbServer;
+    }
+
+    WIZGROUPDATA group;
+    db->getGroupData(kbGuid, group);
+    return group.strKbServer;
+}
+
 bool WizDatabase::getOwnGroups(const CWizGroupDataArray& arrayAllGroup, CWizGroupDataArray& arrayOwnGroup)
 {
     for (CWizGroupDataArray::const_iterator it = arrayAllGroup.begin();
@@ -3976,13 +4008,13 @@ bool WizDatabase::createDocumentAndInit(const WIZDOCUMENTDATA& sourceDoc, const 
     {
         if (!initCert(true))
             return false;
-        //
+
         if (!initZiwReaderForEncryption())
             return false;
-        //
+
         newDoc.nProtected = 1;
     }
-    //
+
     bool bRet = false;
     try
     {
@@ -4047,7 +4079,10 @@ bool WizDatabase::createDocumentByTemplate(const QString& templateZiwFile, const
     {
         newDoc.strTitle = strTitle;
     }
-    newDoc.strType = "TemplateNote";
+
+    if (newDoc.strType.isEmpty()) {
+        newDoc.strType = "TemplateNote";
+    }
 
     return createDocumentAndInit(newDoc, ba, strLocation, tag, newDoc);
 }
@@ -4497,29 +4532,33 @@ bool WizDatabase::verifyCertPassword(QString password)
     QString hint;
     QString encrypted_d;
     getUserCert(n, e, encrypted_d, hint);
-    //
+
     QString d;
-    //
+
     if (WizAESDecryptBase64StringToString(password, encrypted_d, d)
             && d.length() > 0)
     {
-        WizUserCertPassword::Instance().setPassword(m_info.bizGUID, password);
-        return true;
+        if (atoi(d.left(6).toUtf8()) != 0) {
+            WizUserCertPassword::Instance().setPassword(m_info.bizGUID, password);
+            return true;
+        }
     }
-    //
+
     if (!refreshCertFromServer())
         return false;
-    //
+
     getUserCert(n, e, encrypted_d, hint);
-    //
+
     if (WizAESDecryptBase64StringToString(password, encrypted_d, d)
             && d.length() > 0)
     {
         loadUserCert();
-        WizUserCertPassword::Instance().setPassword(m_info.bizGUID, password);
-        return true;
+        if (atoi(d.left(6).toUtf8()) != 0) {
+            WizUserCertPassword::Instance().setPassword(m_info.bizGUID, password);
+            return true;
+        }
     }
-    //
+
     return false;
 }
 
@@ -4933,3 +4972,55 @@ QObject* WizDatabase::GetDeletedItemsFolder()
 //    CWizDocument* pDoc = new CWizDocument(*this, data);
 //    return pDoc;
 //}
+
+
+class WizDocumentDataMutexes
+{
+    QMutex m_globalLocker;
+    std::map<QString, QMutex*> m_lockers;
+
+    QMutex* getDocumentMutexesCore(QString docGuid)
+    {
+        QMutexLocker locker(&m_globalLocker);
+        auto it = m_lockers.find(docGuid);
+        if (it != m_lockers.end()) {
+            return it->second;
+        }
+
+        QMutex* mutex = new QMutex();
+        m_lockers[docGuid] = mutex;
+        return mutex;
+    }
+
+public:
+    static QMutex* getDocumentMutexes(QString docGuid) {
+        static WizDocumentDataMutexes g;
+        return g.getDocumentMutexesCore(docGuid);
+    }
+};
+
+WizDocumentDataLocker::WizDocumentDataLocker(QString docGuid)
+{
+
+#ifdef QT_DEBUG
+    m_docGuid = docGuid;
+    DEBUG_TOLOG1("try access doc: %1", docGuid);
+#endif
+
+    m_mutex = WizDocumentDataMutexes::getDocumentMutexes(docGuid);
+    m_mutex->lock();
+
+#ifdef QT_DEBUG
+    DEBUG_TOLOG1("begin access doc: %1", docGuid);
+#endif
+
+}
+WizDocumentDataLocker::~WizDocumentDataLocker()
+{
+
+#ifdef QT_DEBUG
+    DEBUG_TOLOG1("end access doc: %1", m_docGuid);
+#endif
+
+    m_mutex->unlock();
+}

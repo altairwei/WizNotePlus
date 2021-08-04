@@ -675,8 +675,27 @@ void WizCategoryBaseView::dropEvent(QDropEvent * event)
     {
     // Handle the movement of folder themselves
 
-        QMessageBox::StandardButton res = QMessageBox::question(this, 
-            tr("Confirm"), tr("Do you want to move folder?"));
+        if (m_dragItem && !(m_dragItem->flags() & Qt::ItemIsDropEnabled))
+        {
+            qDebug() << "[DragDrop] Can not drop item at invalid position";
+            return;
+        }
+
+        ::WizGetAnalyzer().logAction("categoryDropItem");
+
+        QModelIndex droppedIndex = indexAt(event->pos());
+        if( !droppedIndex.isValid() )
+          return;
+
+        WizCategoryViewItemBase* hoverItem = itemAt(event->pos());
+        if (!hoverItem)
+        {
+            qDebug() << "null item";
+        }
+
+        QMessageBox::StandardButton res = QMessageBox::question(
+            this, tr("Confirm"), tr("Do you want to move \"%1\" into \"%2\" ?")
+                .arg(m_dragItem->name()).arg(hoverItem->name()));
         if (res != QMessageBox::Yes)
         {
             event->ignore();
@@ -691,25 +710,8 @@ void WizCategoryBaseView::dropEvent(QDropEvent * event)
             event->ignore();
             return;
         }
-        //
-        if (m_dragItem && !(m_dragItem->flags() & Qt::ItemIsDropEnabled))
-        {
-            qDebug() << "[DragDrop]Can not drop item at invalid position";
-            return;
-        }
 
-        ::WizGetAnalyzer().logAction("categoryDropItem");
-
-        QModelIndex droppedIndex = indexAt(event->pos());
-        if( !droppedIndex.isValid() )
-          return;
-        //
-        WizCategoryViewItemBase* hoverItem = itemAt(event->pos());
-        if (!hoverItem)
-        {
-            qDebug() << "null item";
-        }
-
+        // Perform actually dropping
         if (pItem->type() == Category_ShortcutRootItem || pItem->type() == Category_TagItem)
         {
             pItem->drop(m_dragItem);
@@ -3019,11 +3021,17 @@ void WizCategoryView::on_itemChanged(QTreeWidgetItem* item, int column)
     if (item->type() == Category_FolderItem)
     {
         WizCategoryViewFolderItem* pFolder = dynamic_cast<WizCategoryViewFolderItem*>(item);
-        if (pFolder == nullptr || pFolder->text(0) == pFolder->name())
+        if (WizIsPredefinedLocation(pFolder->location())) {
             return;
+        }
+        if (pFolder == nullptr
+            || pFolder->text(0) == pFolder->name()
+            || pFolder->text(0) == WizDatabase::getLocationDisplayName(pFolder->location()))
+            return;
+
         qDebug() << "folder changed text " << pFolder->text(0) << "  name : " << pFolder->name();
 
-       renameFolder(pFolder, pFolder->text(0));
+        renameFolder(pFolder, pFolder->text(0));
     }
     else if (item->type() == Category_TagItem)
     {

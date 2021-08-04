@@ -281,11 +281,16 @@ void WizDocumentView::waitForThread()
     m_web->waitForDone();
 }
 
-void WizDocumentView::RequestClose()
+void WizDocumentView::RequestClose(bool force /*= false*/)
 {
-    // We can not runJavaScript after RequestClose.
-    waitForSave();
-    m_web->triggerPageAction(QWebEnginePage::RequestClose);
+    if (force) {
+        // Force to close when Chromium process no response.
+        handleWindowCloseRequested();
+    } else {
+        // We can not runJavaScript after RequestClose.
+        waitForSave();
+        m_web->triggerPageAction(QWebEnginePage::RequestClose);
+    }
 }
 
 QList<QAction *> WizDocumentView::TabContextMenuActions()

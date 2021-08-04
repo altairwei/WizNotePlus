@@ -565,6 +565,61 @@ void WizUserSettings::setEditorBackgroundColor(const QString& strColor)
     set("EditorBackgroundColor", strColor);
 }
 
+
+QString WizUserSettings::editorLineHeight()
+{
+    QString strLineHeight = get("EditorLineHeight");
+
+    if (strLineHeight.isEmpty()) {
+        return "1.7";
+    }
+
+    return strLineHeight;
+}
+
+
+void WizUserSettings::setEditorLineHeight(const QString& strLineHeight)
+{
+    set("EditorLineHeight", strLineHeight);
+}
+
+
+QString WizUserSettings::editorParaSpacing()
+{
+    QString strLineHeight = get("EditorParaSpacing");
+
+    if (strLineHeight.isEmpty()) {
+        return "8";
+    }
+
+    return strLineHeight;
+}
+
+
+void WizUserSettings::setEditorParaSpacing(const QString& spacing)
+{
+    set("EditorParaSpacing", spacing);
+}
+
+
+QString WizUserSettings::editorPagePadding()
+{
+    QString strPagePadding = get("EditorPagePadding");
+
+    if (strPagePadding.isEmpty()) {
+        return WIZSETTINGS_DEFAULT_PAGEPADDING;
+    }
+
+    return strPagePadding;
+}
+
+
+void WizUserSettings::setEditorPagePadding(const QString& strPadding)
+{
+    set("EditorPagePadding", strPadding);
+}
+
+
 bool WizUserSettings::isManualSortingEnabled()
 {
     QString strManualSortingEnable = get("ManualSortingEnable");
@@ -699,7 +754,7 @@ int WizUserSettings::defaultFontSize()
     if (nSize)
         return nSize;
 
-    return 15; // default 15px
+    return 16; // default 16px
 }
 
 void WizUserSettings::setDefaultFontSize(int nSize)

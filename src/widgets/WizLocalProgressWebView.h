@@ -3,6 +3,8 @@
 
 #include <QWidget>
 
+#include "share/WizWebEngineView.h"
+
 class WizWebEngineView;
 class QMovie;
 class QLabel;
@@ -10,11 +12,16 @@ class QLabel;
 class WizLocalProgressWebView : public QWidget
 {
     Q_OBJECT
+
 public:
     explicit WizLocalProgressWebView(QWidget *parent = 0);
+    explicit WizLocalProgressWebView(const WizWebEngineInjectObjectCollection &objects, QWidget *parent = 0);
     ~WizLocalProgressWebView();
 
     WizWebEngineView* web();
+
+private:
+    void init(const WizWebEngineInjectObjectCollection &objects);
 
 signals:
     void widgetStatusChanged();

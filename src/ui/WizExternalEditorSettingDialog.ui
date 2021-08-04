@@ -28,7 +28,7 @@
         <number>0</number>
        </property>
        <property name="columnCount">
-        <number>5</number>
+        <number>6</number>
        </property>
        <column>
         <property name="text">
@@ -53,6 +53,11 @@
        <column>
         <property name="text">
          <string>UTF-8</string>
+        </property>
+       </column>
+       <column>
+        <property name="text">
+         <string>OpenShortCut</string>
         </property>
        </column>
       </widget>

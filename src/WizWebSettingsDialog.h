@@ -18,12 +18,19 @@ class WizWebSettingsDialog : public WizWebEngineViewContainerDialog
 
 public:
     explicit WizWebSettingsDialog(QString url, QSize sz, QWidget *parent = 0);
+    explicit WizWebSettingsDialog(const WizWebEngineInjectObjectCollection &objects, QString url, QSize sz, QWidget *parent = 0);
+
     WizWebEngineView* web();
 
     void showError();
+
+private:
+    void init(const WizWebEngineInjectObjectCollection &objects, QSize sz, QWidget *parent);
+
 protected:
     virtual void load();
-    virtual void showEvent(QShowEvent* event);
+    virtual void onLoaded(bool ok) {}
+
 protected:
     QString m_url;
     WizLocalProgressWebView* m_progressWebView;
@@ -39,13 +46,29 @@ private Q_SLOTS:
 class WizWebSettingsWithTokenDialog : public WizWebSettingsDialog
 {
     Q_OBJECT
+
 public:
     explicit WizWebSettingsWithTokenDialog(QString url, QSize sz, QWidget *parent = 0)
-        : WizWebSettingsDialog(url, sz, parent) {}
+        : WizWebSettingsDialog(url, sz, parent)
+        , m_delayShow(false)
+        , m_loaded(false)
+    {
+
+    }
+
+    static WizWebSettingsWithTokenDialog* delayShow(QString title, QString url, QSize sz, QWidget* parent = 0);
+
+protected:
+    bool m_delayShow;
+    bool m_loaded;
+
 protected:
     virtual void load();
+    virtual void onLoaded(bool ok);
+
 private Q_SLOTS:
     void on_token_acquired(const QString& token);
+
 };
 
 

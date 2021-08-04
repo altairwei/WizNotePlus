@@ -1862,9 +1862,9 @@ void WizDocumentListView::on_action_copyDocument()
 {
     if (m_rightButtonFocusedItems.isEmpty())
         return;
-    //
+
     m_menuDocument->hide();
-    //
+
     ::WizGetAnalyzer().logAction("documentListMenuCopyDocument");
     WizFolderSelector* selector = new WizFolderSelector(tr("Copy documents"), m_app, WIZ_USERGROUP_AUTHOR, this);
     bool isGroup = m_dbMgr.db(m_rightButtonFocusedItems.first()->document().strKbGUID).isGroup();
@@ -1911,7 +1911,7 @@ void WizDocumentListView::on_action_copyDocument_confirmed(int result)
         if (tag.strKbGUID.isEmpty())
             return;
         qDebug() << "copy docuemnt to group folder " << tag.strName;
-        //
+
         copyDocumentsToGroupFolder(arrayDocument, tag, selector->isKeepTime());
         dbSet.insert(tag.strKbGUID);
     }

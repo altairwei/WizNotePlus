@@ -55,7 +55,7 @@ public slots:
     int createTab(const QUrl &url);
     int createTab(AbstractTabPage *tabPage);
     void destroyTab(int index);
-    void closeTab(int index);
+    void closeTab(int index, bool force = false);
     void closeCurrentTab();
     void closeOtherTabs(int index);
     void closeAllTabs();

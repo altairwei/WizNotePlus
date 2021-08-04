@@ -92,6 +92,10 @@ void WizMainTabBrowser::handleContextMenuRequested(const QPoint &pos)
         connect(action, &QAction::triggered, this, [this]() {
             closeAllTabs();
         });
+        action = menu.addAction(tr("Force to Close Tab"));
+        connect(action, &QAction::triggered, this, [this, index]() {
+            closeTab(index, true);
+        });
         menu.addSeparator();
         // lock action
         if (isLocked) {
@@ -258,12 +262,12 @@ void WizMainTabBrowser::destroyTab(int index)
     p->deleteLater();
 }
 
-void WizMainTabBrowser::closeTab(int index)
+void WizMainTabBrowser::closeTab(int index, bool force /*= false*/)
 {
     if (index != -1) {
         // Only one page needed to be closed.
         if (!isTabLocked(index))
-            tabPage(index)->RequestClose();
+            tabPage(index)->RequestClose(force);
     }
 }
 

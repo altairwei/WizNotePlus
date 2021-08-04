@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>359</width>
-    <height>300</height>
+    <height>343</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -75,6 +75,27 @@
       <layout class="QHBoxLayout" name="horizontalLayout_3">
        <item>
         <widget class="QLineEdit" name="editArguments"/>
+       </item>
+      </layout>
+     </item>
+     <item>
+      <widget class="QLabel" name="labelEditOpenShortCut">
+       <property name="text">
+        <string>Open editor shortcut:</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <layout class="QHBoxLayout" name="horizontalLayout_4">
+       <item>
+        <widget class="QKeySequenceEdit" name="editOpenShortCut"/>
+       </item>
+       <item>
+        <widget class="QPushButton" name="clearOpenShortCut">
+         <property name="text">
+          <string>Clear</string>
+         </property>
+        </widget>
        </item>
       </layout>
      </item>

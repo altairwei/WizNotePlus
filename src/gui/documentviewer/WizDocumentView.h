@@ -60,7 +60,7 @@ public:
     void waitForDone();
     void waitForSave();
     void waitForThread();
-    void RequestClose() override;
+    void RequestClose(bool force = false) override;
 
 protected:
     WizExplorerApp& m_app;
@@ -110,6 +110,7 @@ public:
     void reloadNote();
     void setEditorFocus();
     bool noteLoaded() const { return m_noteLoaded; }
+    void changeType(QString type) { m_note.strType = type; }
 
     void initStat(const WIZDOCUMENTDATA& data, bool forceEdit);
     void viewNote(const WIZDOCUMENTDATAEX& data, bool forceEdit);

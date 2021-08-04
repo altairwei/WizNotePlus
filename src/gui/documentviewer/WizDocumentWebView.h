@@ -42,7 +42,7 @@ public:
     {
         QMutexLocker locker(&m_mutex);
         Q_UNUSED(locker);
-        //
+
         m_waitForData.wait(&m_mutex);
     }
 
@@ -50,7 +50,7 @@ public:
     {
         QMutexLocker locker(&m_mutex);
         Q_UNUSED(locker);
-        //
+
         m_waitForData.wakeAll();
     }
 };
@@ -59,19 +59,19 @@ public:
 class WizDocumentWebViewLoaderThread : public QThread
 {
     Q_OBJECT
-    //
+
 public:
     WizDocumentWebViewLoaderThread(WizDatabaseManager& dbMgr, QObject* parent);
 
     void load(const WIZDOCUMENTDATA& doc, WizEditorMode editorMode);
-    //
+
     void stop();
-    //
+
     void waitForDone();
 
 protected:
     virtual void run();
-    //
+
     void setCurrentDoc(QString kbGuid, QString docGuid, WizEditorMode editorMode);
     void peekCurrentDocGuid(QString& kbGUID, QString& docGUID, WizEditorMode& editorMode);
 Q_SIGNALS:
@@ -97,7 +97,6 @@ public:
     void save(const WIZDOCUMENTDATA& doc, const QString& strHtml,
               const QString& strHtmlFile, int nFlags, bool bNotify = false);
 
-    //
     void waitForDone();
 
 private:
@@ -109,14 +108,14 @@ private:
         int flags;
         bool notify;
     };
-    //
+
     std::vector<SAVEDATA> m_arrayData;
-    //
+
     bool isEmpty();
     SAVEDATA peekFirst();
 protected:
     virtual void run();
-    //
+
     void stop();
     void peekData(SAVEDATA& data);
 Q_SIGNALS:
@@ -155,11 +154,11 @@ class WizDocumentWebView : public WizWebEngineView
 public:
     WizDocumentWebView(WizExplorerApp& app, QWidget* parent);
     ~WizDocumentWebView();
-    //
-    WizDocumentView* view();
-    //
+
+    WizDocumentView* view() const;
+
     void clear();
-    //
+
     void waitForDone();
 
     // view and save
@@ -190,7 +189,8 @@ public:
     void editorFocus();
     void enableEditor(bool enalbe);
     QString noteResourcesPath();
-    //
+    void updateSvg(QString data);
+
     void editorResetSpellCheck();
 
     void setIgnoreActiveWindowEvent(bool igoreEvent);
@@ -216,7 +216,7 @@ public:
     void editorCommandExecuteInsertHtml(const QString& strHtml, bool bNotSerialize);
 
     void editorCommandExecutePastePlainText();
-    //
+
     void saveAsPDF();
     void saveAsMarkdown();
     void saveAsMarkdown(QString& strIndexFileName, bool bSaveResource = true);
@@ -226,7 +226,7 @@ public:
     void saveAsHtml();
     void shareNoteByEmail();
     void shareNoteByLink();
-    //
+
     void isModified(std::function<void(bool modified)> callback);
     void setModified(bool b);
 
@@ -239,6 +239,7 @@ public:
     QString getUserAvatarFilePath();
     QString getUserAlias();
     bool isPersonalDocument();
+    bool isOutline() const;
     QString getCurrentNoteHtml();
     bool hasEditPermissionOnCurrentNote();
     void changeCurrentDocumentType(const QString& strType);
@@ -247,28 +248,35 @@ public:
     bool canRenderMarkdown();
     bool canEditNote();
     QString getLocalLanguage();
-    void OnSelectionChange(const QString& currentStyle);
+    void onSelectionChange(const QString& currentStyle);
+    void onClickedSvg(const QString& data);
     void saveCurrentNote();
     void onReturn();
     void doPaste();
+    void doCopy();
+    void afterCopied();
+
+    void onMarkerUndoStatusChanged(QString data);
+    void onMarkerInitiated(QString data);
 
     QObject *publicAPIsObject() { return m_htmlEditorApp; }
 
 private:
     void initEditorActions();
-    //
+
+    void addDefaultScriptsToDocumentHtml(QString htmlFileName);
     void loadDocumentInWeb(WizEditorMode editorMode);
-    //
+
     void getAllEditorScriptAndStyleFileName(std::map<QString, QString>& arrayFile);
     void insertScriptAndStyleCore(QString& strHtml, const std::map<QString, QString>& files);
-    //
+
     void tryResetTitle();
     bool onPasteCommand();
 
     bool isInternalUrl(const QUrl& url);
     void viewDocumentByUrl(const QString& strUrl);
     void viewAttachmentByUrl(const QString& strKbGUID, const QString& strUrl);
-    //
+
     void saveEditingViewDocument(const WIZDOCUMENTDATA& data, bool force, const std::function<void(const QVariant &)> callback);
     void saveReadingViewDocument(const WIZDOCUMENTDATA& data, bool force, std::function<void(const QVariant &)> callback);
 
@@ -297,12 +305,12 @@ private:
     WizEditorMode m_currentEditorMode;
     bool m_bNewNote;
     bool m_bNewNoteTitleInited;
-    //
+
     QString m_strNoteHtmlFileName;
     QString m_currentNoteHtml;
-    //
+
     bool m_bContentsChanged;
-    //
+
     bool m_ignoreActiveWindowEvent;
 
     // flag : if current webview is in seperate window, editor background-color will
@@ -313,10 +321,11 @@ private:
 
     WizDocumentWebViewLoaderThread* m_docLoadThread;
     WizDocumentWebViewSaverThread* m_docSaverThread;
-    //
+
     QPointer<WizEditorInsertLinkForm> m_editorInsertLinkForm;
 
     WizSearchReplaceWidget* m_searchReplaceWidget;
+
     ApiWizHtmlEditorApp* m_htmlEditorApp;
 
     QList<WizExternalEditorData> m_extEditorTask;
@@ -342,7 +351,6 @@ public Q_SLOTS:
 
     void on_insertCodeHtml_requset(QString strOldHtml);
 
-    //
     void onActionSaveTriggered();
     void handleSavePageTriggered();
     void handleReloadTriggered();
@@ -392,25 +400,34 @@ public Q_SLOTS:
     void editorCommandExecuteInsertHorizontal();
     void editorCommandExecuteInsertCheckList();
     void editorCommandExecuteInsertImage();
+    void editorCommandExecuteStartMarkup();
+    void editorCommandExecuteStopMarkup();
+    void editorCommandExecuteInsertPainter();
     void editorCommandExecuteInsertCode();
     void editorCommandExecuteMobileImage(bool bReceiveImage);
     void editorCommandExecuteScreenShot();
     void on_editorCommandExecuteScreenShot_imageAccepted(QPixmap pix);
     void on_editorCommandExecuteScreenShot_finished();
 
+    void editorExecJs(QString js);
+    void onViewMindMap(bool on);
+
 Q_SIGNALS:
     // signals for notify command reflect status, triggered when selection, focus, editing mode changed
     void statusChanged(const QString& currentStyle);
+    void markerUndoStatusChanged(const QString& data);
+    void markerInitiated(const QString& data);
+
     void selectAllKeyPressed();
     // signals used request reset info toolbar and editor toolbar
     void focusIn();
     void focusOut();
-    //
+
     void showContextMenuRequest(const QPoint& pos);
     void updateEditorToolBarRequest();
-    //
+
     void viewDocumentFinished();
-    //
+
     void shareDocumentByLinkRequest(const QString& strKbGUID, const QString& strGUID);
     void isPersonalDocumentChanged();
     void hasEditPermissionOnCurrentNoteChanged();
@@ -419,9 +436,9 @@ Q_SIGNALS:
 
     // signal connect to checklist in javascript
     void clickingTodoCallBack(bool cancel, bool needCallAgain);
-    //
+
     void titleEdited(WizDocumentView*, QString strTitle);
-    //
+
     void externalEditorOpened();
     void externalEditorClosed(int exitCode, QProcess::ExitStatus exitStatus);
 
@@ -439,11 +456,10 @@ private:
 
     void getMailSender(std::function<void(QString)> callback);
 
-    //
     void innerFindText(QString text, bool next, bool matchCase);
-    //
+
     QString getHighlightKeywords();
-    //
+
 //    bool shouldAddUserDefaultCSS();
 
     friend class WizDocumentWebViewPage;

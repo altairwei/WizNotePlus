@@ -35,11 +35,7 @@
 #include "gui/categoryviewer/WizCategoryView.h"
 #include "WizDocumentListView.h"
 #include "WizUserCipherForm.h"
-#include "gui/documentviewer/WizDocumentView.h"
-#include "gui/documentviewer/WizTitleBar.h"
-#include "gui/tabbrowser/WizMainTabBrowser.h"
 
-#include "gui/documentviewer/WizDocumentWebView.h"
 #include "WizActions.h"
 #include "WizPreferenceDialog.h"
 #include "WizUpgradeNotifyDialog.h"
@@ -66,10 +62,8 @@
 
 #include "WizNoteStyle.h"
 #include "WizDocumentHistory.h"
-
 #include "WizButton.h"
 
-#include "gui/documentviewer/WizEditorToolBar.h"
 #include "WizProgressDialog.h"
 #include "WizDocumentSelectionView.h"
 #include "WizDocumentTransitionView.h"
@@ -90,7 +84,7 @@
 #include "share/WizTranslater.h"
 #include "share/WizThreads.h"
 #include "widgets/WizShareLinkDialog.h"
-#include "gui/documentviewer/WizSingleDocumentView.h"
+
 #include "widgets/WizCustomToolBar.h"
 #include "widgets/WizTipsWidget.h"
 #include "WizPositionDelegate.h"
@@ -109,6 +103,14 @@
 #include "api/PublicAPIsServer.h"
 
 #include "gui/tabbrowser/WizWebsiteView.h"
+#include "gui/tabbrowser/WizMainTabBrowser.h"
+
+#include "gui/documentviewer/WizDocumentView.h"
+#include "gui/documentviewer/WizTitleBar.h"
+#include "gui/documentviewer/WizSingleDocumentView.h"
+#include "gui/documentviewer/WizDocumentWebView.h"
+#include "gui/documentviewer/WizEditorToolBar.h"
+#include "gui/documentviewer/WizSvgEditorDialog.h"
 
 #define MAINWINDOW  "MainWindow"
 
@@ -1214,7 +1216,7 @@ void WizMainWindow::on_editor_statusChanged(const QString& currentStyle)
 void WizMainWindow::createNoteByTemplate(const TemplateData& tmplData)
 {
     QFileInfo info(tmplData.strFileName);
-    if (info.exists())
+    if (info.exists() || tmplData.type == BuildInTemplate)
     {
         createNoteByTemplateCore(tmplData);
     }
@@ -1263,6 +1265,7 @@ void WizMainWindow::createNoteByTemplateCore(const TemplateData& tmplData)
     //
     WIZDOCUMENTDATA data;
     data.strKbGUID = kbGUID;
+    data.strType = tmplData.buildInName;
     //
     data.strTitle = tmplData.strTitle.isEmpty() ? info.completeBaseName() : tmplData.strTitle;
     //  Journal {date}({week})
@@ -1309,11 +1312,17 @@ void WizMainWindow::createNoteByTemplateCore(const TemplateData& tmplData)
     WizNoteManager noteManager(m_dbMgr);
     if (!noteManager.createNoteByTemplate(data, currTag, tmplData.strFileName))
         return;
-    //
+
+    bool isHandwriting = false;
+    if (data.strType == "svgpainter") {
+        isHandwriting = true;
+        createHandwritingNote(m_dbMgr, data, this);
+    }
+
     setFocusForNewNote(data);
-    //
+
     locateDocument(data);
-    //
+
     CWizDocumentDataArray arrayDocument;
     m_documents->getSelectedDocuments(arrayDocument);
     if (arrayDocument.size() == 1 && arrayDocument[0].strGUID == data.strGUID)
@@ -4096,7 +4105,9 @@ void WizMainWindow::reconnectServer()
 void WizMainWindow::setFocusForNewNote(WIZDOCUMENTDATA doc)
 {
     //FIXME: 因为当前标签非文档视图，引起空指针错误
-    m_documentForEditing = doc;
+    if (doc.strType != "svgpainter") {
+        m_documentForEditing = doc;
+    }
     m_documents->addAndSelectDocument(doc);
     m_documents->clearFocus();
     WizDocumentView* docView = currentDocumentView();

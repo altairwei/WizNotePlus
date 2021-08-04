@@ -145,7 +145,7 @@ public:
 
 private:
     bool copyDocumentTo(const QString &sourceGUID, WizDatabase &targetDB, const QString &strTargetLocation,
-                        const WIZTAGDATA &targetTag, QString &resultGUID, bool keepDocTime);
+                        const WIZTAGDATA &targetTag, QString &resultGUID, bool keepDocTime, bool keepOtherInfo = true);
     bool copyDocumentAttachment(const WIZDOCUMENTDATA& sourceDoc, WizDatabase& targetDB,
                                 WIZDOCUMENTDATA& targetDoc);
     bool reloadDocumentInfo();
@@ -524,6 +524,7 @@ public:
     bool getBizData(const QString& bizGUID, WIZBIZDATA& biz);
     bool getBizGuid(const QString& strGroupGUID, QString& strBizGUID);
     bool getGroupData(const QString& groupGUID, WIZGROUPDATA& group);
+    QString getKbServer(const QString &kbGuid);
 
     static bool isEmptyBiz(const CWizGroupDataArray& arrayGroup, const QString& bizGUID);
     static bool getOwnGroups(const CWizGroupDataArray& arrayAllGroup, CWizGroupDataArray& arrayOwnGroup);
@@ -715,6 +716,19 @@ private:
     QVariantList packDocumentsToList(const CWizDocumentDataArray &docDataArray);
 };
 
+
+class WizDocumentDataLocker
+{
+    QMutex* m_mutex;
+
+#ifdef QT_DEBUG
+    QString m_docGuid;
+#endif
+
+public:
+    WizDocumentDataLocker(QString docGuid);
+    ~WizDocumentDataLocker();
+};
 
 
 #define WIZNOTE_MIMEFORMAT_TAGS             "wiznote/tags"

@@ -8,6 +8,8 @@
 
 #include "database/WizDatabase.h"
 
+#define WIZSETTINGS_DEFAULT_PAGEPADDING "16"
+
 enum WizProxyType
 {
     WizProxy_NoProxy,
@@ -73,7 +75,8 @@ enum WizOptionsType
     wizoptionsFont,
     wizoptionsFolders,
     wizoptionsSpellCheck,
-    wizoptionsOpenLinkWithDesktopBrowser
+    wizoptionsOpenLinkWithDesktopBrowser,
+    wizoptionsSpacing
 };
 
 enum WizPositionType
@@ -174,6 +177,15 @@ public:
     //NOTE:  editor background color string could be empty!!!   if it's empty, editor in seperate window could be grey
     QString editorBackgroundColor();
     void setEditorBackgroundColor(const QString& strColor);
+
+    QString editorLineHeight();
+    void setEditorLineHeight(const QString& strLineHeight);
+
+    QString editorParaSpacing();
+    void setEditorParaSpacing(const QString& strSpacing);
+
+    QString editorPagePadding();
+    void setEditorPagePadding(const QString& strPadding);
 
     bool isManualSortingEnabled();
     void setManualSortingEnable(bool bEnable);

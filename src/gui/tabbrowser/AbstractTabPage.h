@@ -15,7 +15,7 @@ public:
     AbstractTabPage(QWidget *parent = nullptr) : QWidget(parent) { }
     virtual ~AbstractTabPage() = 0;
 
-    virtual void RequestClose() = 0;
+    virtual void RequestClose(bool force = false) = 0;
     virtual QString Title() = 0;
     virtual QList<QAction *> TabContextMenuActions();
 
