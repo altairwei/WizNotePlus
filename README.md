@@ -18,7 +18,7 @@ README **中文** | [English](doc/README-en.md)
 
 ![qrcode_for_gh_wizcommunity](https://github.com/altairwei/WizNotePlus/wiki/assets/qrcode_for_gh_wizcommunity.jpg)
 
-如果你愿意促进社区发展，那[加入我们](加入我们)吧！
+如果你愿意促进社区发展，那[加入我们](https://github.com/altairwei/WizNotePlus/wiki/%E5%8A%A0%E5%85%A5%E6%88%91%E4%BB%AC)吧！
 
 ## 特点
 
