@@ -310,7 +310,9 @@ bool WizMainWindow::eventFilter(QObject* watched, QEvent* event)
             // It will cause bugs to full screen mode on Linux/KDE. 
             // When WizMainWindow has been hidden, it will show again 
             // if any other windows/dialogs is activated.
-            //return processApplicationActiveEvent();
+#ifdef Q_OS_MAC
+                return processApplicationActiveEvent();
+#endif
         }
         else
         {
@@ -928,6 +930,8 @@ void WizMainWindow::shiftVisableStatus()
             break;
     }
 
+    qDebug() << "windowState: " + QString::number(windowState(), 8);
+
     if (isVisible()) {
         // Actovate main window
         activateWindow();
@@ -1202,10 +1206,9 @@ void WizMainWindow::initDockMenu()
 {
 #ifdef Q_OS_MAC
     m_dockMenu = new QMenu(this);
-    qt_mac_set_dock_menu(m_dockMenu);
+    m_dockMenu->setAsDockMenu();
 
-    connect(m_dockMenu, SIGNAL(aboutToShow()),
-            SLOT(resetDockMenu()));
+    connect(m_dockMenu, SIGNAL(aboutToShow()), SLOT(resetDockMenu()));
 #endif
 }
 
@@ -1571,10 +1574,10 @@ bool WizMainWindow::processApplicationActiveEvent()
             return true;
     }
 
-    //
     if (!isVisible())
     {
-        setVisible(true);
+        show();
+        shiftVisableStatus();
     }
 
     return true;
