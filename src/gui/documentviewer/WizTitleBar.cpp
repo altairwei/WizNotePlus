@@ -288,6 +288,9 @@ void WizTitleBar::initPlugins()
             &jsPluginMgr, &JSPluginManager::handlePluginActionTriggered);
 
         m_documentToolBar->addAction(ac);
+        if (auto acWgt = qobject_cast<QToolButton *>(m_documentToolBar->widgetForAction(ac))) {
+            acWgt->setFixedHeight(nTitleHeight);
+        }
     }
 
     connect(this, &WizTitleBar::launchPluginEditorRequest, 

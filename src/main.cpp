@@ -233,15 +233,6 @@ int mainCore(int argc, char *argv[])
     QSslConfiguration::setDefaultConfiguration(conf);
 #endif
 
-    // tooltip 样式
-    app.setStyle(QStyleFactory::create("fusion"));
-    app.setStyleSheet("QToolTip { \
-                    font: 12px; \
-                    color:#000000; \
-                    padding:0px 1px; \
-                    background-color: #F8F8F8; \
-                    border:0px;}");
-
     // 获取默认用户设置
     //-------------------------------------------------------------------
 
@@ -268,6 +259,15 @@ int mainCore(int argc, char *argv[])
     /** User specific INI setting. */
     QSettings* settings = new QSettings(Utils::WizPathResolve::userSettingsFile(strAccountFolderName), QSettings::IniFormat);
     WizGlobal::setSettings(settings);
+
+    // 样式
+    app.setStyle(QStyleFactory::create("fusion"));
+
+    QString stylefile, style;
+    stylefile = WizGetSkinResourcePath(userSettings.skin()) + "style.qss";
+    if (WizLoadUnicodeTextFromFile(stylefile, style)) {
+        app.setStyleSheet(style);
+    }
 
     // 语言本地化
     //-------------------------------------------------------------------

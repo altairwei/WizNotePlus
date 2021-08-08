@@ -1198,6 +1198,12 @@ void WizMainWindow::initSortTypeActionGroup() {
     setActionCheckState(m_sortTypeActions->actions(), sortType);
 }
 
+void WizMainWindow::initSkinActionGroup() {
+    m_skinActions = new QActionGroup(m_menuBar);
+    QAction* action = m_actions->actionFromName(WIZSKIN_RELOAD_STYLESHEET);
+    m_skinActions->addAction(action);
+}
+
 void WizMainWindow::initDockMenu()
 {
 #ifdef Q_OS_MAC
@@ -1998,7 +2004,7 @@ void WizMainWindow::initToolBar()
     //
     //QToolButton* buttonNew = new QToolButton(m_toolBar);
     QToolButton* buttonNew = new QToolButton(m_toolBar);
-    buttonNew->setStyle(new WizNotePlusStyle("fusion"));
+    //buttonNew->setStyle(new WizNotePlusStyle("fusion"));
     buttonNew->setMenu(m_newNoteExtraMenu);//选择模板的菜单
     buttonNew->setDefaultAction(newNoteAction);//m_newNoteExtraMenu->actionAt(QPoint(0 ,0)));
     buttonNew->setPopupMode(QToolButton::MenuButtonPopup);
@@ -2937,6 +2943,16 @@ void WizMainWindow::on_actionSortBySize_triggered()
 {
     QAction* action = qobject_cast<QAction*>(sender());
     changeDocumentsSortTypeByAction(action);
+}
+
+void WizMainWindow::on_actionSkinReloadStyleSheet_triggered()
+{
+    QString style;
+    QString stylefile = WizGetSkinResourcePath(userSettings().skin()) + "style.qss";
+    if (WizLoadUnicodeTextFromFile(stylefile, style)) {
+        qDebug() << "Reloading stylesheet: " << stylefile;
+        qApp->setStyleSheet(style);
+    }
 }
 
 #define MARKDOCUMENTSREADCHECKED       "MarkDocumentsReadedChecked"

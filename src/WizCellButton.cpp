@@ -28,7 +28,7 @@ WizCellButton::WizCellButton(ButtonType type, QWidget *parent)
     , m_iconSize(WizSmartScaleUI(14), WizSmartScaleUI(14))
 {    
     setAutoRaise(true);
-    setStyle(new WizNotePlusStyle("fusion"));
+    //setStyle(new WizNotePlusStyle("fusion"));
 }
 
 void WizCellButton::setNormalIcon(const QIcon& icon, const QString& strTips)
@@ -305,7 +305,7 @@ WizToolButton::WizToolButton(QWidget* parent, int type)
     , m_count(0)
     , m_iconSize(WizSmartScaleUI(14), WizSmartScaleUI(14)) //FIXME: cannot really scale iconsize.
 {
-    setStyle(new WizNotePlusStyle("fusion"));
+    //setStyle(new WizNotePlusStyle("fusion"));
     setAutoRaise(true);
     setIcon(m_icon);
 
