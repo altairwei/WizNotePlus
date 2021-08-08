@@ -2076,6 +2076,7 @@ void WizMainWindow::initClient()
     pal.setColor(QPalette::Window, QColor(Qt::white));
     pal.setColor(QPalette::Base, QColor(Qt::white));
     QWidget* documentPanel = new QWidget(this); // 整个文档浏览界面板
+    documentPanel->setObjectName("document-panel");
     documentPanel->setPalette(pal);
     documentPanel->setAutoFillBackground(true);
     QVBoxLayout* layoutDocument = new QVBoxLayout();

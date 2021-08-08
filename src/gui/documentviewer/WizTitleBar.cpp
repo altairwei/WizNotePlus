@@ -82,6 +82,8 @@ WizTitleBar::WizTitleBar(WizExplorerApp& app, QWidget *parent)
     , m_editButtonAnimation(nullptr)
     , m_commentManager(new WizCommentManager(this))
 {
+    setObjectName("document-title-bar");
+
     // 标题栏输入框
     m_editTitle->setCompleter(new WizMessageCompleter(m_editTitle));
     int nTitleHeight = Utils::WizStyleHelper::titleEditorHeight();
@@ -448,7 +450,7 @@ void WizTitleBar::setBackgroundColor(QColor color)
     pal.setColor(QPalette::Window, color);
     m_editTitle->setPalette(pal);
 
-    m_editTitle->setStyleSheet("QLineEdit{background:#F5F5F5; border: 1px solid red;}");
+    //m_editTitle->setStyleSheet("QLineEdit{background:#F5F5F5; border: 1px solid red;}");
 
 //    pal = m_infoBar->palette();
 //    pal.setColor(QPalette::Window, color);
