@@ -111,9 +111,9 @@ public:
 
     QNetworkDiskCache* webViewNetworkCache();
     WizDocumentView* docView();
-    //
+
     void trySaveCurrentNote(std::function<void(const QVariant &)> callback);
-    //
+
     void startExternalEditor(QString cacheFileName, const WizExternalEditorData& editorData, const WIZDOCUMENTDATAEX& noteData);
 
 protected:
@@ -138,10 +138,9 @@ private:
     WizUpgradeChecker* m_upgrade;
     WizIAPDialog* m_iapDialog;
     WizTemplatePurchaseDialog* m_templateIAPDialog;
-    //
+
     bool m_quiting;
 
-    //
     WizTrayIcon* m_tray;
     QMenu* m_trayMenu;
 
@@ -202,11 +201,11 @@ private:
     bool m_bUpdatingSelection;
 
     bool m_bQuickDownloadMessageEnable;
-    //
+
     WIZDOCUMENTDATA m_documentForEditing;
 
     ApiWizExplorerApp* m_IWizExplorerApp;
-    //
+
     QFileSystemWatcher* m_extFileWatcher;
     QMap<QString, WizExternalEditTask> m_watchedFileData;
 
@@ -221,20 +220,20 @@ private:
     void initToolBar();
     void initToolBarPluginButtons();
     void initClient();
-    //
+
     virtual void layoutTitleBar();
     void initMenuList();
     void initMenuBar();
     void initViewTypeActionGroup();
     void initSortTypeActionGroup();
-    void WizMainWindow::initSkinActionGroup();
+    void initSkinActionGroup();
     void initDockMenu();
 
     QWidget* createNoteListView();
     QWidget* createMessageListView();
-    //
+
     void promptServiceExpr(bool free, WIZGROUPDATA group);
-    //
+
     void saveWatchedFile(const QString& path);
 
 public:
@@ -262,20 +261,19 @@ public:
     void viewDocument(const WIZDOCUMENTDATAEX& data, bool addToHistory);
     void viewDocument(const WIZDOCUMENTDATAEX& data);
     void viewAttachment(const WIZDOCUMENTATTACHMENTDATA &data);
-    //
+
     void checkWizUpdate();
     void setSystemTrayIconVisible(bool bVisible);
     void setMobileFileReceiverEnable(bool bEnable);
-    //
+
     void viewDocumentByWizKMURL(const QString& strKMURL);
     void viewAttachmentByWizKMURL(const QString& strKbGUID, const QString& strKMURL);
-    //
+
     void createNoteWithAttachments(const QStringList& strAttachList);
     void createNoteWithText(const QString& strText);
 
     void createNoteByTemplateCore(const TemplateData& tmplData);
 
-    //
     WizMainTabBrowser* mainTabView();
 
 signals:
@@ -418,7 +416,6 @@ public Q_SLOTS:
 
     void on_mobileFileRecived(const QString& strFile);
 
-    //
     void on_shareDocumentByLink_request(const QString& strKbGUID, const QString& strGUID);
 
 #ifndef Q_OS_MAC
@@ -437,7 +434,6 @@ public Q_SLOTS:
     void on_upgradeThread_finished();
 #endif
 
-    //
     void on_trayIcon_newDocument_clicked();
     void on_hideTrayIcon_clicked();
     void handleTrayIconActived(QSystemTrayIcon::ActivationReason reason);
@@ -446,25 +442,25 @@ public Q_SLOTS:
     void on_viewMessage_request(qint64 messageID);
     void on_viewMessage_request(const WIZMESSAGEDATA& msg);
     void on_viewMessage_requestNormal(QVariant messageData);
-    //
+
     void on_dockMenuAction_triggered();
-    //
+
     void shiftVisableStatus();
 
-    //
+
     void showNewFeatureGuide();
     void showMobileFileReceiverUserGuide();
     void setDoNotShowMobileFileReceiverUserGuideAgain(bool bNotAgain);
 
-    //
+
     void locateDocument(const WIZDOCUMENTDATA& data);
     void locateDocument(const QString& strKbGuid, const QString& strGuid);
     void titleChanged();
 
-    //
+
     void viewNoteInSeparateWindow(const WIZDOCUMENTDATA& data);
     void viewCurrentNoteInSeparateWindow();
-    //
+
     void onAttachmentModified(QString strKbGUID, QString strGUID,QString strFileName,
                               QString strMD5, QDateTime dtLastModified);
 
@@ -519,63 +515,57 @@ private:
     void reconnectServer();
 
     void setFocusForNewNote(WIZDOCUMENTDATA doc);
-    //
+
     void initTrayIcon(QSystemTrayIcon* trayIcon);
 
     void setWindowStyle(bool bUseSystemStyle);
 
-    //
+
     void startSearchStatus();
     void quitSearchStatus();
     void resetSearchStatus();
 
-    //
     void initVariableBeforCreateNote();
 
-    //
     bool needShowNewFeatureGuide();
-    //
+
     void resortDocListAfterViewDocument(const WIZDOCUMENTDATA& doc);
 
-    //
     void showCommentWidget();
 
-    //
     WizDocumentWebView* getActiveEditor();
     WizDocumentView* createDocumentView();    
     WizDocumentView* currentDocumentView();
     void waitForAllDocumentViewDone();
     void processAllDocumentViews(std::function<void(WizDocumentView*)> callback);
-    //
+
     void showDocumentList();
     void showDocumentList(WizCategoryBaseView* category);
     void showMessageList(WizCategoryViewMessageItem* pItem);
     void viewDocumentByShortcut(WizCategoryViewShortcutItem *pShortcut);
     void searchNotesBySQL(const QString& strSQLWhere);
     void searchNotesBySQLAndKeyword(const QString& strSQLWhere, const QString& strKeyword, int searchScope);
-    //
+
     void updateHistoryButtonStatus();
-    //
+
     void openAttachment(const WIZDOCUMENTATTACHMENTDATA& attachment, const QString& strFileName);
     void downloadAttachment(const WIZDOCUMENTATTACHMENTDATA& attachment);
 
     void openVipPageInWebBrowser();
 
-    //
     void loadMessageByUserGuid(const QString& guid);
 
     void resetWindowListMenu(QMenu* menu, bool removeExists);
 
     void changeDocumentsSortTypeByAction(QAction* action);
 
-    //
     bool processApplicationActiveEvent();
-    //
+
     void prepareNewNoteMenu();
 
 private slots:
     void windowActived();
-    //
+
     void resetDockMenu();
     void resetWindowMenu();
     void removeWindowsMenuItem(QString guid);

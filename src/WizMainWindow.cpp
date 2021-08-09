@@ -2138,7 +2138,7 @@ QWidget* WizMainWindow::createNoteListView()
     m_noteListWidget->setAutoFillBackground(true);
 
     QWidget* noteButtonsContainer = new QWidget(this);
-    noteButtonsContainer->setFixedHeight(::WizSmartScaleUI(30));
+    noteButtonsContainer->setFixedHeight(30);
     QHBoxLayout* layoutButtonContainer = new QHBoxLayout();
     layoutButtonContainer->setContentsMargins(0, 0, 0, 0);
     layoutButtonContainer->setSpacing(0);

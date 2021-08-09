@@ -38,11 +38,6 @@ WizMainTabBrowser::WizMainTabBrowser(WizExplorerApp& app, QWidget *parent)
     tabBar->setMovable(true);
     tabBar->setContextMenuPolicy(Qt::CustomContextMenu);
 
-    /* 如果要让标签栏下移，得设置整个QTabWidget布局，比如加个 spacer；
-       如果想要让documentMode状态下的标签栏右移，但底线会一同右移动；
-       看来这个底线是QTabBar的而非documentMode下，这些底线是tab widget frame。*/
-    //setStyleSheet("QTabBar::tab { max-width: 300px; }");
-    setDocumentMode(true); // 不渲染tab widget frame
     setElideMode(Qt::ElideRight);
 
     // This signal is emitted whenever the current page index changes.

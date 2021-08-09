@@ -63,7 +63,7 @@ WizDocTemplateDialog::WizDocTemplateDialog(WizDatabaseManager& dbMgr, QWidget *p
     ui->treeWidget->setMaximumWidth(200);
     m_transitionView = new WizDocumentTransitionView(this);
     ui->horizontalLayout_2->addWidget(m_transitionView);
-    m_transitionView->setStyleSheet(".QWidget{background-color:#FFFFFF;} QToolButton {border:0px; padding:0px; border-radius:0px;background-color:#F5F5F5;}");
+    //m_transitionView->setStyleSheet(".QWidget{background-color:#FFFFFF;} QToolButton {border:0px; padding:0px; border-radius:0px;background-color:#F5F5F5;}");
     m_transitionView->hide();
     m_transitionView->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
 
