@@ -226,7 +226,10 @@ void WizMainTabBrowser::setupTab(int index)
         closeBtn->setIcon(WizLoadSkinIcon(m_strTheme, "tab_close", QSize(16, 16)));
         connect(closeBtn, &QAbstractButton::clicked, this, &WizMainTabBrowser::handleCloseButtonClicked);
         tabBar()->setTabButton(index, QTabBar::RightSide, closeBtn);
-        //
+        QWidget* placeHolder = new QWidget(tabBar());
+        placeHolder->setFixedSize(QSize(16, 16));
+        tabBar()->setTabButton(index, QTabBar::LeftSide, placeHolder);
+
         QMap<QString, QVariant> status;
         status["Locked"] = QVariant(false);
         tabBar()->setTabData(index, status);
