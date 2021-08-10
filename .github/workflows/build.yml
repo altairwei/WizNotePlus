@@ -4,8 +4,8 @@ on:
     branches:
       - master
       - develop
-      - release-*
-      - feat-*
+      - release/*
+      - feat/*
     tags:
       - v2.*
 
