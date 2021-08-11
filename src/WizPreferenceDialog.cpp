@@ -64,13 +64,13 @@ WizPreferenceWindow::WizPreferenceWindow(WizExplorerApp& app, QWidget* parent)
     ui->checkBox->setVisible(false);
 #endif
 
-#ifndef Q_OS_LINUX
-  ui->checkBoxSystemStyle->setVisible(false);
+#ifdef Q_OS_MAC
+    ui->checkBoxSystemStyle->setVisible(false);
 #endif
-  checkState = userSettings().useSystemBasedStyle() ? Qt::Checked : Qt::Unchecked;
-  ui->checkBoxSystemStyle->blockSignals(true);
-  ui->checkBoxSystemStyle->setCheckState(checkState);
-  ui->checkBoxSystemStyle->blockSignals(false);
+    checkState = userSettings().useSystemBasedStyle() ? Qt::Checked : Qt::Unchecked;
+    ui->checkBoxSystemStyle->blockSignals(true);
+    ui->checkBoxSystemStyle->setCheckState(checkState);
+    ui->checkBoxSystemStyle->blockSignals(false);
 
     // reading tab
     switch (userSettings().noteViewMode())

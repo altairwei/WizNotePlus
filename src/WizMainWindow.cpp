@@ -262,10 +262,10 @@ WizMainWindow::WizMainWindow(WizDatabaseManager& dbMgr, QWidget *parent)
 
     // initialize document saver thread
     m_watchedDocSaver = new WizDocumentWebViewSaverThread(dbMgr, this);
-    //
+
     connect(m_extFileWatcher, &QFileSystemWatcher::fileChanged, 
                     this, &WizMainWindow::onWatchedDocumentChanged);
-    //
+
     m_publicAPIsServer = new PublicAPIsServer(
         {{"WizExplorerApp", m_IWizExplorerApp}}, this);
 }
@@ -1069,14 +1069,14 @@ void WizMainWindow::initSyncQuick()
  */
 void WizMainWindow::initActions()
 {
-#ifdef Q_OS_LINUX
-    m_actions->init(!m_useSystemBasedStyle);
-#else
+#ifdef Q_OS_MAC
     m_actions->init();
+#else
+    m_actions->init(!m_useSystemBasedStyle);
 #endif
     m_animateSync->setAction(m_actions->actionFromName(WIZACTION_GLOBAL_SYNC));
     m_animateSync->setSingleIcons("sync");
-    //
+
     connect(m_actions, SIGNAL(insertTableSelected(int,int)), SLOT(on_actionMenuFormatInsertTable(int,int)));
     //FIXME: 已经不是唯一文档视图，不应该在初始化阶段绑定
     //connect(m_doc->web(), SIGNAL(statusChanged(const QString&)), SLOT(on_editor_statusChanged(const QString&)));
@@ -1108,7 +1108,6 @@ void WizMainWindow::initMenuBar()
     connect(m_singleViewDelegate, SIGNAL(documentViewerClosed(QString)),
             SLOT(removeWindowsMenuItem(QString)));
 
-    //
     m_actions->actionFromName(WIZCATEGORY_OPTION_MESSAGECENTER)->setCheckable(true);
     m_actions->actionFromName(WIZCATEGORY_OPTION_SHORTCUTS)->setCheckable(true);
     m_actions->actionFromName(WIZCATEGORY_OPTION_QUICKSEARCH)->setCheckable(true);
@@ -1198,11 +1197,6 @@ void WizMainWindow::initSortTypeActionGroup() {
     setActionCheckState(m_sortTypeActions->actions(), sortType);
 }
 
-void WizMainWindow::initSkinActionGroup() {
-    m_skinActions = new QActionGroup(m_menuBar);
-    QAction* action = m_actions->actionFromName(WIZSKIN_RELOAD_STYLESHEET);
-    m_skinActions->addAction(action);
-}
 
 void WizMainWindow::initDockMenu()
 {

@@ -153,7 +153,6 @@ private:
     QMenu* m_newNoteExtraMenu;
     QActionGroup* m_viewTypeActions;
     QActionGroup* m_sortTypeActions;
-    QActionGroup* m_skinActions;
     QMenu* m_menu;
     QToolButton* m_menuButton;    
     bool m_useSystemBasedStyle;
@@ -226,7 +225,6 @@ private:
     void initMenuBar();
     void initViewTypeActionGroup();
     void initSortTypeActionGroup();
-    void initSkinActionGroup();
     void initDockMenu();
 
     QWidget* createNoteListView();
