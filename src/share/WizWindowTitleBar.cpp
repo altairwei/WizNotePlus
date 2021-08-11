@@ -6,6 +6,7 @@
 #include <QToolButton>
 #include <QHBoxLayout>
 #include <QMouseEvent>
+#include <QDebug>
 
 #include "utils/WizStyleHelper.h"
 #include "WizMisc.h"
@@ -117,14 +118,13 @@ void WizWindowTitleBar::showMaxRestore()
 {
     if (!m_canResize)
         return;
-    //
+
     if (Qt::WindowMaximized == m_window->windowState()) {
-        //
+        // Restore shadow effect when exit maximization
         m_shadowContainerWidget->setContentsMargins(m_oldContentsMargin);
         m_window->showNormal();
-        //
     } else {
-        //
+        // Hide shadow effect when maximize mainwindow.
         m_oldContentsMargin = m_shadowContainerWidget->contentsMargins();
         m_shadowContainerWidget->setContentsMargins(0, 0, 0, 0);
         m_window->showMaximized();
@@ -158,6 +158,7 @@ void WizWindowTitleBar::setContentsMargins(QMargins margins)
     QWidget::setContentsMargins(margins);
     layout()->setContentsMargins(margins);
 }
+
 void WizWindowTitleBar::setText(QString title)
 {
     m_titleLabel->setText(title);

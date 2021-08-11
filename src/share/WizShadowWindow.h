@@ -29,60 +29,67 @@ public:
         , m_clientLayout(NULL)
     {
         Base* pT = this;
-        // 设置传入的QWidget的属性
+
         pT->setAttribute(Qt::WA_TranslucentBackground); //enable MainWindow to be transparent
-        pT->setWindowFlags(Qt::FramelessWindowHint); //不带标题栏
+        pT->setWindowFlags(Qt::FramelessWindowHint);
         pT->setContentsMargins(0, 0, 0, 0);
+
         // 设置窗体布局
         QLayout* windowLayout = new QBoxLayout(QBoxLayout::TopToBottom);
         pT->setLayout(windowLayout);
         windowLayout->setContentsMargins(0, 0, 0, 0);
         windowLayout->setSpacing(0);
+
         // 设置阴影
-        int shadowSize = WizSmartScaleUI(20); // 根据屏幕DPI设置阴影尺寸
+        int shadowSize = 20;
         m_shadowWidget = new WizShadowWidget(this, shadowSize, canResize);
         m_shadowWidget->setContentsMargins(shadowSize, shadowSize, shadowSize, shadowSize);
         windowLayout->addWidget(m_shadowWidget);
+
         // 设置阴影布局
         QLayout* rootLayout = new QBoxLayout(QBoxLayout::TopToBottom);
         m_shadowWidget->setLayout(rootLayout);
         rootLayout->setContentsMargins(0, 0, 0, 0);
         rootLayout->setSpacing(0);
 
+        // Shadow client is the region to place title bar and real client widget
         QWidget* shadowClientWidget = new QWidget(m_shadowWidget);
         rootLayout->addWidget(shadowClientWidget);
-        //
+
         QLayout* shadowClientLayout = new QBoxLayout(QBoxLayout::TopToBottom);
         shadowClientLayout->setContentsMargins(0, 0, 0, 0);
         shadowClientLayout->setSpacing(0);
         shadowClientWidget->setLayout(shadowClientLayout);
         shadowClientWidget->setAutoFillBackground(true);
         shadowClientWidget->setCursor(QCursor(Qt::ArrowCursor));
-        //
+
+        // Put title bar to client widget
         m_titleBar = new WizWindowTitleBar(shadowClientWidget, this, m_shadowWidget, canResize);
         shadowClientLayout->addWidget(m_titleBar);
-        //
+
+        // Real client is the region to place main UI,
+        // which is different from shadow client.
         m_clientWidget = new QWidget(shadowClientWidget);
         shadowClientLayout->addWidget(m_clientWidget);
-
-        //
         m_clientLayout = new QBoxLayout(QBoxLayout::TopToBottom);
         m_clientWidget->setLayout(m_clientLayout);
-        //
         m_clientLayout->setSpacing(0);
         m_clientLayout->setContentsMargins(0, 0, 0, 0);
     }
+
 public:
     QWidget* rootWidget() const { return m_shadowWidget; }
     QWidget *clientWidget() const { return m_clientWidget; }
     QLayout* clientLayout() const { return m_clientLayout; }
     WizWindowTitleBar* titleBar() const { return m_titleBar; }
     void setTitleText(QString title) { m_titleBar->setText(title); }
+
 private:
     WizShadowWidget* m_shadowWidget;
     QWidget* m_clientWidget;
     QLayout* m_clientLayout;
     WizWindowTitleBar* m_titleBar;
+
 protected:
     virtual void changeEvent ( QEvent * event )
     {
@@ -90,10 +97,10 @@ protected:
         {
             m_titleBar->windowStateChanged();
         }
-        //
+
         Base::changeEvent(event);
     }
-    //
+
     virtual void layoutTitleBar()
     {
         m_titleBar->layoutTitleBar();

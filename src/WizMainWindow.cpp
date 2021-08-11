@@ -167,13 +167,13 @@ WizMainWindow::WizMainWindow(WizDatabaseManager& dbMgr, QWidget *parent)
     int ret = WizToolsSmartCompare("H", "d");
     qDebug() << ret;
 #endif
-    //TODO: 为什么不新建一个APP类把WizMainWindow的功能拆分呢？
+
     WizGlobal::setMainWindow(this);
     windowInstance = this;
     qRegisterMetaType<WIZGROUPDATA>("WIZGROUPDATA");
-    //
+
     initSyncQuick();
-    //
+
     initQuitHandler();
 
     // 多线程设置
