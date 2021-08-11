@@ -38,9 +38,10 @@ QToolButton:pressed {
  * -----------------------------------------------------------
  */
 
-WizTitleBar#document-title-bar {
-  background: #000000;
+QWidget#editor-container {
+  background-color: white;
 }
+
 
 /*
  * Tab browser
@@ -85,13 +86,10 @@ QWidget#document-panel {
   background-color: #F5F5F5;
 }
 
-QWidget#editor-container {
-  background-color: white;
-}
-
 /* The tab widget frame */
 WizMainTabBrowser::pane {
   border-top: 1px solid #DADAD9;
+  top: -1px;
 }
 
 /* This subcontrol exists only to control the position of the
@@ -103,11 +101,9 @@ WizMainTabBrowser::tab-bar {
    it reads QTabBar _not_ QTabWidget */
 WizMainTabBrowser > QTabBar::tab {
   padding: 2px 0px;
-  height: 26px;
+  height: 27px;
   min-width: 20ex;
   max-width: 30ex;
-  border-left: 2px solid #F5F5F5; /* same as tabs toolbar background */
-  text-align: right;
 }
 
 WizMainTabBrowser > QTabBar::tab:selected,
@@ -117,10 +113,15 @@ WizMainTabBrowser > QTabBar::tab:hover {
 WizMainTabBrowser > QTabBar::tab:selected {
   background: white;
   border-left: 2px solid #448AFF;
+  border-right: 1px solid #DADAD9;
 }
 
 WizMainTabBrowser > QTabBar::tab:!selected {
+  border-left: 0px;
+  margin-left: 2px;
+  margin-right: 1px;
 }
+
 
 /*
  *
@@ -130,8 +131,11 @@ WizMainTabBrowser > QTabBar::tab:!selected {
 QToolTip {
   font: 12px #000000;
   padding: 0px 1px;
-  background-color: #f8f8f8;
-  border: 0px;
+  background-color: qlineargradient(
+    x1: 0.5, y1: 1, x2: 0.5, y2: 0,
+    stop: 0 #DADAD9, stop: 0.5 #F8F8F8
+  );
+  border: 1px outset #DADAD9;
 }
 
 WizDocumentTransitionView > .QWidget {
