@@ -76,7 +76,7 @@ jobs:
     name: Windows
     runs-on: windows-2016
     env:
-      QT_INSTALL_TARGET_ARCH: msvc2017_64
+      QT_INSTALL_TARGET_ARCH: msvc2019_64
       QT_INSTALL_TARGET_DIR_PREFIX: ${{ github.workspace }}
     steps:
       - uses: actions/checkout@v1
