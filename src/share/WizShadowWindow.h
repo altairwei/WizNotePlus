@@ -120,7 +120,7 @@ protected:
             const auto win = pT->windowHandle();
             if (win) {
                 __flh_ns::FramelessWindowsManager::addWindow(win);
-                __flh_ns::FramelessWindowsManager::setResizable(win, false);
+                __flh_ns::FramelessWindowsManager::setResizable(win, true);
                 pT->setContentsMargins(1, 1, 1, 1);
                 inited = true;
             }
