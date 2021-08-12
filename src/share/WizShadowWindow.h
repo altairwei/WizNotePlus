@@ -1,8 +1,6 @@
 ﻿#ifndef WIZSHADOWWINDOW_H
 #define WIZSHADOWWINDOW_H
 
-
-
 #include <QWidget>
 #include <QPainter>
 #include <QPaintEngine>
@@ -12,6 +10,9 @@
 #include <QTimer>
 #include "WizWindowTitleBar.h"
 #include "WizShadowEffect.h"
+
+#include "libs/3rdparty/framelesshelper/framelesshelper.h"
+#include "libs/3rdparty/framelesshelper/framelesswindowsmanager.h"
 
 //-------------------------------------------------------------------
 // 给Window制造阴影的模板，Base应该为具有Qt::Window的QWidget
@@ -30,9 +31,9 @@ public:
     {
         Base* pT = this;
 
-        pT->setAttribute(Qt::WA_TranslucentBackground); //enable MainWindow to be transparent
-        pT->setWindowFlags(Qt::FramelessWindowHint);
-        pT->setContentsMargins(0, 0, 0, 0);
+        //pT->setAttribute(Qt::WA_TranslucentBackground); //enable MainWindow to be transparent
+        //pT->setWindowFlags(Qt::FramelessWindowHint);
+        //pT->setContentsMargins(0, 0, 0, 0);
 
         // 设置窗体布局
         QLayout* windowLayout = new QBoxLayout(QBoxLayout::TopToBottom);
@@ -42,8 +43,9 @@ public:
 
         // 设置阴影
         int shadowSize = 20;
-        m_shadowWidget = new WizShadowWidget(this, shadowSize, canResize);
-        m_shadowWidget->setContentsMargins(shadowSize, shadowSize, shadowSize, shadowSize);
+        //m_shadowWidget = new WizShadowWidget(this, shadowSize, canResize);
+        m_shadowWidget = new QWidget(this);
+        //m_shadowWidget->setContentsMargins(shadowSize, shadowSize, shadowSize, shadowSize);
         windowLayout->addWidget(m_shadowWidget);
 
         // 设置阴影布局
@@ -75,6 +77,9 @@ public:
         m_clientWidget->setLayout(m_clientLayout);
         m_clientLayout->setSpacing(0);
         m_clientLayout->setContentsMargins(0, 0, 0, 0);
+
+        pT->setAttribute(Qt::WA_DontCreateNativeAncestors);
+        pT->createWinId();
     }
 
 public:
@@ -85,7 +90,7 @@ public:
     void setTitleText(QString title) { m_titleBar->setText(title); }
 
 private:
-    WizShadowWidget* m_shadowWidget;
+    QWidget* m_shadowWidget;
     QWidget* m_clientWidget;
     QLayout* m_clientLayout;
     WizWindowTitleBar* m_titleBar;
@@ -104,6 +109,22 @@ protected:
     virtual void layoutTitleBar()
     {
         m_titleBar->layoutTitleBar();
+    }
+
+    void showEvent(QShowEvent *event)
+    {
+        Base* pT = this;
+        Base::showEvent(event);
+        static bool inited = false;
+        if (!inited) {
+            const auto win = pT->windowHandle();
+            if (win) {
+                __flh_ns::FramelessWindowsManager::addWindow(win);
+                __flh_ns::FramelessWindowsManager::setResizable(win, false);
+                pT->setContentsMargins(1, 1, 1, 1);
+                inited = true;
+            }
+        }
     }
 };
 

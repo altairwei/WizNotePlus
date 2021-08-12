@@ -184,6 +184,7 @@ int mainCore(int argc, char *argv[])
     QWebEngineSettings::defaultSettings()->setAttribute(QWebEngineSettings::LocalContentCanAccessRemoteUrls, true);
     QWebEngineSettings::defaultSettings()->setAttribute(QWebEngineSettings::FullScreenSupportEnabled, true);
 
+    QCoreApplication::setAttribute(Qt::AA_DontCreateNativeWidgetSiblings);
     // 配置QtApp和Debug
     //-------------------------------------------------------------------
 

@@ -1,5 +1,7 @@
 project(WizNote)
 
+add_subdirectory(libs)
+
 #============================================================================
 # Sources
 #============================================================================
@@ -633,6 +635,7 @@ if(UNIX)
                 ${quazip_LIBRARIES}
                 ${ZLIB_LIBRARIES}
                 ${Gumbo_LIBRARIES}
+                FramelessHelper
             )
         else(APPSTORE_BUILD)
             target_link_libraries(${PROJECT_NAME}
@@ -641,6 +644,7 @@ if(UNIX)
                 ${quazip_LIBRARIES}
                 ${ZLIB_LIBRARIES}
                 ${Gumbo_LIBRARIES}
+                FramelessHelper
             )
         endif(APPSTORE_BUILD)
     else(APPLE)
@@ -654,6 +658,7 @@ if(UNIX)
             ${quazip_LIBRARIES}
             ${ZLIB_LIBRARIES}
             ${Gumbo_LIBRARIES}
+            wangwenx190::FramelessHelper
         )
     endif(APPLE)
 else(NOT UNIX)
@@ -664,5 +669,7 @@ else(NOT UNIX)
         ${quazip_LIBRARIES}
         ${ZLIB_LIBRARIES}
         ${Gumbo_LIBRARIES}
+        FramelessHelper
+        dwmapi
     )
 endif()

@@ -3,3 +3,5 @@ src/database/sqlite3.h linguist-vendored=true
 src/database/sqlite3ext.h linguist-vendored=true
 src/database/cppsqlite3.h linguist-vendored=true
 src/database/cppsqlite3.cpp linguist-vendored=true
+
+src/libs/3rdparty/framelesshelper linguist-vendored=true

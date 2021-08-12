@@ -99,12 +99,12 @@ void WizWindowTitleBar::windowStateChanged()
 {
     if (Qt::WindowMaximized == m_window->windowState())
     {
-        m_shadowContainerWidget->setContentsMargins(0, 0, 0, 0);
+        //m_shadowContainerWidget->setContentsMargins(0, 0, 0, 0);
         m_maximize->setStyleSheet(m_restoreStyleSheet);
     }
     else
     {
-        m_shadowContainerWidget->setContentsMargins(m_oldContentsMargin);
+        //m_shadowContainerWidget->setContentsMargins(m_oldContentsMargin);
         m_maximize->setStyleSheet(m_maxSheet);
     }
 }
@@ -121,12 +121,12 @@ void WizWindowTitleBar::showMaxRestore()
 
     if (Qt::WindowMaximized == m_window->windowState()) {
         // Restore shadow effect when exit maximization
-        m_shadowContainerWidget->setContentsMargins(m_oldContentsMargin);
+        //m_shadowContainerWidget->setContentsMargins(m_oldContentsMargin);
         m_window->showNormal();
     } else {
         // Hide shadow effect when maximize mainwindow.
         m_oldContentsMargin = m_shadowContainerWidget->contentsMargins();
-        m_shadowContainerWidget->setContentsMargins(0, 0, 0, 0);
+        //m_shadowContainerWidget->setContentsMargins(0, 0, 0, 0);
         m_window->showMaximized();
     }
 }
