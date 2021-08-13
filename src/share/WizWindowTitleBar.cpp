@@ -29,8 +29,8 @@ WizWindowTitleBar::WizWindowTitleBar(QWidget *parent, QWidget* window, QWidget* 
     // 设置按钮图像的样式
     QString themeName = Utils::WizStyleHelper::themeName();
     QString strButtonClose = ::WizGetSkinResourceFileName(themeName, "linuxwindowclose");
-    QString strButtonCloseOn = ::WizGetSkinResourceFileName(themeName, "linuxwindowclose_on");
-    QString strButtonCloseSelected = ::WizGetSkinResourceFileName(themeName, "linuxwindowclose_selected");
+    QString strButtonCloseOn = ::WizGetSkinResourceFileName(themeName, "linuxlogindialoclose_white");
+    QString strButtonCloseSelected = ::WizGetSkinResourceFileName(themeName, "linuxlogindialoclose_white");
     QString strButtonMin = ::WizGetSkinResourceFileName(themeName, "linuxwindowmin");
     QString strButtonMinOn = ::WizGetSkinResourceFileName(themeName, "linuxwindowmin_on");
     QString strButtonMinSelected = ::WizGetSkinResourceFileName(themeName, "linuxwindowmin_selected");
@@ -42,25 +42,28 @@ WizWindowTitleBar::WizWindowTitleBar(QWidget *parent, QWidget* window, QWidget* 
     QString strButtonRestoreSelected = ::WizGetSkinResourceFileName(themeName, "linuxwindowrestore_Selected");
 
 
+    m_close->setObjectName("window-close-btn");
     m_close->setStyleSheet(QString("QToolButton{ border-image:url(%1);background:none;}"
-                                   "QToolButton:hover{border-image:url(%2); background:none;}"
-                                   "QToolButton::pressed{border-image:url(%3); background:none;}")
+                                   "QToolButton:hover{border-image:url(%2); background:red;}"
+                                   "QToolButton::pressed{border-image:url(%3); background:darkred;}")
                            .arg(strButtonClose).arg(strButtonCloseOn).arg(strButtonCloseSelected));
 
 
+    m_minimize->setObjectName("window-min-btn");
     m_minimize->setStyleSheet(QString("QToolButton{ border-image:url(%1); background:none;}"
-                                   "QToolButton:hover{border-image:url(%2); background:none;}"
+                                   "QToolButton:hover{border-image:url(%2); background:rgba(211, 211, 211, 0.5);}"
                                    "QToolButton::pressed{border-image:url(%3); background:none;}")
                            .arg(strButtonMin).arg(strButtonMinOn).arg(strButtonMinSelected));
 
+    m_maximize->setObjectName("window-max-btn");
     m_maxSheet = QString("QToolButton{ border-image:url(%1); background:none;}"
-                         "QToolButton:hover{border-image:url(%2); background:none;}"
+                         "QToolButton:hover{border-image:url(%2); background:rgba(211, 211, 211, 0.5);}"
                          "QToolButton::pressed{border-image:url(%3); background:none;}")
                  .arg(strButtonMax).arg(strButtonMaxOn).arg(strButtonMaxSelected);
     m_maximize->setStyleSheet(m_maxSheet);
 
     m_restoreStyleSheet = QString("QToolButton{ border-image:url(%1); background:none;}"
-                           "QToolButton:hover{border-image:url(%2); background:none;}"
+                           "QToolButton:hover{border-image:url(%2); background:rgba(211, 211, 211, 0.5);}"
                            "QToolButton::pressed{border-image:url(%3); background:none;}")
                    .arg(strButtonRestore).arg(strButtonRestoreOn).arg(strButtonRestoreSelected);
 
@@ -75,9 +78,9 @@ WizWindowTitleBar::WizWindowTitleBar(QWidget *parent, QWidget* window, QWidget* 
     connect(m_close, SIGNAL( clicked() ), m_window, SLOT(close() ) );
     connect(m_minimize, SIGNAL( clicked() ), this, SLOT(showSmall() ) );
     connect(m_maximize, SIGNAL( clicked() ), this, SLOT(showMaxRestore() ) );
-    //
+
     setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
-    //
+
     m_maximize->setEnabled(m_canResize);
     m_minimize->setEnabled(m_canResize);
 }
@@ -131,11 +134,13 @@ void WizWindowTitleBar::showMaxRestore()
     }
 }
 
+/*
 void WizWindowTitleBar::mousePressEvent(QMouseEvent *me)
 {
     m_startPos = me->globalPos();
     m_clickPos = mapTo(m_window, me->pos());
 }
+
 void WizWindowTitleBar::mouseMoveEvent(QMouseEvent *me)
 {
     if (Qt::WindowMaximized == m_window->windowState())
@@ -150,7 +155,7 @@ void WizWindowTitleBar::mouseDoubleClickEvent ( QMouseEvent * event )
         showMaxRestore();
     }
 }
-
+*/
 
 void WizWindowTitleBar::setContentsMargins(QMargins margins)
 {

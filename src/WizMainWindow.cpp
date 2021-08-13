@@ -1899,7 +1899,7 @@ void WizMainWindow::layoutTitleBar()
     QString strButtonMenuSelected = ::WizGetSkinResourceFileName(themeName, "linuxwindowmenu_selected");
 
     m_menuButton->setStyleSheet(QString("QToolButton{ border-image:url(%1);}"
-                                   "QToolButton:hover{border-image:url(%2); background:none;}"
+                                   "QToolButton:hover{border-image:url(%2); background:rgba(211, 211, 211, 0.5);}"
                                    "QToolButton::pressed{border-image:url(%3); background:none;}")
                            .arg(strButtonMenu).arg(strButtonMenuOn).arg(strButtonMenuSelected));
     //

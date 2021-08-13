@@ -70,7 +70,7 @@ class WizNotePlusConan(ConanFile):
         "Gumbo/0.10.1@altairwei/testing"
     )
     build_requires = (
-        "cmake_installer/3.12.4@conan/stable"
+        "cmake/3.15.7"
     )
     keep_imports = True
     options = {
@@ -127,7 +127,7 @@ class WizNotePlusConan(ConanFile):
         if qt_version < Version("5.12"):
             self.requires("openssl/1.0.2u")
         else:
-            self.requires("openssl/1.1.1g")
+            self.requires("openssl/1.1.1k")
 
 
     def build_requirements(self):

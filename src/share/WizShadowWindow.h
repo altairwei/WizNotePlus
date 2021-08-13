@@ -96,7 +96,7 @@ private:
     WizWindowTitleBar* m_titleBar;
 
 protected:
-    virtual void changeEvent ( QEvent * event )
+    virtual void changeEvent (QEvent * event)
     {
         if (event->type() == QEvent::WindowStateChange)
         {
@@ -104,6 +104,22 @@ protected:
         }
 
         Base::changeEvent(event);
+
+        Base* pT = this;
+        bool shouldUpdate = false;
+        if (event->type() == QEvent::WindowStateChange) {
+            if (pT->isMaximized() || pT->isFullScreen()) {
+                pT->setContentsMargins(0, 0, 0, 0);
+            } else if (!pT->isMinimized()) {
+                pT->setContentsMargins(1, 1, 1, 1);
+            }
+            shouldUpdate = true;
+        } else if (event->type() == QEvent::ActivationChange) {
+            shouldUpdate = true;
+        }
+        if (shouldUpdate) {
+            pT->update();
+        }
     }
 
     virtual void layoutTitleBar()
@@ -121,6 +137,12 @@ protected:
             if (win) {
                 __flh_ns::FramelessWindowsManager::addWindow(win);
                 __flh_ns::FramelessWindowsManager::setResizable(win, true);
+                __flh_ns::FramelessWindowsManager::setTitleBarHeight(win, m_titleBar->height());
+                __flh_ns::FramelessWindowsManager::setHitTestVisibleInChrome(win, m_titleBar->titleLabel(), true);
+                __flh_ns::FramelessWindowsManager::setHitTestVisibleInChrome(win, m_titleBar->minButton(), true);
+                __flh_ns::FramelessWindowsManager::setHitTestVisibleInChrome(win, m_titleBar->maxButton(), true);
+                __flh_ns::FramelessWindowsManager::setHitTestVisibleInChrome(win, m_titleBar->closeButton(), true);
+
                 pT->setContentsMargins(1, 1, 1, 1);
                 inited = true;
             }
