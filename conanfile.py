@@ -185,6 +185,7 @@ class WizNotePlusConan(ConanFile):
             gen = None
         # Configure CMake build system
         cmake = CMake(self, generator = gen)
+        self.output.info("CMake version %s" % cmake.get_version())
         if self.options.qtdir:
             cmake.definitions["CMAKE_PREFIX_PATH"] = self.options.qtdir
         # CMakeLists.txt can be an entry point of a complete build pipline,
