@@ -74,7 +74,7 @@ jobs:
 
   build_windows:
     name: Windows
-    runs-on: windows-2016
+    runs-on: windows-2019
     env:
       QT_INSTALL_TARGET_ARCH: msvc2019_64
       QT_INSTALL_TARGET_DIR_PREFIX: ${{ github.workspace }}
@@ -117,7 +117,6 @@ jobs:
         shell: powershell
         run: |
           mkdir -Force _build
-          cmake --version
           .\.ci\build.ps1 "$PWD" "$PWD\_build"
       - uses: actions/upload-artifact@v1
         with:
