@@ -66,6 +66,7 @@ jobs:
           QT_INSTALL_PREFIX: ${{ env.QT_INSTALL_TARGET_DIR_PREFIX }}/Qt/${{ env.QT_VERSION }}/${{ env.QT_INSTALL_TARGET_ARCH }}
         run: |
           mkdir -p _build
+          cmake --version
           ./.ci/build.sh $(pwd) $(pwd)/_build
       - uses: actions/upload-artifact@v1
         with:

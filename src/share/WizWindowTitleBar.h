@@ -32,6 +32,8 @@ public:
     void setText(QString title);
     QString text() const;
 
+    void setHitTestVisible(QObject *obj);
+
 protected:
     /*
     virtual void mousePressEvent(QMouseEvent *me);

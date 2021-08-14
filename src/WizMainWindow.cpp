@@ -1863,30 +1863,31 @@ void WizMainWindow::layoutTitleBar()
 {
     WizWindowTitleBar* title = titleBar();
     title->titleLabel()->setVisible(false);
-    //
-    //
+
     QLayout* layout = new QVBoxLayout();
     layout->setSpacing(0);
     layout->setContentsMargins(0, 0, 0, 0);
-    //
+
     QLayout* layoutTitle = new QHBoxLayout();
     layoutTitle->setContentsMargins(0, 0, 0, 0);
+
     // 标题栏里组件区域大小，通过 margin 来控制
     QLayout* layoutTitleBar = new QHBoxLayout();
     int margin = WizSmartScaleUI(m_useSystemBasedStyle ? 4 : 10);
     layoutTitleBar->setContentsMargins(margin, margin, margin, margin);
     layoutTitleBar->addWidget(m_toolBar);
     layoutTitle->addItem(layoutTitleBar);
-    //
+
     QVBoxLayout* layoutRight = new QVBoxLayout();
     layoutTitle->addItem(layoutRight);
-    //
+
     QLayout* layoutBox = new QHBoxLayout();
     layoutBox->setContentsMargins(0, WizSmartScaleUI(6), WizSmartScaleUI(6), 0);
     layoutBox->setSpacing(WizSmartScaleUI(6));
     layoutRight->addItem(layoutBox);
-    //
+
     m_menuButton = new QToolButton(this);
+    title->setHitTestVisible(m_menuButton);
     connect(m_menuButton, SIGNAL(clicked()), SLOT(on_menuButtonClicked()));
     layoutBox->addWidget(m_menuButton);
     layoutBox->addWidget(title->minButton());
@@ -1902,7 +1903,7 @@ void WizMainWindow::layoutTitleBar()
                                    "QToolButton:hover{border-image:url(%2); background:rgba(211, 211, 211, 0.5);}"
                                    "QToolButton::pressed{border-image:url(%3); background:none;}")
                            .arg(strButtonMenu).arg(strButtonMenuOn).arg(strButtonMenuSelected));
-    //
+
     QSize buttonSize = QSize(WizSmartScaleUI(16), WizSmartScaleUI(16));
     m_menuButton->setFixedSize(buttonSize);
     title->minButton()->setFixedSize(buttonSize);
@@ -1911,9 +1912,9 @@ void WizMainWindow::layoutTitleBar()
 
     if (m_useSystemBasedStyle)
         m_menuButton->setVisible(false);
-    //
+
     layoutRight->addStretch();
-    //
+
     QLabel* label = new QLabel(this);
     label->setFixedHeight(1);
     label->setStyleSheet(QString("QLabel{background-color:#aeaeae; border: none;}"));
@@ -1943,7 +1944,7 @@ void WizMainWindow::initToolBar()
     clientLayout()->addWidget(m_toolBar);
     // 根据是否使用系统标题栏样式来选择窗口样式
     setWindowStyle(m_useSystemBasedStyle);
-    //
+
     layoutTitleBar();
     // main button size
     QSize iconSize = QSize(WizSmartScaleUI(16), WizSmartScaleUI(16));
@@ -1953,28 +1954,31 @@ void WizMainWindow::initToolBar()
     //m_toolBar->setToolButtonStyle(Qt::ToolButtonIconOnly); // 通过addWidget添加的QToolButton会忽视这个设置
     // align with categoryview's root item.
     m_toolBar->addWidget(new WizFixedSpacer(QSize(3, 1), m_toolBar));
-    //
+
     // 用户信息
     WizUserInfoWidget* info = new WizUserInfoWidget(*this, m_toolBar);
+    titleBar()->setHitTestVisible(info);
     m_toolBar->addWidget(info);
-    //
+
     m_toolBar->addWidget(new WizFixedSpacer(QSize(5, 1), m_toolBar));
     // 同步按钮
     WizButton* buttonSync = new WizButton(m_toolBar);
+    titleBar()->setHitTestVisible(buttonSync);
     buttonSync->setIconSize(QSize(16,16));
     buttonSync->setAction(m_actions->actionFromName(WIZACTION_GLOBAL_SYNC));
     m_toolBar->addWidget(buttonSync);
-    //
+
     m_spacerForToolButtonAdjust = new WizFixedSpacer(QSize(20, 1), m_toolBar);
     m_toolBar->addWidget(m_spacerForToolButtonAdjust);
-    //
+
     // 搜索栏，值得注意搜索栏的长度随着笔记列表宽度而变化
     m_searchWidget = new WizSearchView(this);
+    titleBar()->setHitTestVisible(m_searchWidget);
     m_searchWidget->setFixedWidth(200);
     m_toolBar->addWidget(m_searchWidget);
-    //
+
     m_toolBar->addWidget(new WizFixedSpacer(QSize(20, 1), m_toolBar));
-    //
+
     /*
     // 前一篇文档
     WizButton* buttonBack = new WizButton(m_toolBar);
@@ -1987,17 +1991,18 @@ void WizMainWindow::initToolBar()
     buttonForward->setAction(m_actions->actionFromName(WIZACTION_GLOBAL_GOFORWARD));
     m_toolBar->addWidget(buttonForward);
     */
-    //
+
     m_toolBar->addWidget(new WizFixedSpacer(QSize(20, 1), m_toolBar));
-    //
+
     // 新建笔记[+]菜单
     prepareNewNoteMenu();
-    //
+
     QAction* newNoteAction = m_actions->actionFromName(WIZACTION_GLOBAL_NEW_DOCUMENT);
     //newNoteAction->setIcon(::WizLoadSkinIcon(this->userSettings().skin(), "toolButtonNewNote"));
-    //
+
     //QToolButton* buttonNew = new QToolButton(m_toolBar);
     QToolButton* buttonNew = new QToolButton(m_toolBar);
+    titleBar()->setHitTestVisible(buttonNew);
     //buttonNew->setStyle(new WizNotePlusStyle("fusion"));
     buttonNew->setMenu(m_newNoteExtraMenu);//选择模板的菜单
     buttonNew->setDefaultAction(newNoteAction);//m_newNoteExtraMenu->actionAt(QPoint(0 ,0)));
@@ -2008,11 +2013,11 @@ void WizMainWindow::initToolBar()
     m_toolBar->addWidget(buttonNew);
     m_toolBar->addWidget(new WizFixedSpacer(QSize(5, 1), m_toolBar));
     initToolBarPluginButtons();
-    //
+
     m_toolBar->addWidget(new WizSpacer(m_toolBar));
 
     updateHistoryButtonStatus();
-    //
+
     connect(m_searchWidget, SIGNAL(doSearch(const QString&)), SLOT(on_search_doSearch(const QString&)));
 }
 
@@ -2107,9 +2112,9 @@ void WizMainWindow::initClient()
 
     // set minimum width
     bool isHighPix = WizIsHighPixel();
-    setMinimumWidth(isHighPix ? 785 : 985);
-    m_category->setMinimumWidth(isHighPix ? 76 : 165);
-    m_docListContainer->setMinimumWidth(isHighPix ? 113 : 244);
+    //setMinimumWidth(isHighPix ? 785 : 985);
+    //m_category->setMinimumWidth(isHighPix ? 76 : 165);
+    //m_docListContainer->setMinimumWidth(isHighPix ? 113 : 244);
     //
     m_msgListWidget->hide();
     //

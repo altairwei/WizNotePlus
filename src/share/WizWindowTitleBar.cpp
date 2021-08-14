@@ -8,6 +8,8 @@
 #include <QMouseEvent>
 #include <QDebug>
 
+#include "libs/3rdparty/framelesshelper/framelesswindowsmanager.h"
+
 #include "utils/WizStyleHelper.h"
 #include "WizMisc.h"
 
@@ -83,6 +85,10 @@ WizWindowTitleBar::WizWindowTitleBar(QWidget *parent, QWidget* window, QWidget* 
 
     m_maximize->setEnabled(m_canResize);
     m_minimize->setEnabled(m_canResize);
+
+    setHitTestVisible(m_minimize);
+    setHitTestVisible(m_maximize);
+    setHitTestVisible(m_close);
 }
 
 void WizWindowTitleBar::layoutTitleBar()
@@ -172,4 +178,9 @@ void WizWindowTitleBar::setText(QString title)
 QString WizWindowTitleBar::text() const
 {
     return m_titleLabel->text();
+}
+
+void WizWindowTitleBar::setHitTestVisible(QObject *obj)
+{
+    __flh_ns::FramelessWindowsManager::setHitTestVisibleInChrome(m_window->windowHandle(), obj, true);
 }

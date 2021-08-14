@@ -70,7 +70,7 @@ class WizNotePlusConan(ConanFile):
         "Gumbo/0.10.1@altairwei/testing"
     )
     build_requires = (
-        "cmake/3.15.7"
+        "cmake/3.16.9"
     )
     keep_imports = True
     options = {

@@ -8,6 +8,8 @@
 #include <QDebug>
 #include <QBoxLayout>
 #include <QTimer>
+#include <QToolButton>
+
 #include "WizWindowTitleBar.h"
 #include "WizShadowEffect.h"
 
@@ -30,6 +32,9 @@ public:
         , m_clientLayout(NULL)
     {
         Base* pT = this;
+
+        pT->setAttribute(Qt::WA_DontCreateNativeAncestors);
+        pT->createWinId();
 
         //pT->setAttribute(Qt::WA_TranslucentBackground); //enable MainWindow to be transparent
         //pT->setWindowFlags(Qt::FramelessWindowHint);
@@ -77,9 +82,6 @@ public:
         m_clientWidget->setLayout(m_clientLayout);
         m_clientLayout->setSpacing(0);
         m_clientLayout->setContentsMargins(0, 0, 0, 0);
-
-        pT->setAttribute(Qt::WA_DontCreateNativeAncestors);
-        pT->createWinId();
     }
 
 public:
@@ -138,10 +140,16 @@ protected:
                 __flh_ns::FramelessWindowsManager::addWindow(win);
                 __flh_ns::FramelessWindowsManager::setResizable(win, true);
                 __flh_ns::FramelessWindowsManager::setTitleBarHeight(win, m_titleBar->height());
-                __flh_ns::FramelessWindowsManager::setHitTestVisibleInChrome(win, m_titleBar->titleLabel(), true);
-                __flh_ns::FramelessWindowsManager::setHitTestVisibleInChrome(win, m_titleBar->minButton(), true);
-                __flh_ns::FramelessWindowsManager::setHitTestVisibleInChrome(win, m_titleBar->maxButton(), true);
-                __flh_ns::FramelessWindowsManager::setHitTestVisibleInChrome(win, m_titleBar->closeButton(), true);
+
+                /*
+                QObjectList list = m_titleBar->children();
+                foreach (QObject* obj, list) {
+                    QToolButton* btn = qobject_cast<QToolButton*>(obj);
+                    if (btn != nullptr) {
+                        __flh_ns::FramelessWindowsManager::setHitTestVisibleInChrome(win, btn, true);
+                    }
+                }
+                */
 
                 pT->setContentsMargins(1, 1, 1, 1);
                 inited = true;
