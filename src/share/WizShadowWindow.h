@@ -136,17 +136,6 @@ protected:
                 __flh_ns::FramelessWindowsManager::addWindow(win);
                 __flh_ns::FramelessWindowsManager::setResizable(win, true);
                 __flh_ns::FramelessWindowsManager::setTitleBarHeight(win, m_titleBar->height());
-
-                /*
-                QObjectList list = m_titleBar->children();
-                foreach (QObject* obj, list) {
-                    QToolButton* btn = qobject_cast<QToolButton*>(obj);
-                    if (btn != nullptr) {
-                        __flh_ns::FramelessWindowsManager::setHitTestVisibleInChrome(win, btn, true);
-                    }
-                }
-                */
-
                 pT->setContentsMargins(1, 1, 1, 1);
                 inited = true;
             }
