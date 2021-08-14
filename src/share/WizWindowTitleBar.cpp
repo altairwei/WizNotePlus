@@ -26,60 +26,23 @@ WizWindowTitleBar::WizWindowTitleBar(QWidget *parent, QWidget* window, QWidget* 
 
     m_minimize = new QToolButton(this);
     m_maximize = new QToolButton(this);
+    m_restore = new QToolButton(this);
     m_close = new QToolButton(this);
 
-    // 设置按钮图像的样式
-    QString themeName = Utils::WizStyleHelper::themeName();
-    QString strButtonClose = ::WizGetSkinResourceFileName(themeName, "linuxwindowclose");
-    QString strButtonCloseOn = ::WizGetSkinResourceFileName(themeName, "linuxlogindialoclose_white");
-    QString strButtonCloseSelected = ::WizGetSkinResourceFileName(themeName, "linuxlogindialoclose_white");
-    QString strButtonMin = ::WizGetSkinResourceFileName(themeName, "linuxwindowmin");
-    QString strButtonMinOn = ::WizGetSkinResourceFileName(themeName, "linuxwindowmin_on");
-    QString strButtonMinSelected = ::WizGetSkinResourceFileName(themeName, "linuxwindowmin_selected");
-    QString strButtonMax = ::WizGetSkinResourceFileName(themeName, "linuxwindowmax");
-    QString strButtonMaxOn = ::WizGetSkinResourceFileName(themeName, "linuxwindowmax_on");
-    QString strButtonMaxSelected = ::WizGetSkinResourceFileName(themeName, "linuxwindowmax_selected");
-    QString strButtonRestore = ::WizGetSkinResourceFileName(themeName, "linuxwindowrestore");
-    QString strButtonRestoreOn = ::WizGetSkinResourceFileName(themeName, "linuxwindowrestore_on");
-    QString strButtonRestoreSelected = ::WizGetSkinResourceFileName(themeName, "linuxwindowrestore_Selected");
-
-
     m_close->setObjectName("window-close-btn");
-    m_close->setStyleSheet(QString("QToolButton{ border-image:url(%1);background:none;}"
-                                   "QToolButton:hover{border-image:url(%2); background:red;}"
-                                   "QToolButton::pressed{border-image:url(%3); background:darkred;}")
-                           .arg(strButtonClose).arg(strButtonCloseOn).arg(strButtonCloseSelected));
-
-
     m_minimize->setObjectName("window-min-btn");
-    m_minimize->setStyleSheet(QString("QToolButton{ border-image:url(%1); background:none;}"
-                                   "QToolButton:hover{border-image:url(%2); background:rgba(211, 211, 211, 0.5);}"
-                                   "QToolButton::pressed{border-image:url(%3); background:none;}")
-                           .arg(strButtonMin).arg(strButtonMinOn).arg(strButtonMinSelected));
-
     m_maximize->setObjectName("window-max-btn");
-    m_maxSheet = QString("QToolButton{ border-image:url(%1); background:none;}"
-                         "QToolButton:hover{border-image:url(%2); background:rgba(211, 211, 211, 0.5);}"
-                         "QToolButton::pressed{border-image:url(%3); background:none;}")
-                 .arg(strButtonMax).arg(strButtonMaxOn).arg(strButtonMaxSelected);
-    m_maximize->setStyleSheet(m_maxSheet);
-
-    m_restoreStyleSheet = QString("QToolButton{ border-image:url(%1); background:none;}"
-                           "QToolButton:hover{border-image:url(%2); background:rgba(211, 211, 211, 0.5);}"
-                           "QToolButton::pressed{border-image:url(%3); background:none;}")
-                   .arg(strButtonRestore).arg(strButtonRestoreOn).arg(strButtonRestoreSelected);
-
-    m_close->setFixedSize(16, 16);
-    m_minimize->setFixedSize(16, 16);
-    m_maximize->setFixedSize(16, 16);
+    m_restore->setObjectName("window-restore-btn");
+    m_restore->hide();
 
     m_titleLabel = new QLabel(this);
     m_titleLabel->setText("");
     m_window->setWindowTitle("");
 
-    connect(m_close, SIGNAL( clicked() ), m_window, SLOT(close() ) );
-    connect(m_minimize, SIGNAL( clicked() ), this, SLOT(showSmall() ) );
-    connect(m_maximize, SIGNAL( clicked() ), this, SLOT(showMaxRestore() ) );
+    connect(m_close, SIGNAL(clicked()), m_window, SLOT(close()));
+    connect(m_minimize, SIGNAL(clicked()), this, SLOT(showSmall()));
+    connect(m_maximize, SIGNAL(clicked()), this, SLOT(showMaxRestore()));
+    connect(m_restore, SIGNAL(clicked()), this, SLOT(showMaxRestore()));
 
     setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
 
@@ -88,6 +51,7 @@ WizWindowTitleBar::WizWindowTitleBar(QWidget *parent, QWidget* window, QWidget* 
 
     setHitTestVisible(m_minimize);
     setHitTestVisible(m_maximize);
+    setHitTestVisible(m_restore);
     setHitTestVisible(m_close);
 }
 
@@ -98,23 +62,23 @@ void WizWindowTitleBar::layoutTitleBar()
     hbox->addWidget(m_titleLabel);
     hbox->addWidget(m_minimize);
     hbox->addWidget(m_maximize);
+    hbox->addWidget(m_restore);
     hbox->addWidget(m_close);
 
     hbox->insertStretch(1, 500);
     hbox->setSpacing(0);
+
+    hbox->setContentsMargins(0, 0, 0, 0);
 }
 
 void WizWindowTitleBar::windowStateChanged()
 {
-    if (Qt::WindowMaximized == m_window->windowState())
-    {
-        //m_shadowContainerWidget->setContentsMargins(0, 0, 0, 0);
-        m_maximize->setStyleSheet(m_restoreStyleSheet);
-    }
-    else
-    {
-        //m_shadowContainerWidget->setContentsMargins(m_oldContentsMargin);
-        m_maximize->setStyleSheet(m_maxSheet);
+    if (m_window->isMaximized() || m_window->isFullScreen()) {
+        m_maximize->hide();
+        m_restore->show();
+    } else if (!m_window->isMinimized()) {
+        m_restore->hide();
+        m_maximize->show();
     }
 }
 

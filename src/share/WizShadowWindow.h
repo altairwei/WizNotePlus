@@ -100,11 +100,6 @@ private:
 protected:
     virtual void changeEvent (QEvent * event)
     {
-        if (event->type() == QEvent::WindowStateChange)
-        {
-            m_titleBar->windowStateChanged();
-        }
-
         Base::changeEvent(event);
 
         Base* pT = this;
@@ -115,6 +110,7 @@ protected:
             } else if (!pT->isMinimized()) {
                 pT->setContentsMargins(1, 1, 1, 1);
             }
+            m_titleBar->windowStateChanged();
             shouldUpdate = true;
         } else if (event->type() == QEvent::ActivationChange) {
             shouldUpdate = true;

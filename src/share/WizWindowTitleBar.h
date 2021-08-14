@@ -23,6 +23,7 @@ public slots:
 
 public:
     QToolButton* maxButton() const { return m_maximize; }
+    QToolButton* restoreButton() const { return m_restore; }
     QToolButton* minButton() const { return m_minimize; }
     QToolButton* closeButton() const { return m_close; }
     QLabel* titleLabel() const { return m_titleLabel; }
@@ -48,6 +49,7 @@ public:
 private:
     QToolButton *m_minimize;
     QToolButton *m_maximize;
+    QToolButton *m_restore;
     QToolButton *m_close;
     QLabel* m_titleLabel;
     QString m_restoreStyleSheet, m_maxSheet;

@@ -1882,33 +1882,28 @@ void WizMainWindow::layoutTitleBar()
     layoutTitle->addItem(layoutRight);
 
     QLayout* layoutBox = new QHBoxLayout();
-    layoutBox->setContentsMargins(0, WizSmartScaleUI(6), WizSmartScaleUI(6), 0);
-    layoutBox->setSpacing(WizSmartScaleUI(6));
+    layoutBox->setContentsMargins(0, 0, 0, 0);
+    layoutBox->setSpacing(0);
     layoutRight->addItem(layoutBox);
 
     m_menuButton = new QToolButton(this);
+    m_menuButton->setObjectName("window-menu-btn");
     title->setHitTestVisible(m_menuButton);
     connect(m_menuButton, SIGNAL(clicked()), SLOT(on_menuButtonClicked()));
     layoutBox->addWidget(m_menuButton);
     layoutBox->addWidget(title->minButton());
     layoutBox->addWidget(title->maxButton());
+    layoutBox->addWidget(title->restoreButton());
     layoutBox->addWidget(title->closeButton());
 
-    QString themeName = Utils::WizStyleHelper::themeName();
-    QString strButtonMenu = ::WizGetSkinResourceFileName(themeName, "linuxwindowmenu");
-    QString strButtonMenuOn = ::WizGetSkinResourceFileName(themeName, "linuxwindowmenu_on");
-    QString strButtonMenuSelected = ::WizGetSkinResourceFileName(themeName, "linuxwindowmenu_selected");
-
-    m_menuButton->setStyleSheet(QString("QToolButton{ border-image:url(%1);}"
-                                   "QToolButton:hover{border-image:url(%2); background:rgba(211, 211, 211, 0.5);}"
-                                   "QToolButton::pressed{border-image:url(%3); background:none;}")
-                           .arg(strButtonMenu).arg(strButtonMenuOn).arg(strButtonMenuSelected));
-
     QSize buttonSize = QSize(WizSmartScaleUI(16), WizSmartScaleUI(16));
+    /*
     m_menuButton->setFixedSize(buttonSize);
     title->minButton()->setFixedSize(buttonSize);
     title->maxButton()->setFixedSize(buttonSize);
+    title->restoreButton()->setFixedSize(buttonSize);
     title->closeButton()->setFixedSize(buttonSize);
+    */
 
     if (m_useSystemBasedStyle)
         m_menuButton->setVisible(false);
@@ -2034,6 +2029,8 @@ void WizMainWindow::initToolBarPluginButtons()
             &jsPluginMgr, &JSPluginManager::handlePluginActionTriggered);
 
         m_toolBar->addAction(ac);
+
+        titleBar()->setHitTestVisible(m_toolBar->widgetForAction(ac));
     }
 }
 
@@ -2947,12 +2944,7 @@ void WizMainWindow::on_actionSortBySize_triggered()
 
 void WizMainWindow::on_actionSkinReloadStyleSheet_triggered()
 {
-    QString style;
-    QString stylefile = WizGetSkinResourcePath(userSettings().skin()) + "style.qss";
-    if (WizLoadUnicodeTextFromFile(stylefile, style)) {
-        qDebug() << "Reloading stylesheet: " << stylefile;
-        qApp->setStyleSheet(style);
-    }
+    qApp->setStyleSheet(WizLoadSkinStyleSheet(userSettings().skin()));
 }
 
 #define MARKDOCUMENTSREADCHECKED       "MarkDocumentsReadedChecked"
@@ -4322,6 +4314,7 @@ void WizMainWindow::setWindowStyle(bool bUseSystemStyle)
         //
         rootWidget()->setContentsMargins(0, 0, 0, 0);
         titleBar()->maxButton()->setVisible(false);
+        titleBar()->restoreButton()->setVisible(false);
         titleBar()->minButton()->setVisible(false);
         titleBar()->closeButton()->setVisible(false);
     }

@@ -263,12 +263,7 @@ int mainCore(int argc, char *argv[])
 
     // 样式
     app.setStyle(QStyleFactory::create("fusion"));
-
-    QString stylefile, style;
-    stylefile = WizGetSkinResourcePath(userSettings.skin()) + "style.qss";
-    if (WizLoadUnicodeTextFromFile(stylefile, style)) {
-        app.setStyleSheet(style);
-    }
+    app.setStyleSheet(WizLoadSkinStyleSheet(userSettings.skin()));
 
     // 语言本地化
     //-------------------------------------------------------------------

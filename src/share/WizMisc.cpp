@@ -1620,6 +1620,19 @@ QString WizGetSkinResourcePath(const QString& strSkinName)
     return Utils::WizPathResolve::skinResourcesPath(strSkinName);
 }
 
+QString WizLoadSkinStyleSheet(const QString& strSkinName)
+{
+    QString stylefile, style;
+    stylefile = WizGetSkinResourcePath(strSkinName) + "style.qss";
+    if (!WizLoadUnicodeTextFromFile(stylefile, style))
+        qInfo() << "[Skin] Failed to load skin style sheet: " << stylefile;
+
+    if (!style.isEmpty())
+        style.replace("%SKIN_PATH%", WizGetSkinResourcePath(strSkinName));
+
+    return style;
+}
+
 void WizGetSkins(QStringList& skins)
 {
     CWizStdStringArray folders;
