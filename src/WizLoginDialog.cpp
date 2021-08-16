@@ -203,7 +203,6 @@ WizLoginDialog::WizLoginDialog(const QString &strLocale, const QList<WizLocalUse
 
     initSateMachine();
 
-    __flh_ns::FramelessWindowsManager::setResizable(windowHandle(), false);
 }
 
 WizLoginDialog::~WizLoginDialog()

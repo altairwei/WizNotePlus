@@ -85,11 +85,13 @@ public:
 
         const auto win = pT->windowHandle();
         if (win) {
-            __flh_ns::FramelessWindowsManager::addWindow(win);
-            __flh_ns::FramelessWindowsManager::setResizable(win, true);
+            //__flh_ns::FramelessWindowsManager::addWindow(win);
+            __flh_ns::FramelessWindowsManager::setResizable(win, canResize);
             __flh_ns::FramelessWindowsManager::setTitleBarHeight(win, m_titleBar->height());
+#ifdef Q_OS_LINUX
             __flh_ns::FramelessWindowsManager::setResizeBorderWidth(win, 2);
             __flh_ns::FramelessWindowsManager::setResizeBorderHeight(win, 2);
+#endif // Q_OS_LINUX
             pT->setContentsMargins(1, 1, 1, 1);
         }
     }
@@ -135,6 +137,19 @@ protected:
         m_titleBar->layoutTitleBar();
     }
 
+    void showEvent(QShowEvent *event)
+    {
+        Base* pT = this;
+        Base::showEvent(event);
+        static bool inited = false;
+        if (!inited) {
+            const auto win = pT->windowHandle();
+            if (win) {
+                __flh_ns::FramelessWindowsManager::addWindow(win);
+                inited = true;
+            }
+        }
+    }
 };
 
 #endif // WIZSHADOWWINDOW_H
