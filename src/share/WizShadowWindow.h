@@ -82,6 +82,16 @@ public:
         m_clientWidget->setLayout(m_clientLayout);
         m_clientLayout->setSpacing(0);
         m_clientLayout->setContentsMargins(0, 0, 0, 0);
+
+        const auto win = pT->windowHandle();
+        if (win) {
+            __flh_ns::FramelessWindowsManager::addWindow(win);
+            __flh_ns::FramelessWindowsManager::setResizable(win, true);
+            __flh_ns::FramelessWindowsManager::setTitleBarHeight(win, m_titleBar->height());
+            __flh_ns::FramelessWindowsManager::setResizeBorderWidth(win, 2);
+            __flh_ns::FramelessWindowsManager::setResizeBorderHeight(win, 2);
+            pT->setContentsMargins(1, 1, 1, 1);
+        }
     }
 
 public:
@@ -125,22 +135,6 @@ protected:
         m_titleBar->layoutTitleBar();
     }
 
-    void showEvent(QShowEvent *event)
-    {
-        Base* pT = this;
-        Base::showEvent(event);
-        static bool inited = false;
-        if (!inited) {
-            const auto win = pT->windowHandle();
-            if (win) {
-                __flh_ns::FramelessWindowsManager::addWindow(win);
-                __flh_ns::FramelessWindowsManager::setResizable(win, true);
-                __flh_ns::FramelessWindowsManager::setTitleBarHeight(win, m_titleBar->height());
-                pT->setContentsMargins(1, 1, 1, 1);
-                inited = true;
-            }
-        }
-    }
 };
 
 #endif // WIZSHADOWWINDOW_H
