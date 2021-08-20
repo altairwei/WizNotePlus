@@ -32,7 +32,7 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install -y -qq --no-install-recommends git make cmake g++ wget
-          sudo apt-get install -y -qq --no-install-recommends xvfb libgl-dev fcitx fcitx-frontend-qt5 libxcb-xinerama0
+          sudo apt-get install -y -qq --no-install-recommends xvfb libgl-dev fcitx fcitx-frontend-qt5 libxcb-xinerama0 curl
       - name: Cache Qt
         id: cache-qt
         uses: actions/cache@v1
@@ -71,6 +71,13 @@ jobs:
         with:
           name: Linux_Dist
           path: _build/package/dist
+      - name: Upload to webdav
+        run: |
+          find _build/package/dist -type f -name "WizNotePlus-*" | while read x; do
+            filename=$(basename $x)
+            echo "Uploading $filename"
+            curl --basic --user "${{ secrets.WEBDAV }}" -T $x "https://dav.jianguoyun.com/dav/WizNotePlus/testing/$filename";
+          done
 
   build_windows:
     name: Windows
@@ -86,7 +93,7 @@ jobs:
       - name: Install dependencies
         shell: powershell
         run: |
-          choco install wget
+          choco install wget curl
       - name: Install and config conan
         shell: powershell
         run: |
@@ -122,6 +129,16 @@ jobs:
         with:
           name: Windows_Dist
           path: _build/package/dist
+      - name: Upload to webdav
+        shell: powershell
+        run: |
+          Remove-Item alias:curl
+          $artifacts = Get-ChildItem -Path _build/package/dist -Include WizNotePlus-* -File -Recurse
+          foreach ($x in $artifacts){
+            $filename = Split-Path $x -leaf
+            Write-Host "Uploading $filename"
+            curl --basic --user "${{ secrets.WEBDAV }}" -T $x "https://dav.jianguoyun.com/dav/WizNotePlus/testing/$filename";
+          }
 
   build_macos:
     name: MacOS
@@ -141,6 +158,7 @@ jobs:
         run: |
           sudo chown -R $(whoami) $(npm config get prefix)/{lib/node_modules,bin,share}
           npm install --global appdmg
+          brew install curl
       - name: Install and config conan
         run: |
           python -m pip install conan
@@ -174,6 +192,13 @@ jobs:
         with:
           name: MacOS_Dist
           path: _build/package/dist
+      - name: Upload to webdav
+        run: |
+          find _build/package/dist -type f -name "WizNotePlus-*" | while read x; do
+            filename=$(basename $x)
+            echo "Uploading $filename"
+            curl --basic --user "${{ secrets.WEBDAV }}" -T $x "https://dav.jianguoyun.com/dav/WizNotePlus/testing/$filename";
+          done
 
   release:
     needs: [build_linux, build_windows, build_macos]
