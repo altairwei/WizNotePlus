@@ -31,8 +31,8 @@ jobs:
       - name: Install dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y -qq --no-install-recommends git make cmake g++ wget
-          sudo apt-get install -y -qq --no-install-recommends xvfb libgl-dev fcitx fcitx-frontend-qt5 libxcb-xinerama0 curl
+          sudo apt-get install -y -qq --no-install-recommends git make cmake g++ wget curl
+          sudo apt-get install -y -qq --no-install-recommends xvfb libgl-dev fcitx fcitx-frontend-qt5 libxcb-xinerama0
       - name: Cache Qt
         id: cache-qt
         uses: actions/cache@v1
@@ -206,6 +206,10 @@ jobs:
     if: contains(github.ref, 'refs/tags/v')
     steps:
       - uses: actions/checkout@v1
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y -qq --no-install-recommends curl
       - name: Download pre-built packages for Linux
         uses: actions/download-artifact@v1
         with:
@@ -244,3 +248,12 @@ jobs:
           bodyFile: ${{ steps.release_notes.outputs.content_file }}
           draft: true
           prerelease: true
+      - name: Upload to webdav
+        run: |
+          version=$(printf '${{ github.ref }}' | sed -E 's#refs/tags/v(.*)#\1#')
+          curl --basic --user "${{ secrets.WEBDAV }}" -X MKCOL "https://dav.jianguoyun.com/dav/WizNotePlus/stable/v$version"
+          find artifacts -type f -name "WizNotePlus-*" | while read x; do
+            filename=$(basename $x)
+            echo "Uploading $filename"
+            curl --basic --user "${{ secrets.WEBDAV }}" -T $x "https://dav.jianguoyun.com/dav/WizNotePlus/stable/v$version/$filename";
+          done
