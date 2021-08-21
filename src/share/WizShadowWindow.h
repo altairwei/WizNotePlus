@@ -85,9 +85,7 @@ public:
 
         const auto win = pT->windowHandle();
         if (win) {
-            //__flh_ns::FramelessWindowsManager::addWindow(win);
             __flh_ns::FramelessWindowsManager::setResizable(win, canResize);
-            __flh_ns::FramelessWindowsManager::setTitleBarHeight(win, m_titleBar->height());
 #ifdef Q_OS_LINUX
             __flh_ns::FramelessWindowsManager::setResizeBorderWidth(win, 2);
             __flh_ns::FramelessWindowsManager::setResizeBorderHeight(win, 2);
@@ -146,6 +144,7 @@ protected:
             const auto win = pT->windowHandle();
             if (win) {
                 __flh_ns::FramelessWindowsManager::addWindow(win);
+                __flh_ns::FramelessWindowsManager::setTitleBarHeight(win, m_titleBar->height());
                 inited = true;
             }
         }

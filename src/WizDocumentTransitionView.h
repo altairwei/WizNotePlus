@@ -26,7 +26,8 @@ public slots:
     void onDownloadProgressChanged(QString strObjGUID, int ntotal, int nloaded);
 
 protected:
-    void hideEvent(QHideEvent* ev);
+    void hideEvent(QHideEvent* ev) override;
+    void paintEvent(QPaintEvent* ev) override;
 
 private:
     QLabel* m_labelHint;

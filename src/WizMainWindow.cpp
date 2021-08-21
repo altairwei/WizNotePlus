@@ -1913,12 +1913,7 @@ void WizMainWindow::layoutTitleBar()
 
     layoutRight->addStretch();
 
-    QLabel* label = new QLabel(this);
-    label->setFixedHeight(1);
-    label->setStyleSheet(QString("QLabel{background-color:#aeaeae; border: none;}"));
-
     layout->addItem(layoutTitle);
-    layout->addWidget(label);
     title->setLayout(layout);
 }
 
@@ -2129,7 +2124,6 @@ QWidget* WizMainWindow::createNoteListView()
     layoutList->setContentsMargins(0, 0, 0, 0);
     layoutList->setSpacing(0);
     m_noteListWidget->setLayout(layoutList);
-//    m_noteListWidget->setStyleSheet("background-color:#F5F5F5;");
     QPalette pal = m_noteListWidget->palette();
     pal.setColor(QPalette::Window, QColor("#F5F5F5"));
     pal.setColor(QPalette::Base, QColor("#F5F5F5"));
@@ -2137,6 +2131,7 @@ QWidget* WizMainWindow::createNoteListView()
     m_noteListWidget->setAutoFillBackground(true);
 
     QWidget* noteButtonsContainer = new QWidget(this);
+    noteButtonsContainer->setObjectName("note-buttons-container");
     noteButtonsContainer->setFixedHeight(30);
     QHBoxLayout* layoutButtonContainer = new QHBoxLayout();
     layoutButtonContainer->setContentsMargins(0, 0, 0, 0);
@@ -2161,8 +2156,8 @@ QWidget* WizMainWindow::createNoteListView()
     layoutActions->addStretch(0);
 
     m_labelDocumentsHint = new QLabel(this);
+    m_labelDocumentsHint->setObjectName("label-documents-hint");
     m_labelDocumentsHint->setText(tr("Unread documents"));
-    m_labelDocumentsHint->setStyleSheet("color: #A7A7A7; font-size:14px; padding-top:2px; margin-right:6px;"); //font: 12px;
     layoutActions->addWidget(m_labelDocumentsHint);
 //    connect(m_category, SIGNAL(documentsHint(const QString&)), SLOT(on_documents_hintChanged(const QString&)));
 
@@ -2171,12 +2166,6 @@ QWidget* WizMainWindow::createNoteListView()
 //    layoutActions->addWidget(m_labelDocumentsCount);
 //    connect(m_documents, SIGNAL(documentCountChanged()), SLOT(on_documents_documentCountChanged()));
     connect(m_documents, SIGNAL(changeUploadRequest(QString)), SLOT(on_quickSync_request(QString)));
-
-
-//    //sortBtn->setStyleSheet("padding-top:10px;");
-//    m_labelDocumentsCount->setStyleSheet("color: #787878;padding-bottom:1px;"); //font: 12px;
-//    m_btnMarkDocumentsReaded->setVisible(false);
-//    m_labelDocumentsHint->setVisible(false);
 
     m_btnMarkDocumentsReaded = new WizImageButton(this);
     QIcon btnIcon = ::WizLoadSkinIcon(Utils::WizStyleHelper::themeName(), "actionMarkMessagesRead");
@@ -2190,19 +2179,14 @@ QWidget* WizMainWindow::createNoteListView()
     m_btnMarkDocumentsReaded->setVisible(false);
 
     layoutButtonContainer->addLayout(layoutActions);
-    
-    QWidget* line2 = new QWidget(this);
-    line2->setFixedHeight(1);
-    line2->setStyleSheet("border-top-width:1;border-top-style:solid;border-top-color:#DADAD9");
 
     layoutList->addWidget(noteButtonsContainer);
-    layoutList->addWidget(line2);
     layoutList->addWidget(m_documents);
 
     return m_noteListWidget;
 }
 
-QWidget*WizMainWindow::createMessageListView()
+QWidget* WizMainWindow::createMessageListView()
 {
     m_msgListWidget = new QWidget(this);
     m_msgListWidget->setMinimumWidth(100);
@@ -2230,6 +2214,7 @@ QWidget*WizMainWindow::createMessageListView()
 
     QWidget* placeHoldWgt = new QWidget(this);
     placeHoldWgt->setFixedSize(13, WizSmartScaleUI(20));
+    // FIXME: move to skin's stylesheet
     placeHoldWgt->setStyleSheet("border-left:1px solid #E7E7E7;");
     QHBoxLayout* layout2 = new QHBoxLayout();
     layout2->setContentsMargins(0, 0, 0, 0);
@@ -2240,6 +2225,7 @@ QWidget*WizMainWindow::createMessageListView()
 
     QWidget* line2 = new QWidget(this);
     line2->setFixedHeight(1);
+    // FIXME: move to skin's stylesheet
     line2->setStyleSheet("margin-right:12px; border-top-width:1;border-top-style:solid;border-top-color:#DADAD9");
 
     layoutList->addLayout(titleBarLayout);
@@ -3757,10 +3743,6 @@ WizDocumentView* WizMainWindow::createDocumentView()
     newDocView->commentWidget()->setMinimumWidth(195);
     newDocView->web()->setMinimumWidth(576);
 
-    newDocView->setStyleSheet(QString("QLineEdit{border:1px solid #DDDDDD; border-radius:2px;}"));
-    newDocView->titleBar()->setStyleSheet(QString("QLineEdit{padding:0px; padding-left:-2px; padding-bottom:1px; border:0px; border-radius:0px;}"));
-
-    //
     return newDocView;
 }
 

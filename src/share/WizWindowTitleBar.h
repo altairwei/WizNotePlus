@@ -41,6 +41,7 @@ protected:
     virtual void mouseMoveEvent(QMouseEvent *me);
     virtual void mouseDoubleClickEvent ( QMouseEvent * event );
     */
+   void paintEvent(QPaintEvent* ev) override;
 
 public:
     virtual void layoutTitleBar();

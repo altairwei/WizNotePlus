@@ -7,6 +7,8 @@
 #include <QHBoxLayout>
 #include <QMouseEvent>
 #include <QDebug>
+#include <QStyleOption>
+#include <QPainter>
 
 #include "libs/3rdparty/framelesshelper/framelesswindowsmanager.h"
 
@@ -126,6 +128,14 @@ void WizWindowTitleBar::mouseDoubleClickEvent ( QMouseEvent * event )
     }
 }
 */
+
+void WizWindowTitleBar::paintEvent(QPaintEvent *)
+{
+    QStyleOption opt;
+    opt.init(this);
+    QPainter p(this);
+    style()->drawPrimitive(QStyle::PE_Widget, &opt, &p, this);
+}
 
 void WizWindowTitleBar::setContentsMargins(QMargins margins)
 {

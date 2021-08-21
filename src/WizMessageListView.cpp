@@ -1166,6 +1166,14 @@ void WizMessageListTitleBar::showTipsWidget()
     //
 }
 
+void WizMessageListTitleBar::paintEvent(QPaintEvent* ev)
+{
+    QStyleOption opt;
+    opt.init(this);
+    QPainter p(this);
+    style()->drawPrimitive(QStyle::PE_Widget, &opt, &p, this);
+}
+
 WizMessageSelectorItemDelegate::WizMessageSelectorItemDelegate(QObject* parent)
     : QStyledItemDelegate(parent)
 {

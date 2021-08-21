@@ -140,6 +140,9 @@ public slots:
 
     void showUserSelector();
 
+protected:
+    void paintEvent(QPaintEvent* ev) override;
+
 private:
     void addUserToSelector(const QString& userGUID);
     void initSenderSelector();
