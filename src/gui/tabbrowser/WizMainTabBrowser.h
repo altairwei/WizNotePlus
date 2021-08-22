@@ -2,6 +2,7 @@
 #define WIZMAINTABBROWSER_H
 
 #include <QTabWidget>
+#include <QMouseEvent>
 #include <QScopedPointer>
 #include <QWebEngineFullScreenRequest>
 
@@ -77,6 +78,7 @@ private:
     void doCloseSchedule();
 
 protected:
+    void mousePressEvent(QMouseEvent *event) override;
     void keyPressEvent(QKeyEvent* ev) override;
 };
 
