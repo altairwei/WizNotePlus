@@ -1,6 +1,3 @@
-[submodule "external/create-dmg"]
-	path = external/create-dmg
-	url = https://github.com/andreyvit/create-dmg.git
 [submodule "src/libs/3rdparty/framelesshelper"]
 	path = src/libs/3rdparty/framelesshelper
 	url = https://github.com/altairwei/framelesshelper.git
