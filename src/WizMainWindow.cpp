@@ -1991,18 +1991,15 @@ void WizMainWindow::initToolBar()
     prepareNewNoteMenu();
 
     QAction* newNoteAction = m_actions->actionFromName(WIZACTION_GLOBAL_NEW_DOCUMENT);
-    //newNoteAction->setIcon(::WizLoadSkinIcon(this->userSettings().skin(), "toolButtonNewNote"));
-
-    //QToolButton* buttonNew = new QToolButton(m_toolBar);
     QToolButton* buttonNew = new QToolButton(m_toolBar);
+    buttonNew->setObjectName("btn-newnote");
     titleBar()->setHitTestVisible(buttonNew);
-    //buttonNew->setStyle(new WizNotePlusStyle("fusion"));
     buttonNew->setMenu(m_newNoteExtraMenu);//选择模板的菜单
-    buttonNew->setDefaultAction(newNoteAction);//m_newNoteExtraMenu->actionAt(QPoint(0 ,0)));
+    buttonNew->setDefaultAction(newNoteAction);
     buttonNew->setPopupMode(QToolButton::MenuButtonPopup);
     buttonNew->setToolButtonStyle(Qt::ToolButtonTextBesideIcon);
     buttonNew->setAutoRaise(true);
-    //buttonNew->setAction(newNoteAction);
+
     m_toolBar->addWidget(buttonNew);
     m_toolBar->addWidget(new WizFixedSpacer(QSize(5, 1), m_toolBar));
     initToolBarPluginButtons();

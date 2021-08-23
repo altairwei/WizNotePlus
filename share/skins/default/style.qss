@@ -14,9 +14,10 @@ WizMainWindow WizWindowTitleBar {
 }
 
 QToolButton {
+  height: 12px;
   border-width: 0px;
   color: #000000;
-  font: 12px;
+  font: 14px;
   padding: 5px 5px;
   border-style: solid;
   border-color: #ececec;
@@ -24,22 +25,26 @@ QToolButton {
   border-bottom-color: #e0e0e0;
 }
 
-QToolButton[popupMode="1"] { /* only for MenuButtonPopup */
-  padding-right: 10px; /* make way for the popup button */
+QToolButton[toolButtonStyle="2"][popupMode="1"] {
+  padding-right: 5px;
 }
+
+QToolButton[toolButtonStyle="0"][popupMode="1"] {
+  padding-right: 10px;
+}
+
 QToolButton::menu-button {
-  border-top-right-radius: 4px;
-  border-bottom-right-radius: 4px;
-  padding-right: 4px;
+  border: none;
   width: 10px;
+  padding-right: 5px;
 }
 
 QToolButton:hover {
-  /*background-color: qlineargradient(x1:0, y1:0, x2:1, y2:1, stop:0 white, stop:0.4 white, stop:1 grey);*/
   background-color: rgba(211, 211, 211, 0.5)
 }
-QToolButton:pressed {
-  /*background-color: qlineargradient(x1:0, y1:0, x2:1, y2:1, stop:0 white, stop:0.9 grey, stop:1 grey);*/
+
+QToolButton:pressed,
+QToolButton:checked {
   background-color: rgba(211, 211, 211, 1)
 }
 
@@ -133,6 +138,10 @@ WizLoginDialog WizWindowTitleBar QToolButton#window-close-btn:hover {
   background: none;
   border-radius: none;
   padding: 2px 2px;
+}
+
+QToolButton#btn-newnote {
+  color: #787878;
 }
 
 /*
@@ -234,6 +243,10 @@ WizMainTabBrowser > QTabBar::tab:!selected {
  * Others
  * -----------------------------------------------------------
  */
+
+QMenu::item:selected {
+  background: #5990ef
+}
 
 QToolTip {
   font: 12px #000000;
