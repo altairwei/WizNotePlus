@@ -249,13 +249,11 @@ QMenu::item:selected {
 }
 
 QToolTip {
-  font: 12px #000000;
+  color: #787878;
+  font-size: 12px;
   padding: 0px 1px;
-  background-color: qlineargradient(
-    x1: 0.5, y1: 1, x2: 0.5, y2: 0,
-    stop: 0 #DADAD9, stop: 0.5 #F8F8F8
-  );
-  border: 1px outset #DADAD9;
+  background-color: rgb(254, 254, 254);
+  border: 1px solid #aeaeae;
 }
 
 WizDocumentTransitionView {
