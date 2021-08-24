@@ -2081,7 +2081,7 @@ void WizMainWindow::initClient()
     showHomePage();
     //
     layoutDocument->addWidget(m_documentSelection);
-    m_documentSelection->hide(); // 这个是什么东西？
+    m_documentSelection->hide();
     // append after client
 
     m_splitter->addWidget(m_category);
@@ -2136,17 +2136,17 @@ QWidget* WizMainWindow::createNoteListView()
     noteButtonsContainer->setLayout(layoutButtonContainer);
 
     QHBoxLayout* layoutActions = new QHBoxLayout();
-    layoutActions->setContentsMargins(0, 0, 0, 0); // 设置布局内容右边界为12
-    layoutActions->setSpacing(0); // 设置按钮之间的间隔
+    layoutActions->setContentsMargins(0, 0, 0, 0);
+    layoutActions->setSpacing(0);
 
     WizViewTypePopupButton* viewBtn = new WizViewTypePopupButton(*this, this);
-    viewBtn->setFixedHeight(Utils::WizStyleHelper::listViewSortControlWidgetHeight()); // 设置组件最大高度，不改变宽短
+    viewBtn->setObjectName("btn-view-type");
     connect(viewBtn, SIGNAL(viewTypeChanged(int)), SLOT(on_documents_viewTypeChanged(int)));
     connect(this, SIGNAL(documentsViewTypeChanged(int)), viewBtn, SLOT(on_viewTypeChanged(int)));
     layoutActions->addWidget(viewBtn);
 
     WizSortingPopupButton* sortBtn = new WizSortingPopupButton(*this, this);
-    sortBtn->setFixedHeight(Utils::WizStyleHelper::listViewSortControlWidgetHeight());
+    sortBtn->setObjectName("btn-sorting");
     connect(sortBtn, SIGNAL(sortingTypeChanged(int)), SLOT(on_documents_sortingTypeChanged(int)));
     connect(this, SIGNAL(documentsSortTypeChanged(int)), sortBtn, SLOT(on_sortingTypeChanged(int)));
     layoutActions->addWidget(sortBtn);

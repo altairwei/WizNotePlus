@@ -332,6 +332,20 @@ QWidget#note-buttons-container {
   border-bottom: 1px solid #DADAD9;
 }
 
+WizViewTypePopupButton#btn-view-type,
+WizSortingPopupButton#btn-sorting {
+  width: 42px;
+  height: 30px;
+  border-radius: 0px;
+  padding: 0px;
+  qproperty-iconSize: 28px 28px;
+}
+
+WizViewTypePopupButton#btn-view-type::menu-indicator,
+WizSortingPopupButton#btn-sorting::menu-indicator {
+  image: none;
+}
+
 /*
  * Document Viewer
  * -----------------------------------------------------------
