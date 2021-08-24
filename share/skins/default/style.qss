@@ -144,6 +144,10 @@ QToolButton#btn-newnote {
   color: #787878;
 }
 
+QToolButton#btn-newnote:hover {
+  color: #448adf;
+}
+
 /*
  * Document browser
  * -----------------------------------------------------------
