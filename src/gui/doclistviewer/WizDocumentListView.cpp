@@ -427,7 +427,6 @@ void WizDocumentListView::addDocument(const WIZDOCUMENTDATAEX& doc)
     pItem->setSizeHint(QSize(sizeHint().width(), Utils::WizStyleHelper::listViewItemHeight(viewType())));
     pItem->setLeadInfoState(m_nLeadInfoState);
     pItem->setSortingType(m_nSortingType);
-    pItem->setToolTip(data.doc.strTitle);
 
     addItem(pItem);
 }
