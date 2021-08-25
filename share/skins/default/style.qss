@@ -324,7 +324,6 @@ WizAttachmentListWidget QScrollBar::sub-line {
 QLabel#label-documents-hint {
   color: #A7A7A7;
   font-size: 14px;
-  padding-top: 2px;
   margin-right: 6px;
 }
 
@@ -334,8 +333,8 @@ QWidget#note-buttons-container {
 
 WizViewTypePopupButton#btn-view-type,
 WizSortingPopupButton#btn-sorting {
-  width: 42px;
-  height: 30px;
+  width: 38px;
+  height: 28px;
   border-radius: 0px;
   padding: 0px;
   qproperty-iconSize: 28px 28px;

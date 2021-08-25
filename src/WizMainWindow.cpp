@@ -2113,38 +2113,42 @@ void WizMainWindow::initClient()
     connect(m_splitter.get(), SIGNAL(splitterMoved(int, int)), SLOT(on_client_splitterMoved(int, int)));
 }
 
+/* Document list view with additional toolbar. **/
 QWidget* WizMainWindow::createNoteListView()
 {
     m_noteListWidget = new QWidget(this);
     m_noteListWidget->setMinimumWidth(100);
+
     QVBoxLayout* layoutList = new QVBoxLayout();
     layoutList->setContentsMargins(0, 0, 0, 0);
     layoutList->setSpacing(0);
     m_noteListWidget->setLayout(layoutList);
+
     QPalette pal = m_noteListWidget->palette();
     pal.setColor(QPalette::Window, QColor("#F5F5F5"));
     pal.setColor(QPalette::Base, QColor("#F5F5F5"));
     m_noteListWidget->setPalette(pal);
     m_noteListWidget->setAutoFillBackground(true);
 
-    QWidget* noteButtonsContainer = new QWidget(this);
+    // A Toolbar to control document list behavior.
+    auto noteButtonsContainer = new QWidget(this);
     noteButtonsContainer->setObjectName("note-buttons-container");
     noteButtonsContainer->setFixedHeight(30);
-    QHBoxLayout* layoutButtonContainer = new QHBoxLayout();
-    layoutButtonContainer->setContentsMargins(0, 0, 0, 0);
-    layoutButtonContainer->setSpacing(0);
-    noteButtonsContainer->setLayout(layoutButtonContainer);
+    noteButtonsContainer->setContentsMargins(0, 0, 0, 0);
 
     QHBoxLayout* layoutActions = new QHBoxLayout();
     layoutActions->setContentsMargins(0, 0, 0, 0);
     layoutActions->setSpacing(0);
+    noteButtonsContainer->setLayout(layoutActions);
 
+    // Control document list view type.
     WizViewTypePopupButton* viewBtn = new WizViewTypePopupButton(*this, this);
     viewBtn->setObjectName("btn-view-type");
     connect(viewBtn, SIGNAL(viewTypeChanged(int)), SLOT(on_documents_viewTypeChanged(int)));
     connect(this, SIGNAL(documentsViewTypeChanged(int)), viewBtn, SLOT(on_viewTypeChanged(int)));
     layoutActions->addWidget(viewBtn);
 
+    // Control document list sorting type.
     WizSortingPopupButton* sortBtn = new WizSortingPopupButton(*this, this);
     sortBtn->setObjectName("btn-sorting");
     connect(sortBtn, SIGNAL(sortingTypeChanged(int)), SLOT(on_documents_sortingTypeChanged(int)));
@@ -2152,6 +2156,7 @@ QWidget* WizMainWindow::createNoteListView()
     layoutActions->addWidget(sortBtn);
     layoutActions->addStretch(0);
 
+    // A label to remind group user of unreading documents.
     m_labelDocumentsHint = new QLabel(this);
     m_labelDocumentsHint->setObjectName("label-documents-hint");
     m_labelDocumentsHint->setText(tr("Unread documents"));
@@ -2164,18 +2169,19 @@ QWidget* WizMainWindow::createNoteListView()
 //    connect(m_documents, SIGNAL(documentCountChanged()), SLOT(on_documents_documentCountChanged()));
     connect(m_documents, SIGNAL(changeUploadRequest(QString)), SLOT(on_quickSync_request(QString)));
 
+    // A 'check' icon to mark all documents read
     m_btnMarkDocumentsReaded = new WizImageButton(this);
+    m_btnMarkDocumentsReaded->setObjectName("btn-mark-documents-readed");
     QIcon btnIcon = ::WizLoadSkinIcon(Utils::WizStyleHelper::themeName(), "actionMarkMessagesRead");
     m_btnMarkDocumentsReaded->setIcon(btnIcon);
     m_btnMarkDocumentsReaded->setFixedSize(QSize(18, 18));
     m_btnMarkDocumentsReaded->setToolTip(tr("Mark all documents read"));
     connect(m_btnMarkDocumentsReaded, SIGNAL(clicked()), SLOT(on_btnMarkDocumentsRead_triggered()));
     layoutActions->addWidget(m_btnMarkDocumentsReaded);
+    layoutActions->addSpacing(4);
 
     m_labelDocumentsHint->setVisible(false);
     m_btnMarkDocumentsReaded->setVisible(false);
-
-    layoutButtonContainer->addLayout(layoutActions);
 
     layoutList->addWidget(noteButtonsContainer);
     layoutList->addWidget(m_documents);

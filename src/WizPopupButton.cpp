@@ -95,6 +95,7 @@ WizViewTypePopupButton::WizViewTypePopupButton(WizExplorerApp& app, QWidget* par
     : WizPopupButton(app, parent)
 {
     setToolButtonStyle(Qt::ToolButtonIconOnly);
+    setAutoRaise(true);
 
     // only one action can be checked
     QActionGroup* group = new QActionGroup(this);
@@ -139,6 +140,7 @@ WizSortingPopupButton::WizSortingPopupButton(WizExplorerApp& app, QWidget *paren
     : WizPopupButton(app, parent)
 {
     setToolButtonStyle(Qt::ToolButtonIconOnly);
+    setAutoRaise(true);
 
     // only one action can be checked
     QActionGroup* group = new QActionGroup(this);
