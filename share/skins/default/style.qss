@@ -16,7 +16,6 @@ WizMainWindow WizWindowTitleBar {
 QToolButton {
   height: 12px;
   border-width: 0px;
-  color: #000000;
   font: 14px;
   padding: 5px 5px;
   border-style: solid;
