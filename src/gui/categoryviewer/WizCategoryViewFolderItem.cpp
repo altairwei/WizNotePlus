@@ -70,7 +70,10 @@ WizCategoryViewFolderItem::WizCategoryViewFolderItem(WizExplorerApp& app,
         icon  = WizLoadSkinIcon(app.userSettings().skin(), "category_folder");
     }
     setIcon(0, icon);
-    setText(0, WizDatabase::getLocationDisplayName(strLocation));
+
+    auto name = WizDatabase::getLocationDisplayName(strLocation);
+    setText(0, name);
+    setToolTip(0, name);
 }
 
 QTreeWidgetItem* WizCategoryViewFolderItem::clone() const
