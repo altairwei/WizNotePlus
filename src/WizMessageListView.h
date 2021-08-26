@@ -24,7 +24,6 @@ struct WIZDOCUMENTDATA;
 typedef std::deque<WIZMESSAGEDATA> CWizMessageDataArray;
 typedef std::deque<CString> CWizStdStringArray;
 
-#define WIZNOTE_CUSTOM_SCROLLBAR
 
 class WizAsyncApi;
 

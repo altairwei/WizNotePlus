@@ -19,6 +19,7 @@ project(WizNotePlus VERSION 2.8.0)
 #============================================================================
 
 option(BUILD_TESTING "Building the test target or not." OFF)
+option(USE_CUSTOM_SCROLLBAR "Use custom scrollbar instead of Qt's one." OFF)
 
 # Excute conan outside or not.
 option(CONAN_INSTALL_MANUALLY "Run Conan install command manually." OFF)
@@ -175,6 +176,10 @@ endif(APPLE)
 if (WIN32)
     add_definitions(-DQUAZIP_STATIC)
 endif()
+
+if (USE_CUSTOM_SCROLLBAR)
+    add_definitions(-DWIZNOTE_CUSTOM_SCROLLBAR)
+endif(USE_CUSTOM_SCROLLBAR)
 
 #============================================================================
 # Subfolders
