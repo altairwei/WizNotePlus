@@ -160,6 +160,8 @@ set(wiznote_SOURCES
     gui/categoryviewer/WizCategoryViewItem.cpp
     gui/categoryviewer/WizFolderView.cpp
     gui/categoryviewer/WizFolderSelector.cpp
+    gui/categoryviewer/WizNavigationTreeView.cpp
+    gui/categoryviewer/WizFolderWidget.cpp
 
     WizDevToolsDialog.cpp
 
@@ -336,6 +338,8 @@ set(wiznote_HEADERS
     gui/categoryviewer/WizCategoryViewItem.h
     gui/categoryviewer/WizFolderView.h
     gui/categoryviewer/WizFolderSelector.h
+    gui/categoryviewer/WizNavigationTreeView.h
+    gui/categoryviewer/WizFolderWidget.h
 
     WizDevToolsDialog.h
 
