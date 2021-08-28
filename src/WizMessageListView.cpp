@@ -359,7 +359,6 @@ WizMessageListView::WizMessageListView(WizDatabaseManager& dbMgr, QWidget *paren
     setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
     m_vScroll = new WizScrollBar(this);
     m_vScroll->syncWith(verticalScrollBar());
-    m_vScroll->applyStyle("#F5F5F5", "#C1C1C1", true);
 #endif
 
     // init

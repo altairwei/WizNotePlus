@@ -290,27 +290,74 @@ WizAttachmentListWidget QScrollBar {
   background: #FFFFFF;
   width: 12px;
 }
+
 WizAttachmentListWidget QScrollBar::handle:vertical {
   width: 6px;
   background: #DADADA;
-  border-radius: 3px;
   min-height: 20;
   margin-top: 2px;
   margin-right: 3px;
   margin-left: 3px;
 }
+
+WizAttachmentListWidget QScrollBar::handle:vertical:hover {
+  background: #c1c1c1;
+}
+
 WizAttachmentListWidget QScrollBar::add-page,
 WizAttachmentListWidget QScrollBar::sub-page {
   background: transparent;
 }
+
 WizAttachmentListWidget QScrollBar::up-arrow,
 WizAttachmentListWidget QScrollBar::down-arrow,
 WizAttachmentListWidget QScrollBar::left-arrow,
 WizAttachmentListWidget QScrollBar::right-arrow {
   background: transparent;
 }
+
 WizAttachmentListWidget QScrollBar::add-line,
 WizAttachmentListWidget QScrollBar::sub-line {
+  height: 0px;
+  width: 0px;
+}
+
+WizScrollBar {
+  background: transparent;
+  width: 6px;
+}
+
+WizScrollBar:hover {
+  background: rgba(155, 155, 155, 0.2);
+}
+
+WizScrollBar::handle {
+  background: #c1c1c1;
+  min-height: 30px;
+}
+
+WizScrollBar::handle:hover {
+  background: #a8a8a8;
+}
+
+WizScrollBar::handle:vertical {
+  width: 6px;
+}
+
+WizScrollBar::add-page,
+WizScrollBar::sub-page {
+  background: transparent;
+}
+
+WizScrollBar::up-arrow,
+WizScrollBar::down-arrow,
+WizScrollBar::left-arrow,
+WizScrollBar::right-arrow {
+  background: transparent;
+}
+
+WizScrollBar::add-line,
+WizScrollBar::sub-line {
   height: 0px;
   width: 0px;
 }
