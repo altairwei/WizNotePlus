@@ -20,13 +20,14 @@ QString formatLabelLink(const QString& linkHref, const QString& text)
 WizNoteInfoForm::WizNoteInfoForm(QWidget *parent)
     : WizPopupWidget(parent)
     , ui(new Ui::WizNoteInfoForm)
-    , m_size(QSize(370, 370))
+    , m_size(QSize(370, 450))
 {
     ui->setupUi(this);
 
     ui->editCreateTime->setReadOnly(true);
     ui->editUpdateTime->setReadOnly(true);
     ui->editAccessTime->setReadOnly(true);
+    ui->labelNotebook->setReadOnly(true);
 
     QString openDocument = formatLabelLink("locate", tr("Locate"));
     ui->labelOpenDocument->setText(openDocument);
@@ -58,7 +59,11 @@ void WizNoteInfoForm::setDocument(const WIZDOCUMENTDATA& data)
     m_docGuid = data.strGUID;
 
     WizDatabase& db = WizDatabaseManager::instance()->db(data.strKbGUID);
-    m_size.setHeight(db.isGroup() ? 320 : 370);
+
+    int height = db.isGroup() ? 410 : 450;
+    m_size.setHeight(height);
+    setFixedHeight(height);
+
     setGroupLabelVisible(db.isGroup());
     QString doc = db.getDocumentFileName(data.strGUID);
     QString sz = ::WizGetFileSizeHumanReadalbe(doc);
@@ -82,7 +87,7 @@ void WizNoteInfoForm::setDocument(const WIZDOCUMENTDATA& data)
         ui->editAuthor->setText(data.strAuthor);
     }
 
-    strLocation = fm.elidedText(strLocation, Qt::ElideMiddle, nMaxTextWidth);
+    //strLocation = fm.elidedText(strLocation, Qt::ElideMiddle, nMaxTextWidth);
     ui->labelNotebook->setText(strLocation);
 
     QString userAlias = db.getDocumentOwnerAlias(data);

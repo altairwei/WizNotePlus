@@ -12,7 +12,6 @@ class WizPopupWidget : public QWidget
 public:
     WizPopupWidget(QWidget* parent);
 
-    virtual QSize sizeHint() const;
     virtual QRect getClientRect() const;
 
 private:
@@ -30,6 +29,7 @@ protected:
 
 
 protected:
+    virtual QSize sizeHint() const override;
     virtual void paintEvent(QPaintEvent* event);
 
 public:

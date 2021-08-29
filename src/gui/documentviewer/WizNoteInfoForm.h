@@ -25,7 +25,7 @@ signals:
     void widgetStatusChanged();
 
 protected:
-    virtual QSize sizeHint() const;
+    virtual QSize sizeHint() const override;
     void hideEvent(QHideEvent* ev);
 
 private slots:
