@@ -407,6 +407,10 @@ WizSortingPopupButton#btn-sorting::menu-indicator {
   image: none;
 }
 
+WizMessageListTitleBar {
+  border-bottom: 1px solid #DADAD9;
+}
+
 /*
  * Document Viewer
  * -----------------------------------------------------------

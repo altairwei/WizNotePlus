@@ -2215,24 +2215,12 @@ QWidget* WizMainWindow::createMessageListView()
     titleBarLayout->setSpacing(0);
     titleBarLayout->addWidget(m_msgListTitleBar);
 
-    QWidget* placeHoldWgt = new QWidget(this);
-    placeHoldWgt->setFixedSize(13, WizSmartScaleUI(20));
-    // FIXME: move to skin's stylesheet
-    placeHoldWgt->setStyleSheet("border-left:1px solid #E7E7E7;");
     QHBoxLayout* layout2 = new QHBoxLayout();
     layout2->setContentsMargins(0, 0, 0, 0);
     layout2->setSpacing(0);
-    layout2->addWidget(placeHoldWgt);
     titleBarLayout->addLayout(layout2);
 
-
-    QWidget* line2 = new QWidget(this);
-    line2->setFixedHeight(1);
-    // FIXME: move to skin's stylesheet
-    line2->setStyleSheet("margin-right:12px; border-top-width:1;border-top-style:solid;border-top-color:#DADAD9");
-
     layoutList->addLayout(titleBarLayout);
-    layoutList->addWidget(line2);
     layoutList->addWidget(m_msgList);
     m_msgList->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Expanding);
 
