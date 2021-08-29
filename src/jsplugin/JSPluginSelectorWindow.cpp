@@ -15,7 +15,7 @@ JSPluginSelectorWindow::JSPluginSelectorWindow(WizExplorerApp& app, JSPluginModu
     , m_windowHeight(module->spec()->height())
 {
     module->parentPlugin()->initStrings();
-    //
+
     WizMainWindow *mw = WizMainWindow::instance();
     WizWebEngineInjectObjectCollection objects = {
         {"JSPlugin", module->parentPlugin()},
@@ -23,8 +23,7 @@ JSPluginSelectorWindow::JSPluginSelectorWindow(WizExplorerApp& app, JSPluginModu
         {"WizExplorerApp", mw->publicAPIsObject()}
     };
     m_web = new WizWebEngineView(objects, this);
-    //
-    setContentsMargins(0, 8, 0, 0);
+
     QVBoxLayout* layout = new QVBoxLayout();
     layout->setContentsMargins(0, 0, 0, 0);
     setLayout(layout);

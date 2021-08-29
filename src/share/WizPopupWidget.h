@@ -2,9 +2,6 @@
 #define WIZPOPUPWIDGET_H
 
 #include <QWidget>
-//#include <QPropertyAnimation>
-
-//#include "WizUI.h"
 
 class QTimer;
 
@@ -20,9 +17,10 @@ public:
 
 private:
     QVector<QPoint> m_pointsRegion;
-//    QVector<QPoint> m_pointsPolygon;
     bool m_leftAlign;
     QPoint m_pos;
+    QPixmap m_pixmap;
+
     QRegion maskRegion();
 
 protected:

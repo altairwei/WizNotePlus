@@ -362,6 +362,10 @@ WizScrollBar::sub-line {
   width: 0px;
 }
 
+WizTagListWidget QListView {
+  border: none;
+}
+
 /*
  * Document list view
  * -----------------------------------------------------------

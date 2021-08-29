@@ -23,14 +23,10 @@ WizNoteInfoForm::WizNoteInfoForm(QWidget *parent)
     , m_size(QSize(370, 370))
 {
     ui->setupUi(this);
-    setContentsMargins(0, 8, 0, 0);
 
     ui->editCreateTime->setReadOnly(true);
     ui->editUpdateTime->setReadOnly(true);
     ui->editAccessTime->setReadOnly(true);
-//    ui->editURL->setReadOnly(true);
-//    ui->editAuthor->setReadOnly(true);
-//    ui->checkEncrypted->setEnabled(false);
 
     QString openDocument = formatLabelLink("locate", tr("Locate"));
     ui->labelOpenDocument->setText(openDocument);
