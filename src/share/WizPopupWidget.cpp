@@ -93,14 +93,14 @@ void WizPopupWidget::showAtPoint(const QPoint& pos)
             path.lineTo(marginLeft + arrowOffset + arrowWidth/2, marginTop - arrowHeight);
             path.lineTo(marginLeft + arrowOffset + arrowWidth, marginTop);
         }
-        move(qMax(pos.x() - arrowOffset, scr.left() + 2), pos.y());
+        move(qMax(pos.x() - arrowOffset - arrowWidth/2, scr.left() + 2), pos.y());
     } else if (arrowAtTop && !arrowAtLeft) {
         if (showArrow) {
             path.lineTo(marginRight - arrowOffset - arrowWidth, marginTop);
             path.lineTo(marginRight - arrowOffset - arrowWidth/2, marginTop - arrowHeight);
             path.lineTo(marginRight - arrowOffset, marginTop);
         }
-        move(qMin(pos.x() - sh.width() + arrowOffset, scr.right() - sh.width() - 2), pos.y());
+        move(qMin(pos.x() - sh.width() + arrowOffset + arrowWidth/2, scr.right() - sh.width() - 2), pos.y());
     }
     path.lineTo(marginRight - borderRadius, marginTop);
     path.arcTo(QRect(marginRight - borderRadius*2, marginTop, borderRadius*2, borderRadius*2), 90, -90);
@@ -112,7 +112,7 @@ void WizPopupWidget::showAtPoint(const QPoint& pos)
             path.lineTo(marginRight - arrowOffset - arrowWidth/2, marginBottom + arrowHeight);
             path.lineTo(marginRight - arrowOffset - arrowWidth, marginBottom);
         }
-        move(qMin(pos.x() - sh.width() + arrowOffset, scr.right() - sh.width() - 2),
+        move(qMin(pos.x() - sh.width() + arrowOffset + arrowWidth/2, scr.right() - sh.width() - 2),
              pos.y() - sh.height());
     } else if (!arrowAtTop && arrowAtLeft) {
         if (showArrow) {
@@ -120,7 +120,7 @@ void WizPopupWidget::showAtPoint(const QPoint& pos)
             path.lineTo(arrowOffset + arrowWidth/2, marginBottom + arrowHeight);
             path.lineTo(arrowOffset, marginBottom);
         }
-        move(qMax(pos.x() - arrowOffset, scr.x() + 2), pos.y() - sh.height());
+        move(qMax(pos.x() - arrowOffset - arrowWidth/2, scr.x() + 2), pos.y() - sh.height());
     }
     path.lineTo(marginLeft + borderRadius, marginBottom);
     path.arcTo(QRect(marginLeft, marginBottom - borderRadius*2, borderRadius*2, borderRadius*2), -90, -90);

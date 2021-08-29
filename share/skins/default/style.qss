@@ -374,8 +374,14 @@ WizNoteInfoForm QScrollArea QWidget {
   background-color: white;
 }
 
-WizNoteInfoForm QLineEdit:read-only {
+WizNoteInfoForm QLineEdit,
+WizNoteInfoForm QLineEdit:read-only,
+WizNoteInfoForm QLineEdit:read-only:hover {
   border: none;
+}
+
+WizNoteInfoForm QLineEdit:hover {
+  border-bottom: 1px solid #DADAD9;
 }
 
 /*
