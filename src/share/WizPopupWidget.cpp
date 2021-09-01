@@ -13,12 +13,14 @@
 
 
 WizPopupWidget::WizPopupWidget(QWidget* parent)
-    : QWidget(parent, Qt::Popup | Qt::FramelessWindowHint)
+    : QWidget(parent, Qt::Popup | Qt::NoDropShadowWindowHint | Qt::FramelessWindowHint)
     , m_leftAlign(false)
     , m_triangleMargin(10)
     , m_triangleWidth(16)
     , m_triangleHeight(8)
 {
+    setAttribute(Qt::WA_TranslucentBackground);
+
     setContentsMargins(8, 20, 8, 8);
 
     QPalette pal;
@@ -44,7 +46,10 @@ void WizPopupWidget::paintEvent(QPaintEvent* event)
     Q_UNUSED(event);
 
     QPainter painter(this);
-    painter.drawPixmap(rect(), m_pixmap);
+    //painter.setRenderHint(QPainter::Antialiasing);
+    painter.setPen(QPen(QColor(150, 150, 150), 1, Qt::SolidLine, Qt::SquareCap, Qt::MiterJoin));
+    painter.setBrush(palette().color(QPalette::Window));
+    painter.drawPath(m_path);
 }
 
 void WizPopupWidget::showAtPoint(const QPoint& pos)
@@ -63,10 +68,10 @@ void WizPopupWidget::showAtPoint(const QPoint& pos)
 
     // Resize content margin
     setContentsMargins(
-        border,
-        border + (arrowAtTop ? arrowHeight : 0),
-        border,
-        border + (arrowAtTop ? 0 : arrowHeight));
+        border + 1,
+        border + (arrowAtTop ? arrowHeight : 0) + 1,
+        border + 1,
+        border + (arrowAtTop ? 0 : arrowHeight) + 1);
     updateGeometry();
     sh  = sizeHint();
 
@@ -74,13 +79,14 @@ void WizPopupWidget::showAtPoint(const QPoint& pos)
     int marginLeft, marginRight, marginTop, marginBottom;
     QSize sz = sizeHint();
     if (!arrowAtTop) {
-        marginLeft = marginTop = 0;
+        marginLeft = 1;
         marginRight = sz.width() - 1;
+        marginTop = 1;
         marginBottom = sz.height() - arrowHeight - 1;
     } else {
-        marginLeft = 0;
-        marginTop = arrowHeight;
+        marginLeft = 1;
         marginRight = sz.width() - 1;
+        marginTop = arrowHeight + 1;
         marginBottom = sz.height() - 1;
     }
 
@@ -127,6 +133,8 @@ void WizPopupWidget::showAtPoint(const QPoint& pos)
     path.lineTo(marginLeft, marginTop + borderRadius);
     path.arcTo(QRect(marginLeft, marginTop, borderRadius*2, borderRadius*2), 180, -90);
 
+    m_path = path;
+
     // Set the mask
     QBitmap bitmap = QBitmap(sizeHint());
     bitmap.fill(Qt::color0);
@@ -134,7 +142,7 @@ void WizPopupWidget::showAtPoint(const QPoint& pos)
     painter1.setPen(QPen(Qt::color1, border));
     painter1.setBrush(QBrush(Qt::color1));
     painter1.drawPath(path);
-    setMask(bitmap);
+    //setMask(bitmap);
 
     // Draw the border
     m_pixmap = QPixmap(sz);

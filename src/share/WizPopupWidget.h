@@ -2,6 +2,7 @@
 #define WIZPOPUPWIDGET_H
 
 #include <QWidget>
+#include <QPainterPath>
 
 class QTimer;
 
@@ -19,6 +20,7 @@ private:
     bool m_leftAlign;
     QPoint m_pos;
     QPixmap m_pixmap;
+    QPainterPath m_path;
 
     QRegion maskRegion();
 
