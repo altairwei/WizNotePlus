@@ -1,5 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <svg
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
    fill="none"
    height="24"
    stroke="#3a7a9c"
@@ -9,20 +14,30 @@
    viewBox="0 0 24 24"
    width="24"
    version="1.1"
-   id="svg4"
-   xmlns="http://www.w3.org/2000/svg"
-   xmlns:svg="http://www.w3.org/2000/svg">
+   id="svg4">
+  <metadata
+     id="metadata7">
+    <rdf:RDF>
+      <cc:Work
+         rdf:about="">
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type
+           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+        <dc:title></dc:title>
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
   <defs
      id="defs8" />
   <path
-     id="rect2-8"
-     d="M 8,3.2 C 7.1136,3.2 6.4,3.9136 6.4,4.8 V 6.4 H 16 c 0.8864,0 1.6,0.7136 1.6,1.6 v 9.6 h 1.6 c 0.8864,0 1.6,-0.7136 1.6,-1.6 V 4.8 c 0,-0.8864 -0.7136,-1.6 -1.6,-1.6 z" />
+     id="rect2-3-3"
+     d="M 9.1992188 2 C 8.3128187 2 7.5996094 2.7132094 7.5996094 3.5996094 L 7.5996094 7.5996094 L 14.800781 7.5996094 C 15.687181 7.5996094 16.400391 8.3128187 16.400391 9.1992188 L 16.400391 16.400391 L 20.400391 16.400391 C 21.286791 16.400391 22 15.687181 22 14.800781 L 22 3.5996094 C 22 2.7132094 21.286791 2 20.400391 2 L 9.1992188 2 z " />
   <rect
      height="14.4"
      rx="1.6"
      ry="1.6"
      width="14.4"
-     x="3.2"
-     y="6.4000001"
-     id="rect2-3"/>
+     x="2"
+     y="7.6000004"
+     id="rect2-3" />
 </svg>
