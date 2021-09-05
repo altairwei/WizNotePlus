@@ -185,13 +185,9 @@ int mainCore(int argc, char *argv[])
     QWebEngineSettings::defaultSettings()->setAttribute(QWebEngineSettings::FullScreenSupportEnabled, true);
 
     QCoreApplication::setAttribute(Qt::AA_DontCreateNativeWidgetSiblings);
+
     // 配置QtApp和Debug
     //-------------------------------------------------------------------
-
-#ifdef Q_OS_WIN
-    QFont appFont = WizCreateWindowsUIFont(app);
-    QApplication::setFont(appFont);
-#endif // Q_OS_WIN
 
     // Debug 输出
     qInstallMessageHandler(Utils::WizLogger::messageHandler); // 输出到 Wiznote 消息控制台
@@ -294,6 +290,9 @@ int mainCore(int argc, char *argv[])
     // 登录程序
     //-------------------------------------------------------------------
 
+    QFont font(DEFAULT_UI_FONT_FAMILY, DEFAULT_UI_FONT_SIZE);
+    app.setFont(font);
+
     // figure out auto login or manually login
     bool bFallback = true;
 
@@ -380,6 +379,9 @@ int mainCore(int argc, char *argv[])
     app.installTranslator(&translatorQt);
 
     WizCommonApiEntry::setLanguage(strLocale);
+
+    QFont uiFont(userSettings.defaultUIFontFamily(), userSettings.defaultUIFontSize());
+    app.setFont(uiFont);
 
     // 登录数据库管理器
     WizDatabaseManager dbMgr(strAccountFolderName);

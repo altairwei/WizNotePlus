@@ -3557,22 +3557,18 @@ void WizMainWindow::on_options_settingsChanged(WizOptionsType type)
 {
     switch (type) {
     case wizoptionsNoteView:
-        //FIXME: 应该处理所有文档视图
         processAllDocumentViews([=](WizDocumentView* docView){
             docView->settingsChanged();
         });
-        //m_doc->settingsChanged();
         break;
     case wizoptionsSync:
         m_syncFull->setFullSyncInterval(userSettings().syncInterval());
         break;
     case wizoptionsFont:
     {
-        //FIXME: 应该处理所有文档视图
         processAllDocumentViews([=](WizDocumentView* docView){
             docView->web()->editorResetFont();
         });
-        //m_doc->web()->editorResetFont();
         QMap<QString, WizSingleDocumentViewer*>& viewerMap = m_singleViewDelegate->getDocumentViewerMap();
         QList<WizSingleDocumentViewer*> singleViewrList = viewerMap.values();
         for (WizSingleDocumentViewer* viewer : singleViewrList)
@@ -3585,11 +3581,9 @@ void WizMainWindow::on_options_settingsChanged(WizOptionsType type)
         m_category->sortItems(0, Qt::AscendingOrder);
         break;
     case wizoptionsSpellCheck:
-        //FIXME: 应该处理所有文档视图
         processAllDocumentViews([=](WizDocumentView* docView){
             docView->web()->editorResetSpellCheck();
         });
-        //m_doc->web()->editorResetSpellCheck();
         break;
     default:
         break;

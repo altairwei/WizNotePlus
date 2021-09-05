@@ -68,11 +68,14 @@ QFont WizCreateWindowsUIFont(const QApplication& a, const QString& strDefaultFon
 QFont WizCreateWindowsUIFont(const QApplication& app) 
 {
     QFont font = app.font();
-    QStringList fontFamilies = {
+#if (QT_VERSION >= QT_VERSION_CHECK(5, 13, 0))
+    font.setFamilies({
         "Helvetica", "Hiragino Sans GB", "Microsoft YaHei UI",
         "SimSun", "SimHei", "Helvetica Neue", "Arial", "sans-serif"
-    };
+    });
+#else
     font.setFamily("Microsoft YaHei UI");
+#endif
     return font;
 }
 

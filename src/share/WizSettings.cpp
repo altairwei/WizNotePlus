@@ -566,12 +566,15 @@ void WizUserSettings::setEditorBackgroundColor(const QString& strColor)
 }
 
 
-QString WizUserSettings::editorLineHeight()
+QString WizUserSettings::editorLineHeight(bool force_default /*= false*/)
 {
+    if (force_default)
+        return DEFAULT_EDITOR_LINE_HEIGHT;
+
     QString strLineHeight = get("EditorLineHeight");
 
     if (strLineHeight.isEmpty()) {
-        return "1.7";
+        return DEFAULT_EDITOR_LINE_HEIGHT;
     }
 
     return strLineHeight;
@@ -584,12 +587,15 @@ void WizUserSettings::setEditorLineHeight(const QString& strLineHeight)
 }
 
 
-QString WizUserSettings::editorParaSpacing()
+QString WizUserSettings::editorParaSpacing(bool force_default /*= false*/)
 {
+    if (force_default)
+        return DEFAULT_EDITOR_PARA_SPACING;
+
     QString strLineHeight = get("EditorParaSpacing");
 
     if (strLineHeight.isEmpty()) {
-        return "8";
+        return DEFAULT_EDITOR_PARA_SPACING;
     }
 
     return strLineHeight;
@@ -602,12 +608,15 @@ void WizUserSettings::setEditorParaSpacing(const QString& spacing)
 }
 
 
-QString WizUserSettings::editorPagePadding()
+QString WizUserSettings::editorPagePadding(bool force_default /*= false*/)
 {
+    if (force_default)
+        return DEFAULT_EDITOR_PAGE_PADDING;
+
     QString strPagePadding = get("EditorPagePadding");
 
     if (strPagePadding.isEmpty()) {
-        return WIZSETTINGS_DEFAULT_PAGEPADDING;
+        return DEFAULT_EDITOR_PAGE_PADDING;
     }
 
     return strPagePadding;
@@ -716,14 +725,16 @@ void WizUserSettings::setLocale(const QString& strLocale)
     set("Locale", strLocale);
 }
 
-QString WizUserSettings::defaultFontFamily()
+QString WizUserSettings::defaultFontFamily(bool force_default /*= false*/)
 {
+    if (force_default)
+        return DEFAULT_EDITOR_FONT_FAMILY;
+
     QString strFont = get("DefaultFontFamily");
     if (!strFont.isEmpty())
         return strFont;
 
-    return "Helvetica, \"Hiragino Sans GB\", \"微软雅黑\", \"Microsoft YaHei UI\", "
-                "SimSun, SimHei, \"Helvetica Neue\", Arial, sans-serif;";
+    return DEFAULT_EDITOR_FONT_FAMILY;
 
 }
 
@@ -748,18 +759,55 @@ QString WizUserSettings::lastAttachmentPath() const
 }
 
 
-int WizUserSettings::defaultFontSize()
+int WizUserSettings::defaultFontSize(bool force_default /*= false*/)
 {
+    if (force_default)
+        return DEFAULT_EDITOR_FONT_SIZE;
+
     int nSize = get("DefaultFontSize").toInt();
     if (nSize)
         return nSize;
 
-    return 16; // default 16px
+    return DEFAULT_EDITOR_FONT_SIZE;
 }
 
 void WizUserSettings::setDefaultFontSize(int nSize)
 {
     set("DefaultFontSize", QString::number(nSize));
+}
+
+QString WizUserSettings::defaultUIFontFamily(bool force_default /*= false*/)
+{
+    if (force_default)
+        return DEFAULT_UI_FONT_FAMILY;
+
+    QString font = get("DefaultUIFontFamily");
+    if (!font.isEmpty())
+        return font;
+
+    return DEFAULT_UI_FONT_FAMILY;
+}
+
+void WizUserSettings::setDefaultUIFontFamily(const QString& font)
+{
+    set("DefaultUIFontFamily", font);
+}
+
+int WizUserSettings::defaultUIFontSize(bool force_default /*= false*/)
+{
+    if (force_default)
+        return DEFAULT_UI_FONT_SIZE;
+
+    int nSize = get("DefaultUIFontSize").toInt();
+    if (nSize)
+        return nSize;
+
+    return DEFAULT_UI_FONT_SIZE;
+}
+
+void WizUserSettings::setDefaultUIFontSize(int size)
+{
+    set("DefaultUIFontSize", QString::number(size));
 }
 
 WizDocumentViewMode WizUserSettings::noteViewMode() const

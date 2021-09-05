@@ -8,8 +8,6 @@
 
 #include "database/WizDatabase.h"
 
-#define WIZSETTINGS_DEFAULT_PAGEPADDING "16"
-
 enum WizProxyType
 {
     WizProxy_NoProxy,
@@ -178,13 +176,16 @@ public:
     QString editorBackgroundColor();
     void setEditorBackgroundColor(const QString& strColor);
 
-    QString editorLineHeight();
+    #define DEFAULT_EDITOR_LINE_HEIGHT "1.7"
+    QString editorLineHeight(bool force_default = false);
     void setEditorLineHeight(const QString& strLineHeight);
 
-    QString editorParaSpacing();
+    #define DEFAULT_EDITOR_PARA_SPACING "8"
+    QString editorParaSpacing(bool force_default = false);
     void setEditorParaSpacing(const QString& strSpacing);
 
-    QString editorPagePadding();
+    #define DEFAULT_EDITOR_PAGE_PADDING "16"
+    QString editorPagePadding(bool force_default = false);
     void setEditorPagePadding(const QString& strPadding);
 
     bool isManualSortingEnabled();
@@ -199,11 +200,29 @@ public:
     WizDocumentViewMode noteViewMode() const;
     void setNoteViewMode(WizDocumentViewMode strMode) { set("NoteViewMode", QString::number(strMode)); }
 
-    QString defaultFontFamily();
+    #define DEFAULT_EDITOR_FONT_FAMILY "Helvetica, \"Hiragino Sans GB\", \"Microsoft YaHei UI\", SimSun, SimHei, \"Helvetica Neue\", Arial, sans-serif;"
+    QString defaultFontFamily(bool force_default = false);
     void setDefaultFontFamily(const QString& strFont);
 
-    int defaultFontSize();
+    #define DEFAULT_EDITOR_FONT_SIZE 16
+    int defaultFontSize(bool force_default = false);
     void setDefaultFontSize(int nSize);
+
+#if defined(Q_OS_WIN)
+#   define DEFAULT_UI_FONT_FAMILY "Microsoft YaHei UI"
+#   define DEFAULT_UI_FONT_SIZE 9
+#elif defined(Q_OS_MAC)
+#   define DEFAULT_UI_FONT_FAMILY "Helvetica Neue"
+#   define DEFAULT_UI_FONT_SIZE 9
+#else
+#   define DEFAULT_UI_FONT_FAMILY "Noto Sans"
+#   define DEFAULT_UI_FONT_SIZE 9
+#endif
+
+    QString defaultUIFontFamily(bool force_default = false);
+    void setDefaultUIFontFamily(const QString& font);
+    int defaultUIFontSize(bool force_default = false);
+    void setDefaultUIFontSize(int size);
 
     // default: 5, 15, 30, 60, -1(manual)
     int syncInterval() const;
