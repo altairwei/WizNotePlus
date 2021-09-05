@@ -223,6 +223,7 @@ private:
     virtual void layoutTitleBar();
     void initMenuList();
     void initMenuBar();
+    void initMenuActionState();
     void initViewTypeActionGroup();
     void initSortTypeActionGroup();
     void initDockMenu();

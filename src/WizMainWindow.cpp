@@ -1108,6 +1108,15 @@ void WizMainWindow::initMenuBar()
     setMenuBar(m_menuBar);
     m_actions->buildMenuBar(m_menuBar, Utils::WizPathResolve::resourcesPath() + "files/mainmenu.ini", m_windowListMenu);
 
+    initMenuActionState();
+
+    initViewTypeActionGroup();
+    initSortTypeActionGroup();
+
+}
+
+void WizMainWindow::initMenuActionState()
+{
     connect(m_windowListMenu, SIGNAL(aboutToShow()), SLOT(resetWindowMenu()));
     connect(m_singleViewDelegate, SIGNAL(documentViewerClosed(QString)),
             SLOT(removeWindowsMenuItem(QString)));
@@ -1135,10 +1144,6 @@ void WizMainWindow::initMenuBar()
     m_actions->actionFromName(WIZCATEGORY_OPTION_BIZGROUPS)->setChecked(checked);
     checked = m_category->isSectionVisible(Section_PersonalGroups);
     m_actions->actionFromName(WIZCATEGORY_OPTION_PERSONALGROUPS)->setChecked(checked);
-
-    initViewTypeActionGroup();
-    initSortTypeActionGroup();
-
 }
 
 /**
@@ -1923,6 +1928,9 @@ void WizMainWindow::layoutTitleBar()
 void WizMainWindow::initMenuList()
 {
     m_actions->buildMenu(m_menu, Utils::WizPathResolve::resourcesPath() + "files/mainmenu.ini");
+
+    initMenuActionState();
+
     initViewTypeActionGroup();
     initSortTypeActionGroup();
 }
