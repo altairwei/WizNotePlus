@@ -7,6 +7,7 @@ const en_US = {
     "labelOverview": "Overview",
     "labelNews": "News",
     "labelRecentDocuments": "Recent Documents",
+    "labelRecentAccessedDocuments": "Recent Read",
     "labelUnreadDocuments": "Unread Documents",
     "labelTodo": "Todo",
     "Title": "Welcome to Wiz"
@@ -16,6 +17,7 @@ const zh_CN = {
     "labelOverview": "近期概况",
     "labelNews": "为知笔记动态",
     "labelRecentDocuments": "近期文档",
+    "labelRecentAccessedDocuments": "近期阅读",
     "labelUnreadDocuments": "未读文档",
     "labelTodo": "待办事宜",
     "Title": "欢迎使用为知笔记"
@@ -25,6 +27,7 @@ const zh_TW = {
     "labelOverview": "近期概況",
     "labelNews": "為知動態",
     "labelRecentDocuments": "近期文檔",
+    "labelRecentAccessedDocuments": "近期閲讀",
     "labelUnreadDocuments": "未讀文檔",
     "labelTodo": "待辦事宜",
     "Title": "歡迎使用為知筆記"
@@ -75,7 +78,7 @@ function getMetaInt(objDatabase, metaName, metaKey, defVal) {
 }
 
 async function listDocuments() {
-    const documents = await objDatabase.GetRecentDocuments("", ITEM_LIMITS);
+    const documents = await objDatabase.GetRecentDocuments("", ITEM_LIMITS, 0);
     listRecent.innerHTML = "";
     for (const doc of documents) {
         const item = document.createElement("li");
@@ -85,6 +88,22 @@ async function listDocuments() {
         // Update UI
         item.innerHTML = "<a href=\"javascript:void(0);\" onclick=\"viewDocument('" + doc.GUID + "');\" >" + doc.Title + "</a>&nbsp;(" + dateString + ")";
         listRecent.appendChild(item);
+        // Free up memory space of C++ Object
+        doc.deleteLater();
+    }
+}
+
+async function listDocumentsRecentAccessed() {
+    const documents = await objDatabase.GetRecentDocuments("", ITEM_LIMITS, 3);
+    listRecentAccessed.innerHTML = "";
+    for (const doc of documents) {
+        const item = document.createElement("li");
+        const docDate = doc.DateModified == "1970-01-01T08:00:00" ? doc.DateCreated : doc.DateModified;
+        const date = new Date(docDate);
+        const dateString = date.toLocaleDateString();
+        // Update UI
+        item.innerHTML = "<a href=\"javascript:void(0);\" onclick=\"viewDocument('" + doc.GUID + "');\" >" + doc.Title + "</a>&nbsp;(" + dateString + ")";
+        listRecentAccessed.appendChild(item);
         // Free up memory space of C++ Object
         doc.deleteLater();
     }
@@ -256,14 +275,16 @@ $(document).ready(function() {
             $.datepicker.regional[lang.replace(/_/, "-")]
         );
 
-        objDatabase.documentCreated.connect(listDocuments)
-        objDatabase.documentDeleted.connect(listDocuments)
-        objDatabase.documentDeleted.connect(listEvents)
-        objDatabase.documentModified.connect(listDocuments)
-        objDatabase.documentModified.connect(listEvents)
-        objDatabase.documentDataModified.connect(listDocuments)
+        objDatabase.documentCreated.connect(listDocuments);
+        objDatabase.documentDeleted.connect(listDocuments);
+        objDatabase.documentDeleted.connect(listEvents);
+        objDatabase.documentModified.connect(listDocuments);
+        objDatabase.documentModified.connect(listEvents);
+        objDatabase.documentDataModified.connect(listDocuments);
+        objDatabase.documentAccessDateModified.connect(listDocumentsRecentAccessed);
 
         await listDocuments();
+        await listDocumentsRecentAccessed();
         await listEvents();
         await listUnreadDocuments();
         // Display page
