@@ -673,7 +673,7 @@ public:
     Q_INVOKABLE QStringList GetAllTags();
     Q_INVOKABLE QObject *DocumentFromGUID(const QString &strGUID);
     Q_INVOKABLE QVariantList DocumentsFromSQLWhere(const QString& strSQLWhere);
-    Q_INVOKABLE QVariantList GetRecentDocuments(const QString &documentType, int count);
+    Q_INVOKABLE QVariantList GetRecentDocuments(const QString &documentType, int count, int type);
     Q_INVOKABLE QObject *AttachmentFromGUID(const QString &attachmentGUID);
     //using CWizIndexBase::DocumentFromGUID;
     //Q_INVOKABLE QObject* DocumentFromGUID(const QString& strGUID);

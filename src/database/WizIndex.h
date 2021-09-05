@@ -247,6 +247,7 @@ public:
     bool getRecentDocuments(long nFlags, const CString& strDocumentType, int nCount, CWizDocumentDataArray& arrayDocument);
     bool getRecentDocumentsCreated(const CString& strDocumentType, int nCount, CWizDocumentDataArray& arrayDocument);
     bool getRecentDocumentsModified(const CString& strDocumentType, int nCount, CWizDocumentDataArray& arrayDocument);
+    bool getRecentDocumentsAccessed(const CString& strDocumentType, int nCount, CWizDocumentDataArray& arrayDocument);
     bool getRecentDocumentsByCreatedTime(const WizOleDateTime& t, CWizDocumentDataArray& arrayDocument);
     bool getRecentDocumentsByModifiedTime(const WizOleDateTime& t, CWizDocumentDataArray& arrayDocument);
     bool getRecentDocumentsByAccessedTime(const WizOleDateTime& t, CWizDocumentDataArray& arrayDocument);
