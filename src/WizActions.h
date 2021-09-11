@@ -43,6 +43,8 @@ class QShortcut;
 #define WIZACTION_FORMAT_ITALIC             "actionMenuFormatItalic"
 #define WIZACTION_FORMAT_UNDERLINE          "actionMenuFormatUnderLine"
 #define WIZACTION_FORMAT_STRIKETHROUGH      "actionMenuFormatStrikeThrough"
+#define WIZACTION_FORMAT_SUBSCRIPT          "actionMenuFormatSubscript"
+#define WIZACTION_FORMAT_SUPERSCRIPT        "actionMenuFormatSuperscript"
 #define WIZACTION_FORMAT_UNORDEREDLIST      "actionMenuFormatInsertUnorderedList"
 #define WIZACTION_FORMAT_ORDEREDLIST        "actionMenuFormatInsertOrderedList"
 #define WIZACTION_FORMAT_JUSTIFYLEFT        "actionMenuFormatJustifyLeft"

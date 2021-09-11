@@ -78,7 +78,7 @@
     </message>
     <message>
         <location filename="../src/WizActions.cpp" line="54"/>
-        <location filename="../src/WizActions.cpp" line="277"/>
+        <location filename="../src/WizActions.cpp" line="279"/>
         <source>Table</source>
         <translation>表格</translation>
     </message>
@@ -369,41 +369,51 @@
     </message>
     <message>
         <location filename="../src/WizActions.cpp" line="145"/>
+        <source>Subscript</source>
+        <translation>下标</translation>
+    </message>
+    <message>
+        <location filename="../src/WizActions.cpp" line="146"/>
+        <source>Superscript</source>
+        <translation>上标</translation>
+    </message>
+    <message>
+        <location filename="../src/WizActions.cpp" line="147"/>
         <source>Insert Horizontal</source>
         <translation>插入水平标尺</translation>
     </message>
     <message>
-        <location filename="../src/WizActions.cpp" line="146"/>
+        <location filename="../src/WizActions.cpp" line="148"/>
         <source>Insert Date</source>
         <translation>插入日期</translation>
     </message>
     <message>
-        <location filename="../src/WizActions.cpp" line="147"/>
+        <location filename="../src/WizActions.cpp" line="149"/>
         <source>Insert Time</source>
         <translation>插入时间</translation>
     </message>
     <message>
-        <location filename="../src/WizActions.cpp" line="148"/>
+        <location filename="../src/WizActions.cpp" line="150"/>
         <source>Insert Check List</source>
         <translation>插入清单</translation>
     </message>
     <message>
-        <location filename="../src/WizActions.cpp" line="149"/>
+        <location filename="../src/WizActions.cpp" line="151"/>
         <source>Insert Code</source>
         <translation>插入代码</translation>
     </message>
     <message>
-        <location filename="../src/WizActions.cpp" line="150"/>
+        <location filename="../src/WizActions.cpp" line="152"/>
         <source>Insert Image</source>
         <translation>插入图片</translation>
     </message>
     <message>
-        <location filename="../src/WizActions.cpp" line="151"/>
+        <location filename="../src/WizActions.cpp" line="153"/>
         <source>Remove Format</source>
         <translation>清除样式</translation>
     </message>
     <message>
-        <location filename="../src/WizActions.cpp" line="152"/>
+        <location filename="../src/WizActions.cpp" line="154"/>
         <source>Screen Shot...</source>
         <translation>屏幕截图...</translation>
     </message>
@@ -926,25 +936,25 @@
     </message>
     <message>
         <location filename="../src/WizActions.cpp" line="93"/>
-        <location filename="../src/gui/documentviewer/WizEditorToolBar.cpp" line="2041"/>
+        <location filename="../src/gui/documentviewer/WizEditorToolBar.cpp" line="2059"/>
         <source>Cut</source>
         <translation>剪切</translation>
     </message>
     <message>
         <location filename="../src/WizActions.cpp" line="94"/>
-        <location filename="../src/gui/documentviewer/WizEditorToolBar.cpp" line="2042"/>
-        <location filename="../src/gui/documentviewer/WizEditorToolBar.cpp" line="2132"/>
+        <location filename="../src/gui/documentviewer/WizEditorToolBar.cpp" line="2060"/>
+        <location filename="../src/gui/documentviewer/WizEditorToolBar.cpp" line="2150"/>
         <source>Copy</source>
         <translation>拷贝</translation>
     </message>
     <message>
         <location filename="../src/WizActions.cpp" line="95"/>
-        <location filename="../src/gui/documentviewer/WizEditorToolBar.cpp" line="2043"/>
+        <location filename="../src/gui/documentviewer/WizEditorToolBar.cpp" line="2061"/>
         <source>Paste</source>
         <translation>粘贴</translation>
     </message>
     <message>
-        <location filename="../src/gui/documentviewer/WizEditorToolBar.cpp" line="2038"/>
+        <location filename="../src/gui/documentviewer/WizEditorToolBar.cpp" line="2056"/>
         <source>Use &quot;Google&quot; search</source>
         <translation>使用 “Google&quot; 搜索</translation>
     </message>
@@ -1140,22 +1150,22 @@
         <translation>雅痞-简</translation>
     </message>
     <message>
-        <location filename="../src/gui/documentviewer/WizEditorToolBar.cpp" line="2039"/>
+        <location filename="../src/gui/documentviewer/WizEditorToolBar.cpp" line="2057"/>
         <source>Use &quot;Baidu&quot; search</source>
         <translation>使用 &quot;百度&quot; 搜索</translation>
     </message>
     <message>
-        <location filename="../src/gui/documentviewer/WizEditorToolBar.cpp" line="2044"/>
+        <location filename="../src/gui/documentviewer/WizEditorToolBar.cpp" line="2062"/>
         <source>Paste plain text</source>
         <translation>粘贴为纯文本</translation>
     </message>
     <message>
-        <location filename="../src/gui/documentviewer/WizEditorToolBar.cpp" line="2045"/>
+        <location filename="../src/gui/documentviewer/WizEditorToolBar.cpp" line="2063"/>
         <source>Remove link</source>
         <translation>删除链接</translation>
     </message>
     <message>
-        <location filename="../src/gui/documentviewer/WizEditorToolBar.cpp" line="2135"/>
+        <location filename="../src/gui/documentviewer/WizEditorToolBar.cpp" line="2153"/>
         <source>Unselect</source>
         <translation>取消选择</translation>
     </message>
@@ -3247,27 +3257,27 @@ Go to create a note</source>
         <translation>不能复制样式文件</translation>
     </message>
     <message>
-        <location filename="../src/gui/documentviewer/WizDocumentWebView.cpp" line="2194"/>
+        <location filename="../src/gui/documentviewer/WizDocumentWebView.cpp" line="2208"/>
         <source>Image File</source>
         <translation>图片文件</translation>
     </message>
     <message>
-        <location filename="../src/gui/documentviewer/WizDocumentWebView.cpp" line="2194"/>
+        <location filename="../src/gui/documentviewer/WizDocumentWebView.cpp" line="2208"/>
         <source>Images (*.png *.bmp *.gif *.jpg)</source>
         <translation>图片 (*.png *.bmp *.gif *.jpg)</translation>
     </message>
     <message>
-        <location filename="../src/gui/documentviewer/WizDocumentWebView.cpp" line="2375"/>
+        <location filename="../src/gui/documentviewer/WizDocumentWebView.cpp" line="2389"/>
         <source>PDF Files (*.pdf)</source>
         <translation>PDF 文件 (*.pdf)</translation>
     </message>
     <message>
-        <location filename="../src/gui/documentviewer/WizDocumentWebView.cpp" line="2516"/>
+        <location filename="../src/gui/documentviewer/WizDocumentWebView.cpp" line="2530"/>
         <source>Html Files (*.html)</source>
         <translation>Html文件(*.html)</translation>
     </message>
     <message>
-        <location filename="../src/gui/documentviewer/WizDocumentWebView.cpp" line="2409"/>
+        <location filename="../src/gui/documentviewer/WizDocumentWebView.cpp" line="2423"/>
         <source>Markdown Files (*.md)</source>
         <translation>Markdown文件(*.md)</translation>
     </message>
@@ -3275,12 +3285,12 @@ Go to create a note</source>
 <context>
     <name>WizDocumentWebViewLoaderThread</name>
     <message>
-        <location filename="../src/gui/documentviewer/WizDocumentWebView.cpp" line="2913"/>
+        <location filename="../src/gui/documentviewer/WizDocumentWebView.cpp" line="2927"/>
         <source>Error</source>
         <translation>错误</translation>
     </message>
     <message>
-        <location filename="../src/gui/documentviewer/WizDocumentWebView.cpp" line="2913"/>
+        <location filename="../src/gui/documentviewer/WizDocumentWebView.cpp" line="2927"/>
         <source>Can&apos;t view note: (Can&apos;t unzip note data)</source>
         <translation>无法查看笔记：（不能解压缩笔记数据）</translation>
     </message>
@@ -3422,125 +3432,135 @@ Go to create a note</source>
         <translation>删除线 %1%2K</translation>
     </message>
     <message>
-        <location filename="../src/gui/documentviewer/WizEditorToolBar.cpp" line="1374"/>
+        <location filename="../src/gui/documentviewer/WizEditorToolBar.cpp" line="1371"/>
+        <source>Sub script</source>
+        <translation>下标</translation>
+    </message>
+    <message>
+        <location filename="../src/gui/documentviewer/WizEditorToolBar.cpp" line="1378"/>
+        <source>Super script</source>
+        <translation>上标</translation>
+    </message>
+    <message>
+        <location filename="../src/gui/documentviewer/WizEditorToolBar.cpp" line="1388"/>
         <source>Justify</source>
         <translation>段落方向</translation>
     </message>
     <message>
-        <location filename="../src/gui/documentviewer/WizEditorToolBar.cpp" line="1379"/>
+        <location filename="../src/gui/documentviewer/WizEditorToolBar.cpp" line="1393"/>
         <source>Justify Left</source>
         <translation>左对齐</translation>
     </message>
     <message>
-        <location filename="../src/gui/documentviewer/WizEditorToolBar.cpp" line="1382"/>
+        <location filename="../src/gui/documentviewer/WizEditorToolBar.cpp" line="1396"/>
         <source>Justify Center</source>
         <translation>居中</translation>
     </message>
     <message>
-        <location filename="../src/gui/documentviewer/WizEditorToolBar.cpp" line="1385"/>
+        <location filename="../src/gui/documentviewer/WizEditorToolBar.cpp" line="1399"/>
         <source>Justify Right</source>
         <translation>右对齐</translation>
     </message>
     <message>
-        <location filename="../src/gui/documentviewer/WizEditorToolBar.cpp" line="1398"/>
+        <location filename="../src/gui/documentviewer/WizEditorToolBar.cpp" line="1412"/>
         <source>UnorderedList %1%2U</source>
         <translation>无序列表 %1%2U</translation>
     </message>
     <message>
-        <location filename="../src/gui/documentviewer/WizEditorToolBar.cpp" line="1405"/>
+        <location filename="../src/gui/documentviewer/WizEditorToolBar.cpp" line="1419"/>
         <source>OrderedList %1%2O</source>
         <translation>有序列表 %1%2O</translation>
     </message>
     <message>
-        <location filename="../src/gui/documentviewer/WizEditorToolBar.cpp" line="1411"/>
-        <location filename="../src/gui/documentviewer/WizEditorToolBar.cpp" line="1426"/>
+        <location filename="../src/gui/documentviewer/WizEditorToolBar.cpp" line="1425"/>
+        <location filename="../src/gui/documentviewer/WizEditorToolBar.cpp" line="1440"/>
         <source>Insert Table</source>
         <translation>插入表格</translation>
     </message>
     <message>
-        <location filename="../src/gui/documentviewer/WizEditorToolBar.cpp" line="1437"/>
+        <location filename="../src/gui/documentviewer/WizEditorToolBar.cpp" line="1451"/>
         <source>Insert Horizontal %1%2H</source>
         <translation>插入水平标尺 %1%2H</translation>
     </message>
     <message>
-        <location filename="../src/gui/documentviewer/WizEditorToolBar.cpp" line="1445"/>
+        <location filename="../src/gui/documentviewer/WizEditorToolBar.cpp" line="1459"/>
         <source>Start Markup</source>
         <translation>开始标注</translation>
     </message>
     <message>
-        <location filename="../src/gui/documentviewer/WizEditorToolBar.cpp" line="1453"/>
+        <location filename="../src/gui/documentviewer/WizEditorToolBar.cpp" line="1467"/>
         <source>Insert Handwriting</source>
         <translation>插入手写笔记</translation>
     </message>
     <message>
-        <location filename="../src/gui/documentviewer/WizEditorToolBar.cpp" line="1461"/>
+        <location filename="../src/gui/documentviewer/WizEditorToolBar.cpp" line="1475"/>
         <source>Insert Checklist %1O</source>
         <translation>插入清单 %1O</translation>
     </message>
     <message>
-        <location filename="../src/gui/documentviewer/WizEditorToolBar.cpp" line="1470"/>
+        <location filename="../src/gui/documentviewer/WizEditorToolBar.cpp" line="1484"/>
         <source>Insert Link %1K</source>
         <translation>插入链接 %1K</translation>
     </message>
     <message>
-        <location filename="../src/gui/documentviewer/WizEditorToolBar.cpp" line="1479"/>
-        <location filename="../src/gui/documentviewer/WizEditorToolBar.cpp" line="1722"/>
+        <location filename="../src/gui/documentviewer/WizEditorToolBar.cpp" line="1493"/>
+        <location filename="../src/gui/documentviewer/WizEditorToolBar.cpp" line="1736"/>
         <source>Insert Image %1%2I</source>
         <translation>插入图片 %1%2I</translation>
     </message>
     <message>
-        <location filename="../src/gui/documentviewer/WizEditorToolBar.cpp" line="1488"/>
+        <location filename="../src/gui/documentviewer/WizEditorToolBar.cpp" line="1502"/>
         <source>Insert Date %1%2D</source>
         <translation>插入日期 %1%2D</translation>
     </message>
     <message>
-        <location filename="../src/gui/documentviewer/WizEditorToolBar.cpp" line="1496"/>
+        <location filename="../src/gui/documentviewer/WizEditorToolBar.cpp" line="1510"/>
         <source>Receive mobile image</source>
         <translation>手机传图</translation>
     </message>
     <message>
-        <location filename="../src/gui/documentviewer/WizEditorToolBar.cpp" line="1504"/>
+        <location filename="../src/gui/documentviewer/WizEditorToolBar.cpp" line="1518"/>
         <source>Find &amp; Replace %1F</source>
         <translation>查找 &amp; 替换 %1F</translation>
     </message>
     <message>
-        <location filename="../src/gui/documentviewer/WizEditorToolBar.cpp" line="1512"/>
+        <location filename="../src/gui/documentviewer/WizEditorToolBar.cpp" line="1526"/>
         <source>Screen shot</source>
         <translation>屏幕截图</translation>
     </message>
     <message>
-        <location filename="../src/gui/documentviewer/WizEditorToolBar.cpp" line="1522"/>
+        <location filename="../src/gui/documentviewer/WizEditorToolBar.cpp" line="1536"/>
         <source>Insert code %1%2C</source>
         <translation>插入代码 %1%2C</translation>
     </message>
     <message>
-        <location filename="../src/gui/documentviewer/WizEditorToolBar.cpp" line="1631"/>
+        <location filename="../src/gui/documentviewer/WizEditorToolBar.cpp" line="1645"/>
         <source>Back to Text Editor</source>
         <translation>返回文本编辑器</translation>
     </message>
     <message>
-        <location filename="../src/gui/documentviewer/WizEditorToolBar.cpp" line="2358"/>
-        <location filename="../src/gui/documentviewer/WizEditorToolBar.cpp" line="2361"/>
+        <location filename="../src/gui/documentviewer/WizEditorToolBar.cpp" line="2376"/>
+        <location filename="../src/gui/documentviewer/WizEditorToolBar.cpp" line="2379"/>
         <source>show more colors...</source>
         <translation>显示更多颜色...</translation>
     </message>
     <message>
-        <location filename="../src/gui/documentviewer/WizEditorToolBar.cpp" line="2880"/>
+        <location filename="../src/gui/documentviewer/WizEditorToolBar.cpp" line="2898"/>
         <source>More tool items</source>
         <translation>更多工具</translation>
     </message>
     <message>
-        <location filename="../src/gui/documentviewer/WizEditorToolBar.cpp" line="2880"/>
+        <location filename="../src/gui/documentviewer/WizEditorToolBar.cpp" line="2898"/>
         <source>Use to show or hide extra tool items.</source>
         <translation>可以显示或收起更多编辑工具。</translation>
     </message>
     <message>
-        <location filename="../src/gui/documentviewer/WizEditorToolBar.cpp" line="3006"/>
+        <location filename="../src/gui/documentviewer/WizEditorToolBar.cpp" line="3024"/>
         <source>Save as...</source>
         <translation>另存为...</translation>
     </message>
     <message>
-        <location filename="../src/gui/documentviewer/WizEditorToolBar.cpp" line="3007"/>
+        <location filename="../src/gui/documentviewer/WizEditorToolBar.cpp" line="3025"/>
         <source>Image Files (*.%1)</source>
         <translation>图片文件 (*.%1)</translation>
     </message>
@@ -4276,7 +4296,7 @@ Go to create a note</source>
         <location filename="../src/WizMainWindow.cpp" line="2523"/>
         <location filename="../src/WizMainWindow.cpp" line="2526"/>
         <location filename="../src/WizMainWindow.cpp" line="2529"/>
-        <location filename="../src/WizMainWindow.cpp" line="4181"/>
+        <location filename="../src/WizMainWindow.cpp" line="4193"/>
         <source>Info</source>
         <translation>提示</translation>
     </message>
@@ -4351,7 +4371,7 @@ Go to create a note</source>
         <translation>立即升级</translation>
     </message>
     <message>
-        <location filename="../src/WizMainWindow.cpp" line="4267"/>
+        <location filename="../src/WizMainWindow.cpp" line="4279"/>
         <source>New Note</source>
         <translation>新建笔记</translation>
     </message>
@@ -4392,42 +4412,42 @@ Go to create a note</source>
         <translation>将所有未读笔记标记为已读。</translation>
     </message>
     <message>
-        <location filename="../src/WizMainWindow.cpp" line="3340"/>
+        <location filename="../src/WizMainWindow.cpp" line="3352"/>
         <source>Searching...</source>
         <translation>正在搜索...</translation>
     </message>
     <message>
-        <location filename="../src/WizMainWindow.cpp" line="4182"/>
+        <location filename="../src/WizMainWindow.cpp" line="4194"/>
         <source>Can&apos;t find the specified attachment, may be it has been deleted.</source>
         <translation>找不到指定附件，该附件可能已被删除.</translation>
     </message>
     <message>
-        <location filename="../src/WizMainWindow.cpp" line="4264"/>
+        <location filename="../src/WizMainWindow.cpp" line="4276"/>
         <source>Show/Hide MainWindow</source>
         <translation>显示/隐藏主窗口</translation>
     </message>
     <message>
-        <location filename="../src/WizMainWindow.cpp" line="4272"/>
+        <location filename="../src/WizMainWindow.cpp" line="4284"/>
         <source>Hide TrayIcon</source>
         <translation>隐藏托盘图标</translation>
     </message>
     <message>
-        <location filename="../src/WizMainWindow.cpp" line="4276"/>
+        <location filename="../src/WizMainWindow.cpp" line="4288"/>
         <source>Logout</source>
         <translation>注销</translation>
     </message>
     <message>
-        <location filename="../src/WizMainWindow.cpp" line="4278"/>
+        <location filename="../src/WizMainWindow.cpp" line="4290"/>
         <source>Exit</source>
         <translation>退出</translation>
     </message>
     <message>
-        <location filename="../src/WizMainWindow.cpp" line="4650"/>
+        <location filename="../src/WizMainWindow.cpp" line="4662"/>
         <source>Downloading attachment file  %1 ...</source>
         <translation>下载附件 %1 ...</translation>
     </message>
     <message>
-        <location filename="../src/WizMainWindow.cpp" line="4651"/>
+        <location filename="../src/WizMainWindow.cpp" line="4663"/>
         <source>Downloading</source>
         <translation>正在下载</translation>
     </message>
