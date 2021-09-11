@@ -2026,6 +2026,8 @@ void WizEditorToolBar::resetToolbar(const QString& currentStyle)
     m_btnItalic->setChecked(italic);
     m_btnUnderLine->setChecked(underline);
     m_btnStrikeThrough->setChecked(strikeThrough);
+    m_btnSubscript->setChecked(subscript);
+    m_btnSuperscript->setChecked(superscript);
 
     m_actionJustifyLeft->setChecked(justifyleft);
     m_actionJustifyCenter->setChecked(justifycenter);
