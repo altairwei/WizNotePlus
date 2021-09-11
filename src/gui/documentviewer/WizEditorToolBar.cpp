@@ -631,7 +631,7 @@ protected:
         p.setClipRect(opt.rect);
 
         QIcon::Mode mode = opt.state & QStyle::State_Enabled ? QIcon::Normal : QIcon::Disabled;
-        if (mode == QIcon::Normal && (opt.state & QStyle::State_Sunken))
+        if (mode == QIcon::Normal && (opt.state & QStyle::State_On))
             mode = QIcon::Active;
         QIcon::State state = QIcon::Off;
         if (opt.state & QStyle::State_On)

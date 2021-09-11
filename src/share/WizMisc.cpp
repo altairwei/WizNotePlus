@@ -1803,9 +1803,9 @@ QIcon WizLoadSkinIconFiles(const QString& strSkinName, const QString& strIconNam
     // used for check state； "_on" suffix
     if (!strIconActive1.isEmpty() && QFile::exists(strIconActive1)) {
         if (bSvgExt)
-            icon.addPixmap(svg2Pixmap(strIconActive1, iconSize), QIcon::Active, QIcon::On);
+            icon.addPixmap(svg2Pixmap(strIconActive1, iconSize), QIcon::Active, QIcon::Off);
         else
-            icon.addFile(strIconActive1, iconSize, QIcon::Active, QIcon::On);
+            icon.addFile(strIconActive1, iconSize, QIcon::Active, QIcon::Off);
     }
 
     // used for sunken state; "_selected" suffix
