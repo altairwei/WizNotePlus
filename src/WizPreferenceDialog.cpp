@@ -49,8 +49,8 @@ WizPreferenceWindow::WizPreferenceWindow(WizExplorerApp& app, QWidget* parent)
     ui->comboLang->blockSignals(false);
 
     ui->lineEditUIFont->setText(
-        m_app.userSettings().defaultUIFontFamily() + " " +
-        QString::number(m_app.userSettings().defaultUIFontSize())
+        m_app.userSettings().UIFontFamily() + " " +
+        QString::number(m_app.userSettings().UIFontSize())
     );
 
     ui->checkBox->blockSignals(true);
@@ -402,8 +402,8 @@ void WizPreferenceWindow::on_btnUIFont_clicked()
     QFont font = QFontDialog::getFont(
         &ok,
         QFont(
-            m_app.userSettings().defaultUIFontFamily(),
-            m_app.userSettings().defaultUIFontSize()
+            m_app.userSettings().UIFontFamily(),
+            m_app.userSettings().UIFontSize()
         ),
         this,
         tr("Select font"),
@@ -417,8 +417,8 @@ void WizPreferenceWindow::on_btnUIFont_clicked()
 void WizPreferenceWindow::on_btnResetUIFont_clicked()
 {
     QFont font(
-        m_app.userSettings().defaultUIFontFamily(true),
-        m_app.userSettings().defaultUIFontSize(true)
+        m_app.userSettings().UIFontFamily(true),
+        m_app.userSettings().UIFontSize(true)
     );
 
     updateUIFont(font);
@@ -430,8 +430,8 @@ void WizPreferenceWindow::updateUIFont(const QFont& font)
         font.family() + " " + QString::number(font.pointSize())
     );
 
-    m_app.userSettings().setDefaultUIFontFamily(font.family());
-    m_app.userSettings().setDefaultUIFontSize(font.pointSize());
+    m_app.userSettings().setUIFontFamily(font.family());
+    m_app.userSettings().setUIFontSize(font.pointSize());
 
     WizMessageBox::information(
         m_app.mainWindow(), tr("Info"), tr("Application font will be changed after restart WizNote."));

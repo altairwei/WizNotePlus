@@ -176,15 +176,15 @@ public:
     QString editorBackgroundColor();
     void setEditorBackgroundColor(const QString& strColor);
 
-    #define DEFAULT_EDITOR_LINE_HEIGHT "1.7"
+    static const QString kDefaultEditorLineHeight;
     QString editorLineHeight(bool force_default = false);
     void setEditorLineHeight(const QString& strLineHeight);
 
-    #define DEFAULT_EDITOR_PARA_SPACING "8"
+    static const QString kDefaultEditorParaSpacing;
     QString editorParaSpacing(bool force_default = false);
     void setEditorParaSpacing(const QString& strSpacing);
 
-    #define DEFAULT_EDITOR_PAGE_PADDING "16"
+    static const QString kDefaultEditorPagePadding;
     QString editorPagePadding(bool force_default = false);
     void setEditorPagePadding(const QString& strPadding);
 
@@ -200,29 +200,21 @@ public:
     WizDocumentViewMode noteViewMode() const;
     void setNoteViewMode(WizDocumentViewMode strMode) { set("NoteViewMode", QString::number(strMode)); }
 
-    #define DEFAULT_EDITOR_FONT_FAMILY "Helvetica, \"Hiragino Sans GB\", \"Microsoft YaHei UI\", SimSun, SimHei, \"Helvetica Neue\", Arial, sans-serif;"
+    static const QString kDefaultEditorFontFamily;
     QString defaultFontFamily(bool force_default = false);
     void setDefaultFontFamily(const QString& strFont);
 
-    #define DEFAULT_EDITOR_FONT_SIZE 16
+    static const int kDefaultEditorFontSize;
     int defaultFontSize(bool force_default = false);
     void setDefaultFontSize(int nSize);
 
-#if defined(Q_OS_WIN)
-#   define DEFAULT_UI_FONT_FAMILY "Microsoft YaHei UI"
-#   define DEFAULT_UI_FONT_SIZE 9
-#elif defined(Q_OS_MAC)
-#   define DEFAULT_UI_FONT_FAMILY "Helvetica Neue"
-#   define DEFAULT_UI_FONT_SIZE 9
-#else
-#   define DEFAULT_UI_FONT_FAMILY "Noto Sans"
-#   define DEFAULT_UI_FONT_SIZE 9
-#endif
+    static const QString kDefaultUIFontFamily;
+    QString UIFontFamily(bool force_default = false);
+    void setUIFontFamily(const QString& font);
 
-    QString defaultUIFontFamily(bool force_default = false);
-    void setDefaultUIFontFamily(const QString& font);
-    int defaultUIFontSize(bool force_default = false);
-    void setDefaultUIFontSize(int size);
+    static const int kDefaultUIFontSize;
+    int UIFontSize(bool force_default = false);
+    void setUIFontSize(int size);
 
     // default: 5, 15, 30, 60, -1(manual)
     int syncInterval() const;
@@ -240,7 +232,7 @@ public:
 
     void appendRecentSearch(const QString& search);
     QStringList getRecentSearches(bool reverseOrder = false);
-    //
+
     void setLastAttachmentPath(const QString& path);
     QString lastAttachmentPath() const;
 };
