@@ -1791,33 +1791,18 @@ QIcon WizLoadSkinIconFiles(const QString& strSkinName, const QString& strIconNam
         return QIcon();
     }
 
-    bool bSvgExt = Utils::WizMisc::extractFileExt(strIconNormal) == ".svg";
-
     QIcon icon(strIconNormal);
-
-    if (bSvgExt)
-        icon.addPixmap(svg2Pixmap(strIconNormal, iconSize), QIcon::Normal, QIcon::Off);
-    else
-        icon.addFile(strIconNormal, iconSize, QIcon::Normal, QIcon::Off);
+    icon.addFile(strIconNormal, iconSize, QIcon::Normal, QIcon::Off);
 
     // used for check state； "_on" suffix
     if (!strIconActive1.isEmpty() && QFile::exists(strIconActive1)) {
-        if (bSvgExt)
-            icon.addPixmap(svg2Pixmap(strIconActive1, iconSize), QIcon::Active, QIcon::Off);
-        else
-            icon.addFile(strIconActive1, iconSize, QIcon::Active, QIcon::Off);
+        icon.addFile(strIconActive1, iconSize, QIcon::Active, QIcon::On);
     }
 
     // used for sunken state; "_selected" suffix
     if (!strIconActive2.isEmpty() && QFile::exists(strIconActive2)) {
-        if (bSvgExt) {
-            icon.addPixmap(svg2Pixmap(strIconActive2, iconSize), QIcon::Active, QIcon::Off);
-            icon.addPixmap(svg2Pixmap(strIconActive2, iconSize), QIcon::Selected, QIcon::Off);
-        } else {
-            icon.addFile(strIconActive2, iconSize, QIcon::Active, QIcon::Off);
-            icon.addFile(strIconActive2, iconSize, QIcon::Selected, QIcon::Off);
-        }
-            
+        icon.addFile(strIconActive2, iconSize, QIcon::Active, QIcon::Off);
+        icon.addFile(strIconActive2, iconSize, QIcon::Selected, QIcon::Off);
     }
 
     return icon;
