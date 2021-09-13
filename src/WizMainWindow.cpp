@@ -908,6 +908,13 @@ void WizMainWindow::handleTrayIconActived(QSystemTrayIcon::ActivationReason reas
 void WizMainWindow::shiftVisableStatus()
 {
     qDebug() << "windowState: " + QString::number(windowState(), 8);
+
+    if (isVisible() && isActiveWindow())
+    {
+        hide();
+        return;
+    }
+
     switch(windowState()) {
         case Qt::WindowNoState:
             // Normal window, but de-activated
