@@ -290,7 +290,7 @@ int mainCore(int argc, char *argv[])
     // 登录程序
     //-------------------------------------------------------------------
 
-    QFont font(DEFAULT_UI_FONT_FAMILY, DEFAULT_UI_FONT_SIZE);
+    QFont font(WizUserSettings::kDefaultUIFontFamily, WizUserSettings::kDefaultUIFontSize);
     app.setFont(font);
 
     // figure out auto login or manually login
@@ -380,7 +380,7 @@ int mainCore(int argc, char *argv[])
 
     WizCommonApiEntry::setLanguage(strLocale);
 
-    QFont uiFont(userSettings.defaultUIFontFamily(), userSettings.defaultUIFontSize());
+    QFont uiFont(userSettings.UIFontFamily(), userSettings.UIFontSize());
     app.setFont(uiFont);
 
     // 登录数据库管理器
