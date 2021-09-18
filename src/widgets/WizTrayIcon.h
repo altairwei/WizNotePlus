@@ -9,12 +9,11 @@ class WizExplorerApp;
 class WizTrayIcon : public QSystemTrayIcon
 {
     Q_OBJECT
+
 public:
     WizTrayIcon(WizExplorerApp& app, QObject* parent = 0);
     WizTrayIcon(WizExplorerApp& app, const QIcon &icon, QObject *parent = 0);
     ~WizTrayIcon();
-
-
 
 public slots:
     void onMessageClicked();
@@ -25,7 +24,6 @@ public slots:
 signals:
     void viewMessageRequest(qint64 messageID);
     void viewMessageRequestNormal(QVariant messageData);
-
 
 private:
     int m_messageType;
