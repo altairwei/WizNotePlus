@@ -142,7 +142,7 @@ jobs:
 
   build_macos:
     name: MacOS
-    runs-on: macos-latest
+    runs-on: macos-10.15
     env:
       QT_INSTALL_TARGET_ARCH: clang_64
       QT_INSTALL_TARGET_DIR_PREFIX: /Applications
