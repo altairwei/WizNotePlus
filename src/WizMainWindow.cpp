@@ -442,12 +442,23 @@ void WizMainWindow::startExternalEditor(QString cacheFileName, const WizExternal
     QString programFile = "\"" + editorData.ProgramFile + "\"";
     QString args = editorData.Arguments.arg("\"" + cacheFileName + "\"");
     QString strCmd = programFile + " " + args;
+
+    // 设置文件监控器
+    if (!m_extFileWatcher->addPath(cacheFileName)) {
+        QMessageBox::critical(this,
+            tr("Failed to launch external editor"),
+            tr("There may be a system dependent limit to the number "
+               "of files that can be monitored simultaneously.")
+        );
+        return;
+    }
+
     // 创建并开启进程
     qInfo() << "Use external editor: " + editorData.Name << strCmd;
     QProcess *extEditorProcess = new QProcess(this);
     extEditorProcess->startDetached(strCmd);
-    // 设置文件监控器
-    m_extFileWatcher->addPath(cacheFileName);
+
+    // Remeber notes data
     WizExternalEditTask task = {
         editorData, noteData
     };
@@ -457,12 +468,30 @@ void WizMainWindow::startExternalEditor(QString cacheFileName, const WizExternal
 void WizMainWindow::onWatchedDocumentChanged(const QString& fileName)
 {
     saveWatchedFile(fileName);
-    // watch file again, in order to avoid some editor from removing watched files.
+
     if (m_extFileWatcher)
     {
-        QTimer::singleShot(300, [=](){
-            m_extFileWatcher->addPath(fileName);
-        });
+        QFileInfo watchedFile(fileName);
+
+        // Many applications save an open file by writing a new file and then deleting the old one.
+        // So we watch that file again.
+        if(!m_extFileWatcher->files().contains(fileName)){
+            if (watchedFile.exists()) {
+                if (!m_extFileWatcher->addPath(fileName)) {
+                    showBubbleNotification(
+                        tr("Unable to continue monitoring files"),
+                        tr("Failed to monitor the file required "
+                           "by external editor: %1").arg(watchedFile.fileName())
+                    );
+                }
+            } else {
+                showBubbleNotification(
+                    tr("Unable to continue monitoring files"),
+                    tr("File does not exist: %1").arg(watchedFile.fileName())
+                );
+            }
+
+        }
     }
 }
 
@@ -474,14 +503,15 @@ void WizMainWindow::onWatchedDocumentChanged(const QString& fileName)
  */
 void WizMainWindow::saveWatchedFile(const QString& fileName)
 {
-    QFileInfo* changedFileInfo = new QFileInfo(fileName);
-    // 编辑器保存时首先删除文件再添加文件所有会收到两个信号，通过文件大小来判断写入信号
-    if ( changedFileInfo->size() == 0 )
+    QFileInfo changedFileInfo(fileName);
+
+    if ( !changedFileInfo.exists() || changedFileInfo.size() == 0 )
         return;
-    qDebug() << tr("Updating file: ") + fileName << changedFileInfo->size()
-             << changedFileInfo->lastModified() << changedFileInfo->lastRead();
+
+    qDebug() << tr("Updating file: ") + fileName << changedFileInfo.size()
+             << changedFileInfo.lastModified() << changedFileInfo.lastRead();
     // Get note's data
-    QString noteGUID = changedFileInfo->absoluteDir().dirName();
+    QString noteGUID = changedFileInfo.absoluteDir().dirName();
     const WizExternalEditTask& task = m_watchedFileData[noteGUID];
     bool isUTF8 = task.editorData.UTF8Encoding == 0 ? false : true;
     bool isPlainText = task.editorData.TextEditor == 0 ? false : true;

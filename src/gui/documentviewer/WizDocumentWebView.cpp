@@ -848,7 +848,7 @@ void WizDocumentWebView::loadDocumentToExternalEditor(const WIZDOCUMENTDATA &doc
     if (editorData.TextEditor == 2) {
         if (noteTempDir.exists(cacheFileName))
             noteTempDir.remove(cacheFileName);
-        //
+
         saveAsPlainText(cacheFileName, [=](QString fileName){
             WizGlobal::mainWindow()->startExternalEditor(fileName, editorData, view()->note());
         });
@@ -856,12 +856,12 @@ void WizDocumentWebView::loadDocumentToExternalEditor(const WIZDOCUMENTDATA &doc
         cacheFileName += ".html";
         if (noteTempDir.exists(cacheFileName))
             noteTempDir.remove(cacheFileName);
-        //
+
         saveAsRenderedHtml(cacheFileName, [=](QString fileName){
             WizGlobal::mainWindow()->startExternalEditor(fileName, editorData, view()->note());
         });
     }
-    //
+
     clearExtEditorTask();
 }
 
