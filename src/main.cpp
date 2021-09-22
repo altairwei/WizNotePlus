@@ -175,9 +175,9 @@ int mainCore(int argc, char *argv[])
 #endif // Q_OS_LINUX
 
     QtWebEngine::initialize();
-    QWebEngineSettings::defaultSettings()->setAttribute(QWebEngineSettings::FocusOnNavigationEnabled, true);
+    QWebEngineSettings::defaultSettings()->setAttribute(QWebEngineSettings::FocusOnNavigationEnabled, false);
 
-#if QT_VERSION >= 0x051000
+#if QT_VERSION >= QT_VERSION_CHECK(5, 10, 0)
     QWebEngineSettings::defaultSettings()->setAttribute(QWebEngineSettings::AllowWindowActivationFromJavaScript, true);
 #endif
 

@@ -315,6 +315,7 @@ public Q_SLOTS:
 
     // menu view
     void on_actionViewToggleCategory_triggered();
+    void on_actionViewShowSubFolderDocuments_triggered();
     void on_actionViewToggleFullscreen_triggered();
 #ifdef Q_OS_MAC
     void on_actionViewToggleClientFullscreen_triggered();

@@ -913,3 +913,14 @@ QStringList WizUserSettings::getRecentSearches(bool reverseOrder)
 
     return recentSearches;
 }
+
+bool WizUserSettings::showSubFolderDocuments()
+{
+    bool b = get("CategoryShowSubFolderDocuments").toInt() ? true : false;
+    return b;
+}
+
+void WizUserSettings::setShowSubFolderDocuments(bool b)
+{
+    set("CategoryShowSubFolderDocuments", QString::number(b ? 1 : 0));
+}

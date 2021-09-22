@@ -99,6 +99,7 @@ WIZACTION* WizActions::actionsData()
 
         // view
         {WIZACTION_GLOBAL_TOGGLE_CATEGORY,      QObject::tr("Hide Sidebar"),                QObject::tr("Show Sidebar"),            QKeySequence("F3")},
+        {WIZACTION_GLOBAL_SHOW_SUB_FOLDER_DOCUMENTS,      QObject::tr("Show sub folder documents"),   QObject::tr(""),    QKeySequence("")},
 #ifdef Q_OS_MAC
         {WIZACTION_GLOBAL_CLIENT_FULLSCREEN,    QObject::tr("Enter Client Fullscreen"),     QObject::tr("Leave Client Fullscreen"), QKeySequence("Ctrl+Meta+F")},
         {WIZACTION_GLOBAL_TOGGLE_FULLSCREEN,    QObject::tr("Enter Fullscreen"),            QObject::tr("Leave Fullscreen"),        QKeySequence("Shift+Meta+F")},

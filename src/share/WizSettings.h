@@ -235,6 +235,10 @@ public:
 
     void setLastAttachmentPath(const QString& path);
     QString lastAttachmentPath() const;
+
+    //
+    bool showSubFolderDocuments();
+    void setShowSubFolderDocuments(bool b);
 };
 
 #endif // WIZSETTINGS_H
