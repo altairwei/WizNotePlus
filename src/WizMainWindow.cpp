@@ -1,5 +1,6 @@
 ﻿#include "WizMainWindow.h"
 
+#include <algorithm>
 #include <typeinfo>
 #include <QToolBar>
 #include <QMenuBar>
@@ -161,7 +162,7 @@ WizMainWindow::WizMainWindow(WizDatabaseManager& dbMgr, QWidget *parent)
     , m_bQuickDownloadMessageEnable(false)
     , m_quiting(false)
     , m_IWizExplorerApp(new ApiWizExplorerApp(this, this))
-    , m_extFileWatcher(new QFileSystemWatcher)
+    , m_externalEditorFileWatcher(new QFileSystemWatcher)
 {
 #ifdef QT_DEBUG
     int ret = WizToolsSmartCompare("H", "d");
@@ -262,8 +263,8 @@ WizMainWindow::WizMainWindow(WizDatabaseManager& dbMgr, QWidget *parent)
 
     // initialize document saver thread
     m_watchedDocSaver = new WizDocumentWebViewSaverThread(dbMgr, this);
-    //
-    connect(m_extFileWatcher, &QFileSystemWatcher::fileChanged, 
+
+    connect(m_externalEditorFileWatcher, &QFileSystemWatcher::fileChanged, 
                     this, &WizMainWindow::onWatchedDocumentChanged);
     //
     m_publicAPIsServer = new PublicAPIsServer(
@@ -335,36 +336,53 @@ void WizMainWindow::on_application_aboutToQuit()
 void WizMainWindow::cleanOnQuit()
 {
     m_quiting = true;
-    //
+
     WizObjectDownloaderHost::instance()->waitForDone();
     WizKMSyncThread::setQuickThread(nullptr);
-    //
+
     m_category->saveExpandState();
     saveStatus();
-    //
+
     auto full = m_syncFull;
     m_syncFull = nullptr;
     full->waitForDone();
-    //
+
     auto quick = m_syncQuick;
     m_syncQuick = nullptr;
     quick->waitForDone();
-    //
+
     m_searcher->waitForDone();
+
     // 处理所有标签
     processAllDocumentViews([=](WizDocumentView* docView){
         docView->waitForDone();
     });
+
     // Stop m_docSaver thread
     auto saver = m_watchedDocSaver;
     m_watchedDocSaver = nullptr;
     saver->waitForDone();
-    //
+
+    if (!m_externalEditorProcesses.isEmpty()) {
+        QMessageBox::warning(this,
+            tr("Wait for External Editor to Close"),
+            tr("Please close all external editors first."));
+
+        for (auto proc : m_externalEditorProcesses) {
+            if (proc->state() != QProcess::NotRunning) {
+                proc->terminate();
+                proc->waitForFinished();
+            }
+        }
+
+        m_externalEditorProcesses.clear();
+    }
+
     if (m_mobileFileReceiver)
     {
         m_mobileFileReceiver->waitForDone();
     }
-    //
+
     WizQueuedThreadsShutdown();
 }
 
@@ -426,25 +444,115 @@ void WizMainWindow::trySaveCurrentNote(std::function<void(const QVariant &)> cal
     }
 }
 
-/**
- * @brief Start external editor process and watch the document file.
- * @param cacheFileName
- * @param Name
- * @param ProgramFile
- * @param Arguments
- * @param TextEditor
- * @param UTF8Encoding
- */
-void WizMainWindow::startExternalEditor(QString cacheFileName, const WizExternalEditorData& editorData, const WIZDOCUMENTDATAEX& noteData)
+void WizMainWindow::handleViewNoteInExternalEditorRequest(
+    const WizExternalEditorData &editorData,
+    const WIZDOCUMENTDATAEX &noteData)
 {
-    // 准备进程参数
-    //FIXME: split too many items
+    if (auto docView = qobject_cast<WizDocumentView*>(sender())) {
+        // Prepare file and directory
+        QString strTempFolder = Utils::WizPathResolve::tempPath() + noteData.strGUID + "/";
+        QDir noteTempDir(strTempFolder);
+        CString strTitle = noteData.strTitle;
+        WizMakeValidFileNameNoPath(strTitle);
+        QString cacheFileName = QFileInfo(noteTempDir.absolutePath() + "/" + strTitle).absoluteFilePath();
+
+        // One cache file for one external editor.
+        auto task = std::find_if(
+            std::begin(m_externalEditorTasks),
+            std::end(m_externalEditorTasks),
+            [&] (const WizExternalEditTask &task) {
+                if (task.cacheFileName == cacheFileName)
+                    return true;
+                else
+                    return false;
+            }
+        );
+
+        if (task != std::end(m_externalEditorTasks)) {
+            QMessageBox::critical(this,
+                tr("Failed to launch external editor"),
+                tr("A document can be opened by only one external "
+                "editor at a time.")
+            );
+            return;
+        }
+
+        WizDatabase &db = m_dbMgr.db(noteData.strKbGUID);
+        // Update document first, but we don't need to realod document.
+        docView->web()->trySaveDocument(noteData, false,
+            [this, &docView, &noteData, &editorData, &db,
+             cacheFileName, noteTempDir] (const QVariant&) mutable 
+            {
+                // Update index.html
+                QString strHtmlFile;
+                db.documentToTempHtmlFile(noteData, strHtmlFile);
+
+                QString strHtml;
+                if (!WizLoadUnicodeTextFromFile(strHtmlFile, strHtml))
+                    return;
+
+                // Export Note to file
+                if (editorData.TextEditor == 2) {
+                    if (noteTempDir.exists(cacheFileName))
+                        noteTempDir.remove(cacheFileName);
+
+                    // get pure text
+                    QTextDocument doc;
+                    doc.setHtml(strHtml);
+                    QString strText = doc.toPlainText();
+                    strText.replace("&nbsp", " ");
+
+                    // Write to cache file
+                    if(WizSaveUnicodeTextToUtf8File(cacheFileName, strText, false))
+                    {
+                        // TODO: luanch
+                        startExternalEditor(cacheFileName, editorData, noteData);
+                    }
+                    
+                } else if (editorData.TextEditor == 0) {
+                    cacheFileName += ".html";
+                    if (noteTempDir.exists(cacheFileName))
+                        noteTempDir.remove(cacheFileName);
+
+                    docView->web()->page()->toHtml([=](const QString& strHtml){
+                        if(WizSaveUnicodeTextToUtf8File(cacheFileName, strHtml, false))
+                            startExternalEditor(cacheFileName, editorData, noteData);
+                    });
+                }
+            }
+        );
+
+        QString strHtmlFile;
+    }
+}
+
+/*!
+    Start external editor process and watch the document \a cacheFileName.
+ */
+void WizMainWindow::startExternalEditor(QString cacheFileName, const WizExternalEditorData &editorData, const WIZDOCUMENTDATAEX &noteData)
+{
+    // Launch external editor process
+    // FIXME: split too many items
     QString programFile = "\"" + editorData.ProgramFile + "\"";
     QString args = editorData.Arguments.arg("\"" + cacheFileName + "\"");
     QString strCmd = programFile + " " + args;
 
-    // 设置文件监控器
-    if (!m_extFileWatcher->addPath(cacheFileName)) {
+    auto editor = new QProcess(this);
+    m_externalEditorProcesses.append(editor);
+
+#if QT_VERSION >= QT_VERSION_CHECK(5, 15, 0)
+    auto cmdList = QProcess::splitCommand(strCmd);
+    auto prog = cmdList.takeFirst();
+    editor->start(prog, cmdList);
+#else
+    editor->start(strCmd);
+#endif
+
+    connect(editor, QOverload<int, QProcess::ExitStatus>::of(&QProcess::finished),
+            this, &WizMainWindow::handleExternalEditorFinished);
+
+    // Watch the cache file
+    if (!m_externalEditorFileWatcher->addPath(cacheFileName)) {
         QMessageBox::critical(this,
             tr("Failed to launch external editor"),
             tr("There may be a system dependent limit to the number "
@@ -453,66 +561,83 @@ void WizMainWindow::startExternalEditor(QString cacheFileName, const WizExternal
         return;
     }
 
-    // 创建并开启进程
-    qInfo() << "Use external editor: " + editorData.Name << strCmd;
-    QProcess *extEditorProcess = new QProcess(this);
-    extEditorProcess->startDetached(strCmd);
-
     // Remeber notes data
-    WizExternalEditTask task = {
-        editorData, noteData
-    };
-    m_watchedFileData.insert(noteData.strGUID, task);
+    WizExternalEditTask newTask = { editor, editorData, noteData, cacheFileName };
+    m_externalEditorTasks.insert(cacheFileName, newTask);
+}
+
+void WizMainWindow::handleExternalEditorFinished(int exitCode, QProcess::ExitStatus exitStatus)
+{
+    Q_UNUSED(exitCode);
+    Q_UNUSED(exitStatus);
+
+    if(QProcess* editor = qobject_cast<QProcess*>(sender())) {
+        auto task = std::find_if(
+            std::begin(m_externalEditorTasks),
+            std::end(m_externalEditorTasks),
+            [&] (const WizExternalEditTask &task) {
+                if (task.editorProcess == editor)
+                    return true;
+                else
+                    return false;
+            }
+        );
+
+        if (task != std::end(m_externalEditorTasks)) {
+            // Remove file watch
+            m_externalEditorFileWatcher->removePath(task->cacheFileName);
+
+            // Remove finished task
+            m_externalEditorTasks.erase(task);
+
+            // Remove QProcess buffer
+            m_externalEditorProcesses.removeAll(editor);
+            editor->deleteLater();
+            editor = nullptr;
+        }
+
+    }
 }
 
 void WizMainWindow::onWatchedDocumentChanged(const QString& fileName)
 {
     saveWatchedFile(fileName);
 
-    if (m_extFileWatcher)
-    {
-        QFileInfo watchedFile(fileName);
+    QFileInfo watchedFile(fileName);
 
-        // Many applications save an open file by writing a new file and then deleting the old one.
-        // So we watch that file again.
-        if(!m_extFileWatcher->files().contains(fileName)){
-            if (watchedFile.exists()) {
-                if (!m_extFileWatcher->addPath(fileName)) {
-                    showBubbleNotification(
-                        tr("Unable to continue monitoring files"),
-                        tr("Failed to monitor the file required "
-                           "by external editor: %1").arg(watchedFile.fileName())
-                    );
-                }
-            } else {
+    // Many applications save an open file by writing a new file and then deleting the old one.
+    // So we watch that file again.
+    if(!m_externalEditorFileWatcher->files().contains(fileName)){
+        if (watchedFile.exists()) {
+            if (!m_externalEditorFileWatcher->addPath(fileName)) {
                 showBubbleNotification(
                     tr("Unable to continue monitoring files"),
-                    tr("File does not exist: %1").arg(watchedFile.fileName())
+                    tr("Failed to monitor the file required "
+                        "by external editor: %1").arg(watchedFile.fileName())
                 );
             }
-
+        } else {
+            showBubbleNotification(
+                tr("Unable to continue monitoring files"),
+                tr("File does not exist: %1").arg(watchedFile.fileName())
+            );
         }
     }
 }
 
-/**
- * @brief Save the watched document file which is changed by external editor.
- * @param fileName
- * @param TextEditor
- * @param UTF8Encoding
+/*!
+    Save the watched document \a fileName which is changed by external editor.
  */
-void WizMainWindow::saveWatchedFile(const QString& fileName)
+void WizMainWindow::saveWatchedFile(const QString &fileName)
 {
     QFileInfo changedFileInfo(fileName);
 
-    if ( !changedFileInfo.exists() || changedFileInfo.size() == 0 )
+    if ( !changedFileInfo.exists())
         return;
 
-    qDebug() << tr("Updating file: ") + fileName << changedFileInfo.size()
-             << changedFileInfo.lastModified() << changedFileInfo.lastRead();
     // Get note's data
     QString noteGUID = changedFileInfo.absoluteDir().dirName();
-    const WizExternalEditTask& task = m_watchedFileData[noteGUID];
+    const WizExternalEditTask& task = m_externalEditorTasks[fileName];
     bool isUTF8 = task.editorData.UTF8Encoding == 0 ? false : true;
     bool isPlainText = task.editorData.TextEditor == 0 ? false : true;
     // Get modified document's text
@@ -3763,9 +3888,8 @@ void WizMainWindow::showHomePage()
     m_mainTabBrowser->createTab(websiteView);
 }
 
-/**
- * @brief Create document view and setup signal-slot connections.
- * @return
+/*!
+    Create document view and setup signal-slot connections.
  */
 WizDocumentView* WizMainWindow::createDocumentView()
 {
@@ -3784,6 +3908,9 @@ WizDocumentView* WizMainWindow::createDocumentView()
     connect(newDocView->titleBar(), SIGNAL(viewNoteInSeparateWindow_request()),
             SLOT(viewCurrentNoteInSeparateWindow()));
     connect(newDocView->web(), SIGNAL(statusChanged(const QString&)), SLOT(on_editor_statusChanged(const QString&)));
+
+    connect(newDocView, &WizDocumentView::viewNoteInExternalEditorRequest,
+            this, &WizMainWindow::handleViewNoteInExternalEditorRequest);
 
     // Setup document view UI
     //-------------------------------------------------------------------

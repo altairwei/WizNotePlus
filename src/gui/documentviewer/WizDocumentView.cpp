@@ -1058,7 +1058,8 @@ void WizDocumentView::on_viewNoteInExternalEditor_request(QString& Name, QString
     WizExternalEditorData editorData = {
         Name, ProgramFile, Arguments, TextEditor, UTF8Encoding
     };
-    web()->viewDocumentInExternalEditor(editorData);
+
+    emit viewNoteInExternalEditorRequest(editorData, m_note);
 }
 
 void WizDocumentView::handleDiscardChangesRequest()

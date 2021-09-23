@@ -205,9 +205,10 @@ private:
     WIZDOCUMENTDATA m_documentForEditing;
 
     ApiWizExplorerApp* m_IWizExplorerApp;
-    //
-    QFileSystemWatcher* m_extFileWatcher;
-    QMap<QString, WizExternalEditTask> m_watchedFileData;
+
+    QFileSystemWatcher* m_externalEditorFileWatcher;
+    QMap<QString, WizExternalEditTask> m_externalEditorTasks; /* filename as key. */
+    QList<QProcess*> m_externalEditorProcesses;
 
     PublicAPIsServer *m_publicAPIsServer;
 
@@ -469,6 +470,10 @@ public Q_SLOTS:
     void on_mainTabWidget_currentChanged(int pageIndex);
 
     void onWatchedDocumentChanged(const QString& fileName);
+    void handleViewNoteInExternalEditorRequest(
+        const WizExternalEditorData &editorData, const WIZDOCUMENTDATAEX &noteData);
+    void handleExternalEditorFinished(int exitCode, QProcess::ExitStatus exitStatus);
+
     void showHomePage();
     
 public:
