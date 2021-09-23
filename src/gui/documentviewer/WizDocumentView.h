@@ -6,6 +6,7 @@
 #include <QStackedWidget>
 
 #include "share/WizObject.h"
+#include "utils/ExternalEditorLauncher.h"
 #include "gui/tabbrowser/AbstractTabPage.h"
 
 class QScrollArea;
@@ -35,7 +36,6 @@ class WizDocumentTransitionView;
 class WizTitleBar;
 class WizEditorToolBar;
 class WizTagBar;
-class WizExternalEditorData;
 
 class WizDocumentView : public AbstractTabPage
 {
