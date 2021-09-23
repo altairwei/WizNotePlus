@@ -850,7 +850,7 @@ void WizDocumentWebView::loadDocumentToExternalEditor(const WIZDOCUMENTDATA &doc
             noteTempDir.remove(cacheFileName);
 
         saveAsPlainText(cacheFileName, [=](QString fileName){
-            WizGlobal::mainWindow()->startExternalEditor(fileName, editorData, view()->note());
+            //WizGlobal::mainWindow()->startExternalEditor(fileName, editorData, view()->note());
         });
     } else if (editorData.TextEditor == 0) {
         cacheFileName += ".html";
@@ -858,7 +858,7 @@ void WizDocumentWebView::loadDocumentToExternalEditor(const WIZDOCUMENTDATA &doc
             noteTempDir.remove(cacheFileName);
 
         saveAsRenderedHtml(cacheFileName, [=](QString fileName){
-            WizGlobal::mainWindow()->startExternalEditor(fileName, editorData, view()->note());
+            //WizGlobal::mainWindow()->startExternalEditor(fileName, editorData, view()->note());
         });
     }
 

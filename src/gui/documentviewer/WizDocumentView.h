@@ -35,6 +35,7 @@ class WizDocumentTransitionView;
 class WizTitleBar;
 class WizEditorToolBar;
 class WizTagBar;
+class WizExternalEditorData;
 
 class WizDocumentView : public AbstractTabPage
 {

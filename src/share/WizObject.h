@@ -754,23 +754,6 @@ struct WIZDOCUMENTLOCATIONDATA
     }
 };
 
-struct WizExternalEditorData
-{
-    QString Name;
-    QString ProgramFile;
-    QString Arguments;
-    int TextEditor;
-    int UTF8Encoding;
-};
-
-class QProcess;
-struct WizExternalEditTask
-{
-    QProcess *editorProcess;
-    WizExternalEditorData editorData;
-    WIZDOCUMENTDATAEX docData;
-    QString cacheFileName;
-};
 
 typedef std::deque<WIZDOCUMENTLOCATIONDATA> CDocumentLocationArray;
 
