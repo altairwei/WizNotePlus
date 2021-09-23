@@ -91,7 +91,7 @@ void ExternalEditorLauncher::handleViewNoteInExternalEditorRequest(
         WizDatabase &db = m_dbMgr.db(noteData.strKbGUID);
         // Update document first, but we don't need to realod document.
         docView->web()->trySaveDocument(noteData, false,
-            [this, &docView, &noteData, &editorData, &db,
+            [this, &docView, &db, noteData, editorData,
              cacheFileName, noteTempDir] (const QVariant&) mutable 
             {
                 // Update index.html
@@ -131,8 +131,6 @@ void ExternalEditorLauncher::handleViewNoteInExternalEditorRequest(
                 }
             }
         );
-
-        QString strHtmlFile;
     }
 }
 
@@ -176,10 +174,6 @@ void ExternalEditorLauncher::startExternalEditor(QString cacheFileName, const Wi
     // Remeber notes data
     WizExternalEditTask newTask = { editor, editorData, noteData, cacheFileName };
     m_externalEditorTasks.insert(cacheFileName, newTask);
-
-    QStringList slist = m_externalEditorFileWatcher->files();
-
-    qInfo() << "Watching: " << slist;
 }
 
 void ExternalEditorLauncher::handleExternalEditorFinished(int exitCode, QProcess::ExitStatus exitStatus)
@@ -203,6 +197,8 @@ void ExternalEditorLauncher::handleExternalEditorFinished(int exitCode, QProcess
             // Remove file watch
             m_externalEditorFileWatcher->removePath(task->cacheFileName);
 
+            qInfo() << "Removed: " << task->cacheFileName;
+
             // Remove finished task
             m_externalEditorTasks.erase(task);
 
@@ -217,8 +213,6 @@ void ExternalEditorLauncher::handleExternalEditorFinished(int exitCode, QProcess
 
 void ExternalEditorLauncher::onWatchedDocumentChanged(const QString& fileName)
 {
-    qInfo() << "File changed: " << fileName;
-
     saveWatchedFile(fileName);
 
     QFileInfo watchedFile(fileName);
