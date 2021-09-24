@@ -37,22 +37,28 @@ void ExternalEditorLauncher::waitForDone()
     auto saver = m_watchedDocSaver;
     m_watchedDocSaver = nullptr;
     saver->waitForDone();
+}
 
-    if (!m_externalEditorProcesses.isEmpty()) {
-        QMessageBox::warning(m_app.mainWindow(),
-            tr("Wait for External Editor to Close"),
-            tr("Please close all external editors first."));
+/*!
+    Ensure that all characters in the \a docTitle are legal and automatically
+    add the file suffix number if the file exists in the folder \a tempDir .
+ */
+QString ExternalEditorLauncher::makeValidCacheFileName(const QString &docTitle, const QDir &tempDir)
+{
+    CString title = docTitle;
+    WizMakeValidFileNameNoPath(title);
+    QString cacheFileName = title;
 
-        for (auto proc : m_externalEditorProcesses) {
-            if (proc->state() != QProcess::NotRunning) {
-                proc->terminate();
-                proc->waitForFinished();
-            }
-        }
+    QFileInfo cacheFileInfo(cacheFileName);
+    QString fileSuffix = cacheFileInfo.suffix();
+    QString fileBaseName = cacheFileInfo.completeBaseName();
+    int num = 1;
 
-        m_externalEditorProcesses.clear();
+    while(tempDir.exists(cacheFileName)) {
+        cacheFileName = fileBaseName + "_" + QString::number(num++) + (fileSuffix.isEmpty() ? "" : "." + fileSuffix);
     }
 
+    return tempDir.absoluteFilePath(cacheFileName);
 }
 
 void ExternalEditorLauncher::handleViewNoteInExternalEditorRequest(
@@ -60,33 +66,9 @@ void ExternalEditorLauncher::handleViewNoteInExternalEditorRequest(
     const WIZDOCUMENTDATAEX &noteData)
 {
     if (auto docView = qobject_cast<WizDocumentView*>(sender())) {
-        // Prepare file and directory
-        QString strTempFolder = Utils::WizPathResolve::tempPath() + noteData.strGUID + "/";
-        QDir noteTempDir(strTempFolder);
-        CString strTitle = noteData.strTitle;
-        WizMakeValidFileNameNoPath(strTitle);
-        QString cacheFileName = QFileInfo(noteTempDir.absolutePath() + "/" + strTitle).absoluteFilePath();
-
-        // One cache file for one external editor.
-        auto task = std::find_if(
-            std::begin(m_externalEditorTasks),
-            std::end(m_externalEditorTasks),
-            [&] (const WizExternalEditTask &task) {
-                if (task.cacheFileName == cacheFileName)
-                    return true;
-                else
-                    return false;
-            }
-        );
-
-        if (task != std::end(m_externalEditorTasks)) {
-            QMessageBox::critical(m_app.mainWindow(),
-                tr("Failed to launch external editor"),
-                tr("A document can be opened by only one external "
-                "editor at a time.")
-            );
-            return;
-        }
+        // Make sure editor will get separate cache file.
+        QDir noteTempDir(Utils::WizPathResolve::tempPath() + noteData.strGUID + "/");
+        QString cacheFileName = makeValidCacheFileName(noteData.strTitle, noteTempDir);
 
         WizDatabase &db = m_dbMgr.db(noteData.strKbGUID);
         // Update document first, but we don't need to realod document.
@@ -139,27 +121,22 @@ void ExternalEditorLauncher::handleViewNoteInExternalEditorRequest(
  */
 void ExternalEditorLauncher::startExternalEditor(QString cacheFileName, const WizExternalEditorData &editorData, const WIZDOCUMENTDATAEX &noteData)
 {
-    qInfo() << "Start file: " << cacheFileName;
-
     // Launch external editor process
     // FIXME: split too many items
     QString programFile = "\"" + editorData.ProgramFile + "\"";
     QString args = editorData.Arguments.arg("\"" + cacheFileName + "\"");
     QString strCmd = programFile + " " + args;
 
-    auto editor = new QProcess(this);
-    m_externalEditorProcesses.append(editor);
+    // Do not use QProcess instances to detect the state of external editor GUI programs,
+    // for reasons described in https://github.com/altairwei/WizNotePlus/issues/199
 
 #if QT_VERSION >= QT_VERSION_CHECK(5, 15, 0)
     auto cmdList = QProcess::splitCommand(strCmd);
     auto prog = cmdList.takeFirst();
-    editor->start(prog, cmdList);
+    QProcess::startDetached(prog, cmdList);
 #else
-    editor->start(strCmd);
+    QProcess::startDetached(strCmd);
 #endif
-
-    connect(editor, QOverload<int, QProcess::ExitStatus>::of(&QProcess::finished),
-            this, &ExternalEditorLauncher::handleExternalEditorFinished);
 
     // Watch the cache file
     if (!m_externalEditorFileWatcher->addPath(cacheFileName)) {
@@ -172,43 +149,8 @@ void ExternalEditorLauncher::startExternalEditor(QString cacheFileName, const Wi
     }
 
     // Remeber notes data
-    WizExternalEditTask newTask = { editor, editorData, noteData, cacheFileName };
+    WizExternalEditTask newTask = { editorData, noteData, cacheFileName };
     m_externalEditorTasks.insert(cacheFileName, newTask);
-}
-
-void ExternalEditorLauncher::handleExternalEditorFinished(int exitCode, QProcess::ExitStatus exitStatus)
-{
-    Q_UNUSED(exitCode);
-    Q_UNUSED(exitStatus);
-
-    if(QProcess* editor = qobject_cast<QProcess*>(sender())) {
-        auto task = std::find_if(
-            std::begin(m_externalEditorTasks),
-            std::end(m_externalEditorTasks),
-            [&] (const WizExternalEditTask &task) {
-                if (task.editorProcess == editor)
-                    return true;
-                else
-                    return false;
-            }
-        );
-
-        if (task != std::end(m_externalEditorTasks)) {
-            // Remove file watch
-            m_externalEditorFileWatcher->removePath(task->cacheFileName);
-
-            qInfo() << "Removed: " << task->cacheFileName;
-
-            // Remove finished task
-            m_externalEditorTasks.erase(task);
-
-            // Remove QProcess buffer
-            m_externalEditorProcesses.removeAll(editor);
-            editor->deleteLater();
-            editor = nullptr;
-        }
-
-    }
 }
 
 void ExternalEditorLauncher::onWatchedDocumentChanged(const QString& fileName)

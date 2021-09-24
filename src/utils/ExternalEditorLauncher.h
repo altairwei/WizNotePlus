@@ -2,6 +2,7 @@
 #define EXTERNAL_EDITOR_LAUNCHER_H
 
 #include <QProcess>
+#include <QDir>
 
 #include "WizDef.h"
 #include "share/WizObject.h"
@@ -21,7 +22,6 @@ struct WizExternalEditorData
 
 struct WizExternalEditTask
 {
-    QProcess *editorProcess;
     WizExternalEditorData editorData;
     WIZDOCUMENTDATAEX docData;
     QString cacheFileName;
@@ -39,11 +39,13 @@ public:
     WizDocumentWebViewSaverThread* watchedDocSaver() { return m_watchedDocSaver; }
     void waitForDone();
 
+protected:
+    QString makeValidCacheFileName(const QString &docTitle, const QDir &tempDir);
+
 public Q_SLOTS:
     void onWatchedDocumentChanged(const QString& fileName);
     void handleViewNoteInExternalEditorRequest(
         const WizExternalEditorData &editorData, const WIZDOCUMENTDATAEX &noteData);
-    void handleExternalEditorFinished(int exitCode, QProcess::ExitStatus exitStatus);
 
 protected:
     WizExplorerApp &m_app;
@@ -53,7 +55,6 @@ protected:
 private:
     QFileSystemWatcher* m_externalEditorFileWatcher;
     QMap<QString, WizExternalEditTask> m_externalEditorTasks; /* filename as key. */
-    QList<QProcess*> m_externalEditorProcesses;
     WizDocumentWebViewSaverThread* m_watchedDocSaver;
 };
 
