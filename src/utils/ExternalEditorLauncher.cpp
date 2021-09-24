@@ -55,7 +55,8 @@ QString ExternalEditorLauncher::makeValidCacheFileName(const QString &docTitle, 
     int num = 1;
 
     while(tempDir.exists(cacheFileName)) {
-        cacheFileName = fileBaseName + "_" + QString::number(num++) + (fileSuffix.isEmpty() ? "" : "." + fileSuffix);
+        cacheFileName = fileBaseName + "_" + QString::number(num++)
+            + (fileSuffix.isEmpty() ? "" : "." + fileSuffix);
     }
 
     return tempDir.absoluteFilePath(cacheFileName);
@@ -68,51 +69,50 @@ void ExternalEditorLauncher::handleViewNoteInExternalEditorRequest(
     if (auto docView = qobject_cast<WizDocumentView*>(sender())) {
         // Make sure editor will get separate cache file.
         QDir noteTempDir(Utils::WizPathResolve::tempPath() + noteData.strGUID + "/");
-        QString cacheFileName = makeValidCacheFileName(noteData.strTitle, noteTempDir);
 
         WizDatabase &db = m_dbMgr.db(noteData.strKbGUID);
-        // Update document first, but we don't need to realod document.
-        docView->web()->trySaveDocument(noteData, false,
-            [this, &docView, &db, noteData, editorData,
-             cacheFileName, noteTempDir] (const QVariant&) mutable 
-            {
-                // Update index.html
-                QString strHtmlFile;
-                db.documentToTempHtmlFile(noteData, strHtmlFile);
 
-                QString strHtml;
-                if (!WizLoadUnicodeTextFromFile(strHtmlFile, strHtml))
-                    return;
+        if (const auto webView = docView->web()) {
+            // Update document first, but we don't need to realod document.
+            webView->trySaveDocument(noteData, false,
+                [this, webView, &db, noteData,
+                 editorData, noteTempDir] (const QVariant&) mutable 
+                {
+                    // Update index.html
+                    QString strHtmlFile;
+                    db.documentToTempHtmlFile(noteData, strHtmlFile);
 
-                // Export Note to file
-                if (editorData.TextEditor == 2) {
-                    if (noteTempDir.exists(cacheFileName))
-                        noteTempDir.remove(cacheFileName);
+                    QString strHtml;
+                    if (!WizLoadUnicodeTextFromFile(strHtmlFile, strHtml))
+                        return;
 
-                    // get pure text
-                    QTextDocument doc;
-                    doc.setHtml(strHtml);
-                    QString strText = doc.toPlainText();
-                    strText.replace("&nbsp", " ");
+                    // Export Note to file
+                    if (editorData.TextEditor == 2) {
+                        QString cacheFileName = makeValidCacheFileName(noteData.strTitle, noteTempDir);
 
-                    // Write to cache file
-                    if(WizSaveUnicodeTextToUtf8File(cacheFileName, strText, false))
-                    {
-                        startExternalEditor(cacheFileName, editorData, noteData);
-                    }
-                    
-                } else if (editorData.TextEditor == 0) {
-                    cacheFileName += ".html";
-                    if (noteTempDir.exists(cacheFileName))
-                        noteTempDir.remove(cacheFileName);
+                        // get pure text
+                        QTextDocument doc;
+                        doc.setHtml(strHtml);
+                        QString strText = doc.toPlainText();
+                        strText.replace("&nbsp", " ");
 
-                    docView->web()->page()->toHtml([=](const QString& strHtml){
-                        if(WizSaveUnicodeTextToUtf8File(cacheFileName, strHtml, false))
+                        // Write to cache file
+                        if(WizSaveUnicodeTextToUtf8File(cacheFileName, strText, false))
                             startExternalEditor(cacheFileName, editorData, noteData);
-                    });
+                        
+                    } else if (editorData.TextEditor == 0) {
+                        QString cacheFileName = makeValidCacheFileName(
+                            noteData.strTitle + ".html", noteTempDir);
+                        if (!webView)
+                            return;
+                        webView->page()->toHtml([=](const QString& html){
+                            if(WizSaveUnicodeTextToUtf8File(cacheFileName, html, false))
+                                startExternalEditor(cacheFileName, editorData, noteData);
+                        });
+                    }
                 }
-            }
-        );
+            );
+        }
     }
 }
 
