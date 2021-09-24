@@ -46,6 +46,10 @@ void ExternalEditorLauncher::waitForDone()
 QString ExternalEditorLauncher::makeValidCacheFileName(const QString &docTitle, const QDir &tempDir)
 {
     CString title = docTitle;
+#ifdef Q_OS_WIN
+    // MS Office Word can not handle space correctly.
+    title.replace(" ", "_");
+#endif
     WizMakeValidFileNameNoPath(title);
     QString cacheFileName = title;
 
@@ -119,24 +123,32 @@ void ExternalEditorLauncher::handleViewNoteInExternalEditorRequest(
 /*!
     Start external editor process and watch the document \a cacheFileName.
  */
-void ExternalEditorLauncher::startExternalEditor(QString cacheFileName, const WizExternalEditorData &editorData, const WIZDOCUMENTDATAEX &noteData)
+void ExternalEditorLauncher::startExternalEditor(
+    QString cacheFileName,
+    const WizExternalEditorData &editorData,
+    const WIZDOCUMENTDATAEX &noteData)
 {
     // Launch external editor process
     // FIXME: split too many items
-    QString programFile = "\"" + editorData.ProgramFile + "\"";
+    QString programFile = editorData.ProgramFile;
     QString args = editorData.Arguments.arg("\"" + cacheFileName + "\"");
     QString strCmd = programFile + " " + args;
 
-    // Do not use QProcess instances to detect the state of external editor GUI programs,
+    // Do not use attached QProcess to detect the state of external editor GUI programs,
     // for reasons described in https://github.com/altairwei/WizNotePlus/issues/199
 
-#if QT_VERSION >= QT_VERSION_CHECK(5, 15, 0)
-    auto cmdList = QProcess::splitCommand(strCmd);
-    auto prog = cmdList.takeFirst();
-    QProcess::startDetached(prog, cmdList);
-#else
-    QProcess::startDetached(strCmd);
-#endif
+    QProcess editor;
+    editor.setProgram(programFile);
+    editor.setArguments(splitCommand(args));
+    editor.setWorkingDirectory(Utils::WizPathResolve::tempPath() + noteData.strGUID + "/");
+
+    qDebug() << editor.program() << " " << editor.arguments();
+
+    if (!editor.startDetached())
+        m_window->showBubbleNotification(
+            tr("Failed to launch external editor"),
+            tr("%1 %2").arg(editor.program()).arg(editor.arguments().join(" "))
+        );
 
     // Watch the cache file
     if (!m_externalEditorFileWatcher->addPath(cacheFileName)) {
@@ -209,4 +221,53 @@ void ExternalEditorLauncher::saveWatchedFile(const QString &fileName)
     QString indexFileName = Utils::WizMisc::extractFilePath(fileName) + "index.html";
     // Start saver thread
     m_watchedDocSaver->save(task.docData, strHtml, indexFileName, 0, true);
+}
+
+/*!
+    Copy from Qt 5.15.2
+
+    Splits the string \a command into a list of tokens, and returns
+    the list.
+
+    Tokens with spaces can be surrounded by double quotes; three
+    consecutive double quotes represent the quote character itself.
+*/
+QStringList ExternalEditorLauncher::splitCommand(const QString &command)
+{
+    QStringList args;
+    QString tmp;
+    int quoteCount = 0;
+    bool inQuote = false;
+
+    // handle quoting. tokens can be surrounded by double quotes
+    // "hello world". three consecutive double quotes represent
+    // the quote character itself.
+    for (int i = 0; i < command.size(); ++i) {
+        if (command.at(i) == QLatin1Char('"')) {
+            ++quoteCount;
+            if (quoteCount == 3) {
+                // third consecutive quote
+                quoteCount = 0;
+                tmp += command.at(i);
+            }
+            continue;
+        }
+        if (quoteCount) {
+            if (quoteCount == 1)
+                inQuote = !inQuote;
+            quoteCount = 0;
+        }
+        if (!inQuote && command.at(i).isSpace()) {
+            if (!tmp.isEmpty()) {
+                args += tmp;
+                tmp.clear();
+            }
+        } else {
+            tmp += command.at(i);
+        }
+    }
+    if (!tmp.isEmpty())
+        args += tmp;
+
+    return args;
 }
