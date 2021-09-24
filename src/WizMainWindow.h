@@ -13,6 +13,7 @@
 #include "share/WizUIHelper.h"
 #include "share/WizSettings.h"
 #include "share/WizShadowWindow.h"
+#include "utils/ExternalEditorLauncher.h"
 
 
 #define WIZ_SINGLE_APPLICATION "WIZ_SINGLE_APPLICATION"
@@ -114,8 +115,6 @@ public:
 
     void trySaveCurrentNote(std::function<void(const QVariant &)> callback);
 
-    void startExternalEditor(QString cacheFileName, const WizExternalEditorData& editorData, const WIZDOCUMENTDATAEX& noteData);
-
 protected:
     bool eventFilter(QObject* watched, QEvent* event);
     void resizeEvent(QResizeEvent* event);
@@ -132,7 +131,6 @@ private:
     WizUserSettings* m_settings;
     WizKMSyncThread* m_syncFull;
     WizKMSyncThread* m_syncQuick;
-    WizDocumentWebViewSaverThread* m_watchedDocSaver;
     WizUserVerifyDialog* m_userVerifyDialog;
     WizConsoleDialog* m_console;
     WizUpgradeChecker* m_upgrade;
@@ -204,11 +202,8 @@ private:
     WIZDOCUMENTDATA m_documentForEditing;
 
     ApiWizExplorerApp* m_IWizExplorerApp;
-
-    QFileSystemWatcher* m_extFileWatcher;
-    QMap<QString, WizExternalEditTask> m_watchedFileData;
-
     PublicAPIsServer *m_publicAPIsServer;
+    ExternalEditorLauncher *m_externalEditorLauncher;
 
 private:
     void initQuitHandler();
@@ -233,8 +228,6 @@ private:
 
     void promptServiceExpr(bool free, WIZGROUPDATA group);
 
-    void saveWatchedFile(const QString& path);
-
 public:
     // CWizDocument passthrough methods
     QSize clientSize() const { return m_splitter->widget(2)->size(); }
@@ -243,7 +236,6 @@ public:
     WizDocumentListView* documentList() const { return m_documents; }
     WizKMSyncThread* fullSync() const { return m_syncFull; }
     WizKMSyncThread* quickSync() const { return m_syncQuick; }
-    WizDocumentWebViewSaverThread* watchedDocSaver() { return m_watchedDocSaver; }
     void quickSyncKb(const QString& kbGuid);
     void setNeedResetGroups();
 
@@ -467,7 +459,6 @@ public Q_SLOTS:
     void setCurrentDocumentView(WizDocumentView* newDocView);
     void on_mainTabWidget_currentChanged(int pageIndex);
 
-    void onWatchedDocumentChanged(const QString& fileName);
     void showHomePage();
     
 public:

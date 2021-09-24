@@ -43,6 +43,7 @@ set(wiznote_SOURCES
     utils/WizMisc.cpp
     utils/WizPinyin.cpp
     utils/WizNotify.cpp
+
     share/WizZip.cpp
     share/WizQtHelper.cpp
     share/WizMisc.cpp
@@ -236,6 +237,8 @@ set(wiznote_SOURCES
     api/ApiWizDocumentListCtrl.cpp
     api/ApiWizDatabase.cpp
     api/ApiWizExplorerApp.cpp
+
+    utils/ExternalEditorLauncher.cpp
 )
 
 set(wiznote_HEADERS
@@ -446,6 +449,8 @@ set(wiznote_HEADERS
     api/ApiWizDocumentListCtrl.h
     api/ApiWizDatabase.h
     api/ApiWizExplorerApp.h
+
+    utils/ExternalEditorLauncher.h
 )
 
 set(wiznote_FORMS
