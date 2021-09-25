@@ -28,10 +28,12 @@ WizPopupWidget::WizPopupWidget(QWidget* parent)
     setPalette(pal);
 }
 
+/*
 QSize WizPopupWidget::sizeHint() const
 {
     return QSize(320, 400);
 }
+*/
 
 QRect WizPopupWidget::getClientRect() const
 {

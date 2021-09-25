@@ -30,15 +30,10 @@ protected:
 
 private slots:
     void on_labelOpenDocument_linkActivated(const QString &link);
-
     void on_editURL_editingFinished();
-
     void on_editAuthor_editingFinished();
-
     void on_checkEncrypted_clicked(bool checked);
-
     void on_labelHistory_linkActivated(const QString &link);
-
     void on_labelOpenURL_linkActivated(const QString &link);
 
 private:

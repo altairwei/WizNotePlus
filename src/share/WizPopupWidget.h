@@ -31,7 +31,7 @@ protected:
 
 
 protected:
-    virtual QSize sizeHint() const override;
+    //virtual QSize sizeHint() const override;
     virtual void paintEvent(QPaintEvent* event);
 
 public:

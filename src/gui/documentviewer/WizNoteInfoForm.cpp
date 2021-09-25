@@ -20,7 +20,7 @@ QString formatLabelLink(const QString& linkHref, const QString& text)
 WizNoteInfoForm::WizNoteInfoForm(QWidget *parent)
     : WizPopupWidget(parent)
     , ui(new Ui::WizNoteInfoForm)
-    , m_size(QSize(370, 450))
+    , m_size(QSize(300, 380))
 {
     ui->setupUi(this);
 
@@ -33,6 +33,8 @@ WizNoteInfoForm::WizNoteInfoForm(QWidget *parent)
     ui->labelOpenDocument->setText(openDocument);
     QString versionHistory = formatLabelLink("history", tr("Click to view version history"));
     ui->labelHistory->setText(versionHistory);
+
+    setFixedSize(m_size);
 }
 
 WizNoteInfoForm::~WizNoteInfoForm()
@@ -59,10 +61,6 @@ void WizNoteInfoForm::setDocument(const WIZDOCUMENTDATA& data)
     m_docGuid = data.strGUID;
 
     WizDatabase& db = WizDatabaseManager::instance()->db(data.strKbGUID);
-
-    int height = db.isGroup() ? 410 : 450;
-    m_size.setHeight(height);
-    setFixedHeight(height);
 
     setGroupLabelVisible(db.isGroup());
     QString doc = db.getDocumentFileName(data.strGUID);
@@ -111,10 +109,21 @@ void WizNoteInfoForm::setDocument(const WIZDOCUMENTDATA& data)
 
 void WizNoteInfoForm::setWordCount(int nWords, int nChars, int nCharsWithSpace, int nNonAsianWords, int nAsianChars)
 {
-    QString textFormat = tr("Words: %1\nCharacters (no spaces): %2\nCharacters (with spaces): %3\nNon-Asianwords: %4\nAsian characters: %5");
-    //
-    QString text = textFormat.arg(nWords).arg(nChars).arg(nCharsWithSpace).arg(nNonAsianWords).arg(nAsianChars);
-    //
+    QString textFormat = tr(
+        "Words: %1\n"
+        "Characters (no spaces): %2\n"
+        "Characters (with spaces): %3\n"
+        "Non-Asianwords: %4\n"
+        "Asian characters: %5"
+    );
+
+    QString text = textFormat.arg(
+        QString::number(nWords),
+        QString::number(nChars),
+        QString::number(nCharsWithSpace),
+        QString::number(nNonAsianWords),
+        QString::number(nAsianChars));
+
     ui->labelSize->setText(m_sizeText + "\n" + text);
 }
 
