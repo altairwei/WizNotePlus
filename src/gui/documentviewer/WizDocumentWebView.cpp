@@ -1146,29 +1146,7 @@ void WizDocumentWebView::shareNoteByLink()
 
 QString WizDocumentWebView::getNoteType()
 {
-    const WIZDOCUMENTDATA& doc = view()->note();
-
-    if (doc.strType == "outline") {
-        return "outline";
-    }
-
-    QString title = doc.strTitle;
-    if (title.endsWith(".md"))
-        return "markdown";
-    if (title.endsWith(".mj"))
-        return "mathjax";
-
-    if (title.indexOf(".md@") != -1)
-        return "markdown";
-    if (title.indexOf(".mj@") != -1)
-        return "mathjax";
-
-    if (title.indexOf(".md ") != -1)
-        return "markdown";
-    if (title.indexOf(".mj ") != -1)
-        return "mathjax";
-
-    return "common";
+    return WizGetNoteType(view()->note());
 }
 
 bool WizDocumentWebView::isOutline() const
@@ -2722,18 +2700,7 @@ bool WizDocumentWebView::canRenderMarkdown()
     if (view()->isEditing())
         return false;
 
-    if (doc.strTitle.indexOf(".md") == -1 && doc.strTitle.indexOf(".mj") == -1)
-        return false;
-
-    int nPointPos = doc.strTitle.length() - 3;
-    if (doc.strTitle.lastIndexOf(".md") == nPointPos || doc.strTitle.lastIndexOf(".mj") == nPointPos)
-        return true;
-
-    if (doc.strTitle.indexOf(".md ") != -1 || doc.strTitle.indexOf(".md@") != -1 ||
-            doc.strTitle.indexOf(".mj ") != -1|| doc.strTitle.indexOf(".mj@") != -1)
-        return true;
-
-    return false;
+    return WizIsMarkdownNote(doc);
 }
 
 bool WizDocumentWebView::canEditNote()
