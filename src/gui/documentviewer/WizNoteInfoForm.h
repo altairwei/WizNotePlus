@@ -19,8 +19,6 @@ public:
     void setDocument(const WIZDOCUMENTDATA& data);
     void setWordCount(int nWords, int nChars, int nCharsWithSpace, int nNonAsianWords, int nAsianChars);
 
-    void setGroupLabelVisible(bool isGroupNote);
-
 signals:
     void widgetStatusChanged();
 
