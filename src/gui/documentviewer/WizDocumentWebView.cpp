@@ -1674,16 +1674,17 @@ void WizDocumentWebView::onNoteLoadFinished()
     WizGlobal::instance()->emitViewNoteLoaded(view(), view()->note(), true);
 }
 
-/**
- * @brief set editor state
- * @param editorMode
- */
-void WizDocumentWebView::setEditorMode(WizEditorMode editorMode)
+/*!
+    Set the \a mode of editor and try to save document before switching mode.
+    Editor will try to save document.
+*/
+void WizDocumentWebView::setEditorMode(WizEditorMode mode)
 {
-    if (m_currentEditorMode == editorMode)
+    if (m_currentEditorMode == mode)
         return;
-    //
-    bool editing = editorMode == modeEditor;
+
+    bool editing = mode == modeEditor;
+
     // show editor toolbar properly
     if (!editing && hasFocus()) {
         Q_EMIT focusOut();
@@ -1699,18 +1700,15 @@ void WizDocumentWebView::setEditorMode(WizEditorMode editorMode)
         return;
 
     trySaveDocument(docData, false, [=](const QVariant&){
-        //
         enableEditor(editing);
-        //
         if (editing) {
             setFocus(Qt::MouseFocusReason);
             editorFocus();
         }
-        //
     });
 
-    m_currentEditorMode = editorMode;
-    //
+    m_currentEditorMode = mode;
+
     if (m_currentEditorMode == modeEditor) {
         m_timerAutoSave.start();
     } else {
