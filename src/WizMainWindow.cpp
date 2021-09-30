@@ -152,7 +152,7 @@ WizMainWindow::WizMainWindow(WizDatabaseManager& dbMgr, QWidget *parent)
     , m_mainTabBrowser(new WizMainTabBrowser(*this, this)) // 初始化主标签栏
     , m_history(new WizDocumentViewHistory())
     , m_animateSync(new WizAnimateAction(this))
-    , m_singleViewDelegate(new WizSingleDocumentViewDelegate(*this, this))
+    , m_singleViewMgr(new WizSingleDocumentViewManager(*this, this))
     , m_bRestart(false)
     , m_bLogoutRestart(false)
     , m_bUpdatingSelection(false)
@@ -265,9 +265,7 @@ WizMainWindow::WizMainWindow(WizDatabaseManager& dbMgr, QWidget *parent)
         {{"WizExplorerApp", m_IWizExplorerApp}}, this);
 }
 
-/**
- * @brief 用于QApplication的事件过滤器，用于解决主程序退出问题的无奈之举
- */
+
 bool WizMainWindow::eventFilter(QObject* watched, QEvent* event)
 {
     // Qt issue: issue? User quit for mac dock send close event to qApp?
@@ -781,7 +779,7 @@ void WizMainWindow::on_dockMenuAction_triggered()
         }
         else
         {
-            WizSingleDocumentViewer* viewer = m_singleViewDelegate->getDocumentViewer(guid);
+            WizSingleDocumentViewer* viewer = m_singleViewMgr->getDocumentViewer(guid);
             if (viewer)
             {
                 bringWidgetToFront(viewer);
@@ -1027,10 +1025,9 @@ void WizMainWindow::initMenuBar()
     m_actions->buildMenuBar(m_menuBar, Utils::WizPathResolve::resourcesPath() + "files/mainmenu.ini", m_windowListMenu);
 
     connect(m_windowListMenu, SIGNAL(aboutToShow()), SLOT(resetWindowMenu()));
-    connect(m_singleViewDelegate, SIGNAL(documentViewerClosed(QString)),
+    connect(m_singleViewMgr, SIGNAL(documentViewerClosed(QString)),
             SLOT(removeWindowsMenuItem(QString)));
 
-    //
     m_actions->actionFromName(WIZCATEGORY_OPTION_MESSAGECENTER)->setCheckable(true);
     m_actions->actionFromName(WIZCATEGORY_OPTION_SHORTCUTS)->setCheckable(true);
     m_actions->actionFromName(WIZCATEGORY_OPTION_QUICKSEARCH)->setCheckable(true);
@@ -1449,8 +1446,8 @@ void WizMainWindow::resetWindowListMenu(QMenu* menu, bool removeExists)
     action->setCheckable(true);
     action->setChecked((activeWidget == nullptr || activeWidget == this));
     newActions.append(action);
-    //
-    QMap<QString, WizSingleDocumentViewer*>& viewerMap = m_singleViewDelegate->getDocumentViewerMap();
+
+    QMap<QString, WizSingleDocumentViewer*>& viewerMap = m_singleViewMgr->getDocumentViewerMap();
     QList<QString> keys = viewerMap.keys();
     for (int i = 0; i < keys.count(); i++)
     {
@@ -1487,7 +1484,7 @@ void WizMainWindow::changeDocumentsSortTypeByAction(QAction* action)
 
 bool WizMainWindow::processApplicationActiveEvent()
 {
-    QMap<QString, WizSingleDocumentViewer*>& viewerMap = m_singleViewDelegate->getDocumentViewerMap();
+    QMap<QString, WizSingleDocumentViewer*>& viewerMap = m_singleViewMgr->getDocumentViewerMap();
     QList<WizSingleDocumentViewer*> singleViewrList = viewerMap.values();
     for (WizSingleDocumentViewer* viewer : singleViewrList)
     {
@@ -1526,7 +1523,6 @@ void WizMainWindow::removeWindowsMenuItem(QString guid)
         m_windowListMenu->removeAction(action);
     }
 
-    //
     resetDockMenu();
 }
 
@@ -3519,7 +3515,7 @@ void WizMainWindow::on_options_settingsChanged(WizOptionsType type)
             docView->web()->editorResetFont();
         });
         //m_doc->web()->editorResetFont();
-        QMap<QString, WizSingleDocumentViewer*>& viewerMap = m_singleViewDelegate->getDocumentViewerMap();
+        QMap<QString, WizSingleDocumentViewer*>& viewerMap = m_singleViewMgr->getDocumentViewerMap();
         QList<WizSingleDocumentViewer*> singleViewrList = viewerMap.values();
         for (WizSingleDocumentViewer* viewer : singleViewrList)
         {
@@ -3665,8 +3661,8 @@ WizDocumentView* WizMainWindow::createDocumentView()
     connect(newDocView->web(), SIGNAL(shareDocumentByLinkRequest(QString,QString)),
             SLOT(on_shareDocumentByLink_request(QString,QString)));
     connect(newDocView, SIGNAL(documentSaved(QString,WizDocumentView*)),
-            m_singleViewDelegate, SIGNAL(documentChanged(QString,WizDocumentView*)));
-    connect(m_singleViewDelegate, SIGNAL(documentChanged(QString,WizDocumentView*)),
+            m_singleViewMgr, SIGNAL(documentChanged(QString,WizDocumentView*)));
+    connect(m_singleViewMgr, SIGNAL(documentChanged(QString,WizDocumentView*)),
             newDocView, SLOT(on_document_data_changed(QString,WizDocumentView*)));
     connect(newDocView->titleBar(), SIGNAL(viewNoteInSeparateWindow_request()),
             SLOT(viewCurrentNoteInSeparateWindow()));
@@ -4584,19 +4580,16 @@ void WizMainWindow::viewNoteInSeparateWindow(const WIZDOCUMENTDATA& data)
     WizDocumentView* docView = currentDocumentView();
     if (docView && docView->note().strGUID == data.strGUID) {
         docView->web()->trySaveDocument(docView->note(), false, [=](const QVariant&){
-
+            // Force current tab viewer to save
             docView->setEditorMode(modeReader);
-            //
-            m_singleViewDelegate->viewDocument(data);
+            m_singleViewMgr->viewDocument(data);
             // update dock menu
             resetDockMenu();
-            //
         });
     } else {
-        m_singleViewDelegate->viewDocument(data);
+        m_singleViewMgr->viewDocument(data);
         resetDockMenu();
     }
-
 }
 
 void WizMainWindow::viewCurrentNoteInSeparateWindow()

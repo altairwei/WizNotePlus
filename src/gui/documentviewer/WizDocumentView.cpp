@@ -904,7 +904,7 @@ void WizDocumentView::on_document_data_modified(const WIZDOCUMENTDATA& data)
         return;
 
     reloadNote();
-    //
+
     WizMainWindow::instance()->quickSyncKb(data.strKbGUID);
 }
 
