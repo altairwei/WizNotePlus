@@ -124,7 +124,7 @@ public:
     QMenu* toMenu(QWidget* parent, WizSettings& settings, const QString& strSection);
     void buildMenu(QMenu* pMenu, WizSettings& settings, const QString& strSection, bool bMenuBar);
     void buildMenuBar(QMenuBar* menuBar, const QString& strFileName, QMenu*& windowsMenu);
-    void buildMenu(QMenu* menu, const QString& strFileName);
+    void buildMenuList(QMenu* menu, const QString& strFileName, QMenu*& windowsMenu);
     //
 Q_SIGNALS:
     void insertTableSelected(int row, int col);

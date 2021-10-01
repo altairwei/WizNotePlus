@@ -390,7 +390,7 @@ void WizActions::buildMenuBar(QMenuBar* menuBar, const QString& strFileName, QMe
     }
 }
 
-void WizActions::buildMenu(QMenu* menu, const QString& strFileName)
+void WizActions::buildMenuList(QMenu* menu, const QString& strFileName, QMenu*& windowsMenu)
 {
     WizSettings settings(strFileName);
 
@@ -414,6 +414,11 @@ void WizActions::buildMenu(QMenu* menu, const QString& strFileName)
             QMenu* pMenu = menu->addMenu(strLocalText);
 
             buildMenu(pMenu, settings, strAction, false);
+
+            if (strAction.remove('&') == "Window")
+            {
+                windowsMenu = pMenu;
+            }
         }
         else
         {

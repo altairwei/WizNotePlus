@@ -1015,8 +1015,21 @@ void setActionCheckState(const QList<QAction*>& actionList, int type)
     }
 }
 
-/**
- * @brief 初始化“系统菜单风格”菜单条
+/*!
+    WizNote custom style menu list initialization
+ */
+void WizMainWindow::initMenuList()
+{
+    m_actions->buildMenuList(m_menu, Utils::WizPathResolve::resourcesPath() + "files/mainmenu.ini", m_windowListMenu);
+
+    initMenuActionState();
+
+    initViewTypeActionGroup();
+    initSortTypeActionGroup();
+}
+
+/*!
+    System style menu bar initialization    
  */
 void WizMainWindow::initMenuBar()
 {
@@ -1842,19 +1855,6 @@ void WizMainWindow::layoutTitleBar()
 
     layout->addItem(layoutTitle);
     title->setLayout(layout);
-}
-
-/**
- * @brief 使用Wiz自定义风格初始化菜单
- */
-void WizMainWindow::initMenuList()
-{
-    m_actions->buildMenu(m_menu, Utils::WizPathResolve::resourcesPath() + "files/mainmenu.ini");
-
-    initMenuActionState();
-
-    initViewTypeActionGroup();
-    initSortTypeActionGroup();
 }
 
 /**
