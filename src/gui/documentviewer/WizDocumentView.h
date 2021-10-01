@@ -116,7 +116,7 @@ public:
     void initStat(const WIZDOCUMENTDATA& data, bool forceEdit);
     void viewNote(const WIZDOCUMENTDATAEX& data, bool forceEdit);
     void reviewCurrentNote();
-    void setEditorMode(WizEditorMode editorMode);
+    void setEditorMode(WizEditorMode mode);
     void setDefaultViewMode(WizDocumentViewMode mode);
     void setModified(bool modified);
     void settingsChanged();

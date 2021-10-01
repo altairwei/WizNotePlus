@@ -3158,6 +3158,9 @@ bool WizIsChineseLanguage(const QString& local)
 
 bool WizIsMarkdownNote(const WIZDOCUMENTDATA& doc)
 {
+    if (doc.strType == "lite/markdown")
+        return true;
+
     if (doc.strTitle.indexOf(".md") == -1 && doc.strTitle.indexOf(".mj") == -1)
         return false;
 
@@ -3170,6 +3173,35 @@ bool WizIsMarkdownNote(const WIZDOCUMENTDATA& doc)
         return true;
 
     return false;
+}
+
+QString WizGetNoteType(const WIZDOCUMENTDATA& doc)
+{
+    if (doc.strType == "outline") {
+        return "outline";
+    }
+
+    if (doc.strType == "lite/markdown") {
+        return "markdown";
+    }
+
+    QString title = doc.strTitle;
+    if (title.endsWith(".md"))
+        return "markdown";
+    if (title.endsWith(".mj"))
+        return "mathjax";
+
+    if (title.indexOf(".md@") != -1)
+        return "markdown";
+    if (title.indexOf(".mj@") != -1)
+        return "mathjax";
+
+    if (title.indexOf(".md ") != -1)
+        return "markdown";
+    if (title.indexOf(".mj ") != -1)
+        return "mathjax";
+
+    return "common";
 }
 
 void WizCopyNoteAsInternalLink(const WIZDOCUMENTDATA& document)

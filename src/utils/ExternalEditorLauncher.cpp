@@ -46,6 +46,10 @@ void ExternalEditorLauncher::waitForDone()
 QString ExternalEditorLauncher::makeValidCacheFileName(const QString &docTitle, const QDir &tempDir)
 {
     CString title = docTitle;
+#ifdef Q_OS_WIN
+    // MS Office Word can not handle space correctly.
+    title.replace(" ", "_");
+#endif
     WizMakeValidFileNameNoPath(title);
     QString cacheFileName = title;
 
@@ -55,7 +59,8 @@ QString ExternalEditorLauncher::makeValidCacheFileName(const QString &docTitle, 
     int num = 1;
 
     while(tempDir.exists(cacheFileName)) {
-        cacheFileName = fileBaseName + "_" + QString::number(num++) + (fileSuffix.isEmpty() ? "" : "." + fileSuffix);
+        cacheFileName = fileBaseName + "_" + QString::number(num++)
+            + (fileSuffix.isEmpty() ? "" : "." + fileSuffix);
     }
 
     return tempDir.absoluteFilePath(cacheFileName);
@@ -68,75 +73,82 @@ void ExternalEditorLauncher::handleViewNoteInExternalEditorRequest(
     if (auto docView = qobject_cast<WizDocumentView*>(sender())) {
         // Make sure editor will get separate cache file.
         QDir noteTempDir(Utils::WizPathResolve::tempPath() + noteData.strGUID + "/");
-        QString cacheFileName = makeValidCacheFileName(noteData.strTitle, noteTempDir);
 
         WizDatabase &db = m_dbMgr.db(noteData.strKbGUID);
-        // Update document first, but we don't need to realod document.
-        docView->web()->trySaveDocument(noteData, false,
-            [this, &docView, &db, noteData, editorData,
-             cacheFileName, noteTempDir] (const QVariant&) mutable 
-            {
-                // Update index.html
-                QString strHtmlFile;
-                db.documentToTempHtmlFile(noteData, strHtmlFile);
 
-                QString strHtml;
-                if (!WizLoadUnicodeTextFromFile(strHtmlFile, strHtml))
-                    return;
+        if (const auto webView = docView->web()) {
+            // Update document first, but we don't need to realod document.
+            webView->trySaveDocument(noteData, false,
+                [this, webView, &db, noteData,
+                 editorData, noteTempDir] (const QVariant&) mutable 
+                {
+                    // Update index.html
+                    QString strHtmlFile;
+                    db.documentToTempHtmlFile(noteData, strHtmlFile);
 
-                // Export Note to file
-                if (editorData.TextEditor == 2) {
-                    if (noteTempDir.exists(cacheFileName))
-                        noteTempDir.remove(cacheFileName);
+                    QString strHtml;
+                    if (!WizLoadUnicodeTextFromFile(strHtmlFile, strHtml))
+                        return;
 
-                    // get pure text
-                    QTextDocument doc;
-                    doc.setHtml(strHtml);
-                    QString strText = doc.toPlainText();
-                    strText.replace("&nbsp", " ");
+                    // Export Note to file
+                    if (editorData.TextEditor == 2) {
+                        QString cacheFileName = makeValidCacheFileName(noteData.strTitle, noteTempDir);
 
-                    // Write to cache file
-                    if(WizSaveUnicodeTextToUtf8File(cacheFileName, strText, false))
-                    {
-                        startExternalEditor(cacheFileName, editorData, noteData);
-                    }
-                    
-                } else if (editorData.TextEditor == 0) {
-                    cacheFileName += ".html";
-                    if (noteTempDir.exists(cacheFileName))
-                        noteTempDir.remove(cacheFileName);
+                        // get pure text
+                        QTextDocument doc;
+                        doc.setHtml(strHtml);
+                        QString strText = doc.toPlainText();
+                        strText.replace("&nbsp", " ");
 
-                    docView->web()->page()->toHtml([=](const QString& strHtml){
-                        if(WizSaveUnicodeTextToUtf8File(cacheFileName, strHtml, false))
+                        // Write to cache file
+                        if(WizSaveUnicodeTextToUtf8File(cacheFileName, strText, false))
                             startExternalEditor(cacheFileName, editorData, noteData);
-                    });
+                        
+                    } else if (editorData.TextEditor == 0) {
+                        QString cacheFileName = makeValidCacheFileName(
+                            noteData.strTitle + ".html", noteTempDir);
+                        if (!webView)
+                            return;
+                        webView->page()->toHtml([=](const QString& html){
+                            if(WizSaveUnicodeTextToUtf8File(cacheFileName, html, false))
+                                startExternalEditor(cacheFileName, editorData, noteData);
+                        });
+                    }
                 }
-            }
-        );
+            );
+        }
     }
 }
 
 /*!
     Start external editor process and watch the document \a cacheFileName.
  */
-void ExternalEditorLauncher::startExternalEditor(QString cacheFileName, const WizExternalEditorData &editorData, const WIZDOCUMENTDATAEX &noteData)
+void ExternalEditorLauncher::startExternalEditor(
+    QString cacheFileName,
+    const WizExternalEditorData &editorData,
+    const WIZDOCUMENTDATAEX &noteData)
 {
     // Launch external editor process
     // FIXME: split too many items
-    QString programFile = "\"" + editorData.ProgramFile + "\"";
+    QString programFile = editorData.ProgramFile;
     QString args = editorData.Arguments.arg("\"" + cacheFileName + "\"");
     QString strCmd = programFile + " " + args;
 
-    // Do not use QProcess instances to detect the state of external editor GUI programs,
+    // Do not use attached QProcess to detect the state of external editor GUI programs,
     // for reasons described in https://github.com/altairwei/WizNotePlus/issues/199
 
-#if QT_VERSION >= QT_VERSION_CHECK(5, 15, 0)
-    auto cmdList = QProcess::splitCommand(strCmd);
-    auto prog = cmdList.takeFirst();
-    QProcess::startDetached(prog, cmdList);
-#else
-    QProcess::startDetached(strCmd);
-#endif
+    QProcess editor;
+    editor.setProgram(programFile);
+    editor.setArguments(splitCommand(args));
+    editor.setWorkingDirectory(Utils::WizPathResolve::tempPath() + noteData.strGUID + "/");
+
+    qDebug() << editor.program() << " " << editor.arguments();
+
+    if (!editor.startDetached())
+        m_window->showBubbleNotification(
+            tr("Failed to launch external editor"),
+            tr("%1 %2").arg(editor.program()).arg(editor.arguments().join(" "))
+        );
 
     // Watch the cache file
     if (!m_externalEditorFileWatcher->addPath(cacheFileName)) {
@@ -209,4 +221,53 @@ void ExternalEditorLauncher::saveWatchedFile(const QString &fileName)
     QString indexFileName = Utils::WizMisc::extractFilePath(fileName) + "index.html";
     // Start saver thread
     m_watchedDocSaver->save(task.docData, strHtml, indexFileName, 0, true);
+}
+
+/*!
+    Copy from Qt 5.15.2
+
+    Splits the string \a command into a list of tokens, and returns
+    the list.
+
+    Tokens with spaces can be surrounded by double quotes; three
+    consecutive double quotes represent the quote character itself.
+*/
+QStringList ExternalEditorLauncher::splitCommand(const QString &command)
+{
+    QStringList args;
+    QString tmp;
+    int quoteCount = 0;
+    bool inQuote = false;
+
+    // handle quoting. tokens can be surrounded by double quotes
+    // "hello world". three consecutive double quotes represent
+    // the quote character itself.
+    for (int i = 0; i < command.size(); ++i) {
+        if (command.at(i) == QLatin1Char('"')) {
+            ++quoteCount;
+            if (quoteCount == 3) {
+                // third consecutive quote
+                quoteCount = 0;
+                tmp += command.at(i);
+            }
+            continue;
+        }
+        if (quoteCount) {
+            if (quoteCount == 1)
+                inQuote = !inQuote;
+            quoteCount = 0;
+        }
+        if (!inQuote && command.at(i).isSpace()) {
+            if (!tmp.isEmpty()) {
+                args += tmp;
+                tmp.clear();
+            }
+        } else {
+            tmp += command.at(i);
+        }
+    }
+    if (!tmp.isEmpty())
+        args += tmp;
+
+    return args;
 }

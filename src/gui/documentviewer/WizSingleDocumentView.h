@@ -43,14 +43,11 @@ private:
 };
 
 
-/**
- * @brief 单窗口文档浏览分派器
- */
-class WizSingleDocumentViewDelegate : public QObject
+class WizSingleDocumentViewManager : public QObject
 {
     Q_OBJECT
 public:
-    WizSingleDocumentViewDelegate(WizExplorerApp& app, QObject* parent = 0);
+    WizSingleDocumentViewManager(WizExplorerApp& app, QObject* parent = 0);
 
     WizSingleDocumentViewer* getDocumentViewer(const QString& guid);
     QMap<QString, WizSingleDocumentViewer*>& getDocumentViewerMap();

@@ -39,6 +39,8 @@ public:
     WizDocumentWebViewSaverThread* watchedDocSaver() { return m_watchedDocSaver; }
     void waitForDone();
 
+    static QStringList splitCommand(const QString &command);
+
 protected:
     QString makeValidCacheFileName(const QString &docTitle, const QDir &tempDir);
 

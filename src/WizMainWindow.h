@@ -71,7 +71,7 @@ class WizMessageListTitleBar;
 
 class WizDocumentView;
 class WizDocumentWebViewSaverThread;
-class WizSingleDocumentViewDelegate;
+class WizSingleDocumentViewManager;
 class QWebEngineView;
 
 class ApiWizExplorerApp;
@@ -176,7 +176,7 @@ private:
     WizMainTabBrowser* m_mainTabBrowser; /**< 主标签部件，笔记文档视图储存在内部 */
     std::shared_ptr<WizSplitter> m_splitter;
     QWidget* m_docListContainer;
-    WizSingleDocumentViewDelegate* m_singleViewDelegate;
+    WizSingleDocumentViewManager* m_singleViewMgr;
 
     QLabel* m_labelDocumentsHint;
 //    QLabel* m_labelDocumentsCount;
