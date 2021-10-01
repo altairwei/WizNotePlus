@@ -463,3 +463,15 @@ void WizMainTabBrowser::keyPressEvent(QKeyEvent* ev)
 
     QTabWidget::keyPressEvent(ev);
 }
+
+void WizMainTabBrowser::mousePressEvent(QMouseEvent* event)
+{
+    if (event->button() == Qt::MiddleButton)
+    {
+        event->accept();
+        int tab_index = tabBar()->tabAt(event->pos());
+        closeTab(tab_index);
+    }
+    else
+        QTabWidget::mousePressEvent(event);
+}

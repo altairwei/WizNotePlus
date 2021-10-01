@@ -17,6 +17,8 @@ public:
     ~WizSearchReplaceWidget();
 
     void showInEditor(const QRect& rcEditor);
+    void setSourceText(const QString& text);
+
 signals:
     void findPre(QString strTxt, bool bCasesensitive);
     void findNext(QString strTxt, bool bCasesensitive);
@@ -29,14 +31,12 @@ protected:
 
 private slots:
     void on_btn_pre_clicked();
-
     void on_btn_next_clicked();
-
     void on_btn_replace_clicked();
-
     void on_btn_replaceAll_clicked();
-
     void on_lineEdit_source_returnPressed();
+    void on_lineEdit_source_textChanged(const QString &text);
+
 private:
     Ui::WizSearchReplaceWidget *ui;
 

@@ -16,14 +16,21 @@ def bump_version(old_version, version_type):
 
     if version_type == "major":
         version_list[0] = str(int(version_list[0]) + 1)
+        version_list[1] = "0"
+        version_list[2] = "0"
     elif version_type == "minor":
         version_list[1] = str(int(version_list[1]) + 1)
+        version_list[2] = "0"
     elif version_type == "patch":
         version_list[2] = str(int(version_list[2]) + 1)
     elif version_type == "stage":
         index = DEV_STAGE.index(develop_list[0])
         if index < len(DEV_STAGE) - 1:
             develop_list[0] = DEV_STAGE[index + 1]
+            develop_list[1] = "0"
+        elif index == len(DEV_STAGE) - 1:
+            develop_list[0] = DEV_STAGE[0]
+            develop_list[1] = "0"
     elif version_type == "num":
         develop_list[1] = str(int(develop_list[1]) + 1)
 

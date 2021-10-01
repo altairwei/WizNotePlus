@@ -221,6 +221,7 @@ void WizNotesToHtmlLink(const QList<WIZDOCUMENTDATA>& documents, QString& strHtm
 
 bool WizIsNoteContainsFrameset(const WIZDOCUMENTDATA& doc);
 bool WizIsMarkdownNote(const WIZDOCUMENTDATA& doc);
+QString WizGetNoteType(const WIZDOCUMENTDATA& doc);
 
 enum WizKMUrlType
 {

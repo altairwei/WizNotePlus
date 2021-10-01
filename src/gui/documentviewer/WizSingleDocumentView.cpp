@@ -1,9 +1,11 @@
 ﻿#include "WizSingleDocumentView.h"
+
 #include <QVBoxLayout>
 #include <QHBoxLayout>
 #include <QAction>
 #include <QPainter>
 #include <QDebug>
+
 #include "utils/WizStyleHelper.h"
 #include "share/WizMisc.h"
 #include "share/WizThreads.h"
@@ -65,8 +67,8 @@ WizSingleDocumentViewer::WizSingleDocumentViewer(WizExplorerApp& app, const QStr
     m_containerWgt->setLayout(containerLayout);
     // 创建文档视图
     m_docView = new WizDocumentView(app, m_containerWgt);
-    m_docView->setStyleSheet(QString("QLineEdit{border:1px solid #DDDDDD; border-radius:2px;}"
-                                     "QToolButton {border:0px; padding:0px; border-radius:0px;background-color:#F5F5F5;}"));
+    //m_docView->setStyleSheet(QString("QLineEdit{border:1px solid #DDDDDD; border-radius:2px;}"
+    //                                    "QToolButton {border:0px; padding:0px; border-radius:0px;background-color:#F5F5F5;}"));
     m_docView->titleBar()->setStyleSheet(QString("QLineEdit{padding:0px; padding-left:-2px; padding-bottom:1px; border:0px;background-color:#F5F5F5;}"));
     //m_docView->web()->setInSeperateWindow(true);
     if (WizIsHighPixel())
@@ -102,8 +104,6 @@ WizSingleDocumentViewer::~WizSingleDocumentViewer()
 {
     emit documentViewerDeleted(m_guid);
 }
-//
-
 
 WizDocumentView* WizSingleDocumentViewer::docView()
 {        
@@ -133,7 +133,7 @@ void WizSingleDocumentViewer::resizeEvent(QResizeEvent* ev)
 void WizSingleDocumentViewer::closeEvent(QCloseEvent *ev)
 {
     m_docView->waitForDone();
-    //
+
     QWidget::closeEvent(ev);
 }
 
@@ -188,18 +188,18 @@ void WizSingleDocumentViewer::applyWidgetBackground(bool isFullScreen)
 }
 
 
-WizSingleDocumentViewDelegate::WizSingleDocumentViewDelegate(WizExplorerApp& app, QObject* parent)
+WizSingleDocumentViewManager::WizSingleDocumentViewManager(WizExplorerApp& app, QObject* parent)
     : QObject(parent)
     ,m_app(app)
 {
 }
 
-WizSingleDocumentViewer*WizSingleDocumentViewDelegate::getDocumentViewer(const QString& guid)
+WizSingleDocumentViewer*WizSingleDocumentViewManager::getDocumentViewer(const QString& guid)
 {
     return m_viewerMap.value(guid, nullptr);
 }
 
-QMap<QString, WizSingleDocumentViewer*>& WizSingleDocumentViewDelegate::getDocumentViewerMap()
+QMap<QString, WizSingleDocumentViewer*>& WizSingleDocumentViewManager::getDocumentViewerMap()
 {
     return m_viewerMap;
 }
@@ -208,7 +208,7 @@ QMap<QString, WizSingleDocumentViewer*>& WizSingleDocumentViewDelegate::getDocum
  * @brief 分配浏览文档的任务，创建单窗口浏览器
  * @param doc 文档数据
  */
-void WizSingleDocumentViewDelegate::viewDocument(const WIZDOCUMENTDATA& doc)
+void WizSingleDocumentViewManager::viewDocument(const WIZDOCUMENTDATA& doc)
 {
     if (m_viewerMap.find(doc.strGUID) != m_viewerMap.end())
     {
@@ -220,13 +220,17 @@ void WizSingleDocumentViewDelegate::viewDocument(const WIZDOCUMENTDATA& doc)
         WizMainWindow* mainWindow = dynamic_cast<WizMainWindow*>(m_app.mainWindow());
         WizSingleDocumentViewer* wgt = new WizSingleDocumentViewer(m_app, doc.strGUID);
         WizDocumentView* docView = wgt->docView();
+
+        // Connecting signals to each other (tab viewer and single viewer)
         connect(docView, SIGNAL(documentSaved(QString,WizDocumentView*)), SIGNAL(documentChanged(QString,WizDocumentView*)));
         connect(this, SIGNAL(documentChanged(QString,WizDocumentView*)), docView, SLOT(on_document_data_changed(QString,WizDocumentView*)));
+
         connect(docView->web(), SIGNAL(shareDocumentByLinkRequest(QString,QString)),
                 mainWindow, SLOT(on_shareDocumentByLink_request(QString,QString)));
         connect(docView->web(), SIGNAL(statusChanged(const QString&)), mainWindow,
                 SLOT(on_editor_statusChanged(const QString&)));
         connect(wgt, SIGNAL(documentViewerDeleted(QString)), SLOT(onDocumentViewerDeleted(QString)));
+
         static int nOffset = 0;
         wgt->setGeometry((mainWindow->width() - mainWindow->mainTabView()->width())  / 2 + nOffset,
                          (mainWindow->height() - wgt->height()) / 2 + nOffset,
@@ -235,7 +239,7 @@ void WizSingleDocumentViewDelegate::viewDocument(const WIZDOCUMENTDATA& doc)
         wgt->show();
         nOffset += 22;
         nOffset > 250 ? nOffset = 0 : 0;
-        //
+
         docView->viewNote(doc, false);
         bringWidgetToFront(wgt);
         m_viewerMap.insert(doc.strGUID, wgt);
@@ -244,7 +248,7 @@ void WizSingleDocumentViewDelegate::viewDocument(const WIZDOCUMENTDATA& doc)
     }
 }
 
-void WizSingleDocumentViewDelegate::onDocumentViewerDeleted(QString guid)
+void WizSingleDocumentViewManager::onDocumentViewerDeleted(QString guid)
 {
     m_viewerMap.remove(guid);
 

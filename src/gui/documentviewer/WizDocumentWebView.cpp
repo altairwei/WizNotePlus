@@ -750,9 +750,9 @@ void WizDocumentWebView::onDocumentSaved(const QString kbGUID, const QString str
     {
         TOLOG("Save document failed");
     }
-    //
+
     view()->sendDocumentSavedSignal(strGUID, kbGUID);
-    //
+
     WizMainWindow* mainWindow = qobject_cast<WizMainWindow*>(m_app.mainWindow());
     mainWindow->quickSyncKb(kbGUID);
 }
@@ -848,20 +848,20 @@ void WizDocumentWebView::loadDocumentToExternalEditor(const WIZDOCUMENTDATA &doc
     if (editorData.TextEditor == 2) {
         if (noteTempDir.exists(cacheFileName))
             noteTempDir.remove(cacheFileName);
-        //
+
         saveAsPlainText(cacheFileName, [=](QString fileName){
-            WizGlobal::mainWindow()->startExternalEditor(fileName, editorData, view()->note());
+            //WizGlobal::mainWindow()->startExternalEditor(fileName, editorData, view()->note());
         });
     } else if (editorData.TextEditor == 0) {
         cacheFileName += ".html";
         if (noteTempDir.exists(cacheFileName))
             noteTempDir.remove(cacheFileName);
-        //
+
         saveAsRenderedHtml(cacheFileName, [=](QString fileName){
-            WizGlobal::mainWindow()->startExternalEditor(fileName, editorData, view()->note());
+            //WizGlobal::mainWindow()->startExternalEditor(fileName, editorData, view()->note());
         });
     }
-    //
+
     clearExtEditorTask();
 }
 
@@ -1146,29 +1146,7 @@ void WizDocumentWebView::shareNoteByLink()
 
 QString WizDocumentWebView::getNoteType()
 {
-    const WIZDOCUMENTDATA& doc = view()->note();
-
-    if (doc.strType == "outline") {
-        return "outline";
-    }
-
-    QString title = doc.strTitle;
-    if (title.endsWith(".md"))
-        return "markdown";
-    if (title.endsWith(".mj"))
-        return "mathjax";
-
-    if (title.indexOf(".md@") != -1)
-        return "markdown";
-    if (title.indexOf(".mj@") != -1)
-        return "mathjax";
-
-    if (title.indexOf(".md ") != -1)
-        return "markdown";
-    if (title.indexOf(".mj ") != -1)
-        return "mathjax";
-
-    return "common";
+    return WizGetNoteType(view()->note());
 }
 
 bool WizDocumentWebView::isOutline() const
@@ -1400,11 +1378,10 @@ void WizDocumentWebView::saveEditingViewDocument(const WIZDOCUMENTDATA &data, bo
         callback(QVariant(false));
         return;
     }
-    //
-    WIZDOCUMENTDATA doc = data;
-    //
-    isModified([=](bool modified) {
 
+    WIZDOCUMENTDATA doc = data;
+
+    isModified([=](bool modified) {
         if (!force)
         {
             if (!modified)
@@ -1416,14 +1393,12 @@ void WizDocumentWebView::saveEditingViewDocument(const WIZDOCUMENTDATA &data, bo
         }
         // reset save flag?
         setModified(false);
-        //
+
         QString strFileName = m_mapFile.value(data.strGUID);
-        //
         QString strScript = "WizEditor.getContentHtml()";
-        //
+
         TOLOG("saving note...");
         page()->runJavaScript(strScript, [=](const QVariant& ret){
-            //
             bool succeeded = false;
             if (ret.type() == QVariant::String)
             {
@@ -1434,24 +1409,20 @@ void WizDocumentWebView::saveEditingViewDocument(const WIZDOCUMENTDATA &data, bo
                     m_currentNoteHtml = html;
                     WizSaveUnicodeTextToUtf8File(m_strNoteHtmlFileName, m_currentNoteHtml);
                     emit currentHtmlChanged();
-                    //
-                    //qDebug() << m_currentNoteHtml;
-                    //
                     m_docSaverThread->save(doc, html, strFileName, 0);
                     TOLOG("save note done...");
                 }
             }
-            //
+
             if (!succeeded)
             {
                 TOLOG("save note failed, html is empty");
                 QString message = tr("Failed to save note.");
                 WizMessageBox::warning(this, tr("Error"), message);
             }
-            //
+
             callback(QVariant(succeeded));
         });
-        //
     });
 
 }
@@ -1484,7 +1455,7 @@ void WizDocumentWebView::saveReadingViewDocument(const WIZDOCUMENTDATA &data, bo
                 }
             }
         }
-        //
+
         callback(true);
     });
 }
@@ -1696,16 +1667,17 @@ void WizDocumentWebView::onNoteLoadFinished()
     WizGlobal::instance()->emitViewNoteLoaded(view(), view()->note(), true);
 }
 
-/**
- * @brief set editor state
- * @param editorMode
- */
-void WizDocumentWebView::setEditorMode(WizEditorMode editorMode)
+/*!
+    Set the \a mode of editor and try to save document before switching mode.
+    Editor will try to save document.
+*/
+void WizDocumentWebView::setEditorMode(WizEditorMode mode)
 {
-    if (m_currentEditorMode == editorMode)
+    if (m_currentEditorMode == mode)
         return;
-    //
-    bool editing = editorMode == modeEditor;
+
+    bool editing = mode == modeEditor;
+
     // show editor toolbar properly
     if (!editing && hasFocus()) {
         Q_EMIT focusOut();
@@ -1721,18 +1693,15 @@ void WizDocumentWebView::setEditorMode(WizEditorMode editorMode)
         return;
 
     trySaveDocument(docData, false, [=](const QVariant&){
-        //
         enableEditor(editing);
-        //
         if (editing) {
             setFocus(Qt::MouseFocusReason);
             editorFocus();
         }
-        //
     });
 
-    m_currentEditorMode = editorMode;
-    //
+    m_currentEditorMode = mode;
+
     if (m_currentEditorMode == modeEditor) {
         m_timerAutoSave.start();
     } else {
@@ -1947,6 +1916,7 @@ void WizDocumentWebView::editorCommandExecuteFindReplace()
     QRect rect = geometry();
     rect.moveTo(mapToGlobal(pos()));
     m_searchReplaceWidget->showInEditor(rect);
+    m_searchReplaceWidget->setSourceText(selectedText());
 
     WizAnalyzer& analyzer = WizAnalyzer::getAnalyzer();
     analyzer.logAction("findReplace");
@@ -2721,18 +2691,7 @@ bool WizDocumentWebView::canRenderMarkdown()
     if (view()->isEditing())
         return false;
 
-    if (doc.strTitle.indexOf(".md") == -1 && doc.strTitle.indexOf(".mj") == -1)
-        return false;
-
-    int nPointPos = doc.strTitle.length() - 3;
-    if (doc.strTitle.lastIndexOf(".md") == nPointPos || doc.strTitle.lastIndexOf(".mj") == nPointPos)
-        return true;
-
-    if (doc.strTitle.indexOf(".md ") != -1 || doc.strTitle.indexOf(".md@") != -1 ||
-            doc.strTitle.indexOf(".mj ") != -1|| doc.strTitle.indexOf(".mj@") != -1)
-        return true;
-
-    return false;
+    return WizIsMarkdownNote(doc);
 }
 
 bool WizDocumentWebView::canEditNote()
@@ -2858,20 +2817,27 @@ void WizDocumentWebViewLoaderThread::load(const WIZDOCUMENTDATA &doc, WizEditorM
         start();
     }
 }
+
 void WizDocumentWebViewLoaderThread::stop()
 {
     QMutexLocker locker(&m_mutex);
     Q_UNUSED(locker);
-    //
+
     m_stop = true;
-    //
+
     m_waitEvent.wakeAll();
 }
+
 void WizDocumentWebViewLoaderThread::waitForDone()
 {
     stop();
-    //
-    WizWaitForThread(this);
+
+    while (this->isRunning())
+    {
+        QApplication::processEvents();
+    }
+
+    this->disconnect();
 }
 
 void WizDocumentWebViewLoaderThread::run()
@@ -2908,9 +2874,7 @@ void WizDocumentWebViewLoaderThread::run()
         else
         {
             ::WizExecuteOnThread(WIZ_THREAD_MAIN, [=]{
-                //
                 QMessageBox::critical(WizMainWindow::instance(), tr("Error"), tr("Can't view note: (Can't unzip note data)"));
-                //
             });
         }
     }
@@ -2981,12 +2945,12 @@ void WizDocumentWebViewSaverThread::save(const WIZDOCUMENTDATA& doc, const QStri
     data.htmlFile = strHtmlFile;
     data.flags = nFlags;
     data.notify = bNotify;
-    //
+
     QMutexLocker locker(&m_mutex);
     Q_UNUSED(locker);
-    //
+
     m_arrayData.push_back(data);
-    //
+
     m_waitEvent.wakeAll();
 
     if (!isRunning())
@@ -2994,11 +2958,17 @@ void WizDocumentWebViewSaverThread::save(const WIZDOCUMENTDATA& doc, const QStri
         start();
     }
 }
+
 void WizDocumentWebViewSaverThread::waitForDone()
 {
     stop();
-    //
-    WizWaitForThread(this);
+
+    while (this->isRunning())
+    {
+        QApplication::processEvents();
+    }
+
+    this->disconnect();
 }
 
 void WizDocumentWebViewSaverThread::stop()
@@ -3011,7 +2981,7 @@ bool WizDocumentWebViewSaverThread::isEmpty()
 {
     QMutexLocker locker(&m_mutex);
     Q_UNUSED(locker);
-    //
+
     return m_arrayData.empty();
 }
 
@@ -3019,7 +2989,7 @@ WizDocumentWebViewSaverThread::SAVEDATA WizDocumentWebViewSaverThread::peekFirst
 {
     QMutexLocker locker(&m_mutex);
     Q_UNUSED(locker);
-    //
+
     SAVEDATA data = m_arrayData[0];
     m_arrayData.erase(m_arrayData.begin());
     return data;
@@ -3031,22 +3001,21 @@ void WizDocumentWebViewSaverThread::peekData(SAVEDATA& data)
     {
         if (m_stop)
             return;
-        //
+
         if (isEmpty())
         {
             m_waitEvent.wait();
         }
-        //
+
         if (isEmpty())
         {
             if (m_stop)
                 return;
-            //
             continue;
         }
-        //
+
         data = peekFirst();
-        //
+
         break;
     }
 }
@@ -3057,29 +3026,27 @@ void WizDocumentWebViewSaverThread::run()
     {
         SAVEDATA data;
         peekData(data);
-        //
+
         if (data.doc.strGUID.isEmpty())
         {
             if (m_stop)
                 return;
-            //
             continue;
         }
-        //
+
         WizDatabase& db = m_dbMgr.db(data.doc.strKbGUID);
-        //
+
         WIZDOCUMENTDATA doc;
         if (!db.documentFromGuid(data.doc.strGUID, doc))
         {
             qDebug() << "fault error: can't find doc in database: " << doc.strGUID;
             continue;
         }
-        //
+
         qDebug() << "Saving note: " << doc.strTitle;
 
         bool ok = db.updateDocumentData(doc, data.html, data.htmlFile, data.flags, data.notify);
 
-        //
         if (ok)
         {
             qDebug() << "Save note done: " << doc.strTitle;

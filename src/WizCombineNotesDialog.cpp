@@ -19,7 +19,7 @@
 #include "core/WizNoteManager.h"
 
 #include "WizMainWindow.h"
-#include "WizDocumentListView.h"
+#include "gui/doclistviewer/WizDocumentListView.h"
 
 
 WizCombineNotesDialog::WizCombineNotesDialog(WizDatabaseManager& dbMgr, const CWizDocumentDataArray& documents, QWidget *parent /* = 0 */)

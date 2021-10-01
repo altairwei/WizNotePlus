@@ -631,7 +631,7 @@ protected:
         p.setClipRect(opt.rect);
 
         QIcon::Mode mode = opt.state & QStyle::State_Enabled ? QIcon::Normal : QIcon::Disabled;
-        if (mode == QIcon::Normal && (opt.state & QStyle::State_Sunken))
+        if (mode == QIcon::Normal && (opt.state & QStyle::State_On))
             mode = QIcon::Active;
         QIcon::State state = QIcon::Off;
         if (opt.state & QStyle::State_On)
@@ -652,7 +652,7 @@ protected:
             QRect rcIcon((opt.rect.width() - iconSize.width()) / 2, (opt.rect.height() - iconSize.height()) / 2, iconSize.width(), iconSize.height());
             if (opt.arrowType == Qt::RightArrow)
                 rcIcon.setX((opt.rect.width() - iconSize.width()) / 2 - TOOLBUTTON_MARGIN_WIDTH);
-            opt.icon.paint(&p, rcIcon, Qt::AlignCenter, mode);
+            opt.icon.paint(&p, rcIcon, Qt::AlignCenter, mode, state);
         } else if (textWidth > 0) {
             p.drawText(opt.rect, Qt::AlignCenter, text);
         }

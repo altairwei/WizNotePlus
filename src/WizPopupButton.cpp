@@ -7,7 +7,7 @@
 #include "share/WizMisc.h"
 #include "share/WizQtHelper.h"
 #include "share/WizSettings.h"
-#include "WizDocumentListView.h"
+#include "gui/doclistviewer/WizDocumentListView.h"
 #include <QApplication>
 
 WizPopupButton::WizPopupButton(WizExplorerApp& app, QWidget *parent)

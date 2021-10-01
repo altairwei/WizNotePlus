@@ -536,19 +536,19 @@ void WizDocumentView::reviewCurrentNote()
     }
 }
 
-/**
- * @brief Set the mode of editor.
- * @param editorMode
- */
-void WizDocumentView::setEditorMode(WizEditorMode editorMode)
+/*!
+    Set the \a mode of editor and try to save document before switching mode.
+    Editor will check and send group notes editing status.
+*/
+void WizDocumentView::setEditorMode(WizEditorMode mode)
 {
     if (m_bLocked)
         return;
 
-    if (m_editorMode == editorMode)
+    if (m_editorMode == mode)
         return;
 
-    bool edit = editorMode == modeEditor;
+    bool edit = mode == modeEditor;
     bool read = !edit;
 
     // 检查文档的团队编辑状态
@@ -565,7 +565,7 @@ void WizDocumentView::setEditorMode(WizEditorMode editorMode)
     }
 
     // 设置文档视图编辑器状态
-    m_editorMode = editorMode;
+    m_editorMode = mode;
 
     if (read)
     {
@@ -575,9 +575,9 @@ void WizDocumentView::setEditorMode(WizEditorMode editorMode)
         m_title->onTitleEditFinished();
         m_title->hideMessageTips(false);
     }
-    m_title->setEditorMode(editorMode);
+    m_title->setEditorMode(mode);
 
-    m_web->setEditorMode(editorMode);
+    m_web->setEditorMode(mode);
 
     // 发送团队文档编辑状态
     if (isGroupNote)
@@ -904,7 +904,7 @@ void WizDocumentView::on_document_data_modified(const WIZDOCUMENTDATA& data)
         return;
 
     reloadNote();
-    //
+
     WizMainWindow::instance()->quickSyncKb(data.strKbGUID);
 }
 
@@ -1058,13 +1058,16 @@ void WizDocumentView::on_viewNoteInExternalEditor_request(QString& Name, QString
     WizExternalEditorData editorData = {
         Name, ProgramFile, Arguments, TextEditor, UTF8Encoding
     };
-    web()->viewDocumentInExternalEditor(editorData);
+
+    emit viewNoteInExternalEditorRequest(editorData, m_note);
 }
 
 void WizDocumentView::handleDiscardChangesRequest()
 {
-    // Change editor state
-    setEditorMode(modeReader);
+    // Change editor state. WizDocumentView::setEditorMode() involves 
+    // the process of saving, so we change m_editorMode separately.
+    m_editorMode = modeReader;
+
     m_editStatus = DOCUMENT_STATUS_NOSTATUS;
     m_title->setEditorMode(modeReader);
 
@@ -1077,6 +1080,8 @@ void WizDocumentView::handleDiscardChangesRequest()
         stopDocumentEditingStatus();
         startCheckDocumentEditStatus();
     }
+
+    emit m_web->canEditNoteChanged();
 }
 
 void WizDocumentView::on_loadComment_request(const QString& url)

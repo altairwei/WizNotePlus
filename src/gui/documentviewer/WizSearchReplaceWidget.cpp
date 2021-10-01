@@ -6,13 +6,13 @@ WizSearchReplaceWidget::WizSearchReplaceWidget(QWidget* parent) :
     ui(new Ui::WizSearchReplaceWidget)
 {
     ui->setupUi(this);
-    
+
     // Disable auto default button
     ui->btn_pre->setAutoDefault(false);
     ui->btn_next->setAutoDefault(false);
     ui->btn_replace->setAutoDefault(false);
     ui->btn_replaceAll->setAutoDefault(false);
-    
+
     //setWindowFlags(Qt::WindowStaysOnTopHint);  //could cause window fullscreen on mac
 }
 
@@ -26,7 +26,7 @@ void WizSearchReplaceWidget::showInEditor(const QRect& rcEditor)
 {
     QPoint pos;
     pos.setX(rcEditor.x() + (rcEditor.width() - width()) / 2);
-    pos.setY(rcEditor.y() + (rcEditor.height() - height()) / 2);
+    pos.setY(rcEditor.y());
     setGeometry(QRect(pos, size()));
 
     setParent(parentWidget());
@@ -36,6 +36,11 @@ void WizSearchReplaceWidget::showInEditor(const QRect& rcEditor)
     activateWindow();
     raise();
     //ui->lineEdit_source->setFocus();
+}
+
+void WizSearchReplaceWidget::setSourceText(const QString& text)
+{
+    ui->lineEdit_source->setText(text);
 }
 
 void WizSearchReplaceWidget::closeEvent(QCloseEvent* event)
@@ -69,6 +74,11 @@ void WizSearchReplaceWidget::on_btn_replaceAll_clicked()
 void WizSearchReplaceWidget::on_lineEdit_source_returnPressed()
 {
     emit findNext(ui->lineEdit_source->text(), ui->checkBox_casesenitive->checkState() == Qt::Checked);
+}
+
+void WizSearchReplaceWidget::on_lineEdit_source_textChanged(const QString &text)
+{
+    emit findNext(text, ui->checkBox_casesenitive->checkState() == Qt::Checked);
 }
 
 void WizSearchReplaceWidget::clearAllText()

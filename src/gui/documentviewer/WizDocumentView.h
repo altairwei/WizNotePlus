@@ -6,6 +6,7 @@
 #include <QStackedWidget>
 
 #include "share/WizObject.h"
+#include "utils/ExternalEditorLauncher.h"
 #include "gui/tabbrowser/AbstractTabPage.h"
 
 class QScrollArea;
@@ -115,7 +116,7 @@ public:
     void initStat(const WIZDOCUMENTDATA& data, bool forceEdit);
     void viewNote(const WIZDOCUMENTDATAEX& data, bool forceEdit);
     void reviewCurrentNote();
-    void setEditorMode(WizEditorMode editorMode);
+    void setEditorMode(WizEditorMode mode);
     void setDefaultViewMode(WizDocumentViewMode mode);
     void setModified(bool modified);
     void settingsChanged();
@@ -133,6 +134,7 @@ signals:
     void documentSaved(const QString& strGUID, WizDocumentView* viewer);
     void checkDocumentEditStatusRequest(const QString& strKbGUID, const QString& strGUID);
     void stopCheckDocumentEditStatusRequest(const QString& strKbGUID, const QString& strGUID);
+    void viewNoteInExternalEditorRequest(const WizExternalEditorData &editorData, const WIZDOCUMENTDATAEX &noteData);
 
 public Q_SLOTS:
     void onViewNoteRequested(WizDocumentView* view, const WIZDOCUMENTDATAEX& doc, bool forceEditing);

@@ -1,5 +1,6 @@
 ﻿#include "WizMainWindow.h"
 
+#include <algorithm>
 #include <typeinfo>
 #include <QToolBar>
 #include <QMenuBar>
@@ -33,7 +34,7 @@
 #include "WizUpgrade.h"
 #include "WizConsoleDialog.h"
 #include "gui/categoryviewer/WizCategoryView.h"
-#include "WizDocumentListView.h"
+#include "gui/doclistviewer/WizDocumentListView.h"
 #include "WizUserCipherForm.h"
 
 #include "WizActions.h"
@@ -151,7 +152,7 @@ WizMainWindow::WizMainWindow(WizDatabaseManager& dbMgr, QWidget *parent)
     , m_mainTabBrowser(new WizMainTabBrowser(*this, this)) // 初始化主标签栏
     , m_history(new WizDocumentViewHistory())
     , m_animateSync(new WizAnimateAction(this))
-    , m_singleViewDelegate(new WizSingleDocumentViewDelegate(*this, this))
+    , m_singleViewMgr(new WizSingleDocumentViewManager(*this, this))
     , m_bRestart(false)
     , m_bLogoutRestart(false)
     , m_bUpdatingSelection(false)
@@ -161,7 +162,7 @@ WizMainWindow::WizMainWindow(WizDatabaseManager& dbMgr, QWidget *parent)
     , m_bQuickDownloadMessageEnable(false)
     , m_quiting(false)
     , m_IWizExplorerApp(new ApiWizExplorerApp(this, this))
-    , m_extFileWatcher(new QFileSystemWatcher)
+    , m_externalEditorLauncher(new ExternalEditorLauncher(*this, this))
 {
 #ifdef QT_DEBUG
     int ret = WizToolsSmartCompare("H", "d");
@@ -260,19 +261,11 @@ WizMainWindow::WizMainWindow(WizDatabaseManager& dbMgr, QWidget *parent)
         syncMessageTimer->start(3 * 1000 * 60);
     }
 
-    // initialize document saver thread
-    m_watchedDocSaver = new WizDocumentWebViewSaverThread(dbMgr, this);
-    //
-    connect(m_extFileWatcher, &QFileSystemWatcher::fileChanged, 
-                    this, &WizMainWindow::onWatchedDocumentChanged);
-    //
     m_publicAPIsServer = new PublicAPIsServer(
         {{"WizExplorerApp", m_IWizExplorerApp}}, this);
 }
 
-/**
- * @brief 用于QApplication的事件过滤器，用于解决主程序退出问题的无奈之举
- */
+
 bool WizMainWindow::eventFilter(QObject* watched, QEvent* event)
 {
     // Qt issue: issue? User quit for mac dock send close event to qApp?
@@ -310,7 +303,9 @@ bool WizMainWindow::eventFilter(QObject* watched, QEvent* event)
             // It will cause bugs to full screen mode on Linux/KDE. 
             // When WizMainWindow has been hidden, it will show again 
             // if any other windows/dialogs is activated.
-            //return processApplicationActiveEvent();
+#ifdef Q_OS_MAC
+                return processApplicationActiveEvent();
+#endif
         }
         else
         {
@@ -333,36 +328,35 @@ void WizMainWindow::on_application_aboutToQuit()
 void WizMainWindow::cleanOnQuit()
 {
     m_quiting = true;
-    //
+
     WizObjectDownloaderHost::instance()->waitForDone();
     WizKMSyncThread::setQuickThread(nullptr);
-    //
+
     m_category->saveExpandState();
     saveStatus();
-    //
+
     auto full = m_syncFull;
     m_syncFull = nullptr;
     full->waitForDone();
-    //
+
     auto quick = m_syncQuick;
     m_syncQuick = nullptr;
     quick->waitForDone();
-    //
+
     m_searcher->waitForDone();
+
     // 处理所有标签
     processAllDocumentViews([=](WizDocumentView* docView){
         docView->waitForDone();
     });
-    // Stop m_docSaver thread
-    auto saver = m_watchedDocSaver;
-    m_watchedDocSaver = nullptr;
-    saver->waitForDone();
-    //
+
+    m_externalEditorLauncher->waitForDone();
+
     if (m_mobileFileReceiver)
     {
         m_mobileFileReceiver->waitForDone();
     }
-    //
+
     WizQueuedThreadsShutdown();
 }
 
@@ -422,82 +416,6 @@ void WizMainWindow::trySaveCurrentNote(std::function<void(const QVariant &)> cal
     } else {
         callback(QVariant(true));
     }
-}
-
-/**
- * @brief Start external editor process and watch the document file.
- * @param cacheFileName
- * @param Name
- * @param ProgramFile
- * @param Arguments
- * @param TextEditor
- * @param UTF8Encoding
- */
-void WizMainWindow::startExternalEditor(QString cacheFileName, const WizExternalEditorData& editorData, const WIZDOCUMENTDATAEX& noteData)
-{
-    // 准备进程参数
-    //FIXME: split too many items
-    QString programFile = "\"" + editorData.ProgramFile + "\"";
-    QString args = editorData.Arguments.arg("\"" + cacheFileName + "\"");
-    QString strCmd = programFile + " " + args;
-    // 创建并开启进程
-    qInfo() << "Use external editor: " + editorData.Name << strCmd;
-    QProcess *extEditorProcess = new QProcess(this);
-    extEditorProcess->startDetached(strCmd);
-    // 设置文件监控器
-    m_extFileWatcher->addPath(cacheFileName);
-    WizExternalEditTask task = {
-        editorData, noteData
-    };
-    m_watchedFileData.insert(noteData.strGUID, task);
-}
-
-void WizMainWindow::onWatchedDocumentChanged(const QString& fileName)
-{
-    saveWatchedFile(fileName);
-    // watch file again, in order to avoid some editor from removing watched files.
-    if (m_extFileWatcher)
-    {
-        QTimer::singleShot(300, [=](){
-            m_extFileWatcher->addPath(fileName);
-        });
-    }
-}
-
-/**
- * @brief Save the watched document file which is changed by external editor.
- * @param fileName
- * @param TextEditor
- * @param UTF8Encoding
- */
-void WizMainWindow::saveWatchedFile(const QString& fileName)
-{
-    QFileInfo* changedFileInfo = new QFileInfo(fileName);
-    // 编辑器保存时首先删除文件再添加文件所有会收到两个信号，通过文件大小来判断写入信号
-    if ( changedFileInfo->size() == 0 )
-        return;
-    qDebug() << tr("Updating file: ") + fileName << changedFileInfo->size()
-             << changedFileInfo->lastModified() << changedFileInfo->lastRead();
-    // Get note's data
-    QString noteGUID = changedFileInfo->absoluteDir().dirName();
-    const WizExternalEditTask& task = m_watchedFileData[noteGUID];
-    bool isUTF8 = task.editorData.UTF8Encoding == 0 ? false : true;
-    bool isPlainText = task.editorData.TextEditor == 0 ? false : true;
-    // Get modified document's text
-    QString strHtml;
-    if (isPlainText) {
-        // Plain Text
-        strHtml = WizFileImporter::loadTextFileToHtml(fileName, "UTF-8");
-        //TODO: add markdown img to <link rel="File-List" type="image/png" href="" /> elements in html head.
-        strHtml = QString("<!DOCTYPE html><html><head></head><body>%1</body></html>").arg(strHtml);
-    } else {
-        strHtml = WizFileImporter::loadHtmlFileToHtml(fileName, "UTF-8");
-    }
-    // Get document's file name
-    //FIXME: Windows client has encoding problem.
-    QString indexFileName = Utils::WizMisc::extractFilePath(fileName) + "index.html";
-    // Start saver thread
-    m_watchedDocSaver->save(task.docData, strHtml, indexFileName, 0, true);
 }
 
 void WizMainWindow::closeEvent(QCloseEvent* event)
@@ -861,7 +779,7 @@ void WizMainWindow::on_dockMenuAction_triggered()
         }
         else
         {
-            WizSingleDocumentViewer* viewer = m_singleViewDelegate->getDocumentViewer(guid);
+            WizSingleDocumentViewer* viewer = m_singleViewMgr->getDocumentViewer(guid);
             if (viewer)
             {
                 bringWidgetToFront(viewer);
@@ -927,6 +845,8 @@ void WizMainWindow::shiftVisableStatus()
             showNormal();
             break;
     }
+
+    qDebug() << "windowState: " + QString::number(windowState(), 8);
 
     if (isVisible()) {
         // Actovate main window
@@ -1105,10 +1025,9 @@ void WizMainWindow::initMenuBar()
     m_actions->buildMenuBar(m_menuBar, Utils::WizPathResolve::resourcesPath() + "files/mainmenu.ini", m_windowListMenu);
 
     connect(m_windowListMenu, SIGNAL(aboutToShow()), SLOT(resetWindowMenu()));
-    connect(m_singleViewDelegate, SIGNAL(documentViewerClosed(QString)),
+    connect(m_singleViewMgr, SIGNAL(documentViewerClosed(QString)),
             SLOT(removeWindowsMenuItem(QString)));
 
-    //
     m_actions->actionFromName(WIZCATEGORY_OPTION_MESSAGECENTER)->setCheckable(true);
     m_actions->actionFromName(WIZCATEGORY_OPTION_SHORTCUTS)->setCheckable(true);
     m_actions->actionFromName(WIZCATEGORY_OPTION_QUICKSEARCH)->setCheckable(true);
@@ -1116,6 +1035,7 @@ void WizMainWindow::initMenuBar()
     m_actions->actionFromName(WIZCATEGORY_OPTION_TAGS)->setCheckable(true);
     m_actions->actionFromName(WIZCATEGORY_OPTION_BIZGROUPS)->setCheckable(true);
     m_actions->actionFromName(WIZCATEGORY_OPTION_PERSONALGROUPS)->setCheckable(true);
+    m_actions->actionFromName(WIZACTION_GLOBAL_SHOW_SUB_FOLDER_DOCUMENTS)->setCheckable(true);
 
     bool checked = m_category->isSectionVisible(Section_MessageCenter);
     m_actions->actionFromName(WIZCATEGORY_OPTION_MESSAGECENTER)->setChecked(checked);
@@ -1132,6 +1052,8 @@ void WizMainWindow::initMenuBar()
     m_actions->actionFromName(WIZCATEGORY_OPTION_BIZGROUPS)->setChecked(checked);
     checked = m_category->isSectionVisible(Section_PersonalGroups);
     m_actions->actionFromName(WIZCATEGORY_OPTION_PERSONALGROUPS)->setChecked(checked);
+    checked = userSettings().showSubFolderDocuments();
+    m_actions->actionFromName(WIZACTION_GLOBAL_SHOW_SUB_FOLDER_DOCUMENTS)->setChecked(checked);
 
     initViewTypeActionGroup();
     initSortTypeActionGroup();
@@ -1202,10 +1124,9 @@ void WizMainWindow::initDockMenu()
 {
 #ifdef Q_OS_MAC
     m_dockMenu = new QMenu(this);
-    qt_mac_set_dock_menu(m_dockMenu);
+    m_dockMenu->setAsDockMenu();
 
-    connect(m_dockMenu, SIGNAL(aboutToShow()),
-            SLOT(resetDockMenu()));
+    connect(m_dockMenu, SIGNAL(aboutToShow()), SLOT(resetDockMenu()));
 #endif
 }
 
@@ -1525,8 +1446,8 @@ void WizMainWindow::resetWindowListMenu(QMenu* menu, bool removeExists)
     action->setCheckable(true);
     action->setChecked((activeWidget == nullptr || activeWidget == this));
     newActions.append(action);
-    //
-    QMap<QString, WizSingleDocumentViewer*>& viewerMap = m_singleViewDelegate->getDocumentViewerMap();
+
+    QMap<QString, WizSingleDocumentViewer*>& viewerMap = m_singleViewMgr->getDocumentViewerMap();
     QList<QString> keys = viewerMap.keys();
     for (int i = 0; i < keys.count(); i++)
     {
@@ -1563,7 +1484,7 @@ void WizMainWindow::changeDocumentsSortTypeByAction(QAction* action)
 
 bool WizMainWindow::processApplicationActiveEvent()
 {
-    QMap<QString, WizSingleDocumentViewer*>& viewerMap = m_singleViewDelegate->getDocumentViewerMap();
+    QMap<QString, WizSingleDocumentViewer*>& viewerMap = m_singleViewMgr->getDocumentViewerMap();
     QList<WizSingleDocumentViewer*> singleViewrList = viewerMap.values();
     for (WizSingleDocumentViewer* viewer : singleViewrList)
     {
@@ -1571,10 +1492,10 @@ bool WizMainWindow::processApplicationActiveEvent()
             return true;
     }
 
-    //
     if (!isVisible())
     {
-        setVisible(true);
+        show();
+        shiftVisableStatus();
     }
 
     return true;
@@ -1602,7 +1523,6 @@ void WizMainWindow::removeWindowsMenuItem(QString guid)
         m_windowListMenu->removeAction(action);
     }
 
-    //
     resetDockMenu();
 }
 
@@ -2734,6 +2654,16 @@ void WizMainWindow::on_actionViewToggleCategory_triggered()
     m_actions->toggleActionText(WIZACTION_GLOBAL_TOGGLE_CATEGORY);
 }
 
+void WizMainWindow::on_actionViewShowSubFolderDocuments_triggered()
+{
+    bool show = !userSettings().showSubFolderDocuments();
+    userSettings().setShowSubFolderDocuments(show);
+    on_category_itemSelectionChanged();
+    //
+    actions()->actionFromName(WIZACTION_GLOBAL_SHOW_SUB_FOLDER_DOCUMENTS)->setChecked(show);
+    //
+}
+
 #ifdef Q_OS_MAC
 void WizMainWindow::on_actionViewToggleClientFullscreen_triggered()
 {
@@ -3440,7 +3370,7 @@ void WizMainWindow::on_actionGoForward_triggered()
 
 void WizMainWindow::on_category_itemSelectionChanged()
 {
-    WizCategoryBaseView* category = qobject_cast<WizCategoryBaseView *>(sender());
+    WizCategoryBaseView* category = m_category;
     if (!category)
         return;
     quitSearchStatus();
@@ -3585,7 +3515,7 @@ void WizMainWindow::on_options_settingsChanged(WizOptionsType type)
             docView->web()->editorResetFont();
         });
         //m_doc->web()->editorResetFont();
-        QMap<QString, WizSingleDocumentViewer*>& viewerMap = m_singleViewDelegate->getDocumentViewerMap();
+        QMap<QString, WizSingleDocumentViewer*>& viewerMap = m_singleViewMgr->getDocumentViewerMap();
         QList<WizSingleDocumentViewer*> singleViewrList = viewerMap.values();
         for (WizSingleDocumentViewer* viewer : singleViewrList)
         {
@@ -3717,9 +3647,8 @@ void WizMainWindow::showHomePage()
     m_mainTabBrowser->createTab(websiteView);
 }
 
-/**
- * @brief Create document view and setup signal-slot connections.
- * @return
+/*!
+    Create document view and setup signal-slot connections.
  */
 WizDocumentView* WizMainWindow::createDocumentView()
 {
@@ -3732,12 +3661,15 @@ WizDocumentView* WizMainWindow::createDocumentView()
     connect(newDocView->web(), SIGNAL(shareDocumentByLinkRequest(QString,QString)),
             SLOT(on_shareDocumentByLink_request(QString,QString)));
     connect(newDocView, SIGNAL(documentSaved(QString,WizDocumentView*)),
-            m_singleViewDelegate, SIGNAL(documentChanged(QString,WizDocumentView*)));
-    connect(m_singleViewDelegate, SIGNAL(documentChanged(QString,WizDocumentView*)),
+            m_singleViewMgr, SIGNAL(documentChanged(QString,WizDocumentView*)));
+    connect(m_singleViewMgr, SIGNAL(documentChanged(QString,WizDocumentView*)),
             newDocView, SLOT(on_document_data_changed(QString,WizDocumentView*)));
     connect(newDocView->titleBar(), SIGNAL(viewNoteInSeparateWindow_request()),
             SLOT(viewCurrentNoteInSeparateWindow()));
     connect(newDocView->web(), SIGNAL(statusChanged(const QString&)), SLOT(on_editor_statusChanged(const QString&)));
+
+    connect(newDocView, &WizDocumentView::viewNoteInExternalEditorRequest,
+            m_externalEditorLauncher, &ExternalEditorLauncher::handleViewNoteInExternalEditorRequest);
 
     // Setup document view UI
     //-------------------------------------------------------------------
@@ -4648,19 +4580,16 @@ void WizMainWindow::viewNoteInSeparateWindow(const WIZDOCUMENTDATA& data)
     WizDocumentView* docView = currentDocumentView();
     if (docView && docView->note().strGUID == data.strGUID) {
         docView->web()->trySaveDocument(docView->note(), false, [=](const QVariant&){
-
+            // Force current tab viewer to save
             docView->setEditorMode(modeReader);
-            //
-            m_singleViewDelegate->viewDocument(data);
+            m_singleViewMgr->viewDocument(data);
             // update dock menu
             resetDockMenu();
-            //
         });
     } else {
-        m_singleViewDelegate->viewDocument(data);
+        m_singleViewMgr->viewDocument(data);
         resetDockMenu();
     }
-
 }
 
 void WizMainWindow::viewCurrentNoteInSeparateWindow()

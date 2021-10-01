@@ -8,8 +8,8 @@
 #include <QRect>
 
 #include "gui/categoryviewer/WizCategoryView.h"
-#include "WizDocumentListView.h"
-#include "WizDocumentListViewItem.h"
+#include "gui/doclistviewer/WizDocumentListView.h"
+#include "gui/doclistviewer/WizDocumentListViewItem.h"
 #include "WizAttachmentListWidget.h"
 #include "share/WizDrawTextHelper.h"
 #include "share/WizQtHelper.h"

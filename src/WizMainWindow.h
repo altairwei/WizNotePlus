@@ -13,6 +13,7 @@
 #include "share/WizUIHelper.h"
 #include "share/WizSettings.h"
 #include "share/WizShadowWindow.h"
+#include "utils/ExternalEditorLauncher.h"
 
 
 #define WIZ_SINGLE_APPLICATION "WIZ_SINGLE_APPLICATION"
@@ -70,7 +71,7 @@ class WizMessageListTitleBar;
 
 class WizDocumentView;
 class WizDocumentWebViewSaverThread;
-class WizSingleDocumentViewDelegate;
+class WizSingleDocumentViewManager;
 class QWebEngineView;
 
 class ApiWizExplorerApp;
@@ -113,8 +114,6 @@ public:
     WizDocumentView* docView();
     //
     void trySaveCurrentNote(std::function<void(const QVariant &)> callback);
-    //
-    void startExternalEditor(QString cacheFileName, const WizExternalEditorData& editorData, const WIZDOCUMENTDATAEX& noteData);
 
 protected:
     bool eventFilter(QObject* watched, QEvent* event);
@@ -132,7 +131,6 @@ private:
     WizUserSettings* m_settings;
     WizKMSyncThread* m_syncFull;
     WizKMSyncThread* m_syncQuick;
-    WizDocumentWebViewSaverThread* m_watchedDocSaver;
     WizUserVerifyDialog* m_userVerifyDialog;
     WizConsoleDialog* m_console;
     WizUpgradeChecker* m_upgrade;
@@ -179,7 +177,7 @@ private:
     WizMainTabBrowser* m_mainTabBrowser; /**< 主标签部件，笔记文档视图储存在内部 */
     std::shared_ptr<WizSplitter> m_splitter;
     QWidget* m_docListContainer;
-    WizSingleDocumentViewDelegate* m_singleViewDelegate;
+    WizSingleDocumentViewManager* m_singleViewMgr;
 
     QLabel* m_labelDocumentsHint;
 //    QLabel* m_labelDocumentsCount;
@@ -201,15 +199,12 @@ private:
     bool m_bUpdatingSelection;
 
     bool m_bQuickDownloadMessageEnable;
-    //
+
     WIZDOCUMENTDATA m_documentForEditing;
 
     ApiWizExplorerApp* m_IWizExplorerApp;
-    //
-    QFileSystemWatcher* m_extFileWatcher;
-    QMap<QString, WizExternalEditTask> m_watchedFileData;
-
     PublicAPIsServer *m_publicAPIsServer;
+    ExternalEditorLauncher *m_externalEditorLauncher;
 
 private:
     void initQuitHandler();
@@ -220,7 +215,7 @@ private:
     void initToolBar();
     void initToolBarPluginButtons();
     void initClient();
-    //
+
     virtual void layoutTitleBar();
     void initMenuList();
     void initMenuBar();
@@ -230,10 +225,8 @@ private:
 
     QWidget* createNoteListView();
     QWidget* createMessageListView();
-    //
+
     void promptServiceExpr(bool free, WIZGROUPDATA group);
-    //
-    void saveWatchedFile(const QString& path);
 
 public:
     // CWizDocument passthrough methods
@@ -243,7 +236,6 @@ public:
     WizDocumentListView* documentList() const { return m_documents; }
     WizKMSyncThread* fullSync() const { return m_syncFull; }
     WizKMSyncThread* quickSync() const { return m_syncQuick; }
-    WizDocumentWebViewSaverThread* watchedDocSaver() { return m_watchedDocSaver; }
     void quickSyncKb(const QString& kbGuid);
     void setNeedResetGroups();
 
@@ -316,6 +308,7 @@ public Q_SLOTS:
 
     // menu view
     void on_actionViewToggleCategory_triggered();
+    void on_actionViewShowSubFolderDocuments_triggered();
     void on_actionViewToggleFullscreen_triggered();
 #ifdef Q_OS_MAC
     void on_actionViewToggleClientFullscreen_triggered();
@@ -467,7 +460,6 @@ public Q_SLOTS:
     void setCurrentDocumentView(WizDocumentView* newDocView);
     void on_mainTabWidget_currentChanged(int pageIndex);
 
-    void onWatchedDocumentChanged(const QString& fileName);
     void showHomePage();
     
 public:
