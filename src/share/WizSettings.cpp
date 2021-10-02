@@ -782,8 +782,8 @@ void WizUserSettings::setDefaultFontSize(int nSize)
 const QString WizUserSettings::kDefaultUIFontFamily = "Microsoft YaHei UI";
 const int WizUserSettings::kDefaultUIFontSize = 9;
 #elif defined(Q_OS_MAC)
-const QString WizUserSettings::kDefaultUIFontFamily = "Helvetica Neue";
-const int WizUserSettings::kDefaultUIFontSize = 9;
+const QString WizUserSettings::kDefaultUIFontFamily = ".AppleSystemUIFont";
+const int WizUserSettings::kDefaultUIFontSize = 13;
 #else
 const QString WizUserSettings::kDefaultUIFontFamily = "Noto Sans";
 const int WizUserSettings::kDefaultUIFontSize = 9;
