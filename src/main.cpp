@@ -130,18 +130,12 @@ int mainCore(int argc, char *argv[])
     // 设置高分屏支持
     //-------------------------------------------------------------------
 
-#ifdef Q_OS_LINUX
-    QApplication::setAttribute(Qt::AA_EnableHighDpiScaling);
+#if (QT_VERSION < QT_VERSION_CHECK(6, 0, 0))
+    QGuiApplication::setAttribute(Qt::AA_EnableHighDpiScaling);
+    QGuiApplication::setAttribute(Qt::AA_UseHighDpiPixmaps);
+#if (QT_VERSION >= QT_VERSION_CHECK(5, 14, 0))
+    QGuiApplication::setHighDpiScaleFactorRoundingPolicy(Qt::HighDpiScaleFactorRoundingPolicy::PassThrough);
 #endif
-
-#ifdef Q_OS_MAC
-    //QApplication::setAttribute(Qt::AA_EnableHighDpiScaling);
-#endif
-
-#ifdef Q_OS_WIN
-    // 暂时先采用UI缩放+字体缩小的方案来适配Windows高分屏
-    QApplication::setAttribute(Qt::AA_EnableHighDpiScaling);
-    //QApplication::setAttribute(Qt::AA_Use96Dpi);
 #endif
 
     // Init Application and QtWebEngine
@@ -192,8 +186,6 @@ int mainCore(int argc, char *argv[])
     // Debug 输出
     qInstallMessageHandler(Utils::WizLogger::messageHandler); // 输出到 Wiznote 消息控制台
     //qInstallMessageHandler(nullptr); // 输出到 Qt Debug console
-    // 设置高分屏图标
-    QApplication::setAttribute(Qt::AA_UseHighDpiPixmaps);
     // 设置应用名和组织名用于QSetting
     QApplication::setApplicationName(QObject::tr("WizNote"));
     QApplication::setOrganizationName(QObject::tr("cn.wiz.wiznoteformac"));
