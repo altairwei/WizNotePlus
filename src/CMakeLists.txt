@@ -299,7 +299,7 @@ set(wiznote_HEADERS
     utils/WizStyleHelper.h
     utils/WizPathResolve.h
     share/WizWindowTitleBar.h
-    share/WizShadowWindow.h
+    share/WizFramelessWindow.h
     share/WizShadowEffect.h
     widgets/WizTableSelector.h
 

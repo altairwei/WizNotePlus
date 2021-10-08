@@ -70,7 +70,6 @@ QToolButton#window-close-btn:pressed {
 QToolButton#window-close-btn,
 QToolButton#window-min-btn,
 QToolButton#window-max-btn,
-QToolButton#window-restore-btn,
 QToolButton#window-menu-btn {
   height: 10px;
   width: 16px;
@@ -79,7 +78,6 @@ QToolButton#window-menu-btn {
 
 QToolButton#window-min-btn,
 QToolButton#window-max-btn,
-QToolButton#window-restore-btn,
 QToolButton#window-menu-btn {
   background: none;
   border-radius: none;
@@ -87,7 +85,6 @@ QToolButton#window-menu-btn {
 
 QToolButton#window-min-btn:hover,
 QToolButton#window-max-btn:hover,
-QToolButton#window-restore-btn:hover,
 QToolButton#window-menu-btn:hover {
   background: rgba(211, 211, 211, 0.5);
   border-radius: none;
@@ -95,7 +92,6 @@ QToolButton#window-menu-btn:hover {
 
 QToolButton#window-min-btn:pressed,
 QToolButton#window-max-btn:pressed,
-QToolButton#window-restore-btn:pressed,
 QToolButton#window-menu-btn:pressed {
   background: rgba(211, 211, 211, 1);
   border-radius: none;
@@ -115,15 +111,16 @@ QToolButton#window-max-btn:pressed { image: url("%SKIN_PATH%/titlebar/maximize_s
 
 /* Title bar restore button */
 
-QToolButton#window-restore-btn { image: url("%SKIN_PATH%/titlebar/restore.svg"); }
-QToolButton#window-restore-btn:hover { image: url("%SKIN_PATH%/titlebar/restore_on.svg"); }
-QToolButton#window-restore-btn:pressed { image: url("%SKIN_PATH%/titlebar/restore_selected.svg"); }
+QToolButton#window-max-btn:checked { image: url("%SKIN_PATH%/titlebar/restore.svg"); }
+QToolButton#window-max-btn:checked:hover { image: url("%SKIN_PATH%/titlebar/restore_on.svg"); }
+QToolButton#window-max-btn:checked:pressed { image: url("%SKIN_PATH%/titlebar/restore_selected.svg"); }
 
 /* Title bar menu button */
 
 QToolButton#window-menu-btn { image: url("%SKIN_PATH%/titlebar/menu.svg"); }
 QToolButton#window-menu-btn:hover { image: url("%SKIN_PATH%/titlebar/menu_on.svg"); }
 QToolButton#window-menu-btn:pressed { image: url("%SKIN_PATH%/titlebar/menu_selected.svg"); }
+QToolButton#window-menu-btn:menu-indicator { image: none; }
 
 WizLoginDialog WizWindowTitleBar QToolButton#window-close-btn {
   image: url("%SKIN_PATH%/titlebar/close_opacity.svg");

@@ -1831,22 +1831,15 @@ void WizMainWindow::layoutTitleBar()
 
     m_menuButton = new QToolButton(this);
     m_menuButton->setObjectName("window-menu-btn");
-    title->setHitTestVisible(m_menuButton);
-    connect(m_menuButton, SIGNAL(clicked()), SLOT(on_menuButtonClicked()));
+    m_menuButton->setPopupMode(QToolButton::InstantPopup);
+    m_menuButton->setMenu(m_menu);
+    setHitTestVisible(m_menuButton);
     layoutBox->addWidget(m_menuButton);
     layoutBox->addWidget(title->minButton());
     layoutBox->addWidget(title->maxButton());
-    layoutBox->addWidget(title->restoreButton());
     layoutBox->addWidget(title->closeButton());
 
     QSize buttonSize = QSize(WizSmartScaleUI(16), WizSmartScaleUI(16));
-    /*
-    m_menuButton->setFixedSize(buttonSize);
-    title->minButton()->setFixedSize(buttonSize);
-    title->maxButton()->setFixedSize(buttonSize);
-    title->restoreButton()->setFixedSize(buttonSize);
-    title->closeButton()->setFixedSize(buttonSize);
-    */
 
     if (m_useSystemBasedStyle)
         m_menuButton->setVisible(false);
@@ -1880,13 +1873,13 @@ void WizMainWindow::initToolBar()
 
     // 用户信息
     WizUserInfoWidget* info = new WizUserInfoWidget(*this, m_toolBar);
-    titleBar()->setHitTestVisible(info);
+    setHitTestVisible(info);
     m_toolBar->addWidget(info);
 
     m_toolBar->addWidget(new WizFixedSpacer(QSize(5, 1), m_toolBar));
     // 同步按钮
     WizButton* buttonSync = new WizButton(m_toolBar);
-    titleBar()->setHitTestVisible(buttonSync);
+    setHitTestVisible(buttonSync);
     buttonSync->setIconSize(QSize(16,16));
     buttonSync->setAction(m_actions->actionFromName(WIZACTION_GLOBAL_SYNC));
     m_toolBar->addWidget(buttonSync);
@@ -1896,7 +1889,7 @@ void WizMainWindow::initToolBar()
 
     // 搜索栏，值得注意搜索栏的长度随着笔记列表宽度而变化
     m_searchWidget = new WizSearchView(this);
-    titleBar()->setHitTestVisible(m_searchWidget);
+    setHitTestVisible(m_searchWidget);
     m_searchWidget->setFixedWidth(200);
     m_toolBar->addWidget(m_searchWidget);
 
@@ -1923,7 +1916,7 @@ void WizMainWindow::initToolBar()
     QAction* newNoteAction = m_actions->actionFromName(WIZACTION_GLOBAL_NEW_DOCUMENT);
     QToolButton* buttonNew = new QToolButton(m_toolBar);
     buttonNew->setObjectName("btn-newnote");
-    titleBar()->setHitTestVisible(buttonNew);
+    setHitTestVisible(buttonNew);
     buttonNew->setMenu(m_newNoteExtraMenu);//选择模板的菜单
     buttonNew->setDefaultAction(newNoteAction);
     buttonNew->setPopupMode(QToolButton::MenuButtonPopup);
@@ -1955,7 +1948,7 @@ void WizMainWindow::initToolBarPluginButtons()
 
         m_toolBar->addAction(ac);
 
-        titleBar()->setHitTestVisible(m_toolBar->widgetForAction(ac));
+        setHitTestVisible(m_toolBar->widgetForAction(ac));
     }
 }
 
@@ -3293,6 +3286,7 @@ void WizMainWindow::on_actionPopupMainMenu_triggered()
 
 void WizMainWindow::on_menuButtonClicked()
 {
+#if 0
     QWidget* wgt = qobject_cast<QWidget*>(sender());
     if (wgt)
     {
@@ -3301,6 +3295,7 @@ void WizMainWindow::on_menuButtonClicked()
         popupPoint.setY(popupPoint.y() - titleBar()->height());
         m_menu->popup(popupPoint);
     }
+#endif
 }
 
 #endif
@@ -4227,7 +4222,6 @@ void WizMainWindow::setWindowStyle(bool bUseSystemStyle)
         //
         rootWidget()->setContentsMargins(0, 0, 0, 0);
         titleBar()->maxButton()->setVisible(false);
-        titleBar()->restoreButton()->setVisible(false);
         titleBar()->minButton()->setVisible(false);
         titleBar()->closeButton()->setVisible(false);
     }

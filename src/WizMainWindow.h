@@ -12,7 +12,7 @@
 #include "WizDef.h"
 #include "share/WizUIHelper.h"
 #include "share/WizSettings.h"
-#include "share/WizShadowWindow.h"
+#include "share/WizFramelessWindow.h"
 #include "utils/ExternalEditorLauncher.h"
 
 
@@ -82,12 +82,12 @@ class WizMacToolBarButtonItem;
 #endif
 
 class WizMainWindow
-    : public WizShadowWindow<QMainWindow>
+    : public WizFramelessWindow<QMainWindow>
     , public WizExplorerApp
 {
     Q_OBJECT
 
-    typedef WizShadowWindow<QMainWindow> _baseClass;
+    typedef WizFramelessWindow<QMainWindow> _baseClass;
 
 public:
     explicit WizMainWindow(WizDatabaseManager& dbMgr, QWidget *parent = nullptr);

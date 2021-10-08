@@ -9,7 +9,7 @@
 #include "share/WizSettings.h"
 
 #ifndef Q_OS_MAC
-#include "share/WizShadowWindow.h"
+#include "share/WizFramelessWindow.h"
 #endif
 
 class QLabel;
@@ -100,7 +100,7 @@ class WizLoginDialog
 #ifdef Q_OS_MAC
         : public QDialog
 #else
-        : public WizShadowWindow<QDialog>
+        : public WizFramelessWindow<QDialog>
 #endif
 {
     Q_OBJECT

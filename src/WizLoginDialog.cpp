@@ -89,7 +89,7 @@ WizLoginDialog::WizLoginDialog(const QString &strLocale, const QList<WizLocalUse
 #ifdef Q_OS_MAC
     : QDialog(parent)
 #else
-    : WizShadowWindow<QDialog>(parent, false)
+    : WizFramelessWindow<QDialog>(parent, false)
 #endif
     , ui(new Ui::wizLoginWidget)
     , m_menuUsers(new QMenu(this))
@@ -550,7 +550,6 @@ void WizLoginDialog::applyElementStyles(const QString &strLocal)
         QString strBtnCloseDown = ::WizGetSkinResourceFileName(strThemeName, "linuxwindowclose_selected");
         m_titleBar->minButton()->setVisible(false);
         m_titleBar->maxButton()->setVisible(false);
-        m_titleBar->restoreButton()->setVisible(false);
         /*
         m_titleBar->closeButton()->setIcon(QIcon());
         m_titleBar->closeButton()->setStyleSheet(QString("QToolButton{ border-image:url(%1); height: 16px; width: 16px;}"
