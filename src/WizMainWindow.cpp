@@ -1813,7 +1813,12 @@ void WizMainWindow::layoutTitleBar()
 
     QLayout* layout = new QVBoxLayout();
     layout->setSpacing(0);
+#ifdef Q_OS_MAC
+    // Space for mac close-min-zoom buttons
+    layout->setContentsMargins(0, 10, 0, 0);
+#else
     layout->setContentsMargins(0, 0, 0, 0);
+#endif // Q_OS_MAC
 
     QLayout* layoutTitle = new QHBoxLayout();
     layoutTitle->setContentsMargins(0, 0, 0, 0);
@@ -1835,7 +1840,9 @@ void WizMainWindow::layoutTitleBar()
 
     m_menuButton = new QToolButton(this);
     m_menuButton->setObjectName("window-menu-btn");
-    connect(m_menuButton, &QToolButton::clicked, this, &WizMainWindow::on_menuButtonClicked, Qt::QueuedConnection);
+#ifndef Q_OS_MAC
+    connect(m_menuButton, &QToolButton::clicked, this, &WizMainWindow::on_menuButtonClicked);
+#endif // Q_OS_MAC
     //m_menuButton->setPopupMode(QToolButton::InstantPopup);
     //m_menuButton->setMenu(m_menu);
     setHitTestVisible(m_menuButton);

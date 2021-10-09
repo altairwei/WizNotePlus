@@ -14,6 +14,7 @@
 #include "WizShadowEffect.h"
 
 #include "libs/3rdparty/framelesshelper/src/core/framelesshelper.h"
+#include "libs/3rdparty/framelesshelper/src/core/utilities.h"
 
 template <class Base>
 class WizFramelessWindow : public Base
@@ -61,6 +62,7 @@ private:
     bool m_canResize;
 
 protected:
+#ifndef Q_OS_MAC
     virtual void changeEvent (QEvent * event)
     {
         Base::changeEvent(event);
@@ -82,6 +84,7 @@ protected:
             pT->update();
         }
     }
+#endif // Q_OS_MAC
 
     virtual void layoutTitleBar()
     {
@@ -104,7 +107,11 @@ protected:
                 m_helper->setHitTestVisible(m_titleBar->maxButton());
                 m_helper->setHitTestVisible(m_titleBar->minButton());
                 m_helper->install();
+#ifndef Q_OS_MAC
                 pT->setContentsMargins(1, 1, 1, 1);
+#else
+                __flh_ns::Utilities::showMacWindowButton(win);
+#endif // Q_OS_MAC
                 inited = true;
             }
         }
