@@ -53,6 +53,7 @@
 #include "utils/WizStyleHelper.h"
 #include "utils/WizMisc.h"
 #include "utils/WizPinyin.h"
+#include "utils/WizLogger.h"
 #include "widgets/WizFramelessWebDialog.h"
 #include "widgets/WizScreenShotWidget.h"
 #include "widgets/WizImageButton.h"
@@ -263,6 +264,9 @@ WizMainWindow::WizMainWindow(WizDatabaseManager& dbMgr, QWidget *parent)
 
     m_publicAPIsServer = new PublicAPIsServer(
         {{"WizExplorerApp", m_IWizExplorerApp}}, this);
+
+    connect(Utils::WizLogger::logger(), &Utils::WizLogger::notifyRequested,
+            this, &WizMainWindow::showBubbleNotification);
 }
 
 
@@ -1831,8 +1835,9 @@ void WizMainWindow::layoutTitleBar()
 
     m_menuButton = new QToolButton(this);
     m_menuButton->setObjectName("window-menu-btn");
-    m_menuButton->setPopupMode(QToolButton::InstantPopup);
-    m_menuButton->setMenu(m_menu);
+    connect(m_menuButton, &QToolButton::clicked, this, &WizMainWindow::on_menuButtonClicked, Qt::QueuedConnection);
+    //m_menuButton->setPopupMode(QToolButton::InstantPopup);
+    //m_menuButton->setMenu(m_menu);
     setHitTestVisible(m_menuButton);
     layoutBox->addWidget(m_menuButton);
     layoutBox->addWidget(title->minButton());
@@ -3286,16 +3291,13 @@ void WizMainWindow::on_actionPopupMainMenu_triggered()
 
 void WizMainWindow::on_menuButtonClicked()
 {
-#if 0
     QWidget* wgt = qobject_cast<QWidget*>(sender());
     if (wgt)
     {
-        QPoint popupPoint = clientWidget()->mapToGlobal(QPoint(wgt->pos().x(),
-                                                                 wgt->pos().y() + wgt->height()));
-        popupPoint.setY(popupPoint.y() - titleBar()->height());
+        QPoint popupPoint = clientWidget()->mapToGlobal(
+            QPoint(wgt->pos().x(), wgt->pos().y() + wgt->height()));
         m_menu->popup(popupPoint);
     }
-#endif
 }
 
 #endif

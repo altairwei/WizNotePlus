@@ -185,7 +185,7 @@ int mainCore(int argc, char *argv[])
 
     // Debug 输出
     qInstallMessageHandler(Utils::WizLogger::messageHandler); // 输出到 Wiznote 消息控制台
-    //qInstallMessageHandler(nullptr); // 输出到 Qt Debug console
+
     // 设置应用名和组织名用于QSetting
     QApplication::setApplicationName(QObject::tr("WizNote"));
     QApplication::setOrganizationName(QObject::tr("cn.wiz.wiznoteformac"));

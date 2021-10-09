@@ -41,6 +41,10 @@ void WizLogger::messageHandler(QtMsgType type, const QMessageLogContext& context
         return;
 #endif
 
+    if (msg.startsWith("QAction::event: Ambiguous shortcut overload")) {
+        Q_EMIT logger()->notifyRequested("Shortcut Overload", msg);
+    }
+
     if (type == QtWarningMsg && msg.startsWith("Property") && msg.indexOf("has no notify signal") != -1)
         return;
 
@@ -134,6 +138,7 @@ void WizLogger::writeLog(const QString& strMsg)
 
     fprintf(stderr, "[INFO] %s\n", strMsg.toUtf8().constData());
 }
+
 void WizLogger::getAllLogs(QString& text)
 {
     logger()->getAll(text);
