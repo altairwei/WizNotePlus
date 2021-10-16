@@ -151,10 +151,15 @@ WizDocumentWebView::WizDocumentWebView(WizExplorerApp& app, QWidget* parent)
     , m_ignoreActiveWindowEvent(false)
 {
     WizDocumentWebViewPage* page = new WizDocumentWebViewPage(this);
-    setPage(page);
+    setupPage(page);
+    connect(page, &WizDocumentWebViewPage::linkClicked,
+            this, &WizDocumentWebView::onEditorLinkClicked);
 
-    //connect(page, SIGNAL(actionTriggered(QWebEnginePage::WebAction)), SLOT(onActionTriggered(QWebEnginePage::WebAction)));
-    connect(page, SIGNAL(linkClicked(QUrl,QWebEnginePage::NavigationType,bool,WizWebEnginePage*)), this, SLOT(onEditorLinkClicked(QUrl,QWebEnginePage::NavigationType,bool,WizWebEnginePage*)));
+    if (m_app.userSettings().isEnableSpellCheck()) {
+        QWebEngineProfile *profile = page->profile();
+        profile->setSpellCheckEnabled(true);
+        profile->setSpellCheckLanguages({"en-US"});
+    }
 
     // minimum page size hint
     setMinimumSize(400, 250);
@@ -200,26 +205,31 @@ WizDocumentWebView::WizDocumentWebView(WizExplorerApp& app, QWidget* parent)
     connect(this, SIGNAL(loadFinishedEx(bool)), SLOT(onEditorLoadFinished(bool)));
     connect(view()->titleBar(), SIGNAL(onViewMindMap(bool)), SLOT(onViewMindMap(bool)));
 
-    if (m_app.userSettings().isEnableSpellCheck()) {
-        QWebEngineProfile *profile = page->profile();
-        profile->setSpellCheckEnabled(true);
-        profile->setSpellCheckLanguages({"en-US"});
-    }
-
-    initEditorActions();
 }
 
 WizDocumentWebView::~WizDocumentWebView()
 {
 }
 
-void WizDocumentWebView::initEditorActions()
+void WizDocumentWebView::setupWebActions()
 {
+    WizWebEngineView::setupWebActions();
+
     // Add "Save Note" action.
     QAction* action = new QAction(tr("Save Note"), this);
     action->setShortcut(QKeySequence::Save);
     connect(action, &QAction::triggered, this, &WizDocumentWebView::onActionSaveTriggered);
     addAction(action);
+
+    // reload
+    connect(pageAction(QWebEnginePage::Reload), &QAction::triggered, 
+            this, &WizDocumentWebView::handleReloadTriggered, Qt::UniqueConnection);
+
+    // Open temp file location
+    connect(viewAction(OpenTempFileLocation), &QAction::triggered, [this]() {
+        QUrl tmpfileFolder = page()->url().adjusted(QUrl::RemoveFilename);
+        QDesktopServices::openUrl(tmpfileFolder);
+    });
 }
 
 void WizDocumentWebView::waitForDone()
@@ -444,6 +454,7 @@ void WizDocumentWebView::createReadModeContextMenu(QContextMenuEvent *event)
 {
     QMenu *menu = createStandardContextMenu();
     const QList<QAction *> actions = menu->actions();
+
     // remove back & forward actions
     auto backAction = std::find_if(actions.cbegin(), actions.cend(), [=](QAction * ac){
         return (ac->text() == "&Back" || ac->iconText() == "Back");
@@ -457,41 +468,15 @@ void WizDocumentWebView::createReadModeContextMenu(QContextMenuEvent *event)
     if (forwardAction != actions.cend()) {
         menu->removeAction(*forwardAction);
     }
-    // save page action
-    connect(pageAction(QWebEnginePage::SavePage), &QAction::triggered, 
-                    this, &WizDocumentWebView::handleSavePageTriggered, Qt::UniqueConnection);
+
     // handle open location of document
     if(page()->url().isLocalFile()) {
-        QAction *action = new QAction(menu);
-        action->setText(tr("Open temporary file's location"));
-        connect(action, &QAction::triggered, [this]() {
-            QUrl tmpfileFolder = page()->url().adjusted(QUrl::RemoveFilename);
-            QDesktopServices::openUrl(tmpfileFolder);
-        });
         auto inspectElement = std::find(actions.cbegin(), actions.cend(), page()->action(QWebEnginePage::InspectElement));
-        QAction *before(inspectElement == actions.cend() ? nullptr : *inspectElement);
-        menu->insertAction(before, action);
+        QAction *before(inspectElement == actions.cend() ? viewAction(OpenDevTools) : *inspectElement);
+        menu->insertAction(before, viewAction(OpenTempFileLocation));
     }
-    // reload
-    auto reloadAction = std::find_if(actions.cbegin(), actions.cend(), [=](QAction * ac){
-        return (ac->text() == "&Reload" || ac->iconText() == "Reload");
-    });
-    if (reloadAction != actions.cend()) {
-        connect(*reloadAction, &QAction::triggered, 
-                    this, &WizDocumentWebView::handleReloadTriggered, Qt::UniqueConnection);
-    }
-    //
-    menu->popup(event->globalPos());
-}
 
-void WizDocumentWebView::handleSavePageTriggered()
-{
-    QString title = view()->note().strTitle;
-    QString fileName = QFileDialog::getSaveFileName(this, tr("Save Page"),
-        QDir::home().absoluteFilePath(title + ".mhtml"),
-        tr("MIME HTML (*.mht *.mhtml)"));
-    if (!fileName.isEmpty())
-        page()->save(fileName);
+    menu->popup(event->globalPos());
 }
 
 void WizDocumentWebView::handleReloadTriggered()

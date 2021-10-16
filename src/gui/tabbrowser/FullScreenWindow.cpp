@@ -14,6 +14,7 @@ FullScreenWindow::FullScreenWindow(QWebEngineView *oldView, QWidget *parent)
 {
     // Show tips on top
     m_view->stackUnder(m_notification);
+    m_view->setContextMenuPolicy(Qt::NoContextMenu);
 
     // Create 'Exit' action
     auto exitAction = new QAction(this);

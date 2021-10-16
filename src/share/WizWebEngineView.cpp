@@ -163,28 +163,15 @@ void WizWebEnginePage::processCopiedData()
 }
 
 
-/** WizWebEngineView 构造函数
- *
- *  创建WizWebEnginePage
- */
 WizWebEngineView::WizWebEngineView(const WizWebEngineInjectObjectCollection& objects, QWidget* parent)
     : QWebEngineView(parent)
 {
-    WizWebEnginePage* p = new WizWebEnginePage(objects, this);
-    setPage(p);
-    //
-    connect(p, SIGNAL(openLinkInNewWindow(QUrl)), this, SLOT(openLinkInDefaultBrowser(QUrl)));
-    //
+    // Initialize m_viewActions to nullptr
+    memset(m_viewActions, 0, sizeof(m_viewActions));
+
+    setupPage(new WizWebEnginePage(objects, this));
+
     connect(this, SIGNAL(loadFinished(bool)), this, SLOT(innerLoadFinished(bool)));
-
-#if (QT_VERSION >= QT_VERSION_CHECK(5, 11, 0))
-    // Initialize actions
-    QAction* action = new QAction(tr("Open DevTools"), this);
-    action->setShortcut(QKeySequence("F12"));
-    connect(action, &QAction::triggered, this, &WizWebEngineView::handleOpenDevToolsTriggered);
-    addAction(action);
-#endif
-
 }
 
 WizWebEngineView::~WizWebEngineView()
@@ -301,10 +288,9 @@ QVariant WizWebEngineView::ExecuteFunction4(QString function, const QVariant& ar
     return ExecuteScript(script);
 }
 
-/**
- * @brief Set the zoom percentage of this page.
- * 
- * @param percent The range from 25 to 500. The default factor is 100.
+/*!
+    Set the zoom \a percent of this page. The range from 25 to 500. The default
+    factor is 100.
  */
 void WizWebEngineView::SetZoom(int percent)
 {
@@ -314,10 +300,8 @@ void WizWebEngineView::SetZoom(int percent)
     setZoomFactor(factor);
 }
 
-/**
- * @brief Get the zoom percentage of this page.
- * 
- * @return int 
+/*!
+    Get the zoom percentage of this page.
  */
 int WizWebEngineView::GetZoom()
 {
@@ -348,14 +332,76 @@ double WizWebEngineView::scaleDown()
     return zoomFactor();
 }
 
-/**
- * @brief Create basic context menu for web view.
- * @return
+QAction *WizWebEngineView::viewAction(ViewAction action) const
+{
+    if (m_viewActions[action])
+        return m_viewActions[action];
+
+    QString text;
+
+    switch (action) {
+    case OpenDevTools:
+        text = tr("Open DevTools");
+        break;
+    case OpenTempFileLocation:
+        text = tr("Open temporary file's location");
+        break;
+    case ViewActionCount:
+        Q_UNREACHABLE();
+        break;
+    }
+
+    QAction *a = new QAction(const_cast<WizWebEngineView*>(this));
+    a->setText(text);
+
+    m_viewActions[action] = a;
+
+    return a;
+}
+
+/*!
+    We should avoid calling setPage() directly, because WizWebEngineView will
+    setup something after subclass of WizWebEnginePage is created.
+ */
+void WizWebEngineView::setupPage(WizWebEnginePage *page)
+{
+    setPage(page);
+    connect(page, &WizWebEnginePage::openLinkInNewWindow,
+            this, &WizWebEngineView::openLinkInDefaultBrowser);
+
+    setupWebActions();
+}
+
+void WizWebEngineView::setupWebActions()
+{
+
+#if (QT_VERSION >= QT_VERSION_CHECK(5, 11, 0))
+    // Create a new action to open DevTools dialog.
+    viewAction(OpenDevTools)->setShortcut(QKeySequence("F12"));
+    addAction(viewAction(OpenDevTools));
+    connect(viewAction(OpenDevTools), &QAction::triggered,
+            this, &WizWebEngineView::openDevTools);
+    connect(pageAction(QWebEnginePage::InspectElement), &QAction::triggered,
+            this, &WizWebEngineView::openDevTools);
+#endif
+
+    // save page action
+    connect(pageAction(QWebEnginePage::SavePage), &QAction::triggered, 
+            this, &WizWebEngineView::handleSavePageTriggered);
+}
+
+/*!
+    Create basic context menu for web view.
+
+    The parent of returned QMenu is corresponding QWebEngineView,
+    here means WizWebEngineView. This QMenu has Qt::WA_DeleteOnClose
+    attrbute, so we don't need to delete it manually.
  */
 QMenu* WizWebEngineView::createStandardContextMenu()
 {
     QMenu *menu = page()->createStandardContextMenu();
     const QList<QAction *> actions = menu->actions();
+
     // remove ViewSource
     auto viewSource = std::find(actions.cbegin(), actions.cend(), page()->action(QWebEnginePage::ViewSource));
     if (viewSource != actions.cend())
@@ -365,13 +411,11 @@ QMenu* WizWebEngineView::createStandardContextMenu()
     // add Open DevTools action
     auto inspectElement = std::find(actions.cbegin(), actions.cend(), page()->action(QWebEnginePage::InspectElement));
     if (inspectElement == actions.cend()) {
-        QAction *action = new QAction(menu);
-        action->setText(tr("Open DevTools"));
-        connect(action, &QAction::triggered, this, &WizWebEngineView::openDevTools, Qt::UniqueConnection);
-        menu->addAction(action);
+        menu->addAction(viewAction(OpenDevTools));
     } else {
+        // If DevTools have been opened before, InspectElement will beadd to
+        // ContextMenu automatically.
         (*inspectElement)->setText(tr("Inspect element"));
-        connect(*inspectElement, &QAction::triggered, this, &WizWebEngineView::openDevTools, Qt::UniqueConnection);
     }
 #endif
 
@@ -381,10 +425,6 @@ QMenu* WizWebEngineView::createStandardContextMenu()
 void WizWebEngineView::contextMenuEvent(QContextMenuEvent *event)
 {
     QMenu *menu = createStandardContextMenu();
-    // save page action
-    connect(pageAction(QWebEnginePage::SavePage), &QAction::triggered, 
-                    this, &WizWebEngineView::handleSavePageTriggered, Qt::UniqueConnection);
-    //
     menu->popup(event->globalPos());
 }
 
@@ -404,11 +444,10 @@ QString WizWebEngineView::documentTitle()
     return title();
 }
 
-/**
- * @brief Publish C++ objects to javascript clients.
- * 
- * @param name 
- * @param obj 
+/*!
+    \brief  Publish C++ object to javascript clients.
+
+    This \a obj can be accessed by \a name within javascript context.
  */
 void WizWebEngineView::addObjectToJavaScriptClient(QString name, QObject* obj)
 {
@@ -418,7 +457,7 @@ void WizWebEngineView::addObjectToJavaScriptClient(QString name, QObject* obj)
         channel = new QWebChannel(webPage);
         webPage->setWebChannel(channel);
     }
-    qDebug() << name;
+
     WizWebEngineInjectObjectCollection r_objs = channel->registeredObjects();
     if (!obj)
         return;
@@ -432,10 +471,10 @@ void WizWebEngineView::openDevTools()
     if (!m_devToolsWindow)
     {
         m_devToolsWindow = new WizDevToolsDialog(this);
-        //
+
         QString title = documentTitle();
         m_devToolsWindow->setWindowTitle("DevTools - " + title);
-        //
+
         m_devToolsWindow->web()->page()->setInspectedPage(this->page());
         // align on center of the screen
         m_devToolsWindow->setGeometry(
@@ -447,25 +486,18 @@ void WizWebEngineView::openDevTools()
             )
         );
     }
-    //
+
     page()->triggerAction(QWebEnginePage::InspectElement);
-    //
+
     m_devToolsWindow->show();
     m_devToolsWindow->raise();
-}
-#endif
-
-#if (QT_VERSION >= QT_VERSION_CHECK(5, 11, 0))
-void WizWebEngineView::handleOpenDevToolsTriggered()
-{
-    openDevTools();
 }
 #endif
 
 void WizWebEngineView::handleSavePageTriggered()
 {
     QString fileName = QFileDialog::getSaveFileName(this, tr("Save Page"),
-        QDir::home().absoluteFilePath(page()->title() + ".mhtml"),
+        QDir::home().absoluteFilePath(documentTitle() + ".mhtml"),
         tr("MIME HTML (*.mht *.mhtml)"));
     if (!fileName.isEmpty())
         page()->save(fileName);

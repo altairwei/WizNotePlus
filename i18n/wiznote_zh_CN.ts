@@ -514,8 +514,8 @@
     </message>
     <message>
         <location filename="../src/WizActions.cpp" line="48"/>
-        <location filename="../src/share/WizMessageBox.cpp" line="94"/>
         <location filename="../src/widgets/WizUserServiceExprDialog.cpp" line="20"/>
+        <location filename="../src/share/WizMessageBox.cpp" line="94"/>
         <source>Help</source>
         <translation>帮助</translation>
     </message>
@@ -1899,8 +1899,8 @@
     </message>
     <message>
         <location filename="../src/WizDocTemplateDialog.cpp" line="592"/>
-        <location filename="../src/share/WizMessageBox.cpp" line="76"/>
         <location filename="../src/widgets/WizUserServiceExprDialog.cpp" line="19"/>
+        <location filename="../src/share/WizMessageBox.cpp" line="76"/>
         <source>Cancel</source>
         <translation>取消</translation>
     </message>
@@ -2082,7 +2082,7 @@
         <translation>日</translation>
     </message>
     <message>
-        <location filename="../src/gui/documentviewer/WizDocumentWebView.cpp" line="1006"/>
+        <location filename="../src/gui/documentviewer/WizDocumentWebView.cpp" line="991"/>
         <source>Saving comments...</source>
         <translation>正在保存备注...</translation>
     </message>
@@ -3229,80 +3229,65 @@ Go to create a note</source>
         <translation>保存笔记</translation>
     </message>
     <message>
-        <location filename="../src/gui/documentviewer/WizDocumentWebView.cpp" line="466"/>
-        <source>Open temporary file&apos;s location</source>
-        <translation>打开临时文件位置</translation>
-    </message>
-    <message>
-        <location filename="../src/gui/documentviewer/WizDocumentWebView.cpp" line="490"/>
-        <source>Save Page</source>
-        <translation>保存页面</translation>
-    </message>
-    <message>
-        <location filename="../src/gui/documentviewer/WizDocumentWebView.cpp" line="492"/>
-        <source>MIME HTML (*.mht *.mhtml)</source>
-        <translation></translation>
-    </message>
-    <message>
-        <location filename="../src/gui/documentviewer/WizDocumentWebView.cpp" line="621"/>
-        <location filename="../src/gui/documentviewer/WizDocumentWebView.cpp" line="626"/>
-        <location filename="../src/gui/documentviewer/WizDocumentWebView.cpp" line="979"/>
+        <location filename="../src/gui/documentviewer/WizDocumentWebView.cpp" line="606"/>
+        <location filename="../src/gui/documentviewer/WizDocumentWebView.cpp" line="611"/>
+        <location filename="../src/gui/documentviewer/WizDocumentWebView.cpp" line="964"/>
         <source>Info</source>
         <translation>提示</translation>
     </message>
     <message>
-        <location filename="../src/gui/documentviewer/WizDocumentWebView.cpp" line="621"/>
+        <location filename="../src/gui/documentviewer/WizDocumentWebView.cpp" line="606"/>
         <source>Can not add a 0 bit size file as attachment! File name : &apos; %1 &apos;</source>
         <translation>不能添加0字节的文件作为附件！文件名：&apos; %1 &apos;</translation>
     </message>
     <message>
-        <location filename="../src/gui/documentviewer/WizDocumentWebView.cpp" line="626"/>
+        <location filename="../src/gui/documentviewer/WizDocumentWebView.cpp" line="611"/>
         <source>Can not add a bundle file as attachment! File name : &apos; %1 &apos;</source>
         <translation>不能添加包文件作为附件！文件名：&apos; %1 &apos;</translation>
     </message>
     <message>
-        <location filename="../src/gui/documentviewer/WizDocumentWebView.cpp" line="979"/>
+        <location filename="../src/gui/documentviewer/WizDocumentWebView.cpp" line="964"/>
         <source>Do not support insert comment into markdown note.</source>
         <translation>暂不支持插入评论到Markdown笔记中。</translation>
     </message>
     <message>
-        <location filename="../src/gui/documentviewer/WizDocumentWebView.cpp" line="1420"/>
+        <location filename="../src/gui/documentviewer/WizDocumentWebView.cpp" line="1405"/>
         <source>Failed to save note.</source>
         <translation>保存笔记失败。</translation>
     </message>
     <message>
-        <location filename="../src/gui/documentviewer/WizDocumentWebView.cpp" line="1421"/>
-        <location filename="../src/gui/documentviewer/WizDocumentWebView.cpp" line="1478"/>
+        <location filename="../src/gui/documentviewer/WizDocumentWebView.cpp" line="1406"/>
+        <location filename="../src/gui/documentviewer/WizDocumentWebView.cpp" line="1463"/>
         <source>Error</source>
         <translation>错误</translation>
     </message>
     <message>
-        <location filename="../src/gui/documentviewer/WizDocumentWebView.cpp" line="1478"/>
+        <location filename="../src/gui/documentviewer/WizDocumentWebView.cpp" line="1463"/>
         <source>Can&apos;t copy style files</source>
         <translation>不能复制样式文件</translation>
     </message>
     <message>
-        <location filename="../src/gui/documentviewer/WizDocumentWebView.cpp" line="2163"/>
+        <location filename="../src/gui/documentviewer/WizDocumentWebView.cpp" line="2148"/>
         <source>Image File</source>
         <translation>图片文件</translation>
     </message>
     <message>
-        <location filename="../src/gui/documentviewer/WizDocumentWebView.cpp" line="2163"/>
+        <location filename="../src/gui/documentviewer/WizDocumentWebView.cpp" line="2148"/>
         <source>Images (*.png *.bmp *.gif *.jpg)</source>
         <translation>图片 (*.png *.bmp *.gif *.jpg)</translation>
     </message>
     <message>
-        <location filename="../src/gui/documentviewer/WizDocumentWebView.cpp" line="2344"/>
+        <location filename="../src/gui/documentviewer/WizDocumentWebView.cpp" line="2329"/>
         <source>PDF Files (*.pdf)</source>
         <translation>PDF 文件 (*.pdf)</translation>
     </message>
     <message>
-        <location filename="../src/gui/documentviewer/WizDocumentWebView.cpp" line="2485"/>
+        <location filename="../src/gui/documentviewer/WizDocumentWebView.cpp" line="2470"/>
         <source>Html Files (*.html)</source>
         <translation>Html文件(*.html)</translation>
     </message>
     <message>
-        <location filename="../src/gui/documentviewer/WizDocumentWebView.cpp" line="2378"/>
+        <location filename="../src/gui/documentviewer/WizDocumentWebView.cpp" line="2363"/>
         <source>Markdown Files (*.md)</source>
         <translation>Markdown文件(*.md)</translation>
     </message>
@@ -3310,12 +3295,12 @@ Go to create a note</source>
 <context>
     <name>WizDocumentWebViewLoaderThread</name>
     <message>
-        <location filename="../src/gui/documentviewer/WizDocumentWebView.cpp" line="2877"/>
+        <location filename="../src/gui/documentviewer/WizDocumentWebView.cpp" line="2862"/>
         <source>Error</source>
         <translation>错误</translation>
     </message>
     <message>
-        <location filename="../src/gui/documentviewer/WizDocumentWebView.cpp" line="2877"/>
+        <location filename="../src/gui/documentviewer/WizDocumentWebView.cpp" line="2862"/>
         <source>Can&apos;t view note: (Can&apos;t unzip note data)</source>
         <translation>无法查看笔记：（不能解压缩笔记数据）</translation>
     </message>
@@ -5945,23 +5930,27 @@ w: %3  h: %4</translation>
 <context>
     <name>WizWebEngineView</name>
     <message>
-        <location filename="../src/share/WizWebEngineView.cpp" line="182"/>
-        <location filename="../src/share/WizWebEngineView.cpp" line="369"/>
+        <location filename="../src/share/WizWebEngineView.cpp" line="344"/>
         <source>Open DevTools</source>
         <translation>打开页面开发者工具</translation>
     </message>
     <message>
-        <location filename="../src/share/WizWebEngineView.cpp" line="373"/>
+        <location filename="../src/share/WizWebEngineView.cpp" line="347"/>
+        <source>Open temporary file&apos;s location</source>
+        <translation>打开临时文件位置</translation>
+    </message>
+    <message>
+        <location filename="../src/share/WizWebEngineView.cpp" line="418"/>
         <source>Inspect element</source>
         <translation>审查元素</translation>
     </message>
     <message>
-        <location filename="../src/share/WizWebEngineView.cpp" line="467"/>
+        <location filename="../src/share/WizWebEngineView.cpp" line="499"/>
         <source>Save Page</source>
         <translation>保存页面</translation>
     </message>
     <message>
-        <location filename="../src/share/WizWebEngineView.cpp" line="469"/>
+        <location filename="../src/share/WizWebEngineView.cpp" line="501"/>
         <source>MIME HTML (*.mht *.mhtml)</source>
         <translation></translation>
     </message>
