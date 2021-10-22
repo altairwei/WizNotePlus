@@ -27,9 +27,7 @@ public:
         , m_canResize(canResize)
         , m_helper(new __flh_ns::FramelessHelper)
     {
-        Base* pT = this;
-
-        pT->setAttribute(Qt::WA_DontCreateNativeAncestors);
+        this->setAttribute(Qt::WA_DontCreateNativeAncestors);
 
         m_titleBar = new WizWindowTitleBar(this, this, canResize);
 
@@ -60,20 +58,18 @@ private:
     WizWindowTitleBar* m_titleBar;
     __flh_ns::FramelessHelper *m_helper;
     bool m_canResize;
+    bool m_flhInited = false;
 
 protected:
-#ifndef Q_OS_MAC
-    virtual void changeEvent (QEvent * event)
+    void changeEvent(QEvent * event) override
     {
-        Base::changeEvent(event);
-
-        Base* pT = this;
+#ifndef Q_OS_MAC
         bool shouldUpdate = false;
         if (event->type() == QEvent::WindowStateChange) {
-            if (pT->isMaximized() || pT->isFullScreen()) {
-                pT->setContentsMargins(0, 0, 0, 0);
-            } else if (!pT->isMinimized()) {
-                pT->setContentsMargins(1, 1, 1, 1);
+            if (this->isMaximized() || this->isFullScreen()) {
+                this->setContentsMargins(0, 0, 0, 0);
+            } else if (!this->isMinimized()) {
+                this->setContentsMargins(1, 1, 1, 1);
             }
             m_titleBar->windowStateChanged();
             shouldUpdate = true;
@@ -81,10 +77,25 @@ protected:
             shouldUpdate = true;
         }
         if (shouldUpdate) {
-            pT->update();
+            this->update();
         }
+#endif
+
+#ifdef Q_OS_MAC
+        if (event->type() == QEvent::WindowStateChange && m_flhInited) {
+            auto cev = static_cast<QWindowStateChangeEvent*>(event);
+            if (cev->oldState() & Qt::WindowFullScreen && !this->isFullScreen()) {
+                // Exit fullscreen
+                m_titleBar->layout()->setContentsMargins(70, 0, 0, 0);
+            } else if (!(cev->oldState() & Qt::WindowFullScreen) && this->isFullScreen()) {
+                // Enter fullscreen
+                m_titleBar->layout()->setContentsMargins(0, 0, 0, 0);
+            }
+        }
+#endif
+
+        Base::changeEvent(event);
     }
-#endif // Q_OS_MAC
 
     virtual void layoutTitleBar()
     {
@@ -93,11 +104,9 @@ protected:
 
     void showEvent(QShowEvent *event) override
     {
-        Base* pT = this;
         Base::showEvent(event);
-        static bool inited = false;
-        if (!inited) {
-            const auto win = pT->windowHandle();
+        if (!m_flhInited) {
+            const auto win = this->windowHandle();
             if (win) {
                 m_helper->setWindow(win);
                 m_helper->setTitleBarHeight(m_titleBar->height());
@@ -108,11 +117,16 @@ protected:
                 m_helper->setHitTestVisible(m_titleBar->minButton());
                 m_helper->install();
 #ifndef Q_OS_MAC
-                pT->setContentsMargins(1, 1, 1, 1);
+                this->setContentsMargins(1, 1, 1, 1);
 #else
-                __flh_ns::Utilities::showMacWindowButton(win);
+                __flh_ns::Utilities::setStandardWindowButtonsVisibility(win, true);
+                QSize btnGroupSize = __flh_ns::Utilities::standardWindowButtonsSize(win);
+                __flh_ns::Utilities::setStandardWindowButtonsPosition(win,
+                    QPoint(12, (m_titleBar->height() - btnGroupSize.height())/2)
+                );
+                m_titleBar->layout()->setContentsMargins(70, 0, 0, 0);
 #endif // Q_OS_MAC
-                inited = true;
+                m_flhInited = true;
             }
         }
     }

@@ -491,11 +491,8 @@ void WizMainWindow::changeEvent(QEvent* event)
             WizDatabase::clearCertPassword();
         }
     }
-    //
-    if (m_useSystemBasedStyle)
-        QMainWindow::changeEvent(event);
-    else
-        _baseClass::changeEvent(event);
+
+    _baseClass::changeEvent(event);
 }
 
 void WizMainWindow::moveEvent(QMoveEvent* ev)
@@ -1813,12 +1810,7 @@ void WizMainWindow::layoutTitleBar()
 
     QLayout* layout = new QVBoxLayout();
     layout->setSpacing(0);
-#ifdef Q_OS_MAC
-    // Space for mac close-min-zoom buttons
-    layout->setContentsMargins(0, 10, 0, 0);
-#else
     layout->setContentsMargins(0, 0, 0, 0);
-#endif // Q_OS_MAC
 
     QLayout* layoutTitle = new QHBoxLayout();
     layoutTitle->setContentsMargins(0, 0, 0, 0);
@@ -1867,13 +1859,12 @@ void WizMainWindow::layoutTitleBar()
  */
 void WizMainWindow::initToolBar()
 {
-
-    // 将标题工具栏添加到布局
-    clientLayout()->addWidget(m_toolBar);
     // 根据是否使用系统标题栏样式来选择窗口样式
     setWindowStyle(m_useSystemBasedStyle);
 
+    // m_toolBar will be added to titleBar
     layoutTitleBar();
+
     // main button size
     QSize iconSize = QSize(WizSmartScaleUI(16), WizSmartScaleUI(16));
     m_toolBar->setIconSize(iconSize);
