@@ -4040,186 +4040,181 @@ Go to create a note</source>
 <context>
     <name>WizLoginDialog</name>
     <message>
-        <location filename="../src/WizLoginDialog.cpp" line="585"/>
+        <location filename="../src/WizLoginDialog.cpp" line="586"/>
         <source>Password</source>
         <translation>密码</translation>
     </message>
     <message>
-        <location filename="../src/WizLoginDialog.cpp" line="589"/>
+        <location filename="../src/WizLoginDialog.cpp" line="591"/>
         <source>Please search or input your server IP</source>
         <translation>请搜索服务器或输入 IP 地址</translation>
     </message>
     <message>
-        <location filename="../src/WizLoginDialog.cpp" line="593"/>
+        <location filename="../src/WizLoginDialog.cpp" line="595"/>
         <source>Please input email as your account</source>
         <translation>请输入邮箱作为用户名</translation>
     </message>
     <message>
-        <location filename="../src/WizLoginDialog.cpp" line="618"/>
+        <location filename="../src/WizLoginDialog.cpp" line="620"/>
         <source>Create Account</source>
         <translation>创建帐号</translation>
     </message>
     <message>
-        <location filename="../src/WizLoginDialog.cpp" line="1035"/>
-        <location filename="../src/WizLoginDialog.cpp" line="1544"/>
+        <location filename="../src/WizLoginDialog.cpp" line="1037"/>
+        <location filename="../src/WizLoginDialog.cpp" line="1546"/>
         <source>No account yet,</source>
         <translation>还没有帐号，</translation>
     </message>
     <message>
-        <location filename="../src/WizLoginDialog.cpp" line="409"/>
+        <location filename="../src/WizLoginDialog.cpp" line="410"/>
         <source>Can not open database while update user profile</source>
         <translation>更新用户档案时无法打开数据库</translation>
     </message>
     <message>
-        <location filename="../src/WizLoginDialog.cpp" line="880"/>
-        <location filename="../src/WizLoginDialog.cpp" line="971"/>
-        <location filename="../src/WizLoginDialog.cpp" line="1459"/>
+        <location filename="../src/WizLoginDialog.cpp" line="882"/>
+        <location filename="../src/WizLoginDialog.cpp" line="973"/>
+        <location filename="../src/WizLoginDialog.cpp" line="1461"/>
         <source>There is no server address, please input it.</source>
         <translation>没找到服务器地址，请手动输入服务器地址。</translation>
     </message>
     <message>
-        <location filename="../src/WizLoginDialog.cpp" line="170"/>
+        <location filename="../src/WizLoginDialog.cpp" line="171"/>
         <source>Sign in to WizNote Server</source>
         <translation>登录到为知笔记服务器</translation>
     </message>
     <message>
-        <location filename="../src/WizLoginDialog.cpp" line="173"/>
-        <source>Sign in to Enterprise Private Server (WizBox)</source>
-        <translation>登录到企业私有服务器 （为知盒子）</translation>
-    </message>
-    <message>
-        <location filename="../src/WizLoginDialog.cpp" line="176"/>
-        <source>Find WizBox...</source>
-        <translation>查找为知盒子...</translation>
-    </message>
-    <message>
-        <location filename="../src/WizLoginDialog.cpp" line="177"/>
-        <source>About WizBox...</source>
-        <translation>关于为知盒子...</translation>
-    </message>
-    <message>
-        <location filename="../src/WizLoginDialog.cpp" line="977"/>
+        <location filename="../src/WizLoginDialog.cpp" line="979"/>
         <source>The user name can&apos;t switch to enterprise server, it was signed in to WizNote.</source>
         <translation>此用户名已登录过为知笔记官方服务，不能切换到企业私有服务。</translation>
     </message>
     <message>
-        <location filename="../src/WizLoginDialog.cpp" line="985"/>
+        <location filename="../src/WizLoginDialog.cpp" line="987"/>
         <source>The user name can&apos;t switch to WizNote, it was signed in to enterprise server. </source>
         <translation>此用户名已登录过企业私有服务，不能切换到为知笔记官方服务。 </translation>
     </message>
     <message>
-        <location filename="../src/WizLoginDialog.cpp" line="379"/>
+        <location filename="../src/WizLoginDialog.cpp" line="380"/>
         <source>Connecting...</source>
         <translation>正在连接...</translation>
     </message>
     <message>
-        <location filename="../src/WizLoginDialog.cpp" line="597"/>
+        <location filename="../src/WizLoginDialog.cpp" line="174"/>
+        <source>Sign in to Private Server/WizBox</source>
+        <translation>登录到私有服务器或为知盒子</translation>
+    </message>
+    <message>
+        <location filename="../src/WizLoginDialog.cpp" line="178"/>
+        <source>About private deployment ...</source>
+        <translation>关于私有部署...</translation>
+    </message>
+    <message>
+        <location filename="../src/WizLoginDialog.cpp" line="599"/>
         <source>Please enter your password</source>
         <translation>请输入密码</translation>
     </message>
     <message>
-        <location filename="../src/WizLoginDialog.cpp" line="602"/>
+        <location filename="../src/WizLoginDialog.cpp" line="604"/>
         <source>Please repeat your password</source>
         <translation>请再次输入密码</translation>
     </message>
     <message>
-        <location filename="../src/WizLoginDialog.cpp" line="613"/>
+        <location filename="../src/WizLoginDialog.cpp" line="615"/>
         <source>Login</source>
         <translation>登录</translation>
     </message>
     <message>
-        <location filename="../src/WizLoginDialog.cpp" line="690"/>
+        <location filename="../src/WizLoginDialog.cpp" line="692"/>
         <source>Invalid email address.</source>
         <translation>无效的邮箱地址.</translation>
     </message>
     <message>
-        <location filename="../src/WizLoginDialog.cpp" line="697"/>
+        <location filename="../src/WizLoginDialog.cpp" line="699"/>
         <source>Password is Empty</source>
         <translation>密码不能为空</translation>
     </message>
     <message>
-        <location filename="../src/WizLoginDialog.cpp" line="704"/>
+        <location filename="../src/WizLoginDialog.cpp" line="706"/>
         <source>Passwords don&apos;t match</source>
         <translation>两次输入的密码不一致</translation>
     </message>
     <message>
-        <location filename="../src/WizLoginDialog.cpp" line="748"/>
+        <location filename="../src/WizLoginDialog.cpp" line="750"/>
         <source>Finding Service....</source>
         <translation>正在查找服务...</translation>
     </message>
     <message>
-        <location filename="../src/WizLoginDialog.cpp" line="898"/>
+        <location filename="../src/WizLoginDialog.cpp" line="900"/>
         <source>Connecting....</source>
         <translation>正在连接...</translation>
     </message>
     <message>
-        <location filename="../src/WizLoginDialog.cpp" line="1071"/>
+        <location filename="../src/WizLoginDialog.cpp" line="1073"/>
         <source>Please enter server address</source>
         <translation>请输入服务器地址</translation>
     </message>
     <message>
-        <location filename="../src/WizLoginDialog.cpp" line="1138"/>
+        <location filename="../src/WizLoginDialog.cpp" line="1140"/>
         <source>User not exists!</source>
         <translation>该用户不存在！</translation>
     </message>
     <message>
-        <location filename="../src/WizLoginDialog.cpp" line="1142"/>
+        <location filename="../src/WizLoginDialog.cpp" line="1144"/>
         <source>Password error!</source>
         <translation>密码错误！</translation>
     </message>
     <message>
-        <location filename="../src/WizLoginDialog.cpp" line="1146"/>
+        <location filename="../src/WizLoginDialog.cpp" line="1148"/>
         <source>Log in too many times in a short time, please try again later.</source>
         <translation>登录过于频繁，请稍后重试。</translation>
     </message>
     <message>
-        <location filename="../src/WizLoginDialog.cpp" line="1531"/>
+        <location filename="../src/WizLoginDialog.cpp" line="1533"/>
         <source>The user can&apos;t sigin in to the server, it had been signed in to other servers.</source>
         <translation>该用户在其他服务器上登录过，不能在此服务器上登录。</translation>
     </message>
     <message>
-        <location filename="../src/WizLoginDialog.cpp" line="1120"/>
+        <location filename="../src/WizLoginDialog.cpp" line="1122"/>
         <source>Network connection is unavailable.</source>
         <translation>网络连接不可用.</translation>
     </message>
     <message>
-        <location filename="../src/WizLoginDialog.cpp" line="1273"/>
+        <location filename="../src/WizLoginDialog.cpp" line="1275"/>
         <source>Verification code error</source>
         <translation>验证码错误</translation>
     </message>
     <message>
-        <location filename="../src/WizLoginDialog.cpp" line="1320"/>
+        <location filename="../src/WizLoginDialog.cpp" line="1322"/>
         <source>Remove user will delete local cache notes, are you sure to remove user %1 ?</source>
         <translation>移除用户会删除该用户已下载的笔记数据，确定移除用户 %1 ?</translation>
     </message>
     <message>
-        <location filename="../src/WizLoginDialog.cpp" line="1610"/>
+        <location filename="../src/WizLoginDialog.cpp" line="1612"/>
         <source>Already got account,</source>
         <translation>已有帐号，</translation>
     </message>
     <message>
-        <location filename="../src/WizLoginDialog.cpp" line="1057"/>
+        <location filename="../src/WizLoginDialog.cpp" line="1059"/>
         <source>Please enter user id</source>
         <translation>请输入用户名</translation>
     </message>
     <message>
-        <location filename="../src/WizLoginDialog.cpp" line="1062"/>
+        <location filename="../src/WizLoginDialog.cpp" line="1064"/>
         <source>Please enter user password</source>
         <translation>请输入用户密码</translation>
     </message>
     <message>
-        <location filename="../src/WizLoginDialog.cpp" line="1134"/>
+        <location filename="../src/WizLoginDialog.cpp" line="1136"/>
         <source>User name or password is not correct!</source>
         <translation>用户名或密码错误!</translation>
     </message>
     <message>
-        <location filename="../src/WizLoginDialog.cpp" line="880"/>
-        <location filename="../src/WizLoginDialog.cpp" line="971"/>
-        <location filename="../src/WizLoginDialog.cpp" line="977"/>
-        <location filename="../src/WizLoginDialog.cpp" line="985"/>
-        <location filename="../src/WizLoginDialog.cpp" line="1320"/>
-        <location filename="../src/WizLoginDialog.cpp" line="1459"/>
-        <location filename="../src/WizLoginDialog.cpp" line="1531"/>
+        <location filename="../src/WizLoginDialog.cpp" line="882"/>
+        <location filename="../src/WizLoginDialog.cpp" line="973"/>
+        <location filename="../src/WizLoginDialog.cpp" line="979"/>
+        <location filename="../src/WizLoginDialog.cpp" line="987"/>
+        <location filename="../src/WizLoginDialog.cpp" line="1322"/>
+        <location filename="../src/WizLoginDialog.cpp" line="1461"/>
+        <location filename="../src/WizLoginDialog.cpp" line="1533"/>
         <source>Info</source>
         <translation>提示</translation>
     </message>
@@ -4364,6 +4359,11 @@ Go to create a note</source>
         <location filename="../src/WizMainWindow.cpp" line="1358"/>
         <source>Upgrade now</source>
         <translation>立即升级</translation>
+    </message>
+    <message>
+        <location filename="../src/WizMainWindow.cpp" line="1536"/>
+        <source>Account settings</source>
+        <translation>帐户设置</translation>
     </message>
     <message>
         <location filename="../src/WizMainWindow.cpp" line="4183"/>
@@ -4706,14 +4706,14 @@ Asian characters: %5</source>
 <context>
     <name>WizOEMDownloader</name>
     <message>
-        <location filename="../src/WizLoginDialog.cpp" line="1761"/>
+        <location filename="../src/WizLoginDialog.cpp" line="1765"/>
         <source>Can not find server %1</source>
         <translation>找不到服务器 %1</translation>
     </message>
     <message>
-        <location filename="../src/WizLoginDialog.cpp" line="1823"/>
-        <location filename="../src/WizLoginDialog.cpp" line="1832"/>
-        <location filename="../src/WizLoginDialog.cpp" line="1856"/>
+        <location filename="../src/WizLoginDialog.cpp" line="1827"/>
+        <location filename="../src/WizLoginDialog.cpp" line="1836"/>
+        <location filename="../src/WizLoginDialog.cpp" line="1860"/>
         <source>Licence not found : %1</source>
         <translation>无法获取Licence : %1</translation>
     </message>
@@ -5787,11 +5787,6 @@ w: %3  h: %4</translation>
         <location filename="../src/widgets/WizUserInfoWidget.cpp" line="69"/>
         <source>Renewal Vip...</source>
         <translation>续费VIP...</translation>
-    </message>
-    <message>
-        <location filename="../src/widgets/WizUserInfoWidget.cpp" line="77"/>
-        <source>My shared links...</source>
-        <translation>我的分享...</translation>
     </message>
     <message>
         <location filename="../src/widgets/WizUserInfoWidget.cpp" line="59"/>
