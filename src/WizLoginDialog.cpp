@@ -1229,7 +1229,7 @@ void WizLoginDialog::serverListMenuClicked(QAction* action)
         }
         else if (strActionData == WIZ_SERVERACTION_HELP)
         {
-            QString strUrl = WizApiEntry::standardCommandUrl("link");
+            QString strUrl = WizOfficialApiEntry::standardCommandUrl("link");
             strUrl += "&name=wiz-box-search-help.html";
             QDesktopServices::openUrl(strUrl);
         }
@@ -1748,7 +1748,9 @@ QString WizOEMDownloader::_downloadOEMSettings()
     QNetworkAccessManager net;
     WizCommonApiEntry::setEnterpriseServerIP(m_server);
     QString strUrl = WizCommonApiEntry::makeUpUrlFromCommand("oem");
-    QNetworkReply* reply = net.get(QNetworkRequest(strUrl));
+    QNetworkRequest req(strUrl);
+    req.setAttribute(QNetworkRequest::FollowRedirectsAttribute, true);
+    QNetworkReply* reply = net.get(req);
     qDebug() << "get oem from server : " << strUrl;
 
     QEventLoop loop;
