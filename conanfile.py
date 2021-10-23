@@ -147,7 +147,9 @@ class WizNotePlusConan(ConanFile):
         if self.settings.os == "Windows":
             self.options["cryptopp"].shared = False
         if not self.options.qtdir:
-            if tools.which("qmake"):
+            if "QTDIR" in os.environ and os.environ["QTDIR"]:
+                self.options.qtdir = os.environ["QTDIR"]
+            elif tools.which("qmake"):
                 self.options.qtdir = get_qt_dir()
             else:
                 raise ConanInvalidConfiguration("Qt library is required!")
