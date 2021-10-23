@@ -722,11 +722,7 @@ void WizDocumentWebView::onDocumentReady(const QString kbGUID, const QString str
     if (!m_dbMgr.db(kbGUID).documentFromGuid(strGUID, doc))
         return;
 
-    //
     loadDocumentInWeb(editorMode);
-    //
-    if (!m_extEditorTask.isEmpty())
-        loadDocumentToExternalEditor(doc, m_extEditorTask.first());
 }
 
 void WizDocumentWebView::onDocumentSaved(const QString kbGUID, const QString strGUID, bool ok)
@@ -792,62 +788,6 @@ void WizDocumentWebView::setInSeperateWindow(bool inSeperateWindow)
 bool WizDocumentWebView::isInSeperateWindow() const
 {
     return m_bInSeperateWindow;
-}
-
-void WizDocumentWebView::addExtEditorTask(const WizExternalEditorData& data)
-{
-    m_extEditorTask.append(data);
-}
-
-void WizDocumentWebView::clearExtEditorTask()
-{
-    m_extEditorTask.clear();
-}
-
-/**
- *  @brief view and edit in outer edit
- *
- *  cannot use outer edit under edittable status
- */
-void WizDocumentWebView::viewDocumentInExternalEditor(const WizExternalEditorData &editorData)
-{
-    // prepare note data
-    WIZDOCUMENTDATA docData;
-    WizDatabase& db = m_dbMgr.db(view()->note().strKbGUID);
-    if (!db.documentFromGuid(view()->note().strGUID, docData))
-        return;
-    trySaveDocument(docData, false, [this, docData, editorData](const QVariant&){
-        addExtEditorTask(editorData);
-        reloadNoteData(docData);
-    });
-}
-
-void WizDocumentWebView::loadDocumentToExternalEditor(const WIZDOCUMENTDATA &docData, const WizExternalEditorData &editorData) {
-    // prepare file and directory
-    QString strFileName = m_mapFile.value(docData.strGUID);
-    QDir noteTempDir = QFileInfo(strFileName).absoluteDir();
-    CString strTitle = view()->note().strTitle;
-    WizMakeValidFileNameNoPath(strTitle);
-    QString cacheFileName = QFileInfo(noteTempDir.absolutePath() + "/" + strTitle).absoluteFilePath();
-    // Export Note to file
-    if (editorData.TextEditor == 2) {
-        if (noteTempDir.exists(cacheFileName))
-            noteTempDir.remove(cacheFileName);
-
-        saveAsPlainText(cacheFileName, [=](QString fileName){
-            //WizGlobal::mainWindow()->startExternalEditor(fileName, editorData, view()->note());
-        });
-    } else if (editorData.TextEditor == 0) {
-        cacheFileName += ".html";
-        if (noteTempDir.exists(cacheFileName))
-            noteTempDir.remove(cacheFileName);
-
-        saveAsRenderedHtml(cacheFileName, [=](QString fileName){
-            //WizGlobal::mainWindow()->startExternalEditor(fileName, editorData, view()->note());
-        });
-    }
-
-    clearExtEditorTask();
 }
 
 QString WizDocumentWebView::documentTitle()

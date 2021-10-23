@@ -176,9 +176,6 @@ public:
     bool isInSeperateWindow() const;
 
     WizDocumentWebViewPage* getPage();
-
-    void viewDocumentInExternalEditor(const WizExternalEditorData &editorData);
-    void loadDocumentToExternalEditor(const WIZDOCUMENTDATA &docData, const WizExternalEditorData &editorData);
     QString documentTitle() override;
 
     // initialize editor style before render, only invoke once.
@@ -281,9 +278,6 @@ private:
     void saveReadingViewDocument(const WIZDOCUMENTDATA& data, bool force, std::function<void(const QVariant &)> callback);
 
     void createReadModeContextMenu(QContextMenuEvent *event);
-
-    void addExtEditorTask(const WizExternalEditorData& data);
-    void clearExtEditorTask();
 
 protected:
     virtual void keyPressEvent(QKeyEvent* event) override;
