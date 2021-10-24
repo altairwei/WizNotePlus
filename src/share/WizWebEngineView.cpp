@@ -170,8 +170,6 @@ WizWebEngineView::WizWebEngineView(const WizWebEngineInjectObjectCollection& obj
     memset(m_viewActions, 0, sizeof(m_viewActions));
 
     setupPage(new WizWebEnginePage(objects, this));
-
-    connect(this, SIGNAL(loadFinished(bool)), this, SLOT(innerLoadFinished(bool)));
 }
 
 WizWebEngineView::~WizWebEngineView()
@@ -368,6 +366,8 @@ void WizWebEngineView::setupPage(WizWebEnginePage *page)
     setPage(page);
     connect(page, &WizWebEnginePage::openLinkInNewWindow,
             this, &WizWebEngineView::openLinkInDefaultBrowser);
+    connect(page, &WizWebEnginePage::loadFinished,
+            this, &WizWebEngineView::innerLoadFinished);
 
     setupWebActions();
 }

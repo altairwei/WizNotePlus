@@ -690,18 +690,8 @@ void WizDocumentListViewDocumentItem::drawSyncStatus(QPainter* p, const QStyleOp
     WizDatabase& db = m_app.databaseManager().db(m_data.doc.strKbGUID);
     bool isRetina = WizIsHighPixel();
     strIconPath = ::WizGetSkinResourcePath(m_app.userSettings().skin());
-    //
-    bool attachModified = false;
-    /*  //影响显示效率
-    CWizDocumentAttachmentDataArray arrayAttachment;
-    db.getDocumentAttachments(m_data.doc.strGUID, arrayAttachment);
-    for (WIZDOCUMENTATTACHMENTDATAEX attachment : arrayAttachment)
-    {
-        if (db.isAttachmentModified(attachment.strGUID))
-            attachModified = true;        
-    }
-    */
-    if (db.isDocumentModified(m_data.doc.strGUID) || attachModified)
+
+    if (db.isDocumentModified(m_data.doc.strGUID))
     {
         strIconPath += isRetina ? "document_needUpload@2x.png" : "document_needUpload.png";
     }
