@@ -1987,6 +1987,20 @@ void WizDocumentWebView::editorCommandExecuteStrikeThrough()
     editorCommandExecuteCommand("strikethrough");
 }
 
+void WizDocumentWebView::editorCommandExecuteSubScript()
+{
+    WizAnalyzer& analyzer = WizAnalyzer::getAnalyzer();
+    analyzer.logAction("subscript");
+    editorCommandExecuteCommand("subscript");
+}
+
+void WizDocumentWebView::editorCommandExecuteSuperScript()
+{
+    WizAnalyzer& analyzer = WizAnalyzer::getAnalyzer();
+    analyzer.logAction("superscript");
+    editorCommandExecuteCommand("superscript");
+}
+
 void WizDocumentWebView::editorCommandExecuteJustifyLeft()
 {
     WizAnalyzer& analyzer = WizAnalyzer::getAnalyzer();

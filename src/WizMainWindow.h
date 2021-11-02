@@ -354,6 +354,8 @@ public Q_SLOTS:
     void on_actionMenuFormatItalic_triggered();
     void on_actionMenuFormatUnderLine_triggered();
     void on_actionMenuFormatStrikeThrough_triggered();
+    void on_actionMenuFormatSubscript_triggered();
+    void on_actionMenuFormatSuperscript_triggered();
     void on_actionMenuFormatInsertHorizontal_triggered();
     void on_actionMenuFormatInsertDate_triggered();
     void on_actionMenuFormatInsertTime_triggered();
