@@ -2980,6 +2980,18 @@ void WizMainWindow::on_actionMenuFormatStrikeThrough_triggered()
     getActiveEditor()->editorCommandExecuteStrikeThrough();
 }
 
+void WizMainWindow::on_actionMenuFormatSubscript_triggered()
+{
+    WizGetAnalyzer().logAction("MenuBarSubscript");
+    getActiveEditor()->editorCommandExecuteSubScript();
+}
+
+void WizMainWindow::on_actionMenuFormatSuperscript_triggered()
+{
+    WizGetAnalyzer().logAction("MenuBarSuperscript");
+    getActiveEditor()->editorCommandExecuteSuperScript();
+}
+
 void WizMainWindow::on_actionMenuFormatInsertHorizontal_triggered()
 {
     WizGetAnalyzer().logAction("MenuBarInsertHorizontal");

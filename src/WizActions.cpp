@@ -142,6 +142,8 @@ WIZACTION* WizActions::actionsData()
         {WIZACTION_FORMAT_ITALIC,               QObject::tr("Italic"),                      "",                                     QKeySequence("Ctrl+I")},
         {WIZACTION_FORMAT_UNDERLINE,            QObject::tr("Underline"),                   "",                                     QKeySequence("Ctrl+U")},
         {WIZACTION_FORMAT_STRIKETHROUGH,        QObject::tr("Strike Through"),              "",                                     QKeySequence("Ctrl+Alt+K")},
+        {WIZACTION_FORMAT_SUBSCRIPT,            QObject::tr("Subscript"),                   "",                                     QKeySequence("")},
+        {WIZACTION_FORMAT_SUPERSCRIPT,          QObject::tr("Superscript"),                 "",                                     QKeySequence("")},
         {WIZACTION_FORMAT_INSERT_HORIZONTAL,    QObject::tr("Insert Horizontal"),           "",                                     QKeySequence("Shift+Ctrl+H")},
         {WIZACTION_FORMAT_INSERT_DATE,          QObject::tr("Insert Date"),                 "",                                     QKeySequence("Shift+Ctrl+D")},
         {WIZACTION_FORMAT_INSERT_TIME,          QObject::tr("Insert Time"),                 "",                                     QKeySequence("Shift+Ctrl+Alt+D")},
