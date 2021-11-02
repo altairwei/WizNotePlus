@@ -176,10 +176,7 @@ public:
     bool isInSeperateWindow() const;
 
     WizDocumentWebViewPage* getPage();
-
-    void viewDocumentInExternalEditor(const WizExternalEditorData &editorData);
-    void loadDocumentToExternalEditor(const WIZDOCUMENTDATA &docData, const WizExternalEditorData &editorData);
-    QString documentTitle();
+    QString documentTitle() override;
 
     // initialize editor style before render, only invoke once.
     void replaceDefaultCss(QString& strHtml);
@@ -282,9 +279,6 @@ private:
 
     void createReadModeContextMenu(QContextMenuEvent *event);
 
-    void addExtEditorTask(const WizExternalEditorData& data);
-    void clearExtEditorTask();
-
 protected:
     virtual void keyPressEvent(QKeyEvent* event) override;
     virtual void mousePressEvent(QMouseEvent* event) override;
@@ -295,6 +289,7 @@ protected:
     virtual void dragEnterEvent(QDragEnterEvent* event) override;
     virtual void dragMoveEvent(QDragMoveEvent* event) override;
     virtual void dropEvent(QDropEvent* event) override;
+    void setupWebActions() override;
 
 private:
     WizExplorerApp& m_app;
@@ -352,7 +347,6 @@ public Q_SLOTS:
     void on_insertCodeHtml_requset(QString strOldHtml);
 
     void onActionSaveTriggered();
-    void handleSavePageTriggered();
     void handleReloadTriggered();
 
     //void onWatchedFileChanged(const QString& path, int TextEditor, int UTF8Encoding);

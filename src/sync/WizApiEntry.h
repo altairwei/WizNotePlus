@@ -1,7 +1,7 @@
 ﻿#ifndef WIZSERVICE_WIZAPIENTRY_H
 #define WIZSERVICE_WIZAPIENTRY_H
 
-#define WIZNOTE_API_SERVER      "http://api.wiz.cn/"
+#define WIZNOTE_API_SERVER      "https://api.wiz.cn/"
 
 #include <QString>
 #include <QMap>
@@ -58,10 +58,10 @@ private:
     static QMap<QString, QString> m_cacheMap;
 };
 
-class WizApiEntry
+class WizOfficialApiEntry
 {
 public:
-    WizApiEntry();
+    WizOfficialApiEntry();
 
     static QString analyzerUploadUrl();
     static QString crashReportUrl();

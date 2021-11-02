@@ -178,6 +178,11 @@ void WizIconLineEditContainer::setRightIcon(QString fileName)
 {
     m_rightIcon->setPixmap(QPixmap(fileName));
 }
+void WizIconLineEditContainer::setRightIcon(const QIcon& icon)
+{
+    const int size = 16;
+    m_rightIcon->setPixmap(icon.pixmap(size, size));
+}
 
 void WizIconLineEditContainer::setPlaceholderText(const QString &strText)
 {

@@ -76,9 +76,17 @@ public:
     virtual ~WizWebEngineView();
 
 public:
+    enum ViewAction {
+        OpenDevTools,
+        OpenTempFileLocation,
+
+        ViewActionCount
+    };
+
+    QAction *viewAction(ViewAction action) const;
     WizWebEnginePage* getPage();
     QMenu* createStandardContextMenu();
-    QString documentTitle();
+    virtual QString documentTitle();
 
     void addObjectToJavaScriptClient(QString name, QObject* obj);
 
@@ -101,7 +109,6 @@ public Q_SLOTS:
     void openLinkInDefaultBrowser(QUrl url);
 #if (QT_VERSION >= QT_VERSION_CHECK(5, 11, 0))
     void openDevTools();
-    void handleOpenDevToolsTriggered();
 #endif
     void handleSavePageTriggered();
     
@@ -110,9 +117,12 @@ Q_SIGNALS:
 
 private:
     WizDevToolsDialog* m_devToolsWindow = nullptr;
+    mutable QAction *m_viewActions[ViewActionCount];
 
 protected:
     QWebEngineView *createWindow(QWebEnginePage::WebWindowType type) override;
+    virtual void setupPage(WizWebEnginePage *page);
+    virtual void setupWebActions();
     void contextMenuEvent(QContextMenuEvent *event);
     void childEvent(QChildEvent *event) override;
     bool eventFilter(QObject *obj, QEvent *ev) override;

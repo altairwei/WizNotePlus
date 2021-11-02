@@ -164,7 +164,7 @@ void saveSvgCore(WizDatabaseManager& dbMgr, const WIZDOCUMENTDATAEX& doc, QStrin
 
 QString getSvgEditorUrl()
 {
-    QString url = ::WizApiEntry::standardCommandUrl("svg_editor");
+    QString url = ::WizCommonApiEntry::makeUpUrlFromCommand("svg_editor");
 
 #ifdef Q_OS_WIN
     // Official WizNote windows client conflicts WizQTClient,
