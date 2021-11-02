@@ -128,6 +128,9 @@ WIZACTION* WizActions::actionsData()
         {WIZDOCUMENT_SORTBY_FOLDER,             QObject::tr("Sort by Folder"),              QObject::tr(""),                        QKeySequence()},
         {WIZDOCUMENT_SORTBY_SIZE,               QObject::tr("Sort by Size"),                QObject::tr(""),                        QKeySequence()},
 
+        // skin
+        {WIZSKIN_RELOAD_STYLESHEET,             QObject::tr("Reload stylesheet"),           QObject::tr(""),                        QKeySequence("F5")},
+
         // format
         {WIZACTION_FORMAT_JUSTIFYLEFT,          QObject::tr("Justify Left"),                "",                                     QKeySequence("Ctrl+[")},
         {WIZACTION_FORMAT_JUSTIFYRIGHT,         QObject::tr("Justify Right"),               "",                                     QKeySequence("Ctrl+]")},
@@ -389,7 +392,7 @@ void WizActions::buildMenuBar(QMenuBar* menuBar, const QString& strFileName, QMe
     }
 }
 
-void WizActions::buildMenu(QMenu* menu, const QString& strFileName)
+void WizActions::buildMenuList(QMenu* menu, const QString& strFileName, QMenu*& windowsMenu)
 {
     WizSettings settings(strFileName);
 
@@ -413,6 +416,11 @@ void WizActions::buildMenu(QMenu* menu, const QString& strFileName)
             QMenu* pMenu = menu->addMenu(strLocalText);
 
             buildMenu(pMenu, settings, strAction, false);
+
+            if (strAction.remove('&') == "Window")
+            {
+                windowsMenu = pMenu;
+            }
         }
         else
         {

@@ -39,8 +39,10 @@ public:
 
 private Q_SLOTS:
     void onBuffer_readRead() { emit readyRead(); }
+
 Q_SIGNALS:
     void readyRead();
+    void notifyRequested(const QString &title, const QString &msg);
 
 private:
     QMutex m_mutex;

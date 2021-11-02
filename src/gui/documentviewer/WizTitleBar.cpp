@@ -82,6 +82,8 @@ WizTitleBar::WizTitleBar(WizExplorerApp& app, QWidget *parent)
     , m_editButtonAnimation(nullptr)
     , m_commentManager(new WizCommentManager(this))
 {
+    setObjectName("document-title-bar");
+
     // 标题栏输入框
     m_editTitle->setCompleter(new WizMessageCompleter(m_editTitle));
     int nTitleHeight = Utils::WizStyleHelper::titleEditorHeight();
@@ -218,7 +220,7 @@ WizTitleBar::WizTitleBar(WizExplorerApp& app, QWidget *parent)
     m_documentToolBar->addWidget(m_editTitle);
     m_documentToolBar->addWidget(m_editBtn);
     m_documentToolBar->addWidget(new WizFixedSpacer(QSize(7, 1), m_documentToolBar));
-    m_documentToolBar->addWidget(m_mindmapBtn);
+    m_mindmapAction = m_documentToolBar->addWidget(m_mindmapBtn);
     m_documentToolBar->addWidget(m_separateBtn);
     m_documentToolBar->addWidget(m_tagBtn);
     m_documentToolBar->addWidget(m_shareBtn);
@@ -288,6 +290,9 @@ void WizTitleBar::initPlugins()
             &jsPluginMgr, &JSPluginManager::handlePluginActionTriggered);
 
         m_documentToolBar->addAction(ac);
+        if (auto acWgt = qobject_cast<QToolButton *>(m_documentToolBar->widgetForAction(ac))) {
+            acWgt->setFixedHeight(nTitleHeight);
+        }
     }
 
     connect(this, &WizTitleBar::launchPluginEditorRequest, 
@@ -445,7 +450,7 @@ void WizTitleBar::setBackgroundColor(QColor color)
     pal.setColor(QPalette::Window, color);
     m_editTitle->setPalette(pal);
 
-    m_editTitle->setStyleSheet("QLineEdit{background:#F5F5F5; border: 1px solid red;}");
+    //m_editTitle->setStyleSheet("QLineEdit{background:#F5F5F5; border: 1px solid red;}");
 
 //    pal = m_infoBar->palette();
 //    pal.setColor(QPalette::Window, color);
@@ -469,6 +474,7 @@ void WizTitleBar::updateTagButtonStatus()
 {
     if (m_tagBar && m_tagBtn)
     {
+        m_tagBtn->setChecked(m_tagBar->isVisible());
         m_tagBtn->setState(m_tagBar->isVisible() ? WizToolButton::Checked : WizToolButton::Normal);
     }
 }
@@ -477,8 +483,8 @@ void WizTitleBar::updateAttachButtonStatus()
 {
     if (m_attachments && m_attachBtn)
     {
+        m_attachBtn->setChecked(m_attachments->isVisible());
         m_attachBtn->setState(m_attachments->isVisible() ? WizCellButton::Checked : WizCellButton::Normal);
-        m_attachments->isVisible() ? m_attachBtn->setChecked(true) : m_attachBtn->setChecked(false);
     }
 }
 
@@ -486,8 +492,8 @@ void WizTitleBar::updateInfoButtonStatus()
 {
     if (m_info && m_infoBtn)
     {
+        m_infoBtn->setChecked(m_info->isVisible());
         m_infoBtn->setState(m_info->isVisible() ? WizToolButton::Checked : WizToolButton::Normal);
-        m_info->isVisible() ? m_infoBtn->setChecked(true) : m_infoBtn->setChecked(false);
     }
 }
 
@@ -495,6 +501,7 @@ void WizTitleBar::updateCommentsButtonStatus()
 {
     if (m_commentsBtn && noteView()->commentWidget())
     {
+        m_commentsBtn->setChecked(noteView()->commentWidget()->isVisible());
         m_commentsBtn->setState(noteView()->commentWidget()->isVisible() ? WizCellButton::Checked : WizCellButton::Normal);
     }
 }
@@ -554,7 +561,7 @@ void WizTitleBar::setNote(const WIZDOCUMENTDATA& data, WizEditorMode editorMode,
         m_tagBar->setDocument(data);
     }
 
-    m_mindmapBtn->setVisible(data.strType == "outline");
+    m_mindmapAction->setVisible(data.strType == "outline");
     m_mindmapBtn->setChecked(false);
 }
 
@@ -750,16 +757,6 @@ void WizTitleBar::onSeparateButtonClicked()
 
 void WizTitleBar::onTagButtonClicked()
 {
-//    if (!m_tags) {
-//        m_tags = new CWizTagListWidget(topLevelWidget());
-//    }
-
-//    m_tags->setDocument(noteView()->note());
-
-//    QRect rc = m_tagBtn->rect();
-//    QPoint pt = m_tagBtn->mapToGlobal(QPoint(rc.width()/2, rc.height()));
-//    m_tags->showAtPoint(pt);
-
     setTagBarVisible(!m_tagBar->isVisible());
 
     WizGetAnalyzer().logAction("showTags");

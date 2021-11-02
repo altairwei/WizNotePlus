@@ -130,18 +130,12 @@ int mainCore(int argc, char *argv[])
     // 设置高分屏支持
     //-------------------------------------------------------------------
 
-#ifdef Q_OS_LINUX
-    QApplication::setAttribute(Qt::AA_EnableHighDpiScaling);
+#if (QT_VERSION < QT_VERSION_CHECK(6, 0, 0))
+    QGuiApplication::setAttribute(Qt::AA_EnableHighDpiScaling);
+    QGuiApplication::setAttribute(Qt::AA_UseHighDpiPixmaps);
+#if (QT_VERSION >= QT_VERSION_CHECK(5, 14, 0))
+    QGuiApplication::setHighDpiScaleFactorRoundingPolicy(Qt::HighDpiScaleFactorRoundingPolicy::PassThrough);
 #endif
-
-#ifdef Q_OS_MAC
-    //QApplication::setAttribute(Qt::AA_EnableHighDpiScaling);
-#endif
-
-#ifdef Q_OS_WIN
-    // 暂时先采用UI缩放+字体缩小的方案来适配Windows高分屏
-    QApplication::setAttribute(Qt::AA_EnableHighDpiScaling);
-    //QApplication::setAttribute(Qt::AA_Use96Dpi);
 #endif
 
     // Init Application and QtWebEngine
@@ -184,19 +178,14 @@ int mainCore(int argc, char *argv[])
     QWebEngineSettings::defaultSettings()->setAttribute(QWebEngineSettings::LocalContentCanAccessRemoteUrls, true);
     QWebEngineSettings::defaultSettings()->setAttribute(QWebEngineSettings::FullScreenSupportEnabled, true);
 
+    QCoreApplication::setAttribute(Qt::AA_DontCreateNativeWidgetSiblings);
+
     // 配置QtApp和Debug
     //-------------------------------------------------------------------
 
-#ifdef Q_OS_WIN
-    QFont appFont = WizCreateWindowsUIFont(app);
-    QApplication::setFont(appFont);
-#endif // Q_OS_WIN
-
     // Debug 输出
     qInstallMessageHandler(Utils::WizLogger::messageHandler); // 输出到 Wiznote 消息控制台
-    //qInstallMessageHandler(nullptr); // 输出到 Qt Debug console
-    // 设置高分屏图标
-    QApplication::setAttribute(Qt::AA_UseHighDpiPixmaps);
+
     // 设置应用名和组织名用于QSetting
     QApplication::setApplicationName(QObject::tr("WizNote"));
     QApplication::setOrganizationName(QObject::tr("cn.wiz.wiznoteformac"));
@@ -233,15 +222,6 @@ int mainCore(int argc, char *argv[])
     QSslConfiguration::setDefaultConfiguration(conf);
 #endif
 
-    // tooltip 样式
-    app.setStyle(QStyleFactory::create("fusion"));
-    app.setStyleSheet("QToolTip { \
-                    font: 12px; \
-                    color:#000000; \
-                    padding:0px 1px; \
-                    background-color: #F8F8F8; \
-                    border:0px;}");
-
     // 获取默认用户设置
     //-------------------------------------------------------------------
 
@@ -268,6 +248,10 @@ int mainCore(int argc, char *argv[])
     /** User specific INI setting. */
     QSettings* settings = new QSettings(Utils::WizPathResolve::userSettingsFile(strAccountFolderName), QSettings::IniFormat);
     WizGlobal::setSettings(settings);
+
+    // 样式
+    app.setStyle(QStyleFactory::create("fusion"));
+    app.setStyleSheet(WizLoadSkinStyleSheet(userSettings.skin()));
 
     // 语言本地化
     //-------------------------------------------------------------------
@@ -297,6 +281,9 @@ int mainCore(int argc, char *argv[])
 
     // 登录程序
     //-------------------------------------------------------------------
+
+    QFont font(WizUserSettings::kDefaultUIFontFamily, WizUserSettings::kDefaultUIFontSize);
+    app.setFont(font);
 
     // figure out auto login or manually login
     bool bFallback = true;
@@ -384,6 +371,9 @@ int mainCore(int argc, char *argv[])
     app.installTranslator(&translatorQt);
 
     WizCommonApiEntry::setLanguage(strLocale);
+
+    QFont uiFont(userSettings.UIFontFamily(), userSettings.UIFontSize());
+    app.setFont(uiFont);
 
     // 登录数据库管理器
     WizDatabaseManager dbMgr(strAccountFolderName);

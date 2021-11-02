@@ -22,8 +22,6 @@ class WizFolderSelector;
 #define CATEGORY_MESSAGES_SEND_FROM_ME      QObject::tr("Send from me")
 
 
-#define WIZNOTE_CUSTOM_SCROLLBAR
-
 class WizCategoryBaseView : public QTreeWidget
 {
     Q_OBJECT

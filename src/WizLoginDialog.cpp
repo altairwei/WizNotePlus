@@ -89,7 +89,7 @@ WizLoginDialog::WizLoginDialog(const QString &strLocale, const QList<WizLocalUse
 #ifdef Q_OS_MAC
     : QDialog(parent)
 #else
-    : WizShadowWindow<QDialog>(parent, false)
+    : WizFramelessWindow<QDialog>(parent, false)
 #endif
     , ui(new Ui::wizLoginWidget)
     , m_menuUsers(new QMenu(this))
@@ -123,7 +123,7 @@ WizLoginDialog::WizLoginDialog(const QString &strLocale, const QList<WizLocalUse
 
     WizWindowTitleBar* title = titleBar();
     title->setPalette(QPalette(QColor::fromRgb(0x44, 0x8A, 0xFF)));
-    title->setContentsMargins(QMargins(0, 2, 2 ,0));
+    title->setContentsMargins(QMargins(0, 0, 0 ,0));
 #endif
 
     m_lineEditUserName = ui->wgt_usercontainer->edit();
@@ -203,6 +203,7 @@ WizLoginDialog::WizLoginDialog(const QString &strLocale, const QList<WizLocalUse
 //#endif
 
     initSateMachine();
+
 }
 
 WizLoginDialog::~WizLoginDialog()
@@ -550,12 +551,14 @@ void WizLoginDialog::applyElementStyles(const QString &strLocal)
         QString strBtnCloseDown = ::WizGetSkinResourceFileName(strThemeName, "linuxwindowclose_selected");
         m_titleBar->minButton()->setVisible(false);
         m_titleBar->maxButton()->setVisible(false);
+        /*
         m_titleBar->closeButton()->setIcon(QIcon());
         m_titleBar->closeButton()->setStyleSheet(QString("QToolButton{ border-image:url(%1); height: 16px; width: 16px;}"
                                                          "QToolButton:hover{ border-image:url(%2); height: 16px; width: 16px;}"
                                                          "QToolButton:pressed{ border-image:url(%3); height: 16px; width: 16px;}")
                                                  .arg(strBtnCloseNormal).arg(strBtnCloseHover).arg(strBtnCloseDown));
         m_titleBar->closeButton()->setFixedSize(::WizSmartScaleUI(16), ::WizSmartScaleUI(16));
+        */
     }
 #endif
 

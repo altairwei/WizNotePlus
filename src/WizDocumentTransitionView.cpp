@@ -4,6 +4,9 @@
 #include <QVBoxLayout>
 #include <QHBoxLayout>
 #include <QToolButton>
+#include <QStyleOption>
+#include <QPainter>
+#include <QStyle>
 
 #include "share/WizAnimateAction.h"
 
@@ -15,13 +18,13 @@ WizDocumentTransitionView::WizDocumentTransitionView(QWidget *parent) :
     m_labelHint = new QLabel(this);
 
     m_toolButton = new QToolButton(this);
-    m_toolButton->setFixedSize(50,36);
+    m_toolButton->setFixedSize(50, 36);
 
     m_animation = new WizAnimateAction(this);
     m_animation->setToolButton(m_toolButton);
 
     m_animation->setSingleIcons("transitionViewDownloading");
-    m_toolButton->setIconSize(QSize(50,36));
+    m_toolButton->setIconSize(QSize(50, 36));
 
     m_toolButton->setVisible(false);
 
@@ -74,4 +77,12 @@ void WizDocumentTransitionView::hideEvent(QHideEvent* ev)
 
     QWidget::hideEvent(ev);
 
+}
+
+void WizDocumentTransitionView::paintEvent(QPaintEvent *)
+{
+    QStyleOption opt;
+    opt.init(this);
+    QPainter p(this);
+    style()->drawPrimitive(QStyle::PE_Widget, &opt, &p, this);
 }

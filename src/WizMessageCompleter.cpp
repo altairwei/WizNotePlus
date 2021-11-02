@@ -164,8 +164,9 @@ class MessageCompleterPopup : public QListView
 public:
     MessageCompleterPopup(QWidget* parent = 0)
         : QListView(parent)
-    {        
-        setStyleSheet("QListView::item:selected {background-color:#5990EF;}");
+    {
+        // FIXME: move to skin's stylesheet
+        setStyleSheet("QListView::item:selected {background-color:red;}");
         verticalScrollBar()->setStyleSheet(Utils::WizStyleHelper::wizCommonScrollBarStyleSheet(2));
     }
 

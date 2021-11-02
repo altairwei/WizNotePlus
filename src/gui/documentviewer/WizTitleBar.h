@@ -135,6 +135,7 @@ private:
 
     WizEditButton* m_editBtn;
     WizToolButton* m_mindmapBtn;
+    QAction* m_mindmapAction;
     WizToolButton* m_separateBtn;
     WizToolButton* m_tagBtn;
 //    CellButton* m_emailBtn;

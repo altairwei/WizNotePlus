@@ -31,8 +31,8 @@ WizDocumentListViewDocumentItem::WizDocumentListViewDocumentItem(WizExplorerApp&
     m_data.nReadStatus = data.nReadStatus;
     m_data.strAuthorId = data.strAuthorId;
 
-
     setText(data.doc.strTitle);
+    setToolTip(data.doc.strTitle);
 
     updateDocumentUnreadCount();
     updateDocumentLocationData();
@@ -320,6 +320,7 @@ void WizDocumentListViewDocumentItem::reload(WizDatabase& db)
 
     db.documentFromGuid(m_data.doc.strGUID, m_data.doc);
     setText(m_data.doc.strTitle);
+    setToolTip(m_data.doc.strTitle);
     updateDocumentUnreadCount();
 
     Q_EMIT thumbnailReloaded();

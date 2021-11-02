@@ -1,55 +1,433 @@
-QDialog{background-color:#F4F4F4;} 
-QPushButton, QToolButton {
-	border-width: 1px; 
-    background-color:#FFFFFF;
-    color:#000000; 
-    font:12px; 
-    padding: 5px 14px; 
-    border-style: solid; 
-    border-color: #ECECEC; 
-    border-radius: 4px; 
-    border-bottom-color:#E0E0E0;
-} 
-QPushButton:default, QToolButton:default {
-	border-width: 1px; 
-    background-color:#3177EE;
-    color:#FFFFFF; 
-    font:12px; 
-    padding: 5px 14px; 
-    border-style: solid; 
-    border-color: #ECECEC; 
-    border-radius: 4px; 
-    border-bottom-color:#E0E0E0;
+/*
+ * Toolbar and tool button
+ * -----------------------------------------------------------
+ */
+
+WizMainWindow WizWindowTitleBar {
+  background-color: qlineargradient(
+    x1: 0.5, y1: 0,
+    x2: 0.5, y2: 1,
+    stop: 0 rgb(254, 254, 254),
+    stop: 1 rgb(224, 224, 224)
+  );
+  border-bottom: 1px solid #aeaeae;
 }
-QPushButton:pressed { 
-	background-color:#C1C1C1; 
+
+QToolButton {
+  height: 12px;
+  border-width: 0px;
+  font: 14px;
+  padding: 5px 5px;
+  border-style: solid;
+  border-color: #ececec;
+  border-radius: 4px;
+  border-bottom-color: #e0e0e0;
 }
-QPushButton:default:pressed { 
-	background-color:#1A58C2; 
+
+QToolButton[toolButtonStyle="2"][popupMode="1"] {
+  padding-right: 5px;
 }
-QLineEdit {
-	padding:5px 8px;
-	border:1px solid #E7E7E7;
-	border-radius:4px;
-    min-height:18px;
+
+QToolButton[toolButtonStyle="0"][popupMode="1"] {
+  padding-right: 10px;
 }
-QComboBox, QSpinBox, QDoubleSpinBox {
-    border: 1px solid #E7E7E7;
-    border-radius: 4px;
-    padding: 5px 10px 5px 8px;
+
+QToolButton::menu-button {
+  border: none;
+  width: 10px;
+  padding-right: 5px;
 }
-QComboBox::drop-down {
-    subcontrol-origin: padding;
-    subcontrol-position: top right;
-    width: 25px;
-    border:0px;
+
+QToolButton:hover {
+  background-color: rgba(211, 211, 211, 0.5)
 }
-QComboBox::down-arrow {
-    image: url(WizComboBoxDownArrow);
+
+QToolButton:pressed,
+QToolButton:checked {
+  background-color: rgba(211, 211, 211, 1)
 }
+
+/* Title bar close button */
+
+QToolButton#window-close-btn {
+  image: url("%SKIN_PATH%/titlebar/close.svg");
+  background: none;
+  border-radius: none;
+}
+
+QToolButton#window-close-btn:hover {
+  image: url("%SKIN_PATH%/titlebar/close_white.svg");
+  background: red;
+  border-radius: none;
+}
+
+QToolButton#window-close-btn:pressed {
+  image: url("%SKIN_PATH%/titlebar/close_white.svg");
+  background: darkred;
+  border-radius: none;
+}
+
+QToolButton#window-close-btn,
+QToolButton#window-min-btn,
+QToolButton#window-max-btn,
+QToolButton#window-menu-btn {
+  height: 10px;
+  width: 16px;
+  padding: 4px 10px;
+}
+
+QToolButton#window-min-btn,
+QToolButton#window-max-btn,
+QToolButton#window-menu-btn {
+  background: none;
+  border-radius: none;
+}
+
+QToolButton#window-min-btn:hover,
+QToolButton#window-max-btn:hover,
+QToolButton#window-menu-btn:hover {
+  background: rgba(211, 211, 211, 0.5);
+  border-radius: none;
+}
+
+QToolButton#window-min-btn:pressed,
+QToolButton#window-max-btn:pressed,
+QToolButton#window-menu-btn:pressed {
+  background: rgba(211, 211, 211, 1);
+  border-radius: none;
+}
+
+/* Title bar minimize button */
+
+QToolButton#window-min-btn { image: url("%SKIN_PATH%/titlebar/minimize.svg"); }
+QToolButton#window-min-btn:hover { image: url("%SKIN_PATH%/titlebar/minimize_on.svg"); }
+QToolButton#window-min-btn:pressed { image: url("%SKIN_PATH%/titlebar/minimize_selected.svg"); }
+
+/* Title bar maximize button */
+
+QToolButton#window-max-btn { image: url("%SKIN_PATH%/titlebar/maximize.svg"); }
+QToolButton#window-max-btn:hover { image: url("%SKIN_PATH%/titlebar/maximize_on.svg"); }
+QToolButton#window-max-btn:pressed { image: url("%SKIN_PATH%/titlebar/maximize_selected.svg"); }
+
+/* Title bar restore button */
+
+QToolButton#window-max-btn:checked { image: url("%SKIN_PATH%/titlebar/restore.svg"); }
+QToolButton#window-max-btn:checked:hover { image: url("%SKIN_PATH%/titlebar/restore_on.svg"); }
+QToolButton#window-max-btn:checked:pressed { image: url("%SKIN_PATH%/titlebar/restore_selected.svg"); }
+
+/* Title bar menu button */
+
+QToolButton#window-menu-btn { image: url("%SKIN_PATH%/titlebar/menu.svg"); }
+QToolButton#window-menu-btn:hover { image: url("%SKIN_PATH%/titlebar/menu_on.svg"); }
+QToolButton#window-menu-btn:pressed { image: url("%SKIN_PATH%/titlebar/menu_selected.svg"); }
+QToolButton#window-menu-btn:menu-indicator { image: none; }
+
+WizLoginDialog WizWindowTitleBar QToolButton#window-close-btn {
+  image: url("%SKIN_PATH%/titlebar/close_opacity.svg");
+  background: none;
+  border-radius: none;
+  padding: 2px 2px;
+}
+
+WizLoginDialog WizWindowTitleBar QToolButton#window-close-btn:hover {
+  image: url("%SKIN_PATH%/titlebar/close_red.svg");
+  background: none;
+  border-radius: none;
+  padding: 2px 2px;
+}
+
+QToolButton#btn-newnote {
+  color: #787878;
+}
+
+QToolButton#btn-newnote:hover {
+  color: #448adf;
+}
+
+/*
+ * Document browser
+ * -----------------------------------------------------------
+ */
+
+QWidget#editor-container {
+  background-color: white;
+}
+
+
+/*
+ * Tab browser
+ * -----------------------------------------------------------
+ *
+ * The frame of the tab widget is styled using the ::pane subcontrol. The left and
+ * right corners are styled using the ::left-corner and ::right-corner
+ * respectively. The position of the tab bar is controlled using the ::tab-bar
+ * subcontrol.
+ *
+ * By default, the subcontrols have positions of a QTabWidget in the QWindowsStyle.
+ * To place the QTabBar in the center, set the subcontrol-position of the tab-bar
+ * subcontrol.
+ *
+ * Individual tabs may be styled using the ::tab subcontrol. Close buttons using
+ * the ::close-button The tabs support the :only-one, :first, :last, :middle,
+ * :previous--selected, :next-selected, :selected pseudo states.
+ *
+ * The :top, :left, :right, :bottom pseudo states depending on the orientation of
+ * the tabs.
+ *
+ * Overlapping tabs for the selected state are created by using negative margins
+ * or using the absolute position scheme.
+ *
+ * The tear indicator of the QTabBar is styled using the ::tear subcontrol.
+ *
+ * QTabBar used two QToolButtons for its scrollers that can be styled using the
+ * QTabBar QToolButton selector. To specify the width of the scroll button use the
+ * ::scroller subcontrol.
+ *
+ * The alignment of the tabs within the QTabBar is styled using the alignment
+ * property.
+ *
+ * Warning:
+ *
+ * To change the position of the QTabBar within a QTabWidget, use the tab-bar
+ * subcontrol (and set subcontrol-position).
+ *
+ */
+
+QWidget#document-panel {
+  background-color: #F5F5F5;
+}
+
+/* The tab widget frame */
+WizMainTabBrowser::pane {
+  border-top: 1px solid #DADAD9;
+  top: -1px;
+}
+
+/* This subcontrol exists only to control the position of the
+   QTabBar inside the QTabWidget. */
+WizMainTabBrowser::tab-bar {
+}
+
+/* Style the tab using the tab sub-control. Note that
+   it reads QTabBar _not_ QTabWidget */
+WizMainTabBrowser > QTabBar::tab {
+  padding: 2px 0px;
+  height: 26px;
+  min-width: 20ex;
+  max-width: 30ex;
+}
+
+WizMainTabBrowser > QTabBar::tab:selected,
+WizMainTabBrowser > QTabBar::tab:hover {
+}
+
+WizMainTabBrowser > QTabBar::tab:selected {
+  background: white;
+  border-left: 2px solid #448AFF;
+  border-right: 1px solid #DADAD9;
+}
+
+WizMainTabBrowser > QTabBar::tab:!selected {
+  border-left: 0px;
+  margin-left: 2px;
+  margin-right: 1px;
+}
+
+/*
+ * WizLoginDialog
+ * -----------------------------------------------------------
+ */
+
+
+/*
+ * Others
+ * -----------------------------------------------------------
+ */
+
+QMenu::item:selected {
+  background: #5990ef
+}
+
 QToolTip {
-    font: 12px #000000;
-    padding:0px 1px;
-    background-color: #F8F8F8;
-    border:0px;
+  color: #787878;
+  font-size: 12px;
+  padding: 0px 1px;
+  background-color: rgb(254, 254, 254);
+  border: 1px solid #aeaeae;
+}
+
+WizDocumentTransitionView {
+  background: white;
+}
+
+WizDocumentTransitionView  QToolButton,
+WizDocumentTransitionView  QToolButton:hover {
+  border: 0px;
+  padding: 0px;
+  border-radius: 0px;
+  background-color: white;
+}
+
+WizInfoBar {
+  font-size: 12px;
+  color: #a2a2a2;
+}
+
+WizLoginDialog,
+QMainWindow {
+  border: 1px solid #a5a5a5;
+}
+
+WizLoginDialog:active,
+QMainWindow:active {
+  border: 1px solid #656668;
+}
+
+WizAttachmentListWidget QScrollBar {
+  background: #FFFFFF;
+  width: 12px;
+}
+
+WizAttachmentListWidget QScrollBar::handle:vertical {
+  width: 6px;
+  background: #DADADA;
+  min-height: 20;
+  margin-top: 2px;
+  margin-right: 3px;
+  margin-left: 3px;
+}
+
+WizAttachmentListWidget QScrollBar::handle:vertical:hover {
+  background: #c1c1c1;
+}
+
+WizAttachmentListWidget QScrollBar::add-page,
+WizAttachmentListWidget QScrollBar::sub-page {
+  background: transparent;
+}
+
+WizAttachmentListWidget QScrollBar::up-arrow,
+WizAttachmentListWidget QScrollBar::down-arrow,
+WizAttachmentListWidget QScrollBar::left-arrow,
+WizAttachmentListWidget QScrollBar::right-arrow {
+  background: transparent;
+}
+
+WizAttachmentListWidget QScrollBar::add-line,
+WizAttachmentListWidget QScrollBar::sub-line {
+  height: 0px;
+  width: 0px;
+}
+
+WizScrollBar {
+  background: transparent;
+  width: 6px;
+}
+
+WizScrollBar:hover {
+  background: rgba(155, 155, 155, 0.2);
+}
+
+WizScrollBar::handle {
+  background: #c1c1c1;
+  min-height: 30px;
+}
+
+WizScrollBar::handle:hover {
+  background: #a8a8a8;
+}
+
+WizScrollBar::handle:vertical {
+  width: 6px;
+}
+
+WizScrollBar::add-page,
+WizScrollBar::sub-page {
+  background: transparent;
+}
+
+WizScrollBar::up-arrow,
+WizScrollBar::down-arrow,
+WizScrollBar::left-arrow,
+WizScrollBar::right-arrow {
+  background: transparent;
+}
+
+WizScrollBar::add-line,
+WizScrollBar::sub-line {
+  height: 0px;
+  width: 0px;
+}
+
+WizTagListWidget QListView {
+  border: none;
+}
+
+WizNoteInfoForm QScrollArea {
+  border: none;
+}
+
+WizNoteInfoForm QScrollArea QWidget {
+  background-color: white;
+}
+
+WizNoteInfoForm QLineEdit,
+WizNoteInfoForm QLineEdit:read-only,
+WizNoteInfoForm QLineEdit:read-only:hover {
+  border: none;
+}
+
+WizNoteInfoForm QLineEdit:hover {
+  border-bottom: 1px solid #DADAD9;
+}
+
+/*
+ * Document list view
+ * -----------------------------------------------------------
+ */
+
+QLabel#label-documents-hint {
+  color: #A7A7A7;
+  font-size: 14px;
+  margin-right: 6px;
+}
+
+QWidget#note-buttons-container {
+  border-bottom: 1px solid #DADAD9;
+}
+
+WizViewTypePopupButton#btn-view-type,
+WizSortingPopupButton#btn-sorting {
+  width: 38px;
+  height: 28px;
+  border-radius: 0px;
+  padding: 0px;
+  qproperty-iconSize: 28px 28px;
+}
+
+WizViewTypePopupButton#btn-view-type::menu-indicator,
+WizSortingPopupButton#btn-sorting::menu-indicator {
+  image: none;
+}
+
+WizMessageListTitleBar {
+  border-bottom: 1px solid #DADAD9;
+}
+
+/*
+ * Document Viewer
+ * -----------------------------------------------------------
+ */
+
+WizDocumentView QLineEdit{
+  border: 1px solid #DDDDDD;
+  border-radius: 2px;
+}
+
+WizDocumentView WizTitleBar QLineEdit{
+  padding: 0px;
+  padding-left: -2px;
+  padding-bottom: 1px;
+  border: 0px;
+  border-radius: 0px;
 }

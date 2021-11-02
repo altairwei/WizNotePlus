@@ -140,6 +140,7 @@ CString WizStringFromBase64(const CString& strBase64);
 
 // skin related
 QString WizGetDefaultSkinName();
+QString WizLoadSkinStyleSheet(const QString& strSkinName);
 void WizGetSkins(QStringList& skins);
 QString WizGetSkinResourcePath(const QString& strSkinName);
 QString WizGetSkinDisplayName(const QString& strSkinName, const QString& strLocale);

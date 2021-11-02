@@ -453,6 +453,10 @@ void CWizNoteStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption *opt, 
                 Q_ASSERT(vopt);
 
                 const QTreeWidgetItem* pItemBase = view->itemAt(vopt->rect.center());
+
+                if (pItemBase == nullptr)
+                    return;
+
                 const WizCategoryViewSectionItem *secItem = dynamic_cast<const WizCategoryViewSectionItem *>(pItemBase);
                 if (NULL != secItem) {                   
                     return;

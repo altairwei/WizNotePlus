@@ -2848,6 +2848,33 @@ bool WizIndex::getRecentDocumentsModified(const CString& strDocumentType, int nC
     return sqlToDocumentDataArray(strSQL, arrayDocument);
 }
 
+bool WizIndex::getRecentDocumentsAccessed(const CString& strDocumentType, int nCount, CWizDocumentDataArray& arrayDocument)
+{
+	CString strSQL;
+
+	if (strDocumentType.isEmpty())
+	{
+        strSQL.format("select %s from %s where DOCUMENT_LOCATION not like %s order by DT_ACCESSED desc limit 0, %d",
+            QString(FIELD_LIST_WIZ_DOCUMENT).utf16(),
+            QString(TABLE_NAME_WIZ_DOCUMENT).utf16(),
+            STR2SQL(m_strDeletedItemsLocation + "%").utf16(),
+			nCount
+			);
+	}
+	else
+	{
+        strSQL.format("select %s from %s where DOCUMENT_TYPE=%s and DOCUMENT_LOCATION not like %s order by DT_ACCESSED desc limit 0,%d",
+            QString(FIELD_LIST_WIZ_DOCUMENT).utf16(),
+            QString(TABLE_NAME_WIZ_DOCUMENT).utf16(),
+            STR2SQL(strDocumentType).utf16(),
+            STR2SQL(m_strDeletedItemsLocation + "%").utf16(),
+			nCount
+			);
+	}
+
+    return sqlToDocumentDataArray(strSQL, arrayDocument);
+}
+
 bool WizIndex::getRecentDocumentsByCreatedTime(const WizOleDateTime& t, CWizDocumentDataArray& arrayDocument)
 {
     CString strTime = TIME2SQL(t);

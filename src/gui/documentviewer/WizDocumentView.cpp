@@ -117,6 +117,7 @@ WizDocumentView::WizDocumentView(WizExplorerApp& app, QWidget* parent)
     m_commentWidget->hide();
     // 创建编辑器组件
     QWidget* wgtEditor = new QWidget(m_docView);
+    wgtEditor->setObjectName("editor-container");
     // 创建文档页面视图
     m_web = new WizDocumentWebView(app, wgtEditor);
     //m_web->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);

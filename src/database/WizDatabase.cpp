@@ -4902,14 +4902,34 @@ QObject *WizDatabase::AttachmentFromGUID(const QString &attachmentGUID)
 /**
  * @brief Get recent modified documents.
  * 
- * @param documentType 
- * @param count 
+ * @param documentType Specify document type
+ * @param count Top-N recent documents
+ * @param type Meaning of 'rencent': 0=created&modified, 1=created, 2=data_modified, 3=accessed
  * @return QVariantList 
  */
-QVariantList WizDatabase::GetRecentDocuments(const QString &documentType, int count)
+QVariantList WizDatabase::GetRecentDocuments(const QString &documentType, int count, int type)
 {
     CWizDocumentDataArray arrayDocument;
-    getRecentDocuments(0, documentType, count, arrayDocument);
+
+    switch (type)
+    {
+    case 0:
+        getRecentDocuments(1, documentType, count, arrayDocument);
+        break;
+    case 1:
+        getRecentDocumentsCreated(documentType, count, arrayDocument);
+        break;
+    case 2:
+        getRecentDocumentsModified(documentType, count, arrayDocument);
+        break;
+    case 3:
+        getRecentDocumentsAccessed(documentType, count, arrayDocument);
+        break;
+    default:
+        getRecentDocuments(1, documentType, count, arrayDocument);
+        break;
+    }
+
     return packDocumentsToList(arrayDocument);
 }
 

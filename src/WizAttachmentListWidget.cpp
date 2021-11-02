@@ -49,9 +49,6 @@ WizAttachmentListView::WizAttachmentListView(QWidget* parent)
     setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
     setVerticalScrollBarPolicy(Qt::ScrollBarAsNeeded);
 
-    //QVBoxLayout* layout = new QVBoxLayout();
-    //setStyleSheet("background-color: #F7F7F7");
-
     connect(this, SIGNAL(itemDoubleClicked(QListWidgetItem*)),
             SLOT(on_list_itemDoubleClicked(QListWidgetItem*)));
 
@@ -675,8 +672,6 @@ WizAttachmentListWidget::WizAttachmentListWidget(QWidget* parent)
     pal.setBrush(QPalette::Window, QBrush("#F7F7F7"));
 #endif
     setPalette(pal);
-
-    setStyleSheet(Utils::WizStyleHelper::wizCommonScrollBarStyleSheet());
 }
 
 bool WizAttachmentListWidget::setDocument(const WIZDOCUMENTDATA& doc)

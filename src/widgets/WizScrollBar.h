@@ -14,9 +14,7 @@ class WizScrollBar : public QScrollBar
 public:
     explicit WizScrollBar(QWidget* parent = 0);
     void syncWith(QScrollBar* source);
-    void applyStyle(const QString& bgColorName, const QString& handleColorName, bool leftBorder);
 
-    virtual QSize sizeHint() const;
     virtual void mouseMoveEvent(QMouseEvent* event);
 
 public Q_SLOTS:
@@ -29,14 +27,8 @@ public Q_SLOTS:
     void on_scrollTimeout();
 
 private:
-    void setHandleVisible(bool visible);
-
-private:
     QPointer<QScrollBar> m_scrollSyncSource;
     QTimer m_timerScrollTimeout;
-    QString m_bgColor;
-    QString m_handleColor;
-    bool m_bLeftBorder;
 };
 
 class WizListWidgetWithCustomScorllBar : public  QListWidget
