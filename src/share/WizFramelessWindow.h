@@ -29,9 +29,15 @@ public:
     {
         this->setAttribute(Qt::WA_DontCreateNativeAncestors);
 
+        QLayout* windowLayout = new QBoxLayout(QBoxLayout::TopToBottom);
+        this->setLayout(windowLayout);
+        windowLayout->setContentsMargins(0, 0, 0, 0);
+        windowLayout->setSpacing(0);
+
         m_titleBar = new WizWindowTitleBar(this, this, canResize);
 
         m_clientWidget = new QWidget(this);
+        windowLayout->addWidget(m_clientWidget);
         m_clientLayout = new QBoxLayout(QBoxLayout::TopToBottom);
         m_clientWidget->setLayout(m_clientLayout);
         m_clientLayout->setSpacing(0);
