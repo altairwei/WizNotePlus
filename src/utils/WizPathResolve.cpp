@@ -106,6 +106,10 @@ QString WizPathResolve::customMarkdownTemplatesPath()
 
 QString WizPathResolve::dataStorePath()
 {
+    static QString dataStorePath;
+
+if (dataStorePath.isEmpty()) {
+
     QString defaultDataStorePath = QDir::homePath();
 
 #ifdef Q_OS_MAC
@@ -122,10 +126,14 @@ QString WizPathResolve::dataStorePath()
 #   endif
 #endif
 
-    QString dataStorePath = QDir::fromNativeSeparators(
-        qEnvironmentVariable("WIZNOTE_DATA_STORE", defaultDataStorePath)) + "/";
+    dataStorePath = QDir::fromNativeSeparators(
+        qEnvironmentVariable("WIZNOTE_DATA_STORE", defaultDataStorePath));
+
+    if (!dataStorePath.endsWith('/'))
+        dataStorePath += '/';
 
     ensurePathExists(dataStorePath);
+}
 
     return dataStorePath;
 }
