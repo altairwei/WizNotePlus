@@ -294,7 +294,7 @@ WizLoginDialog QPushButton#btn_selectServer {
   color: rgba(255, 255, 255, 153);
   padding: 0px;
   padding-right: 15px;
-  margin-right: 20px;
+  margin-right: 15px;
   margin-top: 5px;
 }
 
@@ -398,6 +398,14 @@ WizLoginDialog QDialog#dialog_waiting QToolButton#btn_waiting_close:pressed {
 WizLoginDialog WizActionWidget QPushButton#btn_delete {
   background: transparent;
   border: none;
+}
+
+WizLoginDialog QWidget#widget_logo {
+  background-color: #448aff;
+}
+
+WizLoginDialog WizLoginWidget {
+  background-color: white;
 }
 
 /*

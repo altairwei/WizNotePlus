@@ -58,6 +58,15 @@ public:
         m_helper->setHitTestVisible(obj);
     }
 
+    void setResizeBorderThickness(int thickness) {
+        m_helper->setResizeBorderThickness(thickness);
+    }
+
+    void setTitleBarHeight(int height)
+    {
+        m_helper->setTitleBarHeight(height);
+    }
+
 private:
     QWidget* m_clientWidget;
     QLayout* m_clientLayout;
