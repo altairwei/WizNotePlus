@@ -1864,6 +1864,7 @@ void WizMainWindow::initToolBar()
 
     // m_toolBar will be added to titleBar
     layoutTitleBar();
+    setFrameBorderWidth(1);
 
     // main button size
     QSize iconSize = QSize(WizSmartScaleUI(16), WizSmartScaleUI(16));

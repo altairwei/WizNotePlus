@@ -106,6 +106,8 @@ WizLoginDialog::WizLoginDialog(const QString &strLocale, const QList<WizLocalUse
     uiWidget->setAutoFillBackground(true);
 
     layout()->setSizeConstraint(QLayout::SetFixedSize);
+    setFrameBorderWidth(0);
+
     m_btnSwitchServer = new QPushButton(this);
     m_btnSwitchServer->setText(tr("Switch Server"));
     m_btnSwitchServer->setObjectName("btn_selectServer");
@@ -509,12 +511,14 @@ void WizLoginDialog::initTitleBar()
     title->setLayout(hbox);
     hbox->setSpacing(0);
     hbox->setContentsMargins(0, 0, 0, 0);
+    title->setMinimumHeight(30);
+    title->setPalette(QPalette(QColor::fromRgb(0x44, 0x8A, 0xFF)));
+    title->setContentsMargins(QMargins(0, 0, 0 ,0));
 
     setHitTestVisible(m_btnSwitchServer);
 
 #ifdef Q_OS_MAC
     hbox->insertStretch(1, 500);
-    title->setMinimumHeight(30);
     hbox->addWidget(m_btnSwitchServer);
     title->closeButton()->setVisible(false);
 #else
@@ -522,9 +526,6 @@ void WizLoginDialog::initTitleBar()
     hbox->insertStretch(1, 500);
     hbox->addWidget(title->closeButton());
 #endif
-
-    title->setPalette(QPalette(QColor::fromRgb(0x44, 0x8A, 0xFF)));
-    title->setContentsMargins(QMargins(0, 0, 0 ,0));
 }
 
 void WizLoginDialog::applyElementStyles(const QString &strLocal)

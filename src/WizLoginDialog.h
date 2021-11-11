@@ -49,21 +49,21 @@ public:
     void setSelected(bool selected);
 
 protected:
-    void mousePressEvent(QMouseEvent *event);
-    void mouseReleaseEvent(QMouseEvent *event);
-    void enterEvent(QEvent * event);
-    void leaveEvent(QEvent * event);
-    void paintEvent(QPaintEvent*);
+    void mousePressEvent(QMouseEvent *event) override;
+    void mouseReleaseEvent(QMouseEvent *event) override;
+    void enterEvent(QEvent * event) override;
+    void leaveEvent(QEvent * event) override;
+    void paintEvent(QPaintEvent*) override;
 
 signals:
     void delButtonClicked();
     void widgetClicked();
 
 private:
-    bool m_mousePress;
-    bool m_selected;
     QString m_text;
     QPushButton *m_deleteButton;
+    bool m_mousePress;
+    bool m_selected;
 };
 
 class WizUserItemAction : public QWidgetAction

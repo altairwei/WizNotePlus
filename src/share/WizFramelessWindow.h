@@ -67,6 +67,11 @@ public:
         m_helper->setTitleBarHeight(height);
     }
 
+    void setFrameBorderWidth(int width)
+    {
+        m_frameBorderWidth = width;
+    }
+
 private:
     QWidget* m_clientWidget;
     QLayout* m_clientLayout;
@@ -74,6 +79,7 @@ private:
     __flh_ns::FramelessHelper *m_helper;
     bool m_canResize;
     bool m_flhInited = false;
+    int m_frameBorderWidth = 0;
 
 protected:
     void changeEvent(QEvent * event) override
@@ -84,7 +90,10 @@ protected:
             if (this->isMaximized() || this->isFullScreen()) {
                 this->setContentsMargins(0, 0, 0, 0);
             } else if (!this->isMinimized()) {
-                this->setContentsMargins(1, 1, 1, 1);
+                this->setContentsMargins(
+                    m_frameBorderWidth, m_frameBorderWidth,
+                    m_frameBorderWidth, m_frameBorderWidth
+                );
             }
             m_titleBar->windowStateChanged();
             shouldUpdate = true;
@@ -132,7 +141,10 @@ protected:
                 m_helper->setHitTestVisible(m_titleBar->minButton());
                 m_helper->install();
 #ifndef Q_OS_MAC
-                this->setContentsMargins(1, 1, 1, 1);
+                this->setContentsMargins(
+                    m_frameBorderWidth, m_frameBorderWidth,
+                    m_frameBorderWidth, m_frameBorderWidth
+                );
 #else
                 __flh_ns::Utilities::setStandardWindowButtonsVisibility(win, true);
                 QSize btnGroupSize = __flh_ns::Utilities::standardWindowButtonsSize(win);

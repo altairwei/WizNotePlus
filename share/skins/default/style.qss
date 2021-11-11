@@ -122,20 +122,6 @@ QToolButton#window-menu-btn:hover { image: url("%SKIN_PATH%/titlebar/menu_on.svg
 QToolButton#window-menu-btn:pressed { image: url("%SKIN_PATH%/titlebar/menu_selected.svg"); }
 QToolButton#window-menu-btn:menu-indicator { image: none; }
 
-WizLoginDialog WizWindowTitleBar QToolButton#window-close-btn {
-  image: url("%SKIN_PATH%/titlebar/close_opacity.svg");
-  background: none;
-  border-radius: none;
-  padding: 2px 2px;
-}
-
-WizLoginDialog WizWindowTitleBar QToolButton#window-close-btn:hover {
-  image: url("%SKIN_PATH%/titlebar/close_red.svg");
-  background: none;
-  border-radius: none;
-  padding: 2px 2px;
-}
-
 QToolButton#btn-newnote {
   color: #787878;
 }
@@ -238,6 +224,21 @@ WizMainTabBrowser > QTabBar::tab:!selected {
  * -----------------------------------------------------------
  */
 
+WizLoginDialog WizWindowTitleBar QToolButton#window-close-btn {
+  image: url("%SKIN_PATH%/titlebar/close_opacity.svg");
+  background: none;
+  border-radius: none;
+  padding: 2px 2px;
+  margin-right: 5px;
+}
+
+WizLoginDialog WizWindowTitleBar QToolButton#window-close-btn:hover {
+  image: url("%SKIN_PATH%/titlebar/close_red.svg");
+  background: none;
+  border-radius: none;
+  padding: 2px 2px;
+}
+
 WizLoginDialog QLineEdit {
   padding: 0px;
   border: 0px;
@@ -295,7 +296,7 @@ WizLoginDialog QPushButton#btn_selectServer {
   padding: 0px;
   padding-right: 15px;
   margin-right: 15px;
-  margin-top: 5px;
+  margin-left: 10px;
 }
 
 WizLoginDialog QPushButton#btn_proxysetting,
@@ -442,15 +443,15 @@ WizInfoBar {
   color: #a2a2a2;
 }
 
-WizLoginDialog,
 QMainWindow {
   border: 1px solid #a5a5a5;
 }
 
-WizLoginDialog:active,
+/*
 QMainWindow:active {
   border: 1px solid #656668;
 }
+*/
 
 WizAttachmentListWidget QScrollBar {
   background: #FFFFFF;
