@@ -98,7 +98,7 @@ WizLoginDialog::WizLoginDialog(const QString &strLocale, const QList<WizLocalUse
     , m_newRegisterAccount(false)
 {
     // QDialog must set this hint to make framelesshelper work
-    setWindowFlags(Qt::FramelessWindowHint);
+    setWindowFlag(Qt::Dialog, false);
 
     QWidget* uiWidget = new QWidget(clientWidget());
     clientLayout()->addWidget(uiWidget);
@@ -521,6 +521,9 @@ void WizLoginDialog::initTitleBar()
     hbox->insertStretch(1, 500);
     hbox->addWidget(m_btnSwitchServer);
     title->closeButton()->setVisible(false);
+    // FIXME: this does not work when launch QDialog with exec()
+    setZoomBtnEnabled(false);
+    setMinBtnEnabled(false);
 #else
     hbox->addWidget(m_btnSwitchServer);
     hbox->insertStretch(1, 500);

@@ -25,6 +25,9 @@ public:
         , m_clientWidget(NULL)
         , m_clientLayout(NULL)
         , m_canResize(canResize)
+        , m_isCloseBtnEnabled(true)
+        , m_isMinBtnEnabled(true)
+        , m_isZoomBtnEnabled(true)
         , m_helper(new __flh_ns::FramelessHelper)
     {
         this->setAttribute(Qt::WA_DontCreateNativeAncestors);
@@ -71,6 +74,28 @@ public:
     {
         m_frameBorderWidth = width;
     }
+
+#ifdef Q_OS_MAC
+    void setCloseBtnEnabled(bool enable)
+    {
+        m_isCloseBtnEnabled = enable;
+    }
+
+    void setMinBtnEnabled(bool enable)
+    {
+        m_isMinBtnEnabled = enable;
+    }
+
+    void setZoomBtnEnabled(bool enable)
+    {
+        m_isZoomBtnEnabled = enable;
+    }
+
+private:
+    bool m_isCloseBtnEnabled;
+    bool m_isMinBtnEnabled;
+    bool m_isZoomBtnEnabled;
+#endif // Q_OS_MAC
 
 private:
     QWidget* m_clientWidget;
@@ -147,6 +172,9 @@ protected:
                 );
 #else
                 __flh_ns::Utilities::setStandardWindowButtonsVisibility(win, true);
+                __flh_ns::Utilities::setCloseBtnEnabled(win, m_isCloseBtnEnabled);
+                __flh_ns::Utilities::setMinBtnEnabled(win, m_isMinBtnEnabled);
+                __flh_ns::Utilities::setZoomBtnEnabled(win, m_isZoomBtnEnabled);
                 QSize btnGroupSize = __flh_ns::Utilities::standardWindowButtonsSize(win);
                 __flh_ns::Utilities::setStandardWindowButtonsPosition(win,
                     QPoint(12, (m_titleBar->height() - btnGroupSize.height())/2)
