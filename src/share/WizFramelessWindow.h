@@ -25,9 +25,6 @@ public:
         , m_clientWidget(NULL)
         , m_clientLayout(NULL)
         , m_canResize(canResize)
-        , m_isCloseBtnEnabled(true)
-        , m_isMinBtnEnabled(true)
-        , m_isZoomBtnEnabled(true)
         , m_helper(new __flh_ns::FramelessHelper)
     {
         this->setAttribute(Qt::WA_DontCreateNativeAncestors);
@@ -92,9 +89,9 @@ public:
     }
 
 private:
-    bool m_isCloseBtnEnabled;
-    bool m_isMinBtnEnabled;
-    bool m_isZoomBtnEnabled;
+    bool m_isCloseBtnEnabled = true;
+    bool m_isMinBtnEnabled = true;
+    bool m_isZoomBtnEnabled = true;
 #endif // Q_OS_MAC
 
 private:
