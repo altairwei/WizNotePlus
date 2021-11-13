@@ -142,7 +142,6 @@ WizMainWindow::WizMainWindow(WizDatabaseManager& dbMgr, QWidget *parent)
     , m_toolBar(new QToolBar("Main", titleBar()))
     , m_menu(new QMenu(clientWidget()))
     , m_spacerForToolButtonAdjust(nullptr)
-    , m_useSystemBasedStyle(m_settings->useSystemBasedStyle())
     , m_actions(new WizActions(*this, this))
     , m_category(new WizCategoryView(*this, this))
     , m_documents(new WizDocumentListView(*this, this))
@@ -210,11 +209,7 @@ WizMainWindow::WizMainWindow(WizDatabaseManager& dbMgr, QWidget *parent)
     initMenuBar();
     initDockMenu();
 #else
-    if (m_useSystemBasedStyle) {
-        initMenuBar();
-    } else {
-        initMenuList();
-    }
+    initMenuList();
 #endif
 
     initToolBar(); // 主菜单工具栏上的组件: <用户信息, 搜索栏...>
@@ -455,26 +450,17 @@ void WizMainWindow::closeEvent(QCloseEvent* event)
 
 void WizMainWindow::mousePressEvent(QMouseEvent* event)
 {
-    if (m_useSystemBasedStyle)
-        QMainWindow::mousePressEvent(event);
-    else
-        _baseClass::mousePressEvent(event);
+    _baseClass::mousePressEvent(event);
 }
 
 void WizMainWindow::mouseMoveEvent(QMouseEvent* event)
 {
-    if (m_useSystemBasedStyle)
-        QMainWindow::mouseMoveEvent(event);
-    else
-        _baseClass::mouseMoveEvent(event);
+    _baseClass::mouseMoveEvent(event);
 }
 
 void WizMainWindow::mouseReleaseEvent(QMouseEvent* event)
 {
-    if (m_useSystemBasedStyle)
-        QMainWindow::mouseReleaseEvent(event);
-    else
-        _baseClass::mouseReleaseEvent(event);
+    _baseClass::mouseReleaseEvent(event);
 }
 
 void WizMainWindow::changeEvent(QEvent* event)
@@ -497,10 +483,7 @@ void WizMainWindow::changeEvent(QEvent* event)
 
 void WizMainWindow::moveEvent(QMoveEvent* ev)
 {
-    if (m_useSystemBasedStyle)
-        QMainWindow::changeEvent(ev);
-    else
-        _baseClass::changeEvent(ev);
+    _baseClass::changeEvent(ev);
 
     WizPositionDelegate& delegate = WizPositionDelegate::instance();
     delegate.mainwindowPositionChanged(ev->oldPos(), ev->pos());
@@ -993,7 +976,7 @@ void WizMainWindow::initActions()
 #ifdef Q_OS_MAC
     m_actions->init();
 #else
-    m_actions->init(!m_useSystemBasedStyle);
+    m_actions->init(true);
 #endif
     m_animateSync->setAction(m_actions->actionFromName(WIZACTION_GLOBAL_SYNC));
     m_animateSync->setSingleIcons("sync");
@@ -1817,7 +1800,7 @@ void WizMainWindow::layoutTitleBar()
 
     // 标题栏里组件区域大小，通过 margin 来控制
     QLayout* layoutTitleBar = new QHBoxLayout();
-    int margin = WizSmartScaleUI(m_useSystemBasedStyle ? 4 : 10);
+    int margin = 10;
     layoutTitleBar->setContentsMargins(margin, margin, margin, margin);
     layoutTitleBar->addWidget(m_toolBar);
     layoutTitle->addItem(layoutTitleBar);
@@ -1845,9 +1828,6 @@ void WizMainWindow::layoutTitleBar()
 
     QSize buttonSize = QSize(WizSmartScaleUI(16), WizSmartScaleUI(16));
 
-    if (m_useSystemBasedStyle)
-        m_menuButton->setVisible(false);
-
     layoutRight->addStretch();
 
     layout->addItem(layoutTitle);
@@ -1859,9 +1839,6 @@ void WizMainWindow::layoutTitleBar()
  */
 void WizMainWindow::initToolBar()
 {
-    // 根据是否使用系统标题栏样式来选择窗口样式
-    setWindowStyle(m_useSystemBasedStyle);
-
     // m_toolBar will be added to titleBar
     layoutTitleBar();
     setFrameBorderWidth(1);
@@ -4220,24 +4197,6 @@ void WizMainWindow::initTrayIcon(QSystemTrayIcon* trayIcon)
     });
 
 #endif
-}
-
-void WizMainWindow::setWindowStyle(bool bUseSystemStyle)
-{
-    if (bUseSystemStyle)
-    {
-        setAttribute(Qt::WA_TranslucentBackground, false); //enable MainWindow to be transparent
-        //
-        {
-            QMainWindow window;
-            setWindowFlags(window.windowFlags());
-        }
-        //
-        rootWidget()->setContentsMargins(0, 0, 0, 0);
-        titleBar()->maxButton()->setVisible(false);
-        titleBar()->minButton()->setVisible(false);
-        titleBar()->closeButton()->setVisible(false);
-    }
 }
 
 void WizMainWindow::setMobileFileReceiverEnable(bool bEnable)

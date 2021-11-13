@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>583</width>
-    <height>385</height>
+    <height>399</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -107,13 +107,6 @@
         <widget class="QCheckBox" name="checkBoxTrayIcon">
          <property name="text">
           <string>Show system tray icon</string>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <widget class="QCheckBox" name="checkBoxSystemStyle">
-         <property name="text">
-          <string>Use system based style</string>
          </property>
         </widget>
        </item>

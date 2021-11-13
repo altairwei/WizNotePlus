@@ -400,21 +400,6 @@ void WizUserSettings::setShowSystemTrayIcon(bool bShowTrayIcon)
     set("ShowSystemTrayIcon", bShowTrayIcon ? "1" : "0");
 }
 
-bool WizUserSettings::useSystemBasedStyle() const
-{
-    QString strUseSystemStyle = get("UseSystemBasedStyle");
-    if (!strUseSystemStyle.isEmpty()) {
-        return strUseSystemStyle.toInt() ? true : false;
-    }
-
-    return true;
-}
-
-void WizUserSettings::setUseSystemBasedStyle(bool bSystemStyle)
-{
-    set("UseSystemBasedStyle", bSystemStyle ? "1" : "0");
-}
-
 bool WizUserSettings::isEnableSpellCheck() const
 {
     QString strSpellCheck = get("SpellCheck");

@@ -139,9 +139,6 @@ public:
     bool showSystemTrayIcon() const;
     void setShowSystemTrayIcon(bool bShowTrayIcon);
 
-    bool useSystemBasedStyle() const;
-    void setUseSystemBasedStyle(bool bSystemStyle);
-
     bool isEnableSpellCheck() const;
     void setEnableSpellCheck(bool b);
 

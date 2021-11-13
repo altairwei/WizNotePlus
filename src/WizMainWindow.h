@@ -152,8 +152,7 @@ private:
     QActionGroup* m_viewTypeActions;
     QActionGroup* m_sortTypeActions;
     QMenu* m_menu;
-    QToolButton* m_menuButton;    
-    bool m_useSystemBasedStyle;
+    QToolButton* m_menuButton;
 
     QWidget* m_clienWgt;
 
@@ -510,8 +509,6 @@ private:
     void setFocusForNewNote(WIZDOCUMENTDATA doc);
 
     void initTrayIcon(QSystemTrayIcon* trayIcon);
-
-    void setWindowStyle(bool bUseSystemStyle);
 
 
     void startSearchStatus();

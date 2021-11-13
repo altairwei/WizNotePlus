@@ -69,14 +69,6 @@ WizPreferenceWindow::WizPreferenceWindow(WizExplorerApp& app, QWidget* parent)
     ui->checkBox->setVisible(false);
 #endif
 
-#ifdef Q_OS_MAC
-    ui->checkBoxSystemStyle->setVisible(false);
-#endif
-    checkState = userSettings().useSystemBasedStyle() ? Qt::Checked : Qt::Unchecked;
-    ui->checkBoxSystemStyle->blockSignals(true);
-    ui->checkBoxSystemStyle->setCheckState(checkState);
-    ui->checkBoxSystemStyle->blockSignals(false);
-
     // reading tab
     switch (userSettings().noteViewMode())
     {
@@ -479,15 +471,6 @@ void WizPreferenceWindow::on_spinBox_right_valueChanged(double arg1)
 {
     m_app.userSettings().setPrintMarginValue(wizPositionRight, arg1);
 }
-
-
-void WizPreferenceWindow::on_checkBoxSystemStyle_toggled(bool checked)
-{
-    m_app.userSettings().setUseSystemBasedStyle(checked);
-
-    WizMessageBox::information(m_app.mainWindow(), tr("Info"), tr("Application style will be changed after restart WizNote."));
-}
-
 
 void WizPreferenceWindow::on_pushButtonBackgroundColor_clicked()
 {
