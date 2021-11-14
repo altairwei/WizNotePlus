@@ -1800,7 +1800,11 @@ void WizMainWindow::layoutTitleBar()
 
     // 标题栏里组件区域大小，通过 margin 来控制
     QLayout* layoutTitleBar = new QHBoxLayout();
+#ifdef Q_OS_MAC
+    int margin = 4;
+#else
     int margin = 10;
+#endif
     layoutTitleBar->setContentsMargins(margin, margin, margin, margin);
     layoutTitleBar->addWidget(m_toolBar);
     layoutTitle->addItem(layoutTitleBar);
@@ -1817,14 +1821,18 @@ void WizMainWindow::layoutTitleBar()
     m_menuButton->setObjectName("window-menu-btn");
 #ifndef Q_OS_MAC
     connect(m_menuButton, &QToolButton::clicked, this, &WizMainWindow::on_menuButtonClicked);
-#endif // Q_OS_MAC
-    //m_menuButton->setPopupMode(QToolButton::InstantPopup);
-    //m_menuButton->setMenu(m_menu);
     setHitTestVisible(m_menuButton);
     layoutBox->addWidget(m_menuButton);
     layoutBox->addWidget(title->minButton());
     layoutBox->addWidget(title->maxButton());
     layoutBox->addWidget(title->closeButton());
+#else
+    rootWidget()->setContentsMargins(0, 0, 0, 0);
+    titleBar()->maxButton()->setVisible(false);
+    titleBar()->minButton()->setVisible(false);
+    titleBar()->closeButton()->setVisible(false);
+    m_menuButton->setVisible(false);
+#endif // Q_OS_MAC
 
     QSize buttonSize = QSize(WizSmartScaleUI(16), WizSmartScaleUI(16));
 
