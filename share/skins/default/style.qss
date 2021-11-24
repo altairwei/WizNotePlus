@@ -13,9 +13,18 @@ WizMainWindow WizWindowTitleBar {
   border-bottom: 1px solid #aeaeae;
 }
 
+WizWindowTitleBar QToolBar {
+  spacing: 6px;
+  margin: 4px;
+}
+
+WizWindowTitleBar QToolBar QToolButton {
+  height: 14px;
+}
+
 QToolButton {
   border-width: 0px;
-  font: 14px;
+  /*font: 14px;*/
   padding: 5px 5px;
   border-style: solid;
   border-color: #ececec;
@@ -51,19 +60,16 @@ QToolButton:checked {
 QToolButton#window-close-btn {
   image: url("%SKIN_PATH%/titlebar/close.svg");
   background: none;
-  border-radius: none;
 }
 
 QToolButton#window-close-btn:hover {
   image: url("%SKIN_PATH%/titlebar/close_white.svg");
-  background: red;
-  border-radius: none;
+  background: rgba(255, 0, 0, 0.8);
 }
 
 QToolButton#window-close-btn:pressed {
   image: url("%SKIN_PATH%/titlebar/close_white.svg");
   background: darkred;
-  border-radius: none;
 }
 
 QToolButton#window-close-btn,
@@ -71,29 +77,28 @@ QToolButton#window-min-btn,
 QToolButton#window-max-btn,
 QToolButton#window-menu-btn {
   height: 10px;
-  width: 16px;
-  padding: 4px 10px;
+  width: 10px;
+  padding: 6px 6px;
+  margin: 2px;
+  border-radius: 12px;
 }
 
 QToolButton#window-min-btn,
 QToolButton#window-max-btn,
 QToolButton#window-menu-btn {
   background: none;
-  border-radius: none;
 }
 
 QToolButton#window-min-btn:hover,
 QToolButton#window-max-btn:hover,
 QToolButton#window-menu-btn:hover {
   background: rgba(211, 211, 211, 0.5);
-  border-radius: none;
 }
 
 QToolButton#window-min-btn:pressed,
 QToolButton#window-max-btn:pressed,
 QToolButton#window-menu-btn:pressed {
   background: rgba(211, 211, 211, 1);
-  border-radius: none;
 }
 
 /* Title bar minimize button */

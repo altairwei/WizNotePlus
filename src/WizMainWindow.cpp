@@ -1795,37 +1795,36 @@ void WizMainWindow::layoutTitleBar()
     layout->setSpacing(0);
     layout->setContentsMargins(0, 0, 0, 0);
 
-    QLayout* layoutTitle = new QHBoxLayout();
+    QHBoxLayout* layoutTitle = new QHBoxLayout();
     layoutTitle->setContentsMargins(0, 0, 0, 0);
 
     // 标题栏里组件区域大小，通过 margin 来控制
-    QLayout* layoutTitleBar = new QHBoxLayout();
-#ifdef Q_OS_MAC
-    int margin = 4;
-#else
-    int margin = 10;
-#endif
-    layoutTitleBar->setContentsMargins(margin, margin, margin, margin);
-    layoutTitleBar->addWidget(m_toolBar);
-    layoutTitle->addItem(layoutTitleBar);
+    QLayout* layoutToolBarContainer = new QHBoxLayout();
 
-    QVBoxLayout* layoutRight = new QVBoxLayout();
+    int margin = 4;
+
+    layoutToolBarContainer->setContentsMargins(0, margin, 0, margin);
+    layoutToolBarContainer->addWidget(m_toolBar);
+    layoutTitle->addItem(layoutToolBarContainer);
+    //layoutTitle->addStretch();
+
+    QHBoxLayout* layoutRight = new QHBoxLayout();
     layoutTitle->addItem(layoutRight);
 
-    QLayout* layoutBox = new QHBoxLayout();
-    layoutBox->setContentsMargins(0, 0, 0, 0);
-    layoutBox->setSpacing(0);
-    layoutRight->addItem(layoutBox);
+    QLayout* layoutBtnBox = new QHBoxLayout();
+    layoutBtnBox->setContentsMargins(0, 0, 10, 0);
+    layoutBtnBox->setSpacing(8);
+    layoutRight->addItem(layoutBtnBox);
 
     m_menuButton = new QToolButton(this);
     m_menuButton->setObjectName("window-menu-btn");
 #ifndef Q_OS_MAC
     connect(m_menuButton, &QToolButton::clicked, this, &WizMainWindow::on_menuButtonClicked);
     setHitTestVisible(m_menuButton);
-    layoutBox->addWidget(m_menuButton);
-    layoutBox->addWidget(title->minButton());
-    layoutBox->addWidget(title->maxButton());
-    layoutBox->addWidget(title->closeButton());
+    layoutBtnBox->addWidget(m_menuButton);
+    layoutBtnBox->addWidget(title->minButton());
+    layoutBtnBox->addWidget(title->maxButton());
+    layoutBtnBox->addWidget(title->closeButton());
 #else
     rootWidget()->setContentsMargins(0, 0, 0, 0);
     titleBar()->maxButton()->setVisible(false);
@@ -1835,8 +1834,6 @@ void WizMainWindow::layoutTitleBar()
 #endif // Q_OS_MAC
 
     QSize buttonSize = QSize(WizSmartScaleUI(16), WizSmartScaleUI(16));
-
-    layoutRight->addStretch();
 
     layout->addItem(layoutTitle);
     title->setLayout(layout);
