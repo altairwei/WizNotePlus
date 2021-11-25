@@ -39,7 +39,7 @@ list(APPEND CMAKE_MODULE_PATH
 
 # WizNotePlus Dirs
 if(APPLE)
-    set(WIZNOTE_ROOT_DIR ${CMAKE_BINARY_DIR}/bin/WizNote.app)
+    set(WIZNOTE_ROOT_DIR ${CMAKE_BINARY_DIR}/bin/WizNotePlus.app)
     set(WIZNOTE_CONTENTS_DIR ${WIZNOTE_ROOT_DIR}/Contents)
     set(WIZNOTE_RESOURCE_DIR ${WIZNOTE_ROOT_DIR}/Contents/Resources)
 else(APPLE)
