@@ -429,6 +429,7 @@ class WizNotePlusConan(ConanFile):
             executable = os.path.join(appdir, "usr", "share", "applications", "wiznote.desktop")
             options = " ".join([
                 "--appimage-extract-and-run", "-verbose=1", "-appimage",
+                #"-unsupported-allow-new-glibc",
                 # Workaround for https://github.com/probonopd/linuxdeployqt/issues/35
                 "-exclude-libs=libnss3.so,libnssutil3.so",
                 "-qmake=%s" % os.path.join(qt_bin, "qmake")])

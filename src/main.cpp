@@ -52,76 +52,6 @@
 #endif
 
 //-------------------------------------------------------------------
-// 程序初始化安装
-//-------------------------------------------------------------------
-
-const char* g_lpszDesktopFileName = "\
-[Desktop Entry]\n\
-Exec=%1WizNote\n\
-Icon=wiznote\n\
-Type=Application\n\
-Terminal=false\n\
-Name=%2\n\
-GenericName=%3\n\
-Categories=WizNote;\n\
-Name[en_US]=WizNote\n\
-GenericName[en_US.UTF-8]=WizNote\n\
-";
-
-
-#ifdef Q_OS_LINUX
-
-/**
- * @brief Linux特定的安装过程
- * 
- */
-void installOnLinux()
-{
-    // 准备.desktop文件内容
-    QString appPath = Utils::WizPathResolve::appPath();
-    QString strText = WizFormatString3(g_lpszDesktopFileName,
-                                       appPath,
-                                       QObject::tr("WizNote"),
-                                       QObject::tr("WizNote"));
-    //
-    QString applicationsPath = QDir::homePath() + "/.local/share/applications/";
-    ::WizEnsurePathExists(applicationsPath);
-    //
-    QString iconsBasePath = QDir::homePath() + "/.local/share/icons/hicolor/";
-    ::WizEnsurePathExists(iconsBasePath);
-    // 导出不同尺寸图标文件
-    CWizStdStringArray arrayIconSize;
-    arrayIconSize.push_back("16");
-    arrayIconSize.push_back("32");
-    arrayIconSize.push_back("48");
-    arrayIconSize.push_back("64");
-    arrayIconSize.push_back("128");
-    arrayIconSize.push_back("256");
-    for (CWizStdStringArray::const_iterator it = arrayIconSize.begin();
-        it != arrayIconSize.end();
-        it++)
-    {
-        QString iconSize = *it;
-        QString iconPathName = iconSize + "x" + iconSize;
-        QString iconFullPath = iconsBasePath + iconPathName + "/apps/";
-        WizEnsurePathExists(iconFullPath);
-        // 将内部logo图片导出到文件夹
-        QString resourceName = ":/logo_" + iconSize + ".png";
-        QPixmap pixmap(resourceName);
-        if (pixmap.isNull())
-            continue;
-        //
-        pixmap.save(iconFullPath + "wiznote.png");
-    }
-    // 创建桌面文件
-    QString desktopFileName = applicationsPath + "wiznote.desktop";
-    ::WizSaveUnicodeTextToUtf8File(desktopFileName, strText, false);
-    //
-    chmod(desktopFileName.toUtf8(), ACCESSPERMS);
-}
-#endif
-
-//-------------------------------------------------------------------
 // 登录与启动
 //-------------------------------------------------------------------
 
@@ -269,15 +199,6 @@ int mainCore(int argc, char *argv[])
     strLocaleFile = Utils::WizPathResolve::qtLocaleFileName(strLocale);
     translatorQt.load(strLocaleFile);
     app.installTranslator(&translatorQt);
-
-#ifdef Q_OS_LINUX
-    // 判断Linux端是否已经安装过Wiznode
-    if (globalSettings->value("Common/Installed", 0).toInt() == 0)
-    {
-        globalSettings->setValue("Common/Installed", 1);
-        installOnLinux();
-    }
-#endif
 
     // 登录程序
     //-------------------------------------------------------------------
