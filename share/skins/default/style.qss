@@ -55,48 +55,34 @@ QToolButton:checked {
   background-color: rgba(211, 211, 211, 1)
 }
 
-/* Title bar close button */
-
-QToolButton#window-close-btn {
-  image: url("%SKIN_PATH%/titlebar/close.svg");
-  background: none;
-}
-
-QToolButton#window-close-btn:hover {
-  image: url("%SKIN_PATH%/titlebar/close_white.svg");
-  background: rgba(255, 0, 0, 0.8);
-}
-
-QToolButton#window-close-btn:pressed {
-  image: url("%SKIN_PATH%/titlebar/close_white.svg");
-  background: darkred;
-}
-
 QToolButton#window-close-btn,
 QToolButton#window-min-btn,
 QToolButton#window-max-btn,
 QToolButton#window-menu-btn {
   height: 10px;
   width: 10px;
-  padding: 6px 6px;
+  padding: 8px 8px;
   margin: 2px;
-  border-radius: 12px;
+  border-radius: 14px;
 }
 
 QToolButton#window-min-btn,
 QToolButton#window-max-btn,
+QToolButton#window-close-btn,
 QToolButton#window-menu-btn {
   background: none;
 }
 
 QToolButton#window-min-btn:hover,
 QToolButton#window-max-btn:hover,
+QToolButton#window-close-btn:hover,
 QToolButton#window-menu-btn:hover {
   background: rgba(211, 211, 211, 0.5);
 }
 
 QToolButton#window-min-btn:pressed,
 QToolButton#window-max-btn:pressed,
+QToolButton#window-close-btn:pressed,
 QToolButton#window-menu-btn:pressed {
   background: rgba(211, 211, 211, 1);
 }
@@ -118,6 +104,12 @@ QToolButton#window-max-btn:pressed { image: url("%SKIN_PATH%/titlebar/maximize_s
 QToolButton#window-max-btn:checked { image: url("%SKIN_PATH%/titlebar/restore.svg"); }
 QToolButton#window-max-btn:checked:hover { image: url("%SKIN_PATH%/titlebar/restore_on.svg"); }
 QToolButton#window-max-btn:checked:pressed { image: url("%SKIN_PATH%/titlebar/restore_selected.svg"); }
+
+/* Title bar close button */
+
+QToolButton#window-close-btn { image: url("%SKIN_PATH%/titlebar/close.svg"); }
+QToolButton#window-close-btn:hover { image: url("%SKIN_PATH%/titlebar/close_red.svg"); }
+QToolButton#window-close-btn:pressed { image: url("%SKIN_PATH%/titlebar/close_red.svg"); }
 
 /* Title bar menu button */
 
