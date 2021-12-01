@@ -129,7 +129,7 @@ WIZACTION* WizActions::actionsData()
         {WIZDOCUMENT_SORTBY_SIZE,               QObject::tr("Sort by Size"),                QObject::tr(""),                        QKeySequence()},
 
         // skin
-        {WIZSKIN_RELOAD_STYLESHEET,             QObject::tr("Reload stylesheet"),           QObject::tr(""),                        QKeySequence("F5")},
+        {WIZSKIN_RELOAD_STYLESHEET,             QObject::tr("Reload stylesheet"),           QObject::tr(""),                        QKeySequence()},
 
         // format
         {WIZACTION_FORMAT_JUSTIFYLEFT,          QObject::tr("Justify Left"),                "",                                     QKeySequence("Ctrl+[")},

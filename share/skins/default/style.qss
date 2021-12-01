@@ -195,8 +195,8 @@ WizMainTabBrowser::tab-bar {
 WizMainTabBrowser > QTabBar::tab {
   padding: 2px 0px;
   height: 26px;
-  min-width: 20ex;
-  max-width: 30ex;
+  min-width: 8em;
+  max-width: 15em;
 }
 
 WizMainTabBrowser > QTabBar::tab:selected,
