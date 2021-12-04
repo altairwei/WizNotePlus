@@ -621,13 +621,8 @@ void WizMainWindow::on_quickSync_request(const QString& strKbGUID)
     m_syncQuick->addQuickSyncKb(strKbGUID);
 }
 
-/**
- * @brief 设置系统托盘图标是否课件
- * @param bVisible
- */
 void WizMainWindow::setSystemTrayIconVisible(bool bVisible)
 {
-//        //
     if (!m_tray)
     {
         m_tray = new WizTrayIcon(*this, QApplication::windowIcon(), this);
@@ -636,6 +631,9 @@ void WizMainWindow::setSystemTrayIconVisible(bool bVisible)
     }
 
     m_tray->setVisible(bVisible);
+    // We don't want to quit application when the last window is closed if we
+    // are using SystemTrayIcon.
+    qApp->setQuitOnLastWindowClosed(!bVisible);
 }
 
 /**
@@ -912,9 +910,6 @@ void WizMainWindow::restoreStatus()
 
 void WizMainWindow::initQuitHandler()
 {
-#ifndef Q_OS_MAC
-    connect(qApp, SIGNAL(lastWindowClosed()), qApp, SLOT(quit())); // Qt bug: Qt5 bug
-#endif
     connect(qApp, SIGNAL(aboutToQuit()), SLOT(on_application_aboutToQuit()));
     qApp->installEventFilter(this);
 
