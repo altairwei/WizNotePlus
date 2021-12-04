@@ -64,7 +64,7 @@ class WizNotePlusConan(ConanFile):
     settings = "os", "compiler", "build_type", "arch"
     generators = "cmake_find_package", "cmake_paths", "cmake"
     requires = (
-        "cryptopp/5.6.5@bincrafters/stable",
+        "cryptopp/8.5.0",
         "zlib/1.2.11",
         "quazip/0.7.6@altairwei/testing",
         "Gumbo/0.10.1@altairwei/testing"
