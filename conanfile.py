@@ -385,8 +385,8 @@ class WizNotePlusConan(ConanFile):
         fram_dir = os.path.join(app_dir, "Contents", "Frameworks")
         # Copy libs to bundle
         shutil.copy(
-            os.path.join(self.package_folder, "bin", "libcryptopp.5.6.dylib"),
-            os.path.join(fram_dir, "libcryptopp.5.6.dylib")
+            os.path.join(self.package_folder, "bin", "libcryptopp.8.3.dylib"),
+            os.path.join(fram_dir, "libcryptopp.8.3.dylib")
         )
         shutil.copy(
             os.path.join(self.package_folder, "bin", "libz.1.dylib"),
@@ -394,13 +394,13 @@ class WizNotePlusConan(ConanFile):
         )
         # Change install name
         self._fix_install_name([
-            os.path.join(fram_dir, "libcryptopp.5.6.dylib"),
+            os.path.join(fram_dir, "libcryptopp.8.3.dylib"),
             os.path.join(fram_dir, "libz.1.dylib")
         ])
         # Change dependencis list
         self._fix_dependencies_name(
             os.path.join(app_dir, "Contents", "MacOS", "WizNotePlus"), 
-            ["libcryptopp.5.6.dylib"])
+            ["libcryptopp.8.3.dylib"])
         self._fix_dependencies_name(
             os.path.join(fram_dir, "libquazip5.1.dylib"), 
             ["libz.1.dylib"])
