@@ -56,7 +56,8 @@ WIZACTION* WizActions::actionsData()
         {"actionStyle", QObject::tr("Style")},
         {"actionInsert", QObject::tr("Insert")},
         {"actionCategoryOption", QObject::tr("Category Option")},
-        {"actionSortBy", QObject::tr("Sort By")}
+        {"actionSortBy", QObject::tr("Sort By")},
+        {"actionSkin", QObject::tr("Skin")}
     };
 
     Q_UNUSED(arrayRoot);
