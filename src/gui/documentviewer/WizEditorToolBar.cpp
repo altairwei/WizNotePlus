@@ -1362,14 +1362,14 @@ WizEditorToolBar::WizEditorToolBar(WizExplorerApp& app, QWidget *parent)
     m_btnStrikeThrough->setIcon(::WizLoadSkinIcon(skin, "actionFormatStrikeThrough", editIconSize));
     //m_btnStrikeThrough->setIconSize(QPixmap(WizGetSkinResourceFileName(skin, "actionFormatStrikeThrough")).size());
     m_btnStrikeThrough->setToolTip(tr("Strike Through %1%2K").arg(optionKey()).arg(commandKey()));
-    m_btnStrikeThrough->setPosition(ButtonPosition::Right);
+    m_btnStrikeThrough->setPosition(ButtonPosition::Center);
     connect(m_btnStrikeThrough, SIGNAL(clicked()), SLOT(on_btnStrikeThrough_clicked()));
 
     m_btnSubscript = new CWizToolButton(this);
     m_btnSubscript->setIcon(::WizLoadSkinIcon(skin, "actionFormatSubscript", editIconSize));
     //m_btnSubscript->setIconSize(QPixmap(WizGetSkinResourceFileName(skin, "actionFormatSubscript")).size());
     m_btnSubscript->setToolTip(tr("Sub script"));
-    m_btnSubscript->setPosition(ButtonPosition::Right);
+    m_btnSubscript->setPosition(ButtonPosition::Center);
     connect(m_btnSubscript, SIGNAL(clicked()), SLOT(on_btnSubscript_clicked()));
 
     m_btnSuperscript = new CWizToolButton(this);
