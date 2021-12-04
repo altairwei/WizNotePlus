@@ -4,13 +4,13 @@ forked from [WizTeam/WizQTClient](https://github.com/WizTeam/WizQTClient)
 
 README **中文** | [English](doc/README-en.md)
 
-**为知笔记+** 是一款基于云服务的跨平台个人知识管理工具。
+**为知笔记 Plus** 是一款基于云服务的跨平台个人知识管理工具。
 
 ## 介绍
 
-**为知笔记+** 项目致力于提高 [为知笔记跨平台客户端](https://github.com/WizTeam/WizQTClient) 的可用性，以达到或者超越 Windows 平台特有客户端的水平。这个目标要求 **为知笔记+** 实现对开发者友好的插件系统，并且促进氛围良好的第三方开发者社区的建成。本项目在遵循 GPLv3 协议的情况下由第三方开发者发起并维护，欢迎任何有意愿参与项目贡献的开发者或用户联系 altair_wei@outlook.com 。
+**为知笔记 Plus** 项目致力于提高 [为知笔记跨平台客户端](https://github.com/WizTeam/WizQTClient) 的可用性，以达到或者超越 Windows 平台特有客户端的水平。此项目致力于实现一个对开发者友好的插件系统，促进氛围良好的第三方开发者社区的建成。本项目在遵循 GPLv3 协议的情况下由第三方开发者发起并维护，欢迎任何有意愿参与项目贡献的开发者或用户联系 altair_wei@outlook.com 。
 
-[![release](https://img.shields.io/badge/release-v2.9.2-green.svg)](https://github.com/altairwei/WizNotePlus/releases) [![license](https://img.shields.io/badge/license-GPLv3-green.svg)](https://github.com/altairwei/WizNotePlus/blob/master/LICENSE)
+[![release](https://img.shields.io/badge/release-v2.10.0-green.svg)](https://github.com/altairwei/WizNotePlus/releases) [![license](https://img.shields.io/badge/license-GPLv3-green.svg)](https://github.com/altairwei/WizNotePlus/blob/master/LICENSE)
 
 ## 为知社区
 
@@ -22,7 +22,7 @@ README **中文** | [English](doc/README-en.md)
 
 ## 特点
 
-**为知笔记+** 主要具有以下特征：
+**为知笔记 Plus** 主要具有以下特征：
 
 * 适配 Linux/Windows 高分屏
 * 支持 Chrome 开发者工具
@@ -62,9 +62,14 @@ Windows 平台下为 `WizNotePlus-windows.zip` ，请将压缩包内容解压到
 - [x] 多标签浏览
 - [x] 外部编辑器功能
 - [x] JavaScript 插件系统
+- [ ] 文档类型与自定义处理程序
+- [ ] 皮肤或主题系统
+- [ ] 本地全文搜索引擎
+- [ ] 批量导入导出
+- [ ] 完全离线便携版客户端
+- [ ] 多账号同时登陆
 - [ ] 更换默认富文本编辑器
 - [ ] 建立其他云服务系统
-- [ ] 皮肤或主题系统
 
 ## 依赖
 

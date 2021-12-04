@@ -12,7 +12,7 @@
 
 cmake_minimum_required(VERSION 3.0)
 
-project(WizNotePlus VERSION 2.9.2)
+project(WizNotePlus VERSION 2.10.0)
 
 #============================================================================
 # Options and Variables
