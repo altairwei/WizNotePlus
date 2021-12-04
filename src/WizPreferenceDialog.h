@@ -33,6 +33,10 @@ Q_SIGNALS:
 public Q_SLOTS:
     void on_comboLang_currentIndexChanged(int index);
 
+    void on_btnUIFont_clicked();
+    void on_btnResetUIFont_clicked();
+    void updateUIFont(const QFont& font);
+
     void on_radioAuto_clicked(bool checked);
     void on_radioAlwaysReading_clicked(bool checked);
     void on_radioAlwaysEditing_clicked(bool checked);
@@ -44,9 +48,10 @@ public Q_SLOTS:
 
     void labelProxy_linkActivated(const QString& link);
 
-    void onButtonFontSelect_clicked();
-    void onButtonFontSelect_confirmed();
-    //
+    void on_buttonFontSelect_clicked();
+    void on_btnResetEditorFont_clicked();
+    void updateEditorFont(const QFont& font);
+
     void on_enableSpellCheck(bool checked);
     void on_enableOpenLinkWithDesktopBrowser(bool checked);
 
@@ -58,7 +63,6 @@ private slots:
     void on_spinBox_bottom_valueChanged(double arg1);
     void on_spinBox_left_valueChanged(double arg1);
     void on_spinBox_right_valueChanged(double arg1);
-    void on_checkBoxSystemStyle_toggled(bool checked);
     void on_pushButtonBackgroundColor_clicked();
     void on_pushButtonClearBackground_clicked();
 
@@ -85,7 +89,6 @@ private:
 
     QStringList m_locales;
     QStringList m_skins;
-    QPointer<QFontDialog> m_fontDialog;
     bool m_biniting;
 
     void setSyncGroupTimeLine(int nDays);

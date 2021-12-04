@@ -18,9 +18,6 @@ WizInfoBar::WizInfoBar(WizExplorerApp& app, QWidget *parent)
     : QWidget(parent)
     , m_app(app)
 {
-    QString strStyle;
-    strStyle += "font-size: " + QString::number(WizSmartScaleUI(12)) + "px; color: #a2a2a2;";
-    setStyleSheet(strStyle);
     setContentsMargins(0, 0, 0, 6);
 
     int nHeight = Utils::WizStyleHelper::infoBarHeight();

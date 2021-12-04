@@ -14,8 +14,6 @@ class WizFolderSelector;
 class WizScrollBar;
 class CWizUserAvatarDownloaderHost;
 
-#define WIZNOTE_CUSTOM_SCROLLBAR
-
 
 #define DocumentLeadInfo_None                      0x0000
 #define DocumentLeadInfo_PersonalRoot         0x0001

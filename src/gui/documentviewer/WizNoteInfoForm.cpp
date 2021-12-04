@@ -20,22 +20,21 @@ QString formatLabelLink(const QString& linkHref, const QString& text)
 WizNoteInfoForm::WizNoteInfoForm(QWidget *parent)
     : WizPopupWidget(parent)
     , ui(new Ui::WizNoteInfoForm)
-    , m_size(QSize(370, 370))
+    , m_size(QSize(340, 420))
 {
     ui->setupUi(this);
-    setContentsMargins(0, 8, 0, 0);
 
     ui->editCreateTime->setReadOnly(true);
     ui->editUpdateTime->setReadOnly(true);
     ui->editAccessTime->setReadOnly(true);
-//    ui->editURL->setReadOnly(true);
-//    ui->editAuthor->setReadOnly(true);
-//    ui->checkEncrypted->setEnabled(false);
+    ui->labelNotebook->setReadOnly(true);
 
     QString openDocument = formatLabelLink("locate", tr("Locate"));
     ui->labelOpenDocument->setText(openDocument);
     QString versionHistory = formatLabelLink("history", tr("Click to view version history"));
     ui->labelHistory->setText(versionHistory);
+
+    setFixedSize(m_size);
 }
 
 WizNoteInfoForm::~WizNoteInfoForm()
@@ -55,15 +54,29 @@ void WizNoteInfoForm::hideEvent(QHideEvent* ev)
     emit widgetStatusChanged();
 }
 
+#if defined(Q_OS_WIN)
+static const int kNoteInforFormLineHeight = 30;
+#elif defined(Q_OS_MAC)
+static const int kNoteInforFormLineHeight = 26;
+#else
+static const int kNoteInforFormLineHeight = 26;
+#endif
+
 void WizNoteInfoForm::setDocument(const WIZDOCUMENTDATA& data)
 {
     Q_ASSERT(!data.strKbGUID.isEmpty());
+
+    // Use lineCount to calculate window height
+    int lineCount = 0;
+
     m_docKbGuid = data.strKbGUID;
     m_docGuid = data.strGUID;
 
     WizDatabase& db = WizDatabaseManager::instance()->db(data.strKbGUID);
-    m_size.setHeight(db.isGroup() ? 320 : 370);
-    setGroupLabelVisible(db.isGroup());
+
+    const bool isGroupNote = db.isGroup();
+    const bool canEdit = (db.canEditDocument(data) && !WizDatabase::isInDeletedItems(data.strLocation));
+
     QString doc = db.getDocumentFileName(data.strGUID);
     QString sz = ::WizGetFileSizeHumanReadalbe(doc);
     m_sizeText = sz;
@@ -71,62 +84,116 @@ void WizNoteInfoForm::setDocument(const WIZDOCUMENTDATA& data)
     QFont font;
     QFontMetrics fm(font);
     const int nMaxTextWidth = 280;
+
+    // Location
     QString strLocation = db.getDocumentLocation(data);
-    // private document
-    if (data.strKbGUID == WizDatabaseManager::instance()->db().kbGUID()) {
-        QString tags = db.getDocumentTagsText(data.strGUID);
-        tags = fm.elidedText(tags, Qt::ElideMiddle, nMaxTextWidth);
-        ui->labelTags->setText(tags);
+    ui->labelNotebook->setText(strLocation);
+    lineCount++;
 
-        ui->editAuthor->setText(data.strAuthor);
-
-    // group document
-    } else {        
-        ui->labelTags->clear();
-        ui->editAuthor->setText(data.strAuthor);
+    // Owner
+    if (isGroupNote) {
+        QString userAlias = db.getDocumentOwnerAlias(data);
+        ui->labelOwner->setText(userAlias);
+        lineCount++;
+    } else {
+        ui->labelOwner->setVisible(false);
+        ui->labelOwnerLabel->setVisible(false);
     }
 
-    strLocation = fm.elidedText(strLocation, Qt::ElideMiddle, nMaxTextWidth);
-    ui->labelNotebook->setText(strLocation);
+    // Tags line
+    if (data.strKbGUID == WizDatabaseManager::instance()->db().kbGUID()) {
+        // private document
+        QString tags = db.getDocumentTagsText(data.strGUID);
+        tags = fm.elidedText(tags, Qt::ElideMiddle, nMaxTextWidth);
+        if (!tags.isEmpty()) {
+            ui->labelTags->setText(tags);
+            lineCount++;
+        } else {
+            ui->labelTags->setVisible(false);
+            ui->labelTagsLabel->setVisible(false);
+        }
+    } else {
+        // group document
+        ui->labelTags->clear();
+        ui->labelTags->setVisible(false);
+        ui->labelTagsLabel->setVisible(false);
+    }
 
-    QString userAlias = db.getDocumentOwnerAlias(data);
-    ui->labelOwner->setText(userAlias);
+    // URL
+    ui->editURL->setText(data.strURL);
+    ui->editURL->setReadOnly(!canEdit);
+    QString text = data.strURL.isEmpty() ? "" : formatLabelLink(data.strURL, tr("Open"));
+    ui->labelOpenURL->setText(text);
+    lineCount++;
 
-    // common fields
+    // Times
     ui->editCreateTime->setText(data.tCreated.toString());
     ui->editUpdateTime->setText(data.tDataModified.toString());
     ui->editAccessTime->setText(data.tAccessed.toString());
-    ui->editURL->setText(data.strURL);
-    QString text = data.strURL.isEmpty() ? "" : formatLabelLink(data.strURL, tr("Open"));
-    ui->labelOpenURL->setText(text);
-    ui->labelSize->setText(sz);
-    ui->checkEncrypted->setChecked(data.nProtected ? true : false);
+    lineCount += 3;
 
-    bool canEdit = (db.canEditDocument(data) && !WizDatabase::isInDeletedItems(data.strLocation));
+    // Author line
+    ui->editAuthor->setText(data.strAuthor);
     ui->editAuthor->setReadOnly(!canEdit);
-    ui->editURL->setReadOnly(!canEdit);
-    ui->checkEncrypted->setEnabled(canEdit && !db.isGroup());
+    lineCount++;
+
+    // Note Type
+    if (!data.strType.isEmpty()) {
+        ui->labelNoteType->setText(data.strType);
+        lineCount++;
+    } else {
+        ui->labelNoteTypeLabel->setVisible(false);
+        ui->labelNoteType->setVisible(false);
+    }
+
+    // File Type
+    if (!data.strFileType.isEmpty()) {
+        ui->labelFileType->setText(data.strFileType);
+        lineCount++;
+    } else {
+        ui->labelFileTypeLabel->setVisible(false);
+        ui->labelFileType->setVisible(false);
+    }
+
+    // Size
+    ui->labelSize->setText(sz);
+    lineCount += 6;
+
+    // Encrypt
+    if (!isGroupNote) {
+        ui->checkEncrypted->setChecked(data.nProtected ? true : false);
+        ui->checkEncrypted->setEnabled(canEdit && !db.isGroup());
+        lineCount++;
+    } else {
+        ui->labelEncrypted->setVisible(false);
+        ui->checkEncrypted->setVisible(false);
+    }
+
+    // History
+    lineCount++;
+
+    m_size = QSize(340, lineCount * kNoteInforFormLineHeight);
+    setFixedSize(m_size);
 }
 
 void WizNoteInfoForm::setWordCount(int nWords, int nChars, int nCharsWithSpace, int nNonAsianWords, int nAsianChars)
 {
-    QString textFormat = tr("Words: %1\nCharacters (no spaces): %2\nCharacters (with spaces): %3\nNon-Asianwords: %4\nAsian characters: %5");
-    //
-    QString text = textFormat.arg(nWords).arg(nChars).arg(nCharsWithSpace).arg(nNonAsianWords).arg(nAsianChars);
-    //
+    QString textFormat = tr(
+        "Words: %1\n"
+        "Characters (no spaces): %2\n"
+        "Characters (with spaces): %3\n"
+        "Non-Asianwords: %4\n"
+        "Asian characters: %5"
+    );
+
+    QString text = textFormat.arg(
+        QString::number(nWords),
+        QString::number(nChars),
+        QString::number(nCharsWithSpace),
+        QString::number(nNonAsianWords),
+        QString::number(nAsianChars));
+
     ui->labelSize->setText(m_sizeText + "\n" + text);
-}
-
-
-void WizNoteInfoForm::setGroupLabelVisible(bool isGroupNote)
-{
-    ui->labelEncrypted->setVisible(!isGroupNote);
-    ui->checkEncrypted->setVisible(!isGroupNote);
-    ui->labelTags->setVisible(!isGroupNote);
-    ui->labelTagsLabel->setVisible(!isGroupNote);
-
-    ui->labelOwner->setVisible(isGroupNote);
-    ui->labelOwnerLabel->setVisible(isGroupNote);
 }
 
 void WizNoteInfoForm::on_labelOpenDocument_linkActivated(const QString &link)

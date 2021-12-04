@@ -1362,8 +1362,22 @@ WizEditorToolBar::WizEditorToolBar(WizExplorerApp& app, QWidget *parent)
     m_btnStrikeThrough->setIcon(::WizLoadSkinIcon(skin, "actionFormatStrikeThrough", editIconSize));
     //m_btnStrikeThrough->setIconSize(QPixmap(WizGetSkinResourceFileName(skin, "actionFormatStrikeThrough")).size());
     m_btnStrikeThrough->setToolTip(tr("Strike Through %1%2K").arg(optionKey()).arg(commandKey()));
-    m_btnStrikeThrough->setPosition(ButtonPosition::Right);
+    m_btnStrikeThrough->setPosition(ButtonPosition::Center);
     connect(m_btnStrikeThrough, SIGNAL(clicked()), SLOT(on_btnStrikeThrough_clicked()));
+
+    m_btnSubscript = new CWizToolButton(this);
+    m_btnSubscript->setIcon(::WizLoadSkinIcon(skin, "actionFormatSubscript", editIconSize));
+    //m_btnSubscript->setIconSize(QPixmap(WizGetSkinResourceFileName(skin, "actionFormatSubscript")).size());
+    m_btnSubscript->setToolTip(tr("Sub script"));
+    m_btnSubscript->setPosition(ButtonPosition::Center);
+    connect(m_btnSubscript, SIGNAL(clicked()), SLOT(on_btnSubscript_clicked()));
+
+    m_btnSuperscript = new CWizToolButton(this);
+    m_btnSuperscript->setIcon(::WizLoadSkinIcon(skin, "actionFormatSuperscript", editIconSize));
+    //m_btnSubscript->setIconSize(QPixmap(WizGetSkinResourceFileName(skin, "actionFormatSuperscript")).size());
+    m_btnSuperscript->setToolTip(tr("Super script"));
+    m_btnSuperscript->setPosition(ButtonPosition::Right);
+    connect(m_btnSuperscript, SIGNAL(clicked()), SLOT(on_btnSuperscript_clicked()));
 
     m_btnJustify = new CWizToolButton(this);
     m_btnJustify->setIcon(::WizLoadSkinIcon(skin, "actionFormatJustifyLeft", editIconSize));
@@ -1769,6 +1783,10 @@ WizEditorToolBar::WizEditorToolBar(WizExplorerApp& app, QWidget *parent)
     containerLayout1->addWidget(m_btnUnderLine);
     containerLayout1->addWidget(new CWizEditorButtonSpliter(this));
     containerLayout1->addWidget(m_btnStrikeThrough);
+    containerLayout1->addWidget(new CWizEditorButtonSpliter(this));
+    containerLayout1->addWidget(m_btnSubscript);
+    containerLayout1->addWidget(new CWizEditorButtonSpliter(this));
+    containerLayout1->addWidget(m_btnSuperscript);
     containerLayout1->addSpacing(12);
     containerLayout1->addWidget(m_btnForeColor);
     containerLayout1->addWidget(new CWizEditorButtonSpliter(this));
@@ -2008,6 +2026,8 @@ void WizEditorToolBar::resetToolbar(const QString& currentStyle)
     m_btnItalic->setChecked(italic);
     m_btnUnderLine->setChecked(underline);
     m_btnStrikeThrough->setChecked(strikeThrough);
+    m_btnSubscript->setChecked(subscript);
+    m_btnSuperscript->setChecked(superscript);
 
     m_actionJustifyLeft->setChecked(justifyleft);
     m_actionJustifyCenter->setChecked(justifycenter);
@@ -3286,6 +3306,22 @@ void WizEditorToolBar::on_btnStrikeThrough_clicked()
     WizAnalyzer::getAnalyzer().logAction("editorToolBarStrikeThrough");
     if (m_editor) {
         m_editor->editorCommandExecuteStrikeThrough();
+    }
+}
+
+void WizEditorToolBar::on_btnSubscript_clicked()
+{
+    WizAnalyzer::getAnalyzer().logAction("editorToolBarSubscript");
+    if (m_editor) {
+        m_editor->editorCommandExecuteSubScript();
+    }
+}
+
+void WizEditorToolBar::on_btnSuperscript_clicked()
+{
+    WizAnalyzer::getAnalyzer().logAction("editorToolBarSuperscript");
+    if (m_editor) {
+        m_editor->editorCommandExecuteSuperScript();
     }
 }
 

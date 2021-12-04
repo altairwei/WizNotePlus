@@ -39,7 +39,10 @@ public:
                             templateItem->draw(painter, vopt);
                         }
                     }
+                } else {
+                    QProxyStyle::drawControl(element, option, painter, widget);
                 }
+
                 break;
             }
         default:

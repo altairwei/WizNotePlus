@@ -400,21 +400,6 @@ void WizUserSettings::setShowSystemTrayIcon(bool bShowTrayIcon)
     set("ShowSystemTrayIcon", bShowTrayIcon ? "1" : "0");
 }
 
-bool WizUserSettings::useSystemBasedStyle() const
-{
-    QString strUseSystemStyle = get("UseSystemBasedStyle");
-    if (!strUseSystemStyle.isEmpty()) {
-        return strUseSystemStyle.toInt() ? true : false;
-    }
-
-    return true;
-}
-
-void WizUserSettings::setUseSystemBasedStyle(bool bSystemStyle)
-{
-    set("UseSystemBasedStyle", bSystemStyle ? "1" : "0");
-}
-
 bool WizUserSettings::isEnableSpellCheck() const
 {
     QString strSpellCheck = get("SpellCheck");
@@ -565,13 +550,16 @@ void WizUserSettings::setEditorBackgroundColor(const QString& strColor)
     set("EditorBackgroundColor", strColor);
 }
 
-
-QString WizUserSettings::editorLineHeight()
+const QString WizUserSettings::kDefaultEditorLineHeight = "1.7";
+QString WizUserSettings::editorLineHeight(bool force_default /*= false*/)
 {
+    if (force_default)
+        return kDefaultEditorLineHeight;
+
     QString strLineHeight = get("EditorLineHeight");
 
     if (strLineHeight.isEmpty()) {
-        return "1.7";
+        return kDefaultEditorLineHeight;
     }
 
     return strLineHeight;
@@ -583,13 +571,16 @@ void WizUserSettings::setEditorLineHeight(const QString& strLineHeight)
     set("EditorLineHeight", strLineHeight);
 }
 
-
-QString WizUserSettings::editorParaSpacing()
+const QString WizUserSettings::kDefaultEditorParaSpacing = "8";
+QString WizUserSettings::editorParaSpacing(bool force_default /*= false*/)
 {
+    if (force_default)
+        return kDefaultEditorParaSpacing;
+
     QString strLineHeight = get("EditorParaSpacing");
 
     if (strLineHeight.isEmpty()) {
-        return "8";
+        return kDefaultEditorParaSpacing;
     }
 
     return strLineHeight;
@@ -601,13 +592,16 @@ void WizUserSettings::setEditorParaSpacing(const QString& spacing)
     set("EditorParaSpacing", spacing);
 }
 
-
-QString WizUserSettings::editorPagePadding()
+const QString WizUserSettings::kDefaultEditorPagePadding = "16";
+QString WizUserSettings::editorPagePadding(bool force_default /*= false*/)
 {
+    if (force_default)
+        return kDefaultEditorPagePadding;
+
     QString strPagePadding = get("EditorPagePadding");
 
     if (strPagePadding.isEmpty()) {
-        return WIZSETTINGS_DEFAULT_PAGEPADDING;
+        return kDefaultEditorPagePadding;
     }
 
     return strPagePadding;
@@ -716,14 +710,18 @@ void WizUserSettings::setLocale(const QString& strLocale)
     set("Locale", strLocale);
 }
 
-QString WizUserSettings::defaultFontFamily()
+const QString WizUserSettings::kDefaultEditorFontFamily = "Helvetica, \"Hiragino Sans GB\", "
+    "\"Microsoft YaHei UI\", SimSun, SimHei, \"Helvetica Neue\", Arial, sans-serif;";
+QString WizUserSettings::defaultFontFamily(bool force_default /*= false*/)
 {
+    if (force_default)
+        return kDefaultEditorFontFamily;
+
     QString strFont = get("DefaultFontFamily");
     if (!strFont.isEmpty())
         return strFont;
 
-    return "Helvetica, \"Hiragino Sans GB\", \"微软雅黑\", \"Microsoft YaHei UI\", "
-                "SimSun, SimHei, \"Helvetica Neue\", Arial, sans-serif;";
+    return kDefaultEditorFontFamily;
 
 }
 
@@ -747,19 +745,67 @@ QString WizUserSettings::lastAttachmentPath() const
     return path;
 }
 
-
-int WizUserSettings::defaultFontSize()
+const int WizUserSettings::kDefaultEditorFontSize = 16;
+int WizUserSettings::defaultFontSize(bool force_default /*= false*/)
 {
+    if (force_default)
+        return kDefaultEditorFontSize;
+
     int nSize = get("DefaultFontSize").toInt();
     if (nSize)
         return nSize;
 
-    return 16; // default 16px
+    return kDefaultEditorFontSize;
 }
 
 void WizUserSettings::setDefaultFontSize(int nSize)
 {
     set("DefaultFontSize", QString::number(nSize));
+}
+
+#if defined(Q_OS_WIN)
+const QString WizUserSettings::kDefaultUIFontFamily = "Microsoft YaHei UI";
+const int WizUserSettings::kDefaultUIFontSize = 9;
+#elif defined(Q_OS_MAC)
+const QString WizUserSettings::kDefaultUIFontFamily = ".AppleSystemUIFont";
+const int WizUserSettings::kDefaultUIFontSize = 13;
+#else
+const QString WizUserSettings::kDefaultUIFontFamily = "Noto Sans";
+const int WizUserSettings::kDefaultUIFontSize = 9;
+#endif
+
+QString WizUserSettings::UIFontFamily(bool force_default /*= false*/)
+{
+    if (force_default)
+        return kDefaultUIFontFamily;
+
+    QString font = get("DefaultUIFontFamily");
+    if (!font.isEmpty())
+        return font;
+
+    return kDefaultUIFontFamily;
+}
+
+void WizUserSettings::setUIFontFamily(const QString& font)
+{
+    set("DefaultUIFontFamily", font);
+}
+
+int WizUserSettings::UIFontSize(bool force_default /*= false*/)
+{
+    if (force_default)
+        return kDefaultUIFontSize;
+
+    int nSize = get("DefaultUIFontSize").toInt();
+    if (nSize)
+        return nSize;
+
+    return kDefaultUIFontSize;
+}
+
+void WizUserSettings::setUIFontSize(int size)
+{
+    set("DefaultUIFontSize", QString::number(size));
 }
 
 WizDocumentViewMode WizUserSettings::noteViewMode() const

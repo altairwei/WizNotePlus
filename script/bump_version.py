@@ -36,6 +36,20 @@ def bump_version(old_version, version_type):
 
     return "-".join([".".join(version_list), ".".join(develop_list)])
 
+def bump_file(filename, regex, version_type):
+    with open(filename, encoding="UTF-8") as f:
+        content = f.read()
+        p = re.compile(regex)
+        matched = p.search(content)
+        if matched:
+            version_string = matched.group(1)
+            new_version = bump_version(version_string + "-stable.0", version_type)
+            new_version = new_version.split("-")[0]
+            replace_content = matched.group(0).replace(version_string, new_version)
+            new_content = p.sub(replace_content, content, count=1)
+            print("Bump %s: from" % filename, version_string, "to", new_version)
+            with open(filename, "w", encoding="UTF-8") as w:
+                w.write(new_content)
 
 def bump_conanfile(version_type):
     with open("./conanfile.py", encoding="UTF-8") as f:
@@ -67,38 +81,35 @@ def bump_wizdef(version_type):
             with open("./src/WizDef.h", "w", encoding="UTF-8") as w:
                 w.write(new_content)
 
-
 def bump_readme(version_type):
     readme_files = ["./README.md", "./doc/README-en.md"]
     for filename in readme_files:
-        with open(filename, encoding="UTF-8") as f:
-            readme_content = f.read()
-            p = re.compile(r"release-v(\d+\.\d+\.\d+)-green")
-            matched = p.search(readme_content)
-            if matched:
-                version_string = matched.group(1)
-                new_version = bump_version(version_string + "-stable.0", version_type)
-                new_version = new_version.split("-")[0]
-                new_content = p.sub("release-v%s-green" % new_version, readme_content, count=1)
-                print("Bump %s: from" % filename, version_string, "to", new_version)
-                with open(filename, "w", encoding="UTF-8") as w:
-                    w.write(new_content)
-
+        bump_file(
+            filename,
+            r"release-v(\d+\.\d+\.\d+)-green",
+            version_type
+        )
 
 def bump_infoplist(version_type):
-    with open("./build/osx/Info.plist", encoding="UTF-8") as f:
-        infoplist_content = f.read()
-        p = re.compile(r'<key>CFBundleShortVersionString</key>\n\s*<string>(\d+\.\d+\.\d+)</string>')
-        matched = p.search(infoplist_content)
-        if matched:
-            version_string = matched.group(1)
-            new_version = bump_version(version_string + "-stable.0", version_type)
-            new_version = new_version.split("-")[0]
-            new_content = p.sub("<key>CFBundleShortVersionString</key>\n    <string>%s</string>" % new_version, infoplist_content, count=1)
-            print("Bump ./build/osx/Info.plist: from", version_string, "to", new_version)
-            with open("./build/osx/Info.plist", "w", encoding="UTF-8") as w:
-                w.write(new_content)
+    bump_file(
+        "./build/osx/Info.plist",
+        r'<key>CFBundleShortVersionString</key>\n\s*<string>(\d+\.\d+\.\d+)</string>',
+        version_type
+    )
 
+def bump_cmakelist(version_type):
+    bump_file(
+        "./CMakeLists.txt",
+        r'project\(WizNotePlus VERSION (\d+\.\d+\.\d+)\)',
+        version_type
+    )
+
+def bump_desktopfile(version_type):
+    bump_file(
+        "./build/common/wiznote2.desktop",
+        r'X-AppImage-Version=(\d+\.\d+\.\d+)',
+        version_type
+    )
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Bump version of WizNotePlus.')
@@ -109,3 +120,5 @@ if __name__ == '__main__':
     bump_wizdef(args.version_type)
     bump_readme(args.version_type)
     bump_infoplist(args.version_type)
+    bump_cmakelist(args.version_type)
+    bump_desktopfile(args.version_type)

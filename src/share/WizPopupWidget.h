@@ -2,9 +2,7 @@
 #define WIZPOPUPWIDGET_H
 
 #include <QWidget>
-//#include <QPropertyAnimation>
-
-//#include "WizUI.h"
+#include <QPainterPath>
 
 class QTimer;
 
@@ -15,14 +13,15 @@ class WizPopupWidget : public QWidget
 public:
     WizPopupWidget(QWidget* parent);
 
-    virtual QSize sizeHint() const;
     virtual QRect getClientRect() const;
 
 private:
     QVector<QPoint> m_pointsRegion;
-//    QVector<QPoint> m_pointsPolygon;
     bool m_leftAlign;
     QPoint m_pos;
+    QPixmap m_pixmap;
+    QPainterPath m_path;
+
     QRegion maskRegion();
 
 protected:
@@ -32,6 +31,7 @@ protected:
 
 
 protected:
+    //virtual QSize sizeHint() const override;
     virtual void paintEvent(QPaintEvent* event);
 
 public:

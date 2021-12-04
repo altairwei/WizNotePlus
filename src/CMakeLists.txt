@@ -1,4 +1,4 @@
-project(WizNote)
+add_subdirectory(libs)
 
 #============================================================================
 # Sources
@@ -297,7 +297,7 @@ set(wiznote_HEADERS
     utils/WizStyleHelper.h
     utils/WizPathResolve.h
     share/WizWindowTitleBar.h
-    share/WizShadowWindow.h
+    share/WizFramelessWindow.h
     share/WizShadowEffect.h
     widgets/WizTableSelector.h
 
@@ -508,7 +508,7 @@ qt_add_ui(wiznote_FORM_HEADERS ${wiznote_FORMS})
 qt_add_resources(wiznote_RC ${wiznote_RCS})
 qt_add_translation(wiznote_QM ${wiznote_TRANSLATIONS})
 
-message("WizNote whill compiling as ${CMAKE_BUILD_TYPE}, use Qt: ${QT_VERSION}")
+message("WizNotePlus whill compiling as ${CMAKE_BUILD_TYPE}, use Qt: ${QT_VERSION}")
 
 # Monitor file content changes in share directory
 file(GLOB_RECURSE share_files LIST_DIRECTORIES false ${CMAKE_SOURCE_DIR}/share/**/*)
@@ -529,8 +529,8 @@ if(UNIX)
         # refer to: https://bugreports.qt-project.org/browse/QTBUG-18662
         file(GLOB _qt5_QM ${qt_translations_dir}/qt_*.qm)
 
-        add_executable(WizNote MACOSX_BUNDLE  ${wiznote_HEADERS} ${wiznote_HEADERS_MAC} ${wiznote_FORM_HEADERS} ${wiznote_SOURCES_MAC} ${wiznote_SOURCES} ${wiznote_QM} ${_qt5_QM} ${wiznote_RC} ${wiznote_LOGO})
-        set_target_properties(WizNote PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
+        add_executable(WizNotePlus MACOSX_BUNDLE  ${wiznote_HEADERS} ${wiznote_HEADERS_MAC} ${wiznote_FORM_HEADERS} ${wiznote_SOURCES_MAC} ${wiznote_SOURCES} ${wiznote_QM} ${_qt5_QM} ${wiznote_RC} ${wiznote_LOGO})
+        set_target_properties(WizNotePlus PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
         set_target_properties(${PROJECT_NAME} PROPERTIES AUTOMOC_MOC_OPTIONS "-DQ_OS_MAC")
 
         # this should be issue of cmake, refer: http://public.kitware.com/Bug/bug_revision_view_page.php?rev_id=958
@@ -540,7 +540,7 @@ if(UNIX)
         set_target_properties(${PROJECT_NAME} PROPERTIES COMPILE_FLAGS "-mmacosx-version-min=10.7")
 
         # suppress cmake warnning when link library is not a target, refer to cmp0016 for detailed info.
-        cmake_policy(SET CMP0016 OLD)
+        #cmake_policy(SET CMP0016 OLD)
         find_library(_CARBON_LIBRARY Carbon)
         find_library(_COCOA_LIBRARY Cocoa)
         find_library(_WEBENGINE_LIBRARY WebEngine)
@@ -570,7 +570,7 @@ if(UNIX)
             COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_SOURCE_DIR}/build/osx/localize/ ${WIZNOTE_RESOURCE_DIR})
 
     elseif(NOT APPLE)
-        add_executable(WizNote ${wiznote_SOURCES} ${wiznote_HEADERS} ${wiznote_FORM_HEADERS} ${wiznote_QM} ${wiznote_RC})
+        add_executable(WizNotePlus ${wiznote_SOURCES} ${wiznote_HEADERS} ${wiznote_FORM_HEADERS} ${wiznote_QM} ${wiznote_RC})
         set_target_properties(${PROJECT_NAME} PROPERTIES AUTOMOC_MOC_OPTIONS "-DQ_OS_LINUX")
         set_target_properties(${PROJECT_NAME} PROPERTIES LINK_FLAGS "-static-libstdc++ -static-libgcc")
 
@@ -595,7 +595,7 @@ else()
     add_definitions(-DUNICODE=TRUE)
     add_definitions(-D_UNICODE=TRUE)
     #add_compile_options("/utf-8") # UNICODE or _UNICODE may not work
-    add_executable(WizNote WIN32 ${wiznote_SOURCES} ${wiznote_HEADERS} 
+    add_executable(WizNotePlus WIN32 ${wiznote_SOURCES} ${wiznote_HEADERS} 
         ${wiznote_FORM_HEADERS} ${wiznote_QM} ${wiznote_RC} 
         ${CMAKE_SOURCE_DIR}/resources/logo.rc
     )
@@ -613,8 +613,8 @@ else()
     endforeach()
 endif()
 
-qt_use_modules(WizNote)
-qt_suppress_warnings(WizNote)
+qt_use_modules(WizNotePlus)
+qt_suppress_warnings(WizNotePlus)
 
 if (APPLE)
     include_directories(~/Library/Frameworks)
@@ -638,6 +638,7 @@ if(UNIX)
                 ${quazip_LIBRARIES}
                 ${ZLIB_LIBRARIES}
                 ${Gumbo_LIBRARIES}
+                FramelessHelper
             )
         else(APPSTORE_BUILD)
             target_link_libraries(${PROJECT_NAME}
@@ -646,6 +647,7 @@ if(UNIX)
                 ${quazip_LIBRARIES}
                 ${ZLIB_LIBRARIES}
                 ${Gumbo_LIBRARIES}
+                FramelessHelper
             )
         endif(APPSTORE_BUILD)
     else(APPLE)
@@ -659,6 +661,7 @@ if(UNIX)
             ${quazip_LIBRARIES}
             ${ZLIB_LIBRARIES}
             ${Gumbo_LIBRARIES}
+            wangwenx190::FramelessHelper
         )
     endif(APPLE)
 else(NOT UNIX)
@@ -669,5 +672,7 @@ else(NOT UNIX)
         ${quazip_LIBRARIES}
         ${ZLIB_LIBRARIES}
         ${Gumbo_LIBRARIES}
+        FramelessHelper
+        dwmapi
     )
 endif()

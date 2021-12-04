@@ -42,6 +42,16 @@ mkdir -force $WORK_DIR_BUILD
 mkdir -force $WORK_DIR_PKG
 echo "[Info] WizNotePlus will be built at: $WORK_DIR"
 
+# Copy VC redistributables to release directory for Windows (Github Actions)
+if ($args[2] -eq "github actions")
+{
+	echo "Copy VC redistributables to release directory for Windows (Github Actions)"
+	$WORK_DIR_PKG_BIN = "$WORK_DIR/package/bin"
+	mkdir -force $WORK_DIR_PKG_BIN
+	Copy-Item (vswhere -latest -find 'VC\Redist\MSVC\*\x64\*\msvcp140.dll') $WORK_DIR_PKG_BIN
+	Copy-Item (vswhere -latest -find 'VC\Redist\MSVC\*\x64\*\vcruntime140.dll') $WORK_DIR_PKG_BIN
+}
+
 # Build whole project
 conan install $SRC_DIR -if $WORK_DIR_BUILD --build missing -o qtdir=$env:QT_INSTALL_PREFIX
 conan build $SRC_DIR -bf $WORK_DIR_BUILD

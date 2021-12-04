@@ -359,6 +359,8 @@ public Q_SLOTS:
     void editorCommandExecuteItalic();
     void editorCommandExecuteUnderLine();
     void editorCommandExecuteStrikeThrough();
+    void editorCommandExecuteSubScript();
+    void editorCommandExecuteSuperScript();
 
     void editorCommandExecuteLinkInsert();
     void editorCommandExecuteLinkRemove();

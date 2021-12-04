@@ -5,7 +5,7 @@
 	<key>CFBundleDevelopmentRegion</key>
 	<string>zh_CN</string>
 	<key>CFBundleExecutable</key>
-	<string>WizNote</string>
+	<string>WizNotePlus</string>
 	<key>CFBundleGetInfoString</key>
 	<string></string>
 	<key>CFBundleIconFile</key>
@@ -15,13 +15,13 @@
 	<key>CFBundleInfoDictionaryVersion</key>
 	<string>6.0</string>
 	<key>CFBundleShortVersionString</key>
-    <string>2.9.2</string>
+    <string>2.10.0</string>
 	<key>LSApplicationCategoryType</key>
 	<string>public.app-category.productivity</string>
 	<key>CFBundleName</key>
-	<string>WizNote</string>
+	<string>WizNotePlus</string>
 	<key>CFBundleDisplayName</key>
-	<string>WizNote</string>
+	<string>WizNotePlus</string>
 	<key>CFBundlePackageType</key>
 	<string>APPL</string>
 	<key>CFBundleSignature</key>
@@ -72,7 +72,7 @@
 			<key>NSMessage</key>
 			<string>serviceCreateNote</string>
 			<key>NSPortName</key>
-			<string>WizNote</string>
+			<string>WizNotePlus</string>
 			<key>NSRequiredContext</key>
 			<dict/>
 			<key>NSSendTypes</key>

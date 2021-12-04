@@ -28,7 +28,6 @@ WizConsoleDialog::WizConsoleDialog(WizExplorerApp& app, QWidget* parent)
     , m_nPos(0)
 {
     m_ui->setupUi(this);
-    //setWindowFlags(Qt::Tool);
 
     m_ui->editConsole->setReadOnly(true);
     m_ui->btnCopyToClipboard->setEnabled(false);

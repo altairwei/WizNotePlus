@@ -19,26 +19,19 @@ public:
     void setDocument(const WIZDOCUMENTDATA& data);
     void setWordCount(int nWords, int nChars, int nCharsWithSpace, int nNonAsianWords, int nAsianChars);
 
-    void setGroupLabelVisible(bool isGroupNote);
-
 signals:
     void widgetStatusChanged();
 
 protected:
-    virtual QSize sizeHint() const;
+    virtual QSize sizeHint() const override;
     void hideEvent(QHideEvent* ev);
 
 private slots:
     void on_labelOpenDocument_linkActivated(const QString &link);
-
     void on_editURL_editingFinished();
-
     void on_editAuthor_editingFinished();
-
     void on_checkEncrypted_clicked(bool checked);
-
     void on_labelHistory_linkActivated(const QString &link);
-
     void on_labelOpenURL_linkActivated(const QString &link);
 
 private:

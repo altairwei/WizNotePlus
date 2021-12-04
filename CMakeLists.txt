@@ -12,13 +12,14 @@
 
 cmake_minimum_required(VERSION 3.0)
 
-project(WizNotePlus VERSION 2.8.0)
+project(WizNotePlus VERSION 2.10.0)
 
 #============================================================================
 # Options and Variables
 #============================================================================
 
 option(BUILD_TESTING "Building the test target or not." OFF)
+option(USE_CUSTOM_SCROLLBAR "Use custom scrollbar instead of Qt's one." ON)
 
 # Excute conan outside or not.
 option(CONAN_INSTALL_MANUALLY "Run Conan install command manually." OFF)
@@ -38,7 +39,7 @@ list(APPEND CMAKE_MODULE_PATH
 
 # WizNotePlus Dirs
 if(APPLE)
-    set(WIZNOTE_ROOT_DIR ${CMAKE_BINARY_DIR}/bin/WizNote.app)
+    set(WIZNOTE_ROOT_DIR ${CMAKE_BINARY_DIR}/bin/WizNotePlus.app)
     set(WIZNOTE_CONTENTS_DIR ${WIZNOTE_ROOT_DIR}/Contents)
     set(WIZNOTE_RESOURCE_DIR ${WIZNOTE_ROOT_DIR}/Contents/Resources)
 else(APPLE)
@@ -115,6 +116,26 @@ find_package(OpenSSL)
 include(${CMAKE_BINARY_DIR}/conanbuildinfo.cmake)
 conan_output_dirs_setup()
 
+find_package(Git QUIET)
+if(GIT_FOUND AND EXISTS "${PROJECT_SOURCE_DIR}/.git")
+    # Update submodules as needed
+    option(GIT_SUBMODULE "Check submodules during build" ON)
+    if(GIT_SUBMODULE)
+        message(STATUS "Submodule update")
+        execute_process(COMMAND ${GIT_EXECUTABLE} submodule update --init --recursive
+                        WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+                        RESULT_VARIABLE GIT_SUBMOD_RESULT)
+        if(NOT GIT_SUBMOD_RESULT EQUAL "0")
+            message(FATAL_ERROR "git submodule update --init --recursive failed with ${GIT_SUBMOD_RESULT}, please checkout submodules")
+        endif()
+    endif()
+endif()
+
+if(NOT EXISTS "${PROJECT_SOURCE_DIR}/src/libs/3rdparty/framelesshelper/CMakeLists.txt")
+    message(FATAL_ERROR "The submodules 'framelesshelper' were not downloaded! GIT_SUBMODULE was turned off or failed. Please update submodules and try again."
+    )
+endif()
+
 #============================================================================
 # Internal compiler options
 #============================================================================
@@ -122,6 +143,10 @@ conan_output_dirs_setup()
 include(CheckCXXCompilerFlag)
 CHECK_CXX_COMPILER_FLAG("-std=c++11" COMPILER_SUPPORTS_CXX11)
 CHECK_CXX_COMPILER_FLAG("-std=c++0x" COMPILER_SUPPORTS_CXX0X)
+
+set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_EXTENSIONS OFF)
 
 if(UNIX)
     if(COMPILER_SUPPORTS_CXX11)
@@ -154,6 +179,10 @@ endif(APPLE)
 if (WIN32)
     add_definitions(-DQUAZIP_STATIC)
 endif()
+
+if (USE_CUSTOM_SCROLLBAR)
+    add_definitions(-DWIZNOTE_CUSTOM_SCROLLBAR)
+endif(USE_CUSTOM_SCROLLBAR)
 
 #============================================================================
 # Subfolders

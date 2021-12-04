@@ -38,11 +38,6 @@ WizMainTabBrowser::WizMainTabBrowser(WizExplorerApp& app, QWidget *parent)
     tabBar->setMovable(true);
     tabBar->setContextMenuPolicy(Qt::CustomContextMenu);
 
-    /* 如果要让标签栏下移，得设置整个QTabWidget布局，比如加个 spacer；
-       如果想要让documentMode状态下的标签栏右移，但底线会一同右移动；
-       看来这个底线是QTabBar的而非documentMode下，这些底线是tab widget frame。*/
-    setStyleSheet("QTabBar::tab { max-width: 300px; }");
-    setDocumentMode(true); // 不渲染tab widget frame
     setElideMode(Qt::ElideRight);
 
     // This signal is emitted whenever the current page index changes.
@@ -50,6 +45,8 @@ WizMainTabBrowser::WizMainTabBrowser(WizExplorerApp& app, QWidget *parent)
 
     connect(tabBar, &QTabBar::customContextMenuRequested, this, &WizMainTabBrowser::handleContextMenuRequested);
     connect(tabBar, &QTabBar::tabCloseRequested, this, &WizMainTabBrowser::handleTabCloseRequested);
+
+    tabBar->installEventFilter(this);
 
     new QShortcut(QKeySequence("Ctrl+W"), this, SLOT(closeCurrentTab()));
 }
@@ -231,7 +228,12 @@ void WizMainTabBrowser::setupTab(int index)
         closeBtn->setIcon(WizLoadSkinIcon(m_strTheme, "tab_close", QSize(16, 16)));
         connect(closeBtn, &QAbstractButton::clicked, this, &WizMainTabBrowser::handleCloseButtonClicked);
         tabBar()->setTabButton(index, QTabBar::RightSide, closeBtn);
-        //
+        closeBtn->hide();
+
+        QWidget* placeHolder = new QWidget(tabBar());
+        placeHolder->setFixedSize(QSize(16, 16));
+        tabBar()->setTabButton(index, QTabBar::LeftSide, placeHolder);
+
         QMap<QString, QVariant> status;
         status["Locked"] = QVariant(false);
         tabBar()->setTabData(index, status);
@@ -462,6 +464,45 @@ void WizMainTabBrowser::keyPressEvent(QKeyEvent* ev)
     }
 
     QTabWidget::keyPressEvent(ev);
+}
+
+bool WizMainTabBrowser::eventFilter(QObject* watched, QEvent* event)
+{
+    if(watched == tabBar())
+    {
+        // Show close button when tab is hovered.
+        switch(event->type())
+        {
+            case QEvent::HoverEnter:
+            case QEvent::HoverLeave:
+            {
+                bool isEnter = event->type() == QEvent::HoverEnter;
+                auto he = static_cast<QHoverEvent*>(event);
+                QPoint pos = isEnter ? he->pos() : he->oldPos();
+                int index = tabBar()->tabAt(pos);
+                if (index != -1) {
+                    auto closeBtn = tabBar()->tabButton(index, QTabBar::RightSide);
+                    isEnter ? closeBtn->show() : closeBtn->hide();
+                }
+            }
+            break;
+            case QEvent::HoverMove:
+            {
+                auto he = static_cast<QHoverEvent*>(event);
+                int indexNew = tabBar()->tabAt(he->pos());
+                int indexOld = tabBar()->tabAt(he->oldPos());
+                if (indexNew != indexOld) {
+                    if (indexOld != -1)
+                        tabBar()->tabButton(indexOld, QTabBar::RightSide)->hide();
+                    if (indexNew != -1)
+                        tabBar()->tabButton(indexNew, QTabBar::RightSide)->show();
+                }
+            }
+            break;
+        }
+    }
+
+    return QTabWidget::eventFilter(watched, event);
 }
 
 void WizMainTabBrowser::mousePressEvent(QMouseEvent* event)

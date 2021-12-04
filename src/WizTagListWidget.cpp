@@ -40,51 +40,28 @@ WizTagListWidget::WizTagListWidget(QWidget* parent)
 {
     setContentsMargins(0, 20, 0, 0);
 
-//    m_tagsEdit = new QLineEdit(this);
-//    m_tagsEdit->setPlaceholderText(tr("Use semicolon to seperate tags..."));
-//    connect(m_tagsEdit, SIGNAL(returnPressed()), SLOT(on_tagsEdit_returnPressed()));
-
     m_list = new WizListWidgetWithCustomScorllBar(this);
     m_list->setAttribute(Qt::WA_MacShowFocusRect, false);
     connect(m_list, SIGNAL(itemChanged(QListWidgetItem*)),
             SLOT(on_list_itemChanged(QListWidgetItem*)));
 
-    QPalette pal;
-#ifdef Q_OS_LINUX
-    pal.setBrush(QPalette::Base, QBrush("#D7D7D7"));
-#elif defined(Q_OS_MAC)
-    pal.setBrush(QPalette::Base, QBrush("#F7F7F7"));
-#endif
-    setStyleSheet("QWidget{background:#F7F7F7;}");
-
-    m_list->setPalette(pal);
-//    m_list->setContentsMargins(10, 6, 0, 6);
-    m_list->setStyleSheet("QListView{padding:0px 0px 0px 0px;}" \
-                          "QListView::item{margin:2px 0px 0px 0px; padding-left:-6px; spacing:2px;}");
-
     QVBoxLayout* layout = new QVBoxLayout();
-    layout->setContentsMargins(0, 0, 0, 0);
+    layout->setContentsMargins(8, 0, 0, 0);
     setLayout(layout);
 
     QHBoxLayout* layoutTitle = new QHBoxLayout();
 
     layoutTitle->addWidget(new QLabel(tr("Tags:"), this));
-//    layoutTitle->addWidget(m_tagsEdit);
     layoutTitle->setSpacing(0);
-    layoutTitle->setContentsMargins(8, 2, 0, 2);
+    layoutTitle->setContentsMargins(0, 2, 0, 2);
 
     layout->addLayout(layoutTitle);
     layout->addWidget(m_list);
-
-    //setGeometry(0, 0, sizeHint().width(), sizeHint().height());
 }
 
 void WizTagListWidget::showEvent(QShowEvent* event)
 {
     Q_UNUSED(event);
-
-//    m_tagsEdit->clear();
-//    m_tagsEdit->clearFocus();
     m_list->setFocus();
 }
 
@@ -196,7 +173,7 @@ void WizTagListWidget::on_list_itemChanged(QListWidgetItem* pItem)
 
 void WizTagListWidget::on_tagsEdit_returnPressed()
 {
-    QString tagsText ;//= m_tagsEdit->text();
+    QString tagsText ;
 
     CWizTagDataArray arrayTagNew;
     m_dbMgr.db().tagsTextToTagArray(tagsText, arrayTagNew);
@@ -214,7 +191,4 @@ void WizTagListWidget::on_tagsEdit_returnPressed()
 
     CWizDocumentDataArray arrayDocument(m_arrayDocuments);
     setDocuments(arrayDocument);    //refresh tags
-
-    //
-//    m_tagsEdit->clear();
 }

@@ -7,10 +7,7 @@
 #include <QWidgetAction>
 #include <QTimer>
 #include "share/WizSettings.h"
-
-#ifndef Q_OS_MAC
-#include "share/WizShadowWindow.h"
-#endif
+#include "share/WizFramelessWindow.h"
 
 class QLabel;
 class QState;
@@ -52,21 +49,21 @@ public:
     void setSelected(bool selected);
 
 protected:
-    void mousePressEvent(QMouseEvent *event);
-    void mouseReleaseEvent(QMouseEvent *event);
-    void enterEvent(QEvent * event);
-    void leaveEvent(QEvent * event);
-    void paintEvent(QPaintEvent*);
+    void mousePressEvent(QMouseEvent *event) override;
+    void mouseReleaseEvent(QMouseEvent *event) override;
+    void enterEvent(QEvent * event) override;
+    void leaveEvent(QEvent * event) override;
+    void paintEvent(QPaintEvent*) override;
 
 signals:
     void delButtonClicked();
     void widgetClicked();
 
 private:
-    bool m_mousePress;
-    bool m_selected;
     QString m_text;
     QPushButton *m_deleteButton;
+    bool m_mousePress;
+    bool m_selected;
 };
 
 class WizUserItemAction : public QWidgetAction
@@ -93,15 +90,10 @@ private:
 
 
 namespace Ui {
-class wizLoginWidget;
+class WizLoginWidget;
 }
 
-class WizLoginDialog
-#ifdef Q_OS_MAC
-        : public QDialog
-#else
-        : public WizShadowWindow<QDialog>
-#endif
+class WizLoginDialog : public WizFramelessWindow<QDialog>
 {
     Q_OBJECT
 
@@ -136,16 +128,6 @@ signals:
     void logoDownloadRequest(const QString& strUrl);
     void checkServerLicenceRequest(const QString& licence);
 
-#ifdef Q_OS_MAC
-protected:
-    void mousePressEvent(QMouseEvent* event);
-    void mouseMoveEvent(QMouseEvent* event);
-    void mouseReleaseEvent(QMouseEvent* event);
-private:
-    QPoint m_mousePoint;
-//#else
-//    void layoutTitleBar();
-#endif
 private slots:
     void on_btn_close_clicked();
     void on_btn_changeToSignin_clicked();
@@ -204,6 +186,7 @@ private:
 
     void initSateMachine();
     void initOEMDownloader();
+    void initTitleBar();
     //
     void applyElementStyles(const QString& strLocal);
     bool checkSignMessage();
@@ -222,10 +205,11 @@ private:
     void downloadLogoFromWizBox(const QString& strUrl);
     void downloadOEMSettingsFromWizBox();
     void setLogo(const QString& logoPath);    
-
     void checkLocalUser(const QString& strAccountFolder, const QString& strUserGUID);
+
 private:
-    Ui::wizLoginWidget *ui;
+    Ui::WizLoginWidget *ui;
+    QPushButton *m_btnSwitchServer;
     QMenu* m_menuUsers;
     QMenu* m_menuServers;
     QDialog* m_animationWaitingDialog;

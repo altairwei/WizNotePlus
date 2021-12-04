@@ -9,8 +9,6 @@
 class WizExplorerApp;
 class WizScrollBar;
 
-#define WIZNOTE_CUSTOM_SCROLLBAR
-
 
 class WizFolderView : public QTreeWidget
 {

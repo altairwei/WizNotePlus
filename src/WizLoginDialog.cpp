@@ -86,12 +86,8 @@ private:
 
 // 登录窗口构造函数
 WizLoginDialog::WizLoginDialog(const QString &strLocale, const QList<WizLocalUser>& localUsers, QWidget *parent)
-#ifdef Q_OS_MAC
-    : QDialog(parent)
-#else
-    : WizShadowWindow<QDialog>(parent, false)
-#endif
-    , ui(new Ui::wizLoginWidget)
+    : WizFramelessWindow<QDialog>(parent, false)
+    , ui(new Ui::WizLoginWidget)
     , m_menuUsers(new QMenu(this))
     , m_menuServers(new QMenu(this))
     , m_udpClient(0)
@@ -101,30 +97,26 @@ WizLoginDialog::WizLoginDialog(const QString &strLocale, const QList<WizLocalUse
     , m_userList(localUsers)
     , m_newRegisterAccount(false)
 {
-#ifdef Q_OS_MAC
-    setWindowFlags(Qt::CustomizeWindowHint);
-    ui->setupUi(this);
-#else
-    layoutTitleBar();
+    // QDialog must set this hint to make framelesshelper work
+    setWindowFlag(Qt::Dialog, false);
 
     QWidget* uiWidget = new QWidget(clientWidget());
     clientLayout()->addWidget(uiWidget);
     ui->setupUi(uiWidget);
+    uiWidget->setAutoFillBackground(true);
+
+    layout()->setSizeConstraint(QLayout::SetFixedSize);
+    setFrameBorderWidth(0);
+
+    m_btnSwitchServer = new QPushButton(this);
+    m_btnSwitchServer->setText(tr("Switch Server"));
+    m_btnSwitchServer->setObjectName("btn_selectServer");
 
     //  init style for wizbox
-    ui->btn_selectServer->setMaximumHeight(::WizSmartScaleUI(20));
-    ui->layout_titleBar->setContentsMargins(0, 0, 0, 0);
-    ui->widget_titleBar->layout()->setContentsMargins(0, 0, 0, 0);
-    ui->widget_titleBar->layout()->setSpacing(0);
+    m_btnSwitchServer->setMaximumHeight(::WizSmartScaleUI(20));
     ui->label_logo->setMinimumHeight(WizSmartScaleUI(80));
-    ui->btn_max->setVisible(false);
-    ui->btn_min->setVisible(false);
-    ui->btn_close->setVisible(false);
 
-    WizWindowTitleBar* title = titleBar();
-    title->setPalette(QPalette(QColor::fromRgb(0x44, 0x8A, 0xFF)));
-    title->setContentsMargins(QMargins(0, 2, 2 ,0));
-#endif
+    initTitleBar();
 
     m_lineEditUserName = ui->wgt_usercontainer->edit();
     m_lineEditPassword = ui->wgt_passwordcontainer->edit();
@@ -151,12 +143,11 @@ WizLoginDialog::WizLoginDialog(const QString &strLocale, const QList<WizLocalUse
     connect(m_lineEditUserName, SIGNAL(textChanged(QString)), SLOT(onLoginInputChanged()));
     connect(ui->wgt_usercontainer, SIGNAL(rightIconClicked()), SLOT(showUserListMenu()));
     connect(ui->wgt_serveroptioncontainer, SIGNAL(rightIconClicked()), SLOT(searchWizBoxServer()));
-    connect(ui->btn_selectServer, SIGNAL(clicked()), SLOT(showServerListMenu()));
+    connect(m_btnSwitchServer, SIGNAL(clicked()), SLOT(showServerListMenu()));
     connect(m_lineEditUserName, SIGNAL(textEdited(QString)), SLOT(onUserNameEdited(QString)));
 
     connect(&m_wizBoxSearchingTimer, SIGNAL(timeout()), SLOT(onWizBoxSearchingTimeOut()));
 
-#ifndef Q_OS_MAC
     // 登录按钮信号槽
     connect(m_buttonLogin, SIGNAL(clicked()), SLOT(on_btn_login_clicked()));
     connect(ui->btn_changeToLogin, SIGNAL(clicked()), SLOT(on_btn_changeToLogin_clicked()));
@@ -166,7 +157,6 @@ WizLoginDialog::WizLoginDialog(const QString &strLocale, const QList<WizLocalUse
     connect(ui->btn_proxysetting, SIGNAL(clicked()), SLOT(on_btn_proxysetting_clicked()));
     connect(ui->cbx_autologin, SIGNAL(toggled(bool)), SLOT(on_cbx_autologin_toggled(bool)));
     connect(ui->cbx_remberPassword, SIGNAL(toggled(bool)), SLOT(on_cbx_remberPassword_toggled(bool)));
-#endif
 
     QAction* actionWizServer = m_menuServers->addAction(tr("Sign in to WizNote Server"));
     actionWizServer->setData(WIZ_SERVERACTION_CONNECT_WIZSERVER);
@@ -182,7 +172,6 @@ WizLoginDialog::WizLoginDialog(const QString &strLocale, const QList<WizLocalUse
 
     loadDefaultUser();
 
-//#ifndef Q_OS_MAC
     QSize totalSizeHint = layout()->totalSizeHint();
 
     QSize minSize = QSize(totalSizeHint.width(), totalSizeHint.height() + ::WizSmartScaleUI(10));
@@ -200,9 +189,9 @@ WizLoginDialog::WizLoginDialog(const QString &strLocale, const QList<WizLocalUse
         QSize sz = ui->btn_login->size();
         ui->btn_singUp->setMinimumSize(sz);
     }, 300, 30000, [=]{});
-//#endif
 
     initSateMachine();
+
 }
 
 WizLoginDialog::~WizLoginDialog()
@@ -465,7 +454,7 @@ void WizLoginDialog::enableLoginControls(bool bEnable)
     ui->cbx_remberPassword->setEnabled(bEnable);
     m_buttonLogin->setEnabled(bEnable);
     ui->btn_changeToSignin->setEnabled(bEnable);
-    ui->btn_selectServer->setEnabled(bEnable);
+    m_btnSwitchServer->setEnabled(bEnable);
 }
 
 void WizLoginDialog::enableSignUpControls(bool bEnable)
@@ -483,7 +472,7 @@ bool WizLoginDialog::isNewRegisterAccount()
     return m_newRegisterAccount;
 }
 
-#ifdef Q_OS_MAC
+#if 0
 void WizLoginDialog::mousePressEvent(QMouseEvent *event)
 {
     m_mousePoint = event->globalPos();
@@ -511,11 +500,40 @@ void WizLoginDialog::on_btn_close_clicked()
     qApp->quit();
 }
 
+void WizLoginDialog::initTitleBar()
+{
+    WizWindowTitleBar* title = titleBar();
+
+    title->minButton()->setVisible(false);
+    title->maxButton()->setVisible(false);
+
+    QHBoxLayout *hbox = new QHBoxLayout;
+    title->setLayout(hbox);
+    hbox->setSpacing(0);
+    hbox->setContentsMargins(0, 0, 0, 0);
+    title->setMinimumHeight(30);
+    title->setPalette(QPalette(QColor::fromRgb(0x44, 0x8A, 0xFF)));
+    title->setContentsMargins(QMargins(0, 0, 0 ,0));
+
+    setHitTestVisible(m_btnSwitchServer);
+
+#ifdef Q_OS_MAC
+    hbox->insertStretch(1, 500);
+    hbox->addWidget(m_btnSwitchServer);
+    title->closeButton()->setVisible(false);
+    // FIXME: this does not work when launch QDialog with exec()
+    setZoomBtnEnabled(false);
+    setMinBtnEnabled(false);
+#else
+    hbox->addWidget(m_btnSwitchServer);
+    hbox->insertStretch(1, 500);
+    hbox->addWidget(title->closeButton());
+#endif
+}
+
 void WizLoginDialog::applyElementStyles(const QString &strLocal)
 {
     ui->stackedWidget->setCurrentIndex(0);
-    //setFixedWidth(::WizSmartScaleUI(354));
-    ui->widget_titleBar->setFixedHeight(::WizSmartScaleUI(40));
 
     QString strThemeName = Utils::WizStyleHelper::themeName();
 
@@ -526,47 +544,8 @@ void WizLoginDialog::applyElementStyles(const QString &strLocal)
         m_wizLogoPath= ::WizGetSkinResourceFileName(strThemeName, "loginLogoUS");
     }
     ui->label_logo->setMinimumWidth(190);   // use fixed logo size for oem
-    ui->label_logo->setStyleSheet(QString("QLabel {border: none; image: url(%1);"
-                                        "background-position: center; background-repeat: no-repeat; background-color:#448aff}").arg(m_wizLogoPath));
-    ui->label_placehold->setStyleSheet(QString("QLabel {border: none;background-color:#448aff}"));
+    ui->label_logo->setPixmap(QPixmap(m_wizLogoPath));
 
-    //
-#ifdef Q_OS_MAC
-    QString strBtnCloseNormal = ::WizGetSkinResourceFileName(strThemeName, "loginCloseButton_normal");
-    QString strBtnCloseHot = ::WizGetSkinResourceFileName(strThemeName, "loginCloseButton_hot");
-    ui->btn_close->setStyleSheet(QString("QToolButton{ border:none; image:url(%1); padding:0px; height: 13px; width: 13px;}"
-                                         "QToolButton:hover{ image:url(%2);}"
-                                           "QToolButton:pressed { image:url(%3);}")
-                                 .arg(strBtnCloseNormal).arg(strBtnCloseHot).arg(strBtnCloseHot));
-    QString strGrayButton = ::WizGetSkinResourceFileName(strThemeName, "loginGrayButton");
-    ui->btn_min->setStyleSheet(QString("QToolButton{ border:none; image:url(%1); padding:0px; height: 13px; width: 13px;}").arg(strGrayButton));
-    ui->btn_max->setStyleSheet(QString("QToolButton{ border:none; image:url(%1); padding:0px; height: 13px; width: 13px;}").arg(strGrayButton));
-#else
-    WizWindowTitleBar* m_titleBar = titleBar();
-    if (m_titleBar)
-    {
-        QString strBtnCloseNormal = ::WizGetSkinResourceFileName(strThemeName, "linuxlogindialoclose");
-        QString strBtnCloseHover = ::WizGetSkinResourceFileName(strThemeName, "linuxwindowclose_on");
-        QString strBtnCloseDown = ::WizGetSkinResourceFileName(strThemeName, "linuxwindowclose_selected");
-        m_titleBar->minButton()->setVisible(false);
-        m_titleBar->maxButton()->setVisible(false);
-        m_titleBar->closeButton()->setIcon(QIcon());
-        m_titleBar->closeButton()->setStyleSheet(QString("QToolButton{ border-image:url(%1); height: 16px; width: 16px;}"
-                                                         "QToolButton:hover{ border-image:url(%2); height: 16px; width: 16px;}"
-                                                         "QToolButton:pressed{ border-image:url(%3); height: 16px; width: 16px;}")
-                                                 .arg(strBtnCloseNormal).arg(strBtnCloseHover).arg(strBtnCloseDown));
-        m_titleBar->closeButton()->setFixedSize(::WizSmartScaleUI(16), ::WizSmartScaleUI(16));
-    }
-#endif
-
-    //
-    ui->cbx_autologin->setStyleSheet(QString("QCheckBox{background:none;border:none;}"
-                                             "QCheckBox:focus{background:none;border:none;}"
-                                             "QCheckBox::pressed{background:none;border:none;}"));
-    ui->cbx_remberPassword->setStyleSheet(QString("QCheckBox{background:none;border:none;}"
-                                             "QCheckBox:focus{background:none;border:none;}"
-                                             "QCheckBox::pressed{background:none;border:none;}"));
-    //
     QString strLoginTopLineEditor = WizGetSkinResourceFileName(strThemeName, "loginTopLineEditor");
     QString strLoginMidLineEditor = WizGetSkinResourceFileName(strThemeName, "loginMidLineEditor");
     QString strLoginBottomLineEditor = WizGetSkinResourceFileName(strThemeName, "loginBottomLineEditor");
@@ -619,65 +598,15 @@ void WizLoginDialog::applyElementStyles(const QString &strLocal)
                                    QColor("#ffffff"), QColor("b1b1b1"));
     m_buttonSignUp->setText(tr("Create Account"));
     m_buttonSignUp->setEnabled(false);
-    //
-    QString strSeparator = ::WizGetSkinResourceFileName(strThemeName, "loginSeparator");
-    ui->label_separator2->setStyleSheet(QString("QLabel {border: none;background-image: url(%1);"
-                                               "background-position: center; background-repeat: no-repeat}").arg(strSeparator));
-   //
-    ui->label_noaccount->setStyleSheet(QString("QLabel {border: none; color: #5f5f5f;}"));
-#ifdef Q_OS_MAC
-    ui->btn_changeToSignin->setStyleSheet(QString("QPushButton { border: 1px; background: none; "
-                                                 "color: #448aff;  padding-left: 10px; padding-bottom: 3px}"));
-    ui->btn_changeToLogin->setStyleSheet(QString("QPushButton { border: 1px; background: none; "
-                                                 "color: #448aff;  padding-left: 10px; padding-bottom: 3px}"));
-#else
-    ui->btn_changeToSignin->setStyleSheet(QString("QPushButton { border: 1px; background: none; "
-                                                 "color: #448aff;  padding-left: 10px; padding-bottom: 0px}"));
-    ui->btn_changeToLogin->setStyleSheet(QString("QPushButton { border: 1px; background: none; "
-                                                 "color: #448aff; padding-left: 10px; padding-bottom: 0px}"));
-#endif
 
-    QString bg_switchserver_menu = ::WizGetSkinResourceFileName(strThemeName, "bg_switchserver_menu");
-    ui->btn_selectServer->setStyleSheet(QString("QPushButton { border: none; background-image: url(%1);"
-                                                "background-position: right center; background-repeat: no-repeat;"
-                                                     "color: rgba(255, 255, 255, 153); padding:0px; padding-right:15px; margin-right: 20px; margin-top: 5px}").arg(bg_switchserver_menu));
-//    QString strWizBoxLogInOn = ::WizGetSkinResourceFileName(strThemeName, "action_logInWizBox_on");
-//    ui->btn_wizBoxLogIn->setStyleSheet(QString("QPushButton{ border-image:url(%1); height: 16px; width: 16px;  margin-right: 25px; margin-top:5px;}"
-//                                               "QPushButton:pressed{border-image:url(%2);}").arg(strWizBoxLogIn).arg(strWizBoxLogInOn));
-
-    ui->btn_proxysetting->setStyleSheet(QString("QPushButton { border: none; background: none; "
-                                                "color: #b1b1b1; margin:0px; margin-left:10px; margin-right:10px;  padding:0px; padding-bottom: 5px}"));
-    ui->btn_fogetpass->setStyleSheet(QString("QPushButton { border: none; background: none; "
-                                                 "color: #b1b1b1; margin:0px; margin-left: 10px; margin-right:10px; padding:0px; padding-bottom: 5px}"));
-    ui->btn_snsLogin->setStyleSheet(QString("QPushButton { border: none; background: none; "
-                                            "color: #b1b1b1; margin:0px; margin-left: 10px; margin-right:10px; padding:0px; padding-bottom: 5px}"));
-
-    QString strLineSeparator = ::WizGetSkinResourceFileName(strThemeName, "loginLineSeparator");
-    ui->label_separator3->setStyleSheet(QString("QLabel {border: none;background-image: url(%1);"
-                                                "background-position: center; background-repeat: no-repeat}").arg(strLineSeparator));
-    ui->label_separator4->setStyleSheet(QString("QLabel {border: none;background-image: url(%1);"
-                                                "background-position: center; background-repeat: no-repeat}").arg(strLineSeparator));
-
-    setStyleSheet("QLineEdit { padding:0px; border:0px; }");
-
-    //
     ui->btn_changeToLogin->setVisible(false);
-    ui->label_passwordError->setStyleSheet(QString("QLabel {border: none; padding-left: 25px; color: red;}"));
     ui->label_passwordError->setText("");
 
     m_menuUsers->setFixedWidth(ui->wgt_usercontainer->width());
-    m_menuUsers->setStyleSheet("QMenu {background-color: #ffffff; border-style: solid; border-color: #448aff; border-width: 1px; color: #5F5F5F; padding: 0px 0px 0px 0px; menu-scrollable: 1;}");
-//                          "QMenu::item {padding: 10px 0px 10px 40px; background-color: #ffffff;}"
-//                          "QMenu::item:selected {background-color: #E7F5FF; }"
-//                          "QMenu::item:default {background-color: #E7F5FF; }");
+    m_menuUsers->setObjectName("menu_users");
 
     QString status_switchserver_selected = ::WizGetSkinResourceFileName(strThemeName, "status_switchserver_selected");
-    m_menuServers->setStyleSheet(QString("QMenu {background-color: #ffffff; border-style: solid; border-color: #3399ff; border-width: 1px; padding: 0px 0px 0px 0px;  menu-scrollable: 1;}"
-                                 "QMenu::item {padding: 4px 10px 4px 25px; color: #000000;  background-color: #ffffff;}"
-                                 "QMenu::item:selected {background-color: #E7F5FF; }"
-                                 "QMenu::item:disabled {color: #999999; }"
-                                 "QMenu::indicator { width: 16px; height: 16px; margin-left: 5px;} "
-                                 "QMenu::indicator:non-exclusive:checked { image: url(%1); }").arg(status_switchserver_selected));
+    m_menuServers->setObjectName("menu_servers");
 }
 
 bool WizLoginDialog::checkSignMessage()
@@ -765,10 +694,10 @@ void WizLoginDialog::showSearchingDialog()
 void WizLoginDialog::initAnimationWaitingDialog(const QString& text)
 {
     m_animationWaitingDialog = new QDialog();
+    m_animationWaitingDialog->setObjectName("dialog_waiting");
     m_animationWaitingDialog->setWindowFlags(Qt::FramelessWindowHint);
     m_animationWaitingDialog->setFixedSize(150, 100);
     QPalette pl = m_animationWaitingDialog->palette();
-    m_animationWaitingDialog->setStyleSheet("QDialog{background-color:#000000;} ");
     pl.setColor(QPalette::Window, QColor(0, 0, 0, 200));
     m_animationWaitingDialog->setPalette(pl);
     m_animationWaitingDialog->setAutoFillBackground(true);
@@ -776,13 +705,7 @@ void WizLoginDialog::initAnimationWaitingDialog(const QString& text)
 
     QHBoxLayout* closeLayout = new QHBoxLayout();
     QToolButton* closeButton = new QToolButton(m_animationWaitingDialog);
-    QString strBtnCloseNormal = Utils::WizStyleHelper::skinResourceFileName("linuxlogindialoclose_white");
-    QString strBtnCloseHover = Utils::WizStyleHelper::skinResourceFileName("linuxwindowclose_on");
-    QString strBtnCloseDown = Utils::WizStyleHelper::skinResourceFileName("linuxwindowclose_selected"); // ::WizGetSkinResourceFileName(strThemeName, "linuxwindowclose_selected");
-    closeButton->setStyleSheet(QString("QToolButton{ image:url(%1); background:transparent; padding:0px; border:0px; height: 16px; width: 16px;}"
-                                                     "QToolButton:hover{ image:url(%2); height: 16px; width: 16px;}"
-                                                     "QToolButton:pressed{ image:url(%3); height: 16px; width: 16px;}")
-                                             .arg(strBtnCloseNormal).arg(strBtnCloseHover).arg(strBtnCloseDown));
+    closeButton->setObjectName("btn_waiting_close");
     closeLayout->setContentsMargins(0, 0, 0, 0);
     closeLayout->addStretch();
     closeLayout->addWidget(closeButton);
@@ -954,9 +877,7 @@ void WizLoginDialog::downloadOEMSettingsFromWizBox()
 
 void WizLoginDialog::setLogo(const QString& logoPath)
 {
-    ui->label_logo->setStyleSheet(QString("QLabel {border: none; image: url(%1);"
-                                        "background-position: center; background-repeat: no-repeat; background-color:#448aff}").
-                                  arg(logoPath.isEmpty() ? m_wizLogoPath : logoPath));
+    ui->label_logo->setPixmap(QPixmap(logoPath.isEmpty() ? m_wizLogoPath : logoPath));
 }
 
 void WizLoginDialog::checkLocalUser(const QString& strAccountFolder, const QString& strUserGUID)
@@ -1249,7 +1170,7 @@ void WizLoginDialog::showUserListMenu()
 
 void WizLoginDialog::showServerListMenu()
 {
-    QPoint point = ui->btn_selectServer->mapToGlobal(QPoint(0, ui->btn_selectServer->height()));
+    QPoint point = m_btnSwitchServer->mapToGlobal(QPoint(0, m_btnSwitchServer->height()));
 
     m_menuServers->popup(point);
 }
@@ -1541,7 +1462,7 @@ void WizLoginDialog::onWizLogInStateEntered()
     ui->btn_changeToLogin->setVisible(false);
     ui->btn_changeToSignin->setVisible(true);
     ui->wgt_serveroptioncontainer->setVisible(false);
-    ui->btn_selectServer->setVisible(true);
+    m_btnSwitchServer->setVisible(true);
     //
     ui->label_noaccount->setText(tr("No account yet,"));
     ui->label_passwordError->clear();
@@ -1603,7 +1524,7 @@ void WizLoginDialog::onWizBoxLogInStateEntered()
 
 void WizLoginDialog::onWizSignUpStateEntered()
 {
-    ui->btn_selectServer->setVisible(false);
+    m_btnSwitchServer->setVisible(false);
     ui->stackedWidget->setCurrentIndex(1);
     ui->btn_changeToLogin->setVisible(true);
     ui->btn_changeToSignin->setVisible(false);
@@ -1904,9 +1825,9 @@ WizActionWidget::WizActionWidget(const QString& text, QWidget* parent)
 {
     setMouseTracking(true);
     m_deleteButton = new QPushButton();
+    m_deleteButton->setObjectName("btn_delete");
     QIcon deleteIcon = Utils::WizStyleHelper::loadIcon("loginCloseButton_hot");
     m_deleteButton->setIcon(deleteIcon);
-    m_deleteButton->setStyleSheet("background:transparent;");
     connect(m_deleteButton, SIGNAL(clicked()), this, SIGNAL(delButtonClicked()));
 
     QHBoxLayout *main_layout = new QHBoxLayout();

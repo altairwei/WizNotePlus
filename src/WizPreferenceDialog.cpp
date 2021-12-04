@@ -48,6 +48,11 @@ WizPreferenceWindow::WizPreferenceWindow(WizExplorerApp& app, QWidget* parent)
     }
     ui->comboLang->blockSignals(false);
 
+    ui->lineEditUIFont->setText(
+        m_app.userSettings().UIFontFamily() + " " +
+        QString::number(m_app.userSettings().UIFontSize())
+    );
+
     ui->checkBox->blockSignals(true);
     Qt::CheckState checkState = userSettings().autoCheckUpdate() ? Qt::Checked : Qt::Unchecked;
     ui->checkBox->setCheckState(checkState);
@@ -63,14 +68,6 @@ WizPreferenceWindow::WizPreferenceWindow(WizExplorerApp& app, QWidget* parent)
     ui->comboLang->setEnabled(false);
     ui->checkBox->setVisible(false);
 #endif
-
-#ifndef Q_OS_LINUX
-  ui->checkBoxSystemStyle->setVisible(false);
-#endif
-  checkState = userSettings().useSystemBasedStyle() ? Qt::Checked : Qt::Unchecked;
-  ui->checkBoxSystemStyle->blockSignals(true);
-  ui->checkBoxSystemStyle->setCheckState(checkState);
-  ui->checkBoxSystemStyle->blockSignals(false);
 
     // reading tab
     switch (userSettings().noteViewMode())
@@ -178,8 +175,6 @@ WizPreferenceWindow::WizPreferenceWindow(WizExplorerApp& app, QWidget* parent)
             arg(m_app.userSettings().defaultFontFamily())
             .arg(m_app.userSettings().defaultFontSize());
     ui->editFont->setText(strFont);
-
-    connect(ui->buttonFontSelect, SIGNAL(clicked()), SLOT(onButtonFontSelect_clicked()));
 
     ui->comboBox_unit->setCurrentIndex(m_app.userSettings().printMarginUnit());
     ui->spinBox_bottom->setValue(m_app.userSettings().printMarginValue(wizPositionBottom));
@@ -345,28 +340,35 @@ void WizPreferenceWindow::labelProxy_linkActivated(const QString& link)
     }
 }
 
-void WizPreferenceWindow::onButtonFontSelect_clicked()
+void WizPreferenceWindow::on_buttonFontSelect_clicked()
 {
-    if (!m_fontDialog) {
-        m_fontDialog = new QFontDialog(this);
+    bool ok = false;
+    QFont font = QFontDialog::getFont(
+        &ok,
+        QFont(
+            m_app.userSettings().defaultFontFamily(),
+            m_app.userSettings().defaultFontSize()
+        ),
+        this,
+        tr("Select font"),
+        QFontDialog::DontUseNativeDialog
+    );
 
-        // FIXME: Qt bugs here https://bugreports.qt-project.org/browse/QTBUG-27415
-        // upgrade Qt library to 5.0 should fix this issue
-        m_fontDialog->setOptions(QFontDialog::DontUseNativeDialog);
-    }
-
-    QString strFont = m_app.userSettings().defaultFontFamily();
-    int nSize = m_app.userSettings().defaultFontSize();
-    QFont font(strFont, nSize);
-    m_fontDialog->setCurrentFont(font);
-
-    connect(m_fontDialog,SIGNAL(accepted()),this,SLOT(onButtonFontSelect_confirmed()));
-    m_fontDialog->exec();
+    if (ok)
+        updateEditorFont(font);
 }
 
-void WizPreferenceWindow::onButtonFontSelect_confirmed()
+void WizPreferenceWindow::on_btnResetEditorFont_clicked()
 {
-    QFont font = m_fontDialog->currentFont();
+    QString default_font_family = m_app.userSettings().defaultFontFamily(true);
+    int default_font_size = m_app.userSettings().defaultFontSize(true);
+    QFont default_font(default_font_family, default_font_size);
+
+    updateEditorFont(default_font);
+}
+
+void WizPreferenceWindow::updateEditorFont(const QFont& font)
+{
     QString str = font.family() + " " + QString::number(font.pointSize());
     ui->editFont->setText(str);
 
@@ -384,6 +386,47 @@ void WizPreferenceWindow::on_comboLang_currentIndexChanged(int index)
 
         WizMessageBox::information(this, tr("Info"), tr("Language will be changed after restart WizNote."));
     }
+}
+
+void WizPreferenceWindow::on_btnUIFont_clicked()
+{
+    bool ok = false;
+    QFont font = QFontDialog::getFont(
+        &ok,
+        QFont(
+            m_app.userSettings().UIFontFamily(),
+            m_app.userSettings().UIFontSize()
+        ),
+        this,
+        tr("Select font"),
+        QFontDialog::DontUseNativeDialog
+    );
+
+    if (ok)
+        updateUIFont(font);
+}
+
+void WizPreferenceWindow::on_btnResetUIFont_clicked()
+{
+    QFont font(
+        m_app.userSettings().UIFontFamily(true),
+        m_app.userSettings().UIFontSize(true)
+    );
+
+    updateUIFont(font);
+}
+
+void WizPreferenceWindow::updateUIFont(const QFont& font)
+{
+    ui->lineEditUIFont->setText(
+        font.family() + " " + QString::number(font.pointSize())
+    );
+
+    m_app.userSettings().setUIFontFamily(font.family());
+    m_app.userSettings().setUIFontSize(font.pointSize());
+
+    WizMessageBox::information(
+        m_app.mainWindow(), tr("Info"), tr("Application font will be changed after restart WizNote."));
 }
 
 void WizPreferenceWindow::on_checkBox_stateChanged(int arg1)
@@ -428,15 +471,6 @@ void WizPreferenceWindow::on_spinBox_right_valueChanged(double arg1)
 {
     m_app.userSettings().setPrintMarginValue(wizPositionRight, arg1);
 }
-
-
-void WizPreferenceWindow::on_checkBoxSystemStyle_toggled(bool checked)
-{
-    m_app.userSettings().setUseSystemBasedStyle(checked);
-
-    WizMessageBox::information(m_app.mainWindow(), tr("Info"), tr("Application style will be changed after restart WizNote."));
-}
-
 
 void WizPreferenceWindow::on_pushButtonBackgroundColor_clicked()
 {
@@ -539,8 +573,9 @@ void WizPreferenceWindow::on_comboLineHeight_currentIndexChanged(int index)
 
 void WizPreferenceWindow::on_btnResetLineHeight_clicked()
 {
-    ui->comboLineHeight->setCurrentText("1.7");
-    updateEditorLineHeight("1.7", true);
+    QString default_val = m_app.userSettings().editorLineHeight(true);
+    ui->comboLineHeight->setCurrentText(default_val);
+    updateEditorLineHeight(default_val, true);
 }
 
 
@@ -566,8 +601,9 @@ void WizPreferenceWindow::on_comboParaSpacing_currentIndexChanged(int index)
 
 void WizPreferenceWindow::on_btnResetParaSpacing_clicked()
 {
-    ui->comboParaSpacing->setCurrentText("8");
-    updateEditorParaSpacing("8", true);
+    QString default_val = m_app.userSettings().editorParaSpacing(true);
+    ui->comboParaSpacing->setCurrentText(default_val);
+    updateEditorParaSpacing(default_val, true);
 }
 
 
@@ -593,6 +629,7 @@ void WizPreferenceWindow::on_spinPagePadding_valueChanged(int val)
 
 void WizPreferenceWindow::on_btnResetPagePadding_clicked()
 {
-    ui->spinPagePadding->setValue(QString(WIZSETTINGS_DEFAULT_PAGEPADDING).toInt());
-    updateEditorPagePadding(WIZSETTINGS_DEFAULT_PAGEPADDING, true);
+    QString default_val = m_app.userSettings().editorPagePadding(true);
+    ui->spinPagePadding->setValue(default_val.toInt());
+    updateEditorPagePadding(default_val, true);
 }

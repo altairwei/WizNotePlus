@@ -56,7 +56,8 @@ WIZACTION* WizActions::actionsData()
         {"actionStyle", QObject::tr("Style")},
         {"actionInsert", QObject::tr("Insert")},
         {"actionCategoryOption", QObject::tr("Category Option")},
-        {"actionSortBy", QObject::tr("Sort By")}
+        {"actionSortBy", QObject::tr("Sort By")},
+        {"actionSkin", QObject::tr("Skin")}
     };
 
     Q_UNUSED(arrayRoot);
@@ -128,6 +129,9 @@ WIZACTION* WizActions::actionsData()
         {WIZDOCUMENT_SORTBY_FOLDER,             QObject::tr("Sort by Folder"),              QObject::tr(""),                        QKeySequence()},
         {WIZDOCUMENT_SORTBY_SIZE,               QObject::tr("Sort by Size"),                QObject::tr(""),                        QKeySequence()},
 
+        // skin
+        {WIZSKIN_RELOAD_STYLESHEET,             QObject::tr("Reload stylesheet"),           QObject::tr(""),                        QKeySequence()},
+
         // format
         {WIZACTION_FORMAT_JUSTIFYLEFT,          QObject::tr("Justify Left"),                "",                                     QKeySequence("Ctrl+[")},
         {WIZACTION_FORMAT_JUSTIFYRIGHT,         QObject::tr("Justify Right"),               "",                                     QKeySequence("Ctrl+]")},
@@ -142,6 +146,8 @@ WIZACTION* WizActions::actionsData()
         {WIZACTION_FORMAT_ITALIC,               QObject::tr("Italic"),                      "",                                     QKeySequence("Ctrl+I")},
         {WIZACTION_FORMAT_UNDERLINE,            QObject::tr("Underline"),                   "",                                     QKeySequence("Ctrl+U")},
         {WIZACTION_FORMAT_STRIKETHROUGH,        QObject::tr("Strike Through"),              "",                                     QKeySequence("Ctrl+Alt+K")},
+        {WIZACTION_FORMAT_SUBSCRIPT,            QObject::tr("Subscript"),                   "",                                     QKeySequence("")},
+        {WIZACTION_FORMAT_SUPERSCRIPT,          QObject::tr("Superscript"),                 "",                                     QKeySequence("")},
         {WIZACTION_FORMAT_INSERT_HORIZONTAL,    QObject::tr("Insert Horizontal"),           "",                                     QKeySequence("Shift+Ctrl+H")},
         {WIZACTION_FORMAT_INSERT_DATE,          QObject::tr("Insert Date"),                 "",                                     QKeySequence("Shift+Ctrl+D")},
         {WIZACTION_FORMAT_INSERT_TIME,          QObject::tr("Insert Time"),                 "",                                     QKeySequence("Shift+Ctrl+Alt+D")},
@@ -387,7 +393,7 @@ void WizActions::buildMenuBar(QMenuBar* menuBar, const QString& strFileName, QMe
     }
 }
 
-void WizActions::buildMenu(QMenu* menu, const QString& strFileName)
+void WizActions::buildMenuList(QMenu* menu, const QString& strFileName, QMenu*& windowsMenu)
 {
     WizSettings settings(strFileName);
 
@@ -411,6 +417,11 @@ void WizActions::buildMenu(QMenu* menu, const QString& strFileName)
             QMenu* pMenu = menu->addMenu(strLocalText);
 
             buildMenu(pMenu, settings, strAction, false);
+
+            if (strAction.remove('&') == "Window")
+            {
+                windowsMenu = pMenu;
+            }
         }
         else
         {

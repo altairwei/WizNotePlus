@@ -20,8 +20,6 @@ protected:
     QIcon m_iconArraw;
     QSize m_iconSize;
 
-    void paintEvent(QPaintEvent* event);
-
 protected Q_SLOTS:
     virtual void on_action_triggered() = 0;
 };
@@ -34,18 +32,9 @@ class WizViewTypePopupButton: public WizPopupButton
 public:
 
     explicit WizViewTypePopupButton(WizExplorerApp &app, QWidget* parent = 0);
-//    void setActionIcon(int type);
 
 public slots:
     void on_viewTypeChanged(int type);
-
-private:
-//    QIcon m_iconOneLine;
-//    QIcon m_iconTwoLine;
-//    QIcon m_iconThumbnail;
-
-protected:
-    virtual QSize sizeHint() const;
 
 protected Q_SLOTS:
     virtual void on_action_triggered();
@@ -64,9 +53,6 @@ public:
 
 public slots:
     void on_sortingTypeChanged(int type);
-
-protected:
-    virtual QSize sizeHint() const;
 
 protected Q_SLOTS:
     virtual void on_action_triggered();

@@ -359,7 +359,6 @@ WizMessageListView::WizMessageListView(WizDatabaseManager& dbMgr, QWidget *paren
     setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
     m_vScroll = new WizScrollBar(this);
     m_vScroll->syncWith(verticalScrollBar());
-    m_vScroll->applyStyle("#F5F5F5", "#C1C1C1", true);
 #endif
 
     // init
@@ -1164,6 +1163,14 @@ void WizMessageListTitleBar::showTipsWidget()
     tipWidget->bindTargetWidget(m_msgListMarkAllBtn, -6, 2);
     tipWidget->on_showRequest();
     //
+}
+
+void WizMessageListTitleBar::paintEvent(QPaintEvent* ev)
+{
+    QStyleOption opt;
+    opt.init(this);
+    QPainter p(this);
+    style()->drawPrimitive(QStyle::PE_Widget, &opt, &p, this);
 }
 
 WizMessageSelectorItemDelegate::WizMessageSelectorItemDelegate(QObject* parent)

@@ -4,14 +4,7 @@
 
 WizScrollBar::WizScrollBar(QWidget* parent /* = 0 */)
     : QScrollBar(parent)
-    , m_bgColor("transparent")
-    , m_handleColor("#88C1C1C1")
-    , m_bLeftBorder(false)
 {
-
-    // FIXME:  hard code
-    setHandleVisible(true);
-
     setMouseTracking(true);
 
     connect(&m_timerScrollTimeout, SIGNAL(timeout()), this, SLOT(on_scrollTimeout()));
@@ -19,11 +12,6 @@ WizScrollBar::WizScrollBar(QWidget* parent /* = 0 */)
 
     m_timerScrollTimeout.setSingleShot(true);
     m_timerScrollTimeout.start(3000);
-}
-
-QSize WizScrollBar::sizeHint() const
-{
-    return m_bLeftBorder ? QSize(13, 1) : QSize(12, 1);
 }
 
 void WizScrollBar::mouseMoveEvent(QMouseEvent* event)
@@ -48,29 +36,19 @@ void WizScrollBar::syncWith(QScrollBar* source)
 
 }
 
-void WizScrollBar::applyStyle(const QString& bgColorName, const QString& handleColorName, bool leftBorder)
-{
-    m_bgColor = bgColorName;
-    m_handleColor = handleColorName;
-    m_bLeftBorder = leftBorder;
-}
-
 void WizScrollBar::showHandle()
 {
     if (maximum() == minimum())
         return;
 
-    setHandleVisible(true);
-    update();
+    show();
 
-//    QScrollBar::show();
     m_timerScrollTimeout.start(1000);
 }
 
 void WizScrollBar::hideHandle()
 {
-    setHandleVisible(false);
-    update();
+    hide();
 }
 
 void WizScrollBar::on_sourceValueChanged(int value)
@@ -98,35 +76,6 @@ void WizScrollBar::on_valueChanged(int value)
 void WizScrollBar::on_scrollTimeout()
 {
     hideHandle();
-}
-
-void WizScrollBar::setHandleVisible(bool visible)
-{
-    setStyleSheet(
-        QString("QScrollBar {\
-            background: %1;\
-            %2\
-        }\
-        QScrollBar::handle {\
-            background: %3;\
-            min-height: 30px;\
-        }\
-        QScrollBar::handle:vertical {\
-            margin: 0px 3px 0px 3px;\
-            border-radius:3px;\
-            width:6px; \
-        }\
-        QScrollBar::add-page, QScrollBar::sub-page {\
-            background: transparent;\
-        }\
-        QScrollBar::up-arrow, QScrollBar::down-arrow, QScrollBar::left-arrow, QScrollBar::right-arrow {\
-            background: transparent;\
-        }\
-        QScrollBar::add-line, QScrollBar::sub-line {\
-            height: 0px;\
-            width: 0px;\
-        }").arg(m_bgColor).arg(m_bLeftBorder ? "border-left:1px solid #e7e7e7;" : "")
-        .arg(visible ? m_handleColor : "transparent"));
 }
 
 
