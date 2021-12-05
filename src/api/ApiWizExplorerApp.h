@@ -49,6 +49,7 @@ public:
     Q_INVOKABLE void ProcessClipboardBeforePaste(const QVariantMap& data);
     Q_INVOKABLE QString Locale();
     Q_INVOKABLE QObject* GetGroupDatabase(const QString &kbGUID);
+    Q_INVOKABLE void ShowBubbleNotification(const QString &strTitle, const QString &strInfo);
 
     //NOTE: these functions would called by web page, do not delete
     Q_INVOKABLE QString TranslateString(const QString& string);
