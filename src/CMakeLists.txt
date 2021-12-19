@@ -181,6 +181,7 @@ set(wiznote_SOURCES
     gui/documentviewer/WizSearchReplaceWidget.cpp
     gui/documentviewer/WizTitleEdit.cpp
     gui/documentviewer/WizSvgEditorDialog.cpp
+    gui/documentviewer/CollaborationDocView.cpp
 
     WizActions.cpp
     WizNoteStyle.cpp
@@ -361,6 +362,7 @@ set(wiznote_HEADERS
     gui/documentviewer/WizSearchReplaceWidget.h
     gui/documentviewer/WizTitleEdit.h
     gui/documentviewer/WizSvgEditorDialog.h
+    gui/documentviewer/CollaborationDocView.h
 
     WizDocumentHistory.h
     WizAttachmentListWidget.h

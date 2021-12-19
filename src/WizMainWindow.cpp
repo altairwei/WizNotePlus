@@ -115,6 +115,7 @@
 #include "gui/documentviewer/WizDocumentWebView.h"
 #include "gui/documentviewer/WizEditorToolBar.h"
 #include "gui/documentviewer/WizSvgEditorDialog.h"
+#include "gui/documentviewer/CollaborationDocView.h"
 
 #define MAINWINDOW  "MainWindow"
 
@@ -3709,6 +3710,7 @@ void WizMainWindow::viewDocument(const WIZDOCUMENTDATAEX& data, bool addToHistor
 void WizMainWindow::viewDocument(const WIZDOCUMENTDATAEX& data)
 {
     Q_ASSERT(!data.strGUID.isEmpty());
+
     // 遍历tab，查找已经打开的标签中是否有该文档
     for (int i = 0; i < m_mainTabBrowser->count(); ++i) {
         WizDocumentView* docView = qobject_cast<WizDocumentView*>(m_mainTabBrowser->widget(i));
@@ -3722,23 +3724,32 @@ void WizMainWindow::viewDocument(const WIZDOCUMENTDATAEX& data)
         }
 
     }
+
     // 重置许可
     resetPermission(data.strKbGUID, data.strOwner);
-    //
+
     bool forceEditing = false;
     if (data.strGUID == m_documentForEditing.strGUID)
     {
         forceEditing = true;
         m_documentForEditing = WIZDOCUMENTDATA();
     }
-    WizDocumentView* newDocView = createDocumentView();
-    int index = m_mainTabBrowser->createTab(newDocView);
-    m_mainTabBrowser->setTabText(index, data.strTitle);
-    //TODO: directly invoke newDocView->viewNote() instead of signaling.
-    WizGlobal::emitViewNoteRequested(newDocView, data, forceEditing);
-    setCurrentDocumentView(newDocView); //FIXME: do not keep m_doc
-    //
+
+    if (data.strType == "collaboration") {
+        CollaborationDocView *newView = new CollaborationDocView(data, *this, this);
+        int index = m_mainTabBrowser->createTab(newView);
+        m_mainTabBrowser->setTabText(index, data.strTitle);
+    } else  {
+        WizDocumentView* newDocView = createDocumentView();
+        int index = m_mainTabBrowser->createTab(newDocView);
+        m_mainTabBrowser->setTabText(index, data.strTitle);
+        //TODO: directly invoke newDocView->viewNote() instead of signaling.
+        WizGlobal::emitViewNoteRequested(newDocView, data, forceEditing);
+        setCurrentDocumentView(newDocView); //FIXME: do not keep m_doc
+    }
+
     m_actions->actionFromName(WIZACTION_GLOBAL_SAVE_AS_MARKDOWN)->setEnabled(WizIsMarkdownNote(data));
+
     return;
 }
 

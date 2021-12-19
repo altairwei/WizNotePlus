@@ -49,21 +49,32 @@ void WizWebEngineAsyncMethodResultObject::setResult(const QVariant& result)
     emit resultAcquired(m_result);
 }
 
+/*!
+    \brief Create a Web Engine Profile object
 
+    Exposing C++ APIs in this way makes it impossible for JavaScript code to
+    predict when APIs \a objects will be created. Therefore we prefer to let
+    the JavaScript code create the APIs objects itself. This function is only
+    used to run some of the WizNote web services.
+*/
 QWebEngineProfile* createWebEngineProfile(const WizWebEngineInjectObjectCollection& objects, QObject* parent)
 {
     if (objects.empty())
         return nullptr;
+
     // Create a new profile
     QWebEngineProfile *profile = new QWebEngineProfile("WizNoteWebEngineProfile", parent);
-    // Read qtwebchannel library
+
+    // Load qtwebchannel library
     QString jsWebChannelFileName = Utils::WizPathResolve::resourcesPath() + "files/webengine/wizwebchannel.js";
     QString jsWebChannel;
     WizLoadUnicodeTextFromFile(jsWebChannelFileName, jsWebChannel);
-    // Read javascript initialization script
+
+    // Load javascript initialization script
     QString initFileName = Utils::WizPathResolve::resourcesPath() + "files/webengine/wizwebengineviewinit.js";
     QString jsInit;
     WizLoadUnicodeTextFromFile(initFileName, jsInit);
+
     // Get all names of published objects
     CWizStdStringArray names;
     WizWebEngineInjectObjectCollection::const_iterator inject = objects.constBegin();
@@ -71,13 +82,15 @@ QWebEngineProfile* createWebEngineProfile(const WizWebEngineInjectObjectCollecti
         names.push_back("\"" + inject.key() + "\"");
         ++inject;
     }
-    // 
+
+    // Generate js scripts for these objects
     CString objectNames;
     WizStringArrayToText(names, objectNames, ", ");
     jsInit.replace("__objectNames__", objectNames);
+
     // Combine scripts
     QString jsAll = jsWebChannel + "\n" + jsInit;
-    //
+
     {
         QWebEngineScript script;
         script.setSourceCode(jsAll);
@@ -87,7 +100,7 @@ QWebEngineProfile* createWebEngineProfile(const WizWebEngineInjectObjectCollecti
         script.setRunsOnSubFrames(false); // if set True, it will cause some error in javascript.
         profile->scripts()->insert(script);
     }
-    //
+
     return profile;
 }
 
