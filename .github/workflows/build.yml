@@ -93,7 +93,7 @@ jobs:
       - name: Install dependencies
         shell: powershell
         run: |
-          choco install wget curl
+          choco install -y wget curl
       - name: Install and config conan
         shell: powershell
         run: |
