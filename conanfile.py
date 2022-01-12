@@ -127,7 +127,7 @@ class WizNotePlusConan(ConanFile):
         if qt_version < Version("5.12"):
             self.requires("openssl/1.0.2u")
         else:
-            self.requires("openssl/1.1.1l")
+            self.requires("openssl/1.1.1m")
 
 
     def build_requirements(self):
