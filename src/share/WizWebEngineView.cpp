@@ -560,24 +560,33 @@ void WizWebEngineView::childEvent(QChildEvent *ev)
 bool WizWebEngineView::eventFilter(QObject *obj, QEvent *ev)
 {
     // work around QTBUG-43602
+
+#ifndef Q_OS_MAC
     if (ev->type() == QEvent::KeyPress) {
         QKeyEvent *keyEvent = static_cast<QKeyEvent *>(ev);
         if (keyEvent->modifiers() && keyEvent->key()) {
             if (keyEvent->modifiers() & Qt::ControlModifier
                     && keyEvent->key() == Qt::Key_Up) {
                 scaleUp();
+                return true;
             } else if (keyEvent->modifiers() & Qt::ControlModifier
                             && keyEvent->key() == Qt::Key_Down) {
                 scaleDown();
+                return true;
             }
         }
-    } else if (ev->type() == QEvent::Wheel) {
+    }
+#endif // Q_OS_MAC
+
+    if (ev->type() == QEvent::Wheel) {
         QWheelEvent *whellEvent = static_cast<QWheelEvent *>(ev);
         if (whellEvent->modifiers() == Qt::ControlModifier) {
             if (whellEvent->delta() > 0) {
                 scaleUp();
+                return true;
             } else {
                 scaleDown();
+                return true;
             }
         }
     }
