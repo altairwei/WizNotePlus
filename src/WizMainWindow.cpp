@@ -1865,7 +1865,7 @@ void WizMainWindow::initToolBar()
     buttonSync->setAction(m_actions->actionFromName(WIZACTION_GLOBAL_SYNC));
     m_toolBar->addWidget(buttonSync);
 
-    m_spacerForToolButtonAdjust = new WizFixedSpacer(QSize(20, 1), m_toolBar);
+    m_spacerForToolButtonAdjust = new WizFixedSpacer(QSize(10, 1), m_toolBar);
     m_toolBar->addWidget(m_spacerForToolButtonAdjust);
 
     // 搜索栏，值得注意搜索栏的长度随着笔记列表宽度而变化
@@ -1874,7 +1874,7 @@ void WizMainWindow::initToolBar()
     m_searchWidget->setFixedWidth(200);
     m_toolBar->addWidget(m_searchWidget);
 
-    m_toolBar->addWidget(new WizFixedSpacer(QSize(20, 1), m_toolBar));
+    m_toolBar->addWidget(new WizFixedSpacer(QSize(10, 1), m_toolBar));
 
     /*
     // 前一篇文档
@@ -1888,8 +1888,6 @@ void WizMainWindow::initToolBar()
     buttonForward->setAction(m_actions->actionFromName(WIZACTION_GLOBAL_GOFORWARD));
     m_toolBar->addWidget(buttonForward);
     */
-
-    m_toolBar->addWidget(new WizFixedSpacer(QSize(20, 1), m_toolBar));
 
     // 新建笔记[+]菜单
     prepareNewNoteMenu();
@@ -1940,13 +1938,13 @@ void WizMainWindow::initClient()
 {
 
     setCentralWidget(rootWidget());
-    //
+
     QWidget* main = clientWidget();
-    //
+
     m_clienWgt = new QWidget(main);
     clientLayout()->addWidget(m_clienWgt);
 
-    m_clienWgt->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Minimum);
+    m_clienWgt->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Preferred);
 
     QPalette pal = m_clienWgt->palette();
     pal.setColor(QPalette::Window, QColor(Qt::transparent));
@@ -2021,7 +2019,7 @@ void WizMainWindow::initClient()
 QWidget* WizMainWindow::createNoteListView()
 {
     m_noteListWidget = new QWidget(this);
-    m_noteListWidget->setMinimumWidth(100);
+    //m_noteListWidget->setMinimumWidth(100);
 
     QVBoxLayout* layoutList = new QVBoxLayout();
     layoutList->setContentsMargins(0, 0, 0, 0);
@@ -2096,7 +2094,7 @@ QWidget* WizMainWindow::createNoteListView()
 QWidget* WizMainWindow::createMessageListView()
 {
     m_msgListWidget = new QWidget(this);
-    m_msgListWidget->setMinimumWidth(100);
+    //m_msgListWidget->setMinimumWidth(100);
     QVBoxLayout* layoutList = new QVBoxLayout();
     layoutList->setContentsMargins(0, 0, 0, 0);
     layoutList->setSpacing(0);
@@ -3653,8 +3651,8 @@ WizDocumentView* WizMainWindow::createDocumentView()
     //-------------------------------------------------------------------
 
     newDocView->web()->setInSeperateWindow(false);
-    newDocView->commentWidget()->setMinimumWidth(195);
-    newDocView->web()->setMinimumWidth(576);
+    //newDocView->commentWidget()->setMinimumWidth(195);
+    //newDocView->web()->setMinimumWidth(576);
 
     return newDocView;
 }

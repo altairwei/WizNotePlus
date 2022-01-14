@@ -1212,7 +1212,7 @@ WizEditorToolBar::WizEditorToolBar(WizExplorerApp& app, QWidget *parent)
     QString skin = Utils::WizStyleHelper::themeName();
 
     m_comboParagraph = new CWizToolComboBox(this);    
-    m_comboParagraph->setFixedWidth(90);
+    m_comboParagraph->setMaximumWidth(90);
 
 
     WizComboboxStyledItem* paraItems = ParagraphItems();    
@@ -1229,7 +1229,7 @@ WizEditorToolBar::WizEditorToolBar(WizExplorerApp& app, QWidget *parent)
     m_comboFontFamily->setFixedWidth(122);
 
     m_comboFontSize = new CWizToolComboBox(this);
-    m_comboFontSize->setFixedWidth(48);
+    m_comboFontSize->setMaximumWidth(48);
     WizComboboxStyledItem* fontItems = FontSizes();
 #ifdef Q_OS_MAC
     m_comboParagraph->setStyleSheet("QComboBox QListView{min-width:95px;background:#F6F6F6;}"
@@ -1546,7 +1546,7 @@ WizEditorToolBar::WizEditorToolBar(WizExplorerApp& app, QWidget *parent)
     connect(m_btnPencil, SIGNAL(clicked()), SLOT(on_btnPencil_clicked()));
     CWizToolLineWidthComboBox* pencilSize = new CWizToolLineWidthComboBox(this);
     pencilSize->setPosition(ButtonPosition::Right);
-    pencilSize->setFixedWidth(60);
+    pencilSize->setMaximumWidth(60);
     pencilSize->setFixedHeight(Utils::WizStyleHelper::editorButtonHeight());
     pencilSize->addItem("2");
     pencilSize->addItem("3");
@@ -1568,7 +1568,7 @@ WizEditorToolBar::WizEditorToolBar(WizExplorerApp& app, QWidget *parent)
     connect(m_btnHighlighter, SIGNAL(clicked()), SLOT(on_btnHighlighter_clicked()));
     CWizToolLineWidthComboBox* highlighterSize = new CWizToolLineWidthComboBox(this);
     highlighterSize->setPosition(ButtonPosition::Right);
-    highlighterSize->setFixedWidth(60);
+    highlighterSize->setMaximumWidth(60);
     highlighterSize->setFixedHeight(Utils::WizStyleHelper::editorButtonHeight());
     highlighterSize->addItem("10");
     highlighterSize->addItem("20");
@@ -1588,7 +1588,7 @@ WizEditorToolBar::WizEditorToolBar(WizExplorerApp& app, QWidget *parent)
     connect(m_btnEraser, SIGNAL(clicked()), SLOT(on_btnEraser_clicked()));
     CWizToolLineWidthComboBox* eraserSize = new CWizToolLineWidthComboBox(this);
     eraserSize->setPosition(ButtonPosition::Right);
-    eraserSize->setFixedWidth(48);
+    eraserSize->setMaximumWidth(48);
     eraserSize->setFixedHeight(Utils::WizStyleHelper::editorButtonHeight());
     eraserSize->addItem("10");
     eraserSize->addItem("20");
@@ -1608,7 +1608,7 @@ WizEditorToolBar::WizEditorToolBar(WizExplorerApp& app, QWidget *parent)
     connect(m_btnShape, SIGNAL(clicked()), SLOT(on_btnShape_clicked()));
     CWizToolLineWidthComboBox* shapeSize = new CWizToolLineWidthComboBox(this);
     shapeSize->setPosition(ButtonPosition::Right);
-    shapeSize->setFixedWidth(56);
+    shapeSize->setMaximumWidth(56);
     shapeSize->setFixedHeight(Utils::WizStyleHelper::editorButtonHeight());
     shapeSize->addItem("2");
     shapeSize->addItem("3");
@@ -1796,7 +1796,7 @@ WizEditorToolBar::WizEditorToolBar(WizExplorerApp& app, QWidget *parent)
     layout->addWidget(buttonContainer1);
     setAvaliableInToolbar(buttonContainer1, TOOLBARTYPE_NORMAL);
 
-    setMinimumWidth(firstLineWidth() - 20);
+    //setMinimumWidth(firstLineWidth() - 20);
 
     QWidget*  moveableButtonContainer1 = createMoveAbleWidget(this);
     moveableButtonContainer1->layout()->addWidget(m_btnJustify);
@@ -1826,7 +1826,7 @@ WizEditorToolBar::WizEditorToolBar(WizExplorerApp& app, QWidget *parent)
     QHBoxLayout* hLayout = new QHBoxLayout(m_secondLineButtonContainer);
     hLayout->setContentsMargins(0, 1, 0, 1);
     hLayout->setSpacing(0);
-    setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
+    setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Expanding);
 
     QWidget*  moveableButtonContainer3 = createMoveAbleWidget(this);
     QHBoxLayout* moveableLayout3 = qobject_cast<QHBoxLayout*>(moveableButtonContainer3->layout());

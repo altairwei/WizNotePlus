@@ -162,7 +162,7 @@ WizDocumentWebView::WizDocumentWebView(WizExplorerApp& app, QWidget* parent)
     }
 
     // minimum page size hint
-    setMinimumSize(400, 250);
+    //setMinimumSize(400, 250);
 
     // only accept focus by mouse click as the best way to trigger toolbar reset
     setFocusPolicy(Qt::ClickFocus);
