@@ -12,6 +12,7 @@ WizSearchReplaceWidget::WizSearchReplaceWidget(QWidget* parent) :
     ui->btn_next->setAutoDefault(false);
     ui->btn_replace->setAutoDefault(false);
     ui->btn_replaceAll->setAutoDefault(false);
+    ui->btn_close->setAutoDefault(false);
 
     //setWindowFlags(Qt::WindowStaysOnTopHint);  //could cause window fullscreen on mac
 }
@@ -69,6 +70,11 @@ void WizSearchReplaceWidget::on_btn_replaceAll_clicked()
 {
     emit replaceAll(ui->lineEdit_source->text(), ui->lineEdit_repalce->text(),
                     ui->checkBox_casesenitive->checkState() == Qt::Checked);
+}
+
+void WizSearchReplaceWidget::on_btn_close_clicked()
+{
+    close();
 }
 
 void WizSearchReplaceWidget::on_lineEdit_source_returnPressed()

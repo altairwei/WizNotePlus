@@ -5417,6 +5417,11 @@ w: %3  h: %4</translation>
         <source>Replace All</source>
         <translation>全部取代</translation>
     </message>
+    <message>
+        <location filename="../src/ui/WizSearchReplaceWidget.ui" line="81"/>
+        <source>Close</source>
+        <translation>關閉</translation>
+    </message>
 </context>
 <context>
     <name>WizSortingPopupButton</name>

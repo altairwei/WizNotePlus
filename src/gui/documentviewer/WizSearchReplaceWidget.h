@@ -34,6 +34,7 @@ private slots:
     void on_btn_next_clicked();
     void on_btn_replace_clicked();
     void on_btn_replaceAll_clicked();
+    void on_btn_close_clicked();
     void on_lineEdit_source_returnPressed();
     void on_lineEdit_source_textChanged(const QString &text);
 

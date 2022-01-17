@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>415</width>
+    <width>421</width>
     <height>143</height>
    </rect>
   </property>
@@ -72,6 +72,13 @@
       <widget class="QPushButton" name="btn_replaceAll">
        <property name="text">
         <string>Replace All</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QPushButton" name="btn_close">
+       <property name="text">
+        <string>Close</string>
        </property>
       </widget>
      </item>
