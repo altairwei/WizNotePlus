@@ -16,7 +16,7 @@
 #include "share/WizObject.h"
 #include "share/WizWebEngineView.h"
 #include "api/ApiWizHtmlEditorApp.h"
-
+#include "DocumentLoaderSaver.h"
 
 class WizObjectDownloaderHost;
 class WizEditorInsertLinkForm;
@@ -31,101 +31,6 @@ struct WIZODUCMENTDATA;
 struct WizExternalEditorData;
 
 class WizDocumentView;
-
-class WizWaitEvent
-{
-private:
-    QMutex m_mutex;
-    QWaitCondition m_waitForData;
-public:
-    void wait()
-    {
-        QMutexLocker locker(&m_mutex);
-        Q_UNUSED(locker);
-
-        m_waitForData.wait(&m_mutex);
-    }
-
-    void wakeAll()
-    {
-        QMutexLocker locker(&m_mutex);
-        Q_UNUSED(locker);
-
-        m_waitForData.wakeAll();
-    }
-};
-
-
-class WizDocumentWebViewLoaderThread : public QThread
-{
-    Q_OBJECT
-
-public:
-    WizDocumentWebViewLoaderThread(WizDatabaseManager& dbMgr, QObject* parent);
-
-    void load(const WIZDOCUMENTDATA& doc, WizEditorMode editorMode);
-
-    void stop();
-
-    void waitForDone();
-
-protected:
-    virtual void run();
-
-    void setCurrentDoc(QString kbGuid, QString docGuid, WizEditorMode editorMode);
-    void peekCurrentDocGuid(QString& kbGUID, QString& docGUID, WizEditorMode& editorMode);
-Q_SIGNALS:
-    void loaded(const QString kbGUID, const QString strGUID, const QString strFileName, WizEditorMode editorMode);
-private:
-    bool isEmpty();
-private:
-    WizDatabaseManager& m_dbMgr;
-    QString m_strCurrentKbGUID;
-    QString m_strCurrentDocGUID;
-    WizEditorMode m_editorMode;
-    QMutex m_mutex;
-    WizWaitEvent m_waitEvent;
-    bool m_stop;
-};
-
-class WizDocumentWebViewSaverThread : public QThread
-{
-    Q_OBJECT
-public:
-    WizDocumentWebViewSaverThread(WizDatabaseManager& dbMgr, QObject* parent);
-
-    void save(const WIZDOCUMENTDATA& doc, const QString& strHtml,
-              const QString& strHtmlFile, int nFlags, bool bNotify = false);
-
-    void waitForDone();
-
-private:
-    struct SAVEDATA
-    {
-        WIZDOCUMENTDATA doc;
-        QString html;
-        QString htmlFile;
-        int flags;
-        bool notify;
-    };
-
-    std::vector<SAVEDATA> m_arrayData;
-
-    bool isEmpty();
-    SAVEDATA peekFirst();
-protected:
-    virtual void run();
-
-    void stop();
-    void peekData(SAVEDATA& data);
-Q_SIGNALS:
-    void saved(const QString kbGUID, const QString strGUID, bool ok);
-private:
-    WizDatabaseManager& m_dbMgr;
-    QMutex m_mutex;
-    WizWaitEvent m_waitEvent;
-    bool m_stop;
-};
 
 class WizDocumentWebViewPage: public WizWebEnginePage
 {
@@ -158,8 +63,6 @@ public:
     WizDocumentView* view() const;
 
     void clear();
-
-    void waitForDone();
 
     // view and save
     void viewDocument(const WIZDOCUMENTDATA& doc, WizEditorMode editorMode);
@@ -314,9 +217,6 @@ private:
 
     int m_nWindowID;
 
-    WizDocumentWebViewLoaderThread* m_docLoadThread;
-    WizDocumentWebViewSaverThread* m_docSaverThread;
-
     QPointer<WizEditorInsertLinkForm> m_editorInsertLinkForm;
 
     WizSearchReplaceWidget* m_searchReplaceWidget;
@@ -340,7 +240,7 @@ public Q_SLOTS:
     void onTitleEdited(QString strTitle);
 
     void onDocumentReady(const QString kbGUID, const QString strGUID, const QString strFileName, WizEditorMode editorMode);
-    void onDocumentSaved(const QString kbGUID, const QString strGUID, bool ok);
+    void onDocumentSaved(const QString kbGUID, const QString strGUID, bool ok, QObject *requester);
 
     void on_editorCommandExecuteLinkInsert_accepted();
 
@@ -409,6 +309,9 @@ public Q_SLOTS:
     void onViewMindMap(bool on);
 
 Q_SIGNALS:
+    void loadDocumentRequested(const WIZDOCUMENTDATA& doc, WizEditorMode mode);
+    void saveDocumentRequested(const WIZDOCUMENTDATA& doc, const QString& strHtml,
+                               const QString& strHtmlFile, int nFlags, bool bNotify = false);
     // signals for notify command reflect status, triggered when selection, focus, editing mode changed
     void statusChanged(const QString& currentStyle);
     void markerUndoStatusChanged(const QString& data);

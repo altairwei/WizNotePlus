@@ -186,13 +186,6 @@ WizDocumentWebView::WizDocumentWebView(WizExplorerApp& app, QWidget* parent)
 
     // refers
     qRegisterMetaType<WizEditorMode>("WizEditorMode");
-    m_docLoadThread = new WizDocumentWebViewLoaderThread(m_dbMgr, this);
-    connect(m_docLoadThread, SIGNAL(loaded(const QString&, const QString, const QString, WizEditorMode)),
-            SLOT(onDocumentReady(const QString&, const QString, const QString, WizEditorMode)), Qt::QueuedConnection);
-
-    m_docSaverThread = new WizDocumentWebViewSaverThread(m_dbMgr, this);
-    connect(m_docSaverThread, SIGNAL(saved(const QString, const QString,bool)),
-            SLOT(onDocumentSaved(const QString, const QString,bool)), Qt::QueuedConnection);
 
     // loading and saving thread
     m_timerAutoSave.setInterval(1*60*1000); // 1 minutes
@@ -230,18 +223,6 @@ void WizDocumentWebView::setupWebActions()
         QUrl tmpfileFolder = page()->url().adjusted(QUrl::RemoveFilename);
         QDesktopServices::openUrl(tmpfileFolder);
     });
-}
-
-void WizDocumentWebView::waitForDone()
-{
-    if (m_docLoadThread) {
-        m_docLoadThread->waitForDone();
-        m_docLoadThread = nullptr;
-    }
-    if (m_docSaverThread) {
-        m_docSaverThread->waitForDone();
-        m_docSaverThread = nullptr;
-    }
 }
 
 WizDocumentWebViewPage* WizDocumentWebView::getPage() {
@@ -716,6 +697,10 @@ void WizDocumentWebView::onTitleEdited(QString strTitle)
 
 void WizDocumentWebView::onDocumentReady(const QString kbGUID, const QString strGUID, const QString strFileName, WizEditorMode editorMode)
 {
+    const auto &note = view()->note();
+    if (note.strKbGUID != kbGUID || note.strGUID != strGUID)
+        return;
+
     m_mapFile.insert(strGUID, strFileName);
 
     WIZDOCUMENTDATA doc;
@@ -725,8 +710,12 @@ void WizDocumentWebView::onDocumentReady(const QString kbGUID, const QString str
     loadDocumentInWeb(editorMode);
 }
 
-void WizDocumentWebView::onDocumentSaved(const QString kbGUID, const QString strGUID, bool ok)
+void WizDocumentWebView::onDocumentSaved(const QString kbGUID, const QString strGUID, bool ok, QObject *requester)
 {
+    const auto &note = view()->note();
+    if (requester != this || note.strKbGUID != kbGUID || note.strGUID != strGUID)
+        return;
+
     if (!ok)
     {
         TOLOG("Save document failed");
@@ -740,8 +729,6 @@ void WizDocumentWebView::onDocumentSaved(const QString kbGUID, const QString str
 
 void WizDocumentWebView::viewDocument(const WIZDOCUMENTDATA& doc, WizEditorMode editorMode)
 {
-    if (!m_docLoadThread)
-        return;
     // set data
     // FIXME: not very well to decide a file is new through create time
     qint64 seconds = doc.tCreated.secsTo(QDateTime::currentDateTime());
@@ -756,14 +743,11 @@ void WizDocumentWebView::viewDocument(const WIZDOCUMENTDATA& doc, WizEditorMode 
     }
 
     // ask extract and load
-    m_docLoadThread->load(doc, editorMode);
+    Q_EMIT loadDocumentRequested(doc, editorMode);
 }
 
 void WizDocumentWebView::reloadNoteData(const WIZDOCUMENTDATA& data)
 {
-    if (!m_docLoadThread)
-        return;
-    //
     Q_ASSERT(!data.strGUID.isEmpty());
 
     // reset only if user not in editing mode
@@ -771,7 +755,7 @@ void WizDocumentWebView::reloadNoteData(const WIZDOCUMENTDATA& data)
         return;
 
     // reload may triggered when update from server or locally reflected by modify
-    m_docLoadThread->load(data, m_currentEditorMode);
+    Q_EMIT loadDocumentRequested(data, m_currentEditorMode);
 }
 
 
@@ -1334,7 +1318,7 @@ void WizDocumentWebView::saveEditingViewDocument(const WIZDOCUMENTDATA &data, bo
                     m_currentNoteHtml = html;
                     WizSaveUnicodeTextToUtf8File(m_strNoteHtmlFileName, m_currentNoteHtml);
                     emit currentHtmlChanged();
-                    m_docSaverThread->save(doc, html, strFileName, 0);
+                    Q_EMIT saveDocumentRequested(doc, html, strFileName, 0);
                     TOLOG("save note done...");
                 }
             }
@@ -1376,7 +1360,7 @@ void WizDocumentWebView::saveReadingViewDocument(const WIZDOCUMENTDATA &data, bo
                 QString strFileName = m_mapFile.value(doc.strGUID);
                 if (!strFileName.isEmpty())
                 {
-                    m_docSaverThread->save(doc, strHtml, strFileName, 0);
+                    Q_EMIT saveDocumentRequested(doc, strHtml, strFileName, 0);
                 }
             }
         }
@@ -2734,269 +2718,3 @@ void WizDocumentWebView::onMarkerInitiated(QString data)
 {
     emit markerInitiated(data);
 }
-
-
-
-/////////////////////////////////////////////////////////////////////////////////////////////////////
-
-WizDocumentWebViewLoaderThread::WizDocumentWebViewLoaderThread(WizDatabaseManager &dbMgr, QObject *parent)
-    : QThread(parent)
-    , m_dbMgr(dbMgr)
-    , m_stop(false)
-    , m_editorMode(modeReader)
-{
-}
-
-void WizDocumentWebViewLoaderThread::load(const WIZDOCUMENTDATA &doc, WizEditorMode editorMode)
-{
-    setCurrentDoc(doc.strKbGUID, doc.strGUID, editorMode);
-
-    if (!isRunning())
-    {
-        start();
-    }
-}
-
-void WizDocumentWebViewLoaderThread::stop()
-{
-    QMutexLocker locker(&m_mutex);
-    Q_UNUSED(locker);
-
-    m_stop = true;
-
-    m_waitEvent.wakeAll();
-}
-
-void WizDocumentWebViewLoaderThread::waitForDone()
-{
-    stop();
-
-    while (this->isRunning())
-    {
-        QApplication::processEvents();
-    }
-
-    this->disconnect();
-}
-
-void WizDocumentWebViewLoaderThread::run()
-{
-    //FIXME: Document needs to be loaded once at least.
-    //  So, two conditional m_stop-return within the loop were commented.
-    while (!m_stop)
-    {
-        //if (m_stop)
-        //    return;
-        //
-        QString kbGuid;
-        QString docGuid;
-        WizEditorMode editorMode = modeReader;
-        peekCurrentDocGuid(kbGuid, docGuid, editorMode);
-        //if (m_stop)
-        //    return;
-        //
-        if (docGuid.isEmpty())
-            continue;
-        //
-        WizDatabase& db = m_dbMgr.db(kbGuid);
-        WIZDOCUMENTDATA data;
-        if (!db.documentFromGuid(docGuid, data))
-        {
-            continue;
-        }
-        //
-        QString strHtmlFile;
-        if (db.documentToTempHtmlFile(data, strHtmlFile))
-        {
-            emit loaded(kbGuid, docGuid, strHtmlFile, editorMode);
-        }
-        else
-        {
-            ::WizExecuteOnThread(WIZ_THREAD_MAIN, [=]{
-                QMessageBox::critical(WizMainWindow::instance(), tr("Error"), tr("Can't view note: (Can't unzip note data)"));
-            });
-        }
-    }
-}
-
-void WizDocumentWebViewLoaderThread::setCurrentDoc(QString kbGUID, QString docGUID, WizEditorMode editorMode)
-{
-    //
-    {
-        QMutexLocker locker(&m_mutex);
-        Q_UNUSED(locker);
-        //
-        m_strCurrentKbGUID = kbGUID;
-        m_strCurrentDocGUID = docGUID;
-        m_editorMode = editorMode;
-    }
-    //
-    //
-    m_waitEvent.wakeAll();
-}
-
-bool WizDocumentWebViewLoaderThread::isEmpty()
-{
-    QMutexLocker locker(&m_mutex);
-    Q_UNUSED(locker);
-    //
-    return m_strCurrentDocGUID.isEmpty();
-}
-
-void WizDocumentWebViewLoaderThread::peekCurrentDocGuid(QString& kbGUID, QString& docGUID, WizEditorMode& editorMode)
-{
-    if (isEmpty())
-    {
-        m_waitEvent.wait();
-    }
-    //
-    //
-    {
-        QMutexLocker locker(&m_mutex);
-        Q_UNUSED(locker);
-        //
-        kbGUID = m_strCurrentKbGUID;
-        docGUID = m_strCurrentDocGUID;
-        editorMode = m_editorMode;
-        //
-        m_strCurrentKbGUID.clear();
-        m_strCurrentDocGUID.clear();
-    }
-}
-
-/////////////////////////////////////////////////////////////////////////////////////////////////////
-
-
-
-WizDocumentWebViewSaverThread::WizDocumentWebViewSaverThread(WizDatabaseManager &dbMgr, QObject *parent)
-    : QThread(parent)
-    , m_dbMgr(dbMgr)
-    , m_stop(false)
-{
-}
-
-void WizDocumentWebViewSaverThread::save(const WIZDOCUMENTDATA& doc, const QString& strHtml,
-                                          const QString& strHtmlFile, int nFlags, bool bNotify /*= fasle*/)
-{
-    SAVEDATA data;
-    data.doc = doc;
-    data.html = strHtml;
-    data.htmlFile = strHtmlFile;
-    data.flags = nFlags;
-    data.notify = bNotify;
-
-    QMutexLocker locker(&m_mutex);
-    Q_UNUSED(locker);
-
-    m_arrayData.push_back(data);
-
-    m_waitEvent.wakeAll();
-
-    if (!isRunning())
-    {
-        start();
-    }
-}
-
-void WizDocumentWebViewSaverThread::waitForDone()
-{
-    stop();
-
-    while (this->isRunning())
-    {
-        QApplication::processEvents();
-    }
-
-    this->disconnect();
-}
-
-void WizDocumentWebViewSaverThread::stop()
-{
-    m_stop = true;
-    m_waitEvent.wakeAll();
-}
-
-bool WizDocumentWebViewSaverThread::isEmpty()
-{
-    QMutexLocker locker(&m_mutex);
-    Q_UNUSED(locker);
-
-    return m_arrayData.empty();
-}
-
-WizDocumentWebViewSaverThread::SAVEDATA WizDocumentWebViewSaverThread::peekFirst()
-{
-    QMutexLocker locker(&m_mutex);
-    Q_UNUSED(locker);
-
-    SAVEDATA data = m_arrayData[0];
-    m_arrayData.erase(m_arrayData.begin());
-    return data;
-}
-
-void WizDocumentWebViewSaverThread::peekData(SAVEDATA& data)
-{
-    while (1)
-    {
-        if (m_stop)
-            return;
-
-        if (isEmpty())
-        {
-            m_waitEvent.wait();
-        }
-
-        if (isEmpty())
-        {
-            if (m_stop)
-                return;
-            continue;
-        }
-
-        data = peekFirst();
-
-        break;
-    }
-}
-
-void WizDocumentWebViewSaverThread::run()
-{
-    while (true)
-    {
-        SAVEDATA data;
-        peekData(data);
-
-        if (data.doc.strGUID.isEmpty())
-        {
-            if (m_stop)
-                return;
-            continue;
-        }
-
-        WizDatabase& db = m_dbMgr.db(data.doc.strKbGUID);
-
-        WIZDOCUMENTDATA doc;
-        if (!db.documentFromGuid(data.doc.strGUID, doc))
-        {
-            qDebug() << "fault error: can't find doc in database: " << doc.strGUID;
-            continue;
-        }
-
-        qDebug() << "Saving note: " << doc.strTitle;
-
-        bool ok = db.updateDocumentData(doc, data.html, data.htmlFile, data.flags, data.notify);
-
-        if (ok)
-        {
-            qDebug() << "Save note done: " << doc.strTitle;
-        }
-        else
-        {
-            qDebug() << "Save note failed: " << doc.strTitle;
-        }
-
-        QString kbGuid = db.isGroup() ? db.kbGUID() : "";
-        emit saved(kbGuid, doc.strGUID, ok);
-    }
-}
-

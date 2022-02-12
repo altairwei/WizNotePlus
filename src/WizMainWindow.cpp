@@ -116,6 +116,7 @@
 #include "gui/documentviewer/WizEditorToolBar.h"
 #include "gui/documentviewer/WizSvgEditorDialog.h"
 #include "gui/documentviewer/CollaborationDocView.h"
+#include "gui/documentviewer/DocumentLoaderSaver.h"
 
 #define MAINWINDOW  "MainWindow"
 
@@ -265,6 +266,9 @@ WizMainWindow::WizMainWindow(WizDatabaseManager& dbMgr, QWidget *parent)
 
     connect(Utils::WizLogger::logger(), &Utils::WizLogger::notifyRequested,
             this, &WizMainWindow::showBubbleNotification);
+
+    m_docSaver = new WizDocumentSaverThread(dbMgr, this);
+    m_docLoader = new WizDocumentLoaderThread(dbMgr, this);
 }
 
 
@@ -346,6 +350,15 @@ void WizMainWindow::cleanOnQuit()
     quick->waitForDone();
 
     m_searcher->waitForDone();
+
+    if (m_docLoader) {
+        m_docLoader->waitForDone();
+        m_docLoader = nullptr;
+    }
+    if (m_docSaver) {
+        m_docSaver->waitForDone();
+        m_docSaver = nullptr;
+    }
 
     // 处理所有标签
     processAllDocumentViews([=](WizDocumentView* docView){
@@ -3638,9 +3651,19 @@ WizDocumentView* WizMainWindow::createDocumentView()
 {
     //FIXME: This function will take about 1200 milliseconds.
     WizDocumentView* newDocView = new WizDocumentView(*this);
+    auto newWebView = newDocView->web();
 
     // Binding signals
     //-------------------------------------------------------------------
+
+    connect(newWebView, &WizDocumentWebView::loadDocumentRequested, m_docLoader, &WizDocumentLoaderThread::load);
+    connect(m_docLoader, &WizDocumentLoaderThread::loaded, newWebView, &WizDocumentWebView::onDocumentReady, Qt::QueuedConnection);
+    connect(m_docLoader, &WizDocumentLoaderThread::loadFailed, [this] {
+        QMessageBox::critical(this, tr("Error"), tr("Can't view note: (Can't unzip note data)"));
+    });
+
+    connect(newWebView, &WizDocumentWebView::saveDocumentRequested, m_docSaver, &WizDocumentSaverThread::save);
+    connect(m_docSaver, &WizDocumentSaverThread::saved, newWebView, &WizDocumentWebView::onDocumentSaved, Qt::QueuedConnection);
 
     connect(newDocView->web(), SIGNAL(shareDocumentByLinkRequest(QString,QString)),
             SLOT(on_shareDocumentByLink_request(QString,QString)));

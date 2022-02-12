@@ -38,6 +38,7 @@ private:
 private:
     WizDocumentView* m_docView;
     QString m_guid;
+    bool saving;
 
     QWidget* m_containerWgt;
 };

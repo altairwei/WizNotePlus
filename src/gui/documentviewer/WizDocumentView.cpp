@@ -244,7 +244,6 @@ void WizDocumentView::waitForDone()
 
     bool done = false;
     m_web->trySaveDocument(m_note, false, [=, &done](const QVariant& ret){
-        m_web->waitForDone();
         done = true;
     });
 
@@ -271,7 +270,6 @@ void WizDocumentView::waitForThread()
 {
     m_editStatusChecker->thread()->quit();
     m_editStatusSyncThread->waitForDone();
-    m_web->waitForDone();
 }
 
 void WizDocumentView::RequestClose(bool force /*= false*/)
