@@ -1472,12 +1472,12 @@
         <translation>下載附件 %1 ...</translation>
     </message>
     <message>
-        <location filename="../src/WizMainWindow.cpp" line="2369"/>
+        <location filename="../src/WizMainWindow.cpp" line="2367"/>
         <source>Your {p} business service has expired.</source>
         <translation>你的 {p} 商務服務器已經過期。</translation>
     </message>
     <message>
-        <location filename="../src/WizMainWindow.cpp" line="2371"/>
+        <location filename="../src/WizMainWindow.cpp" line="2369"/>
         <location filename="../src/sync/WizSync.cpp" line="18"/>
         <source>Group notes count limit exceeded!</source>
         <translation>群組筆記數目超出限制！</translation>
@@ -1640,7 +1640,7 @@
         <translation>%1 的團隊服務已到期，暫時無法上傳新創建或修改的筆記，請及時付費哦。</translation>
     </message>
     <message>
-        <location filename="../src/WizMainWindow.cpp" line="2366"/>
+        <location filename="../src/WizMainWindow.cpp" line="2364"/>
         <location filename="../src/sync/WizSync.cpp" line="676"/>
         <location filename="../src/sync/WizSync.cpp" line="845"/>
         <location filename="../src/sync/WizSync.cpp" line="1005"/>
@@ -1648,7 +1648,7 @@
         <translation>用戶服務已經過期，請升級到 VIP。</translation>
     </message>
     <message>
-        <location filename="../src/WizMainWindow.cpp" line="2363"/>
+        <location filename="../src/WizMainWindow.cpp" line="2361"/>
         <location filename="../src/sync/WizSync.cpp" line="684"/>
         <location filename="../src/sync/WizSync.cpp" line="853"/>
         <location filename="../src/sync/WizSync.cpp" line="1011"/>
@@ -4372,11 +4372,11 @@ Go to create a note</source>
         <location filename="../src/WizMainWindow.cpp" line="1310"/>
         <location filename="../src/WizMainWindow.cpp" line="1316"/>
         <location filename="../src/WizMainWindow.cpp" line="1336"/>
-        <location filename="../src/WizMainWindow.cpp" line="2348"/>
-        <location filename="../src/WizMainWindow.cpp" line="2404"/>
-        <location filename="../src/WizMainWindow.cpp" line="2407"/>
-        <location filename="../src/WizMainWindow.cpp" line="2410"/>
-        <location filename="../src/WizMainWindow.cpp" line="4071"/>
+        <location filename="../src/WizMainWindow.cpp" line="2346"/>
+        <location filename="../src/WizMainWindow.cpp" line="2402"/>
+        <location filename="../src/WizMainWindow.cpp" line="2405"/>
+        <location filename="../src/WizMainWindow.cpp" line="2408"/>
+        <location filename="../src/WizMainWindow.cpp" line="4069"/>
         <source>Info</source>
         <translation>提示</translation>
     </message>
@@ -4461,83 +4461,83 @@ Go to create a note</source>
         <translation>帳號設定</translation>
     </message>
     <message>
-        <location filename="../src/WizMainWindow.cpp" line="4157"/>
+        <location filename="../src/WizMainWindow.cpp" line="4155"/>
         <source>New Note</source>
         <translation>新增筆記</translation>
     </message>
     <message>
-        <location filename="../src/WizMainWindow.cpp" line="2066"/>
+        <location filename="../src/WizMainWindow.cpp" line="2064"/>
         <source>Unread documents</source>
         <translation>未讀筆記</translation>
     </message>
     <message>
-        <location filename="../src/WizMainWindow.cpp" line="2082"/>
+        <location filename="../src/WizMainWindow.cpp" line="2080"/>
         <source>Mark all documents read</source>
         <translation>將所有未讀筆記標記為已讀</translation>
     </message>
     <message>
-        <location filename="../src/WizMainWindow.cpp" line="2357"/>
-        <location filename="../src/WizMainWindow.cpp" line="2374"/>
+        <location filename="../src/WizMainWindow.cpp" line="2355"/>
+        <location filename="../src/WizMainWindow.cpp" line="2372"/>
         <source>Sync failed</source>
         <translation>同步失敗</translation>
     </message>
     <message>
-        <location filename="../src/WizMainWindow.cpp" line="2357"/>
+        <location filename="../src/WizMainWindow.cpp" line="2355"/>
         <source>Bad network connection, can not sync now. Please try again later. (code: %1)</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../src/WizMainWindow.cpp" line="2361"/>
+        <location filename="../src/WizMainWindow.cpp" line="2359"/>
         <source>There is something wrong with sync service. Please try again later. (code: %1)</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../src/WizMainWindow.cpp" line="2865"/>
+        <location filename="../src/WizMainWindow.cpp" line="2863"/>
         <source>Mark all as readed</source>
         <translation>標記為已讀</translation>
     </message>
     <message>
-        <location filename="../src/WizMainWindow.cpp" line="2865"/>
+        <location filename="../src/WizMainWindow.cpp" line="2863"/>
         <source>Mark all documents as readed.</source>
         <translation>將所有未讀筆記標記為已讀。</translation>
     </message>
     <message>
-        <location filename="../src/WizMainWindow.cpp" line="3238"/>
+        <location filename="../src/WizMainWindow.cpp" line="3236"/>
         <source>Searching...</source>
         <translation>搜索中...</translation>
     </message>
     <message>
-        <location filename="../src/WizMainWindow.cpp" line="4072"/>
+        <location filename="../src/WizMainWindow.cpp" line="4070"/>
         <source>Can&apos;t find the specified attachment, may be it has been deleted.</source>
         <translation>找不到指定附件，該附件可能已被刪除。</translation>
     </message>
     <message>
-        <location filename="../src/WizMainWindow.cpp" line="4154"/>
+        <location filename="../src/WizMainWindow.cpp" line="4152"/>
         <source>Show/Hide MainWindow</source>
         <translation>顯示/隱藏主視窗</translation>
     </message>
     <message>
-        <location filename="../src/WizMainWindow.cpp" line="4162"/>
+        <location filename="../src/WizMainWindow.cpp" line="4160"/>
         <source>Hide TrayIcon</source>
         <translation>隱藏系統匣圖示</translation>
     </message>
     <message>
-        <location filename="../src/WizMainWindow.cpp" line="4166"/>
+        <location filename="../src/WizMainWindow.cpp" line="4164"/>
         <source>Logout</source>
         <translation>登出</translation>
     </message>
     <message>
-        <location filename="../src/WizMainWindow.cpp" line="4168"/>
+        <location filename="../src/WizMainWindow.cpp" line="4166"/>
         <source>Exit</source>
         <translation>退出</translation>
     </message>
     <message>
-        <location filename="../src/WizMainWindow.cpp" line="4522"/>
+        <location filename="../src/WizMainWindow.cpp" line="4520"/>
         <source>Downloading attachment file  %1 ...</source>
         <translation>下載附件 %1 ...</translation>
     </message>
     <message>
-        <location filename="../src/WizMainWindow.cpp" line="4523"/>
+        <location filename="../src/WizMainWindow.cpp" line="4521"/>
         <source>Downloading</source>
         <translation>正在下載</translation>
     </message>
