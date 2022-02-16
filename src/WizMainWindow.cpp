@@ -114,6 +114,8 @@
 #include "gui/documentviewer/WizEditorToolBar.h"
 #include "gui/documentviewer/WizSvgEditorDialog.h"
 
+#include "WizFileExportDialog.h"
+
 #define MAINWINDOW  "MainWindow"
 
 
@@ -3183,6 +3185,12 @@ void WizMainWindow::on_actionImportFile_triggered()
     WizGetAnalyzer().logAction("MenuBarImportFile");
 }
 
+void WizMainWindow::on_actionExportFile_triggered()
+{
+    WizFileExportDialog dialog(*this, this);
+    dialog.exec();
+    WizGetAnalyzer().logAction("MenuBarExportFile");
+}
 void WizMainWindow::on_actionPrintMargin_triggered()
 {
     WizPreferenceWindow preference(*this, this);

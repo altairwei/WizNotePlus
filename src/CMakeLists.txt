@@ -204,6 +204,8 @@ set(wiznote_SOURCES
     WizUpgrade.cpp
     WizButton.cpp
     WizFileImporter.cpp
+    WizFileExporter.cpp
+    WizFileExportDialog.cpp
     WizProgressDialog.cpp
     WizDocumentSelectionView.cpp
     WizDocumentTransitionView.cpp
@@ -385,6 +387,8 @@ set(wiznote_HEADERS
     WizDocumentTransitionView.h
     WizButton.h
     WizFileImporter.h
+    WizFileExporter.h
+    WizFileExportDialog.h
     WizProgressDialog.h
     WizDocumentSelectionView.h
     WizUserVerifyDialog.h

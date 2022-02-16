@@ -76,6 +76,7 @@ WIZACTION* WizActions::actionsData()
         {WIZACTION_GLOBAL_SAVE_AS_HTML,         QObject::tr("Save as Html..."),             "",                                     QKeySequence()},
         {WIZACTION_GLOBAL_SAVE_AS_MARKDOWN,     QObject::tr("Save as Markdown..."),         "",                                     QKeySequence()},
         {WIZACTION_GLOBAL_IMPORT_FILE,          QObject::tr("Import Files..."),             "",                                     QKeySequence()},
+        {WIZACTION_GLOBAL_EXPORT_FILE,          QObject::tr("Export Files..."),             "",                                     QKeySequence()},
         {WIZACTION_GLOBAL_PRINT_MARGIN,         QObject::tr("PDF Page Margins..."),         "",                                     QKeySequence()},
         //{WIZACTION_GLOBAL_VIEW_MESSAGES,      QObject::tr("View messages"),               "",                                     QKeySequence()},
         {WIZACTION_GLOBAL_GOBACK,               QObject::tr("Back"),                        "",                                     QKeySequence()},
