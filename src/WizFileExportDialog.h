@@ -7,15 +7,23 @@
 
 #include <QDialog>
 #include "share/WizQtHelper.h"
-class WizExplorerApp;
-class WizDatabaseManager;
+
 class QTreeWidget;
 class QTreeWidgetItem;
+class QProgressBar;
+class QLabel;
+
+class WizExplorerApp;
+class WizDatabaseManager;
 class BaseItem;
-class WizFileExportDialog : public QDialog {
-Q_OBJECT
+
+class WizFileExportDialog : public QDialog
+{
+    Q_OBJECT
+
 public:
     WizFileExportDialog(WizExplorerApp& app, QWidget *parent = nullptr);
+
 private:
     void initFolders();
     void initFolders(QTreeWidgetItem* pParent,
@@ -36,6 +44,8 @@ private:
     bool m_isUpdateItemStatus;
     QTreeWidgetItem* m_rootItem;
     QString m_exportRootPath;
+    QLabel* m_progressLabel;
+    QProgressBar* m_progress;
 };
 
 

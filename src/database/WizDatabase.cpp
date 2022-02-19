@@ -3789,6 +3789,10 @@ CString WizDatabase::getObjectFileName(const WIZOBJECTDATA& data)
     }
 }
 
+/*!
+    Extract root parts of location strings in \a arrayAllLocation, and store
+    the unique set in \a arrayLocation.
+*/
 bool WizDatabase::getAllRootLocations(const CWizStdStringArray& arrayAllLocation, \
                                        CWizStdStringArray& arrayLocation)
 {
@@ -3804,25 +3808,30 @@ bool WizDatabase::getAllRootLocations(const CWizStdStringArray& arrayAllLocation
     return true;
 }
 
+/*!
+    Find direct child locations of \a strParentLocation from \a arrayAllLocation,
+    then store unique set in \a arrayLocation. If \a strParentLocation is empty,
+    then the unique root locations of \a arrayAllLocation is returned.
+ */
 bool WizDatabase::getChildLocations(const CWizStdStringArray& arrayAllLocation, \
-                                     const QString& strLocation, \
+                                     const QString& strParentLocation, \
                                      CWizStdStringArray& arrayLocation)
 {
-    if (strLocation.isEmpty())
+    if (strParentLocation.isEmpty())
         return getAllRootLocations(arrayAllLocation, arrayLocation);
 
     std::set<QString> setLocation;
 
     CWizStdStringArray::const_iterator it;
     for (it = arrayAllLocation.begin(); it != arrayAllLocation.end(); it++) {
-        const QString& str = *it;
+        const QString& location = *it;
 
-        if (str.length() > strLocation.length() && str.startsWith(strLocation))
+        if (location.length() > strParentLocation.length() && location.startsWith(strParentLocation))
         {
-            int index = str.indexOf('/', strLocation.length() + 1);
+            int index = location.indexOf('/', strParentLocation.length() + 1);
             if (index > 0)
             {
-                QString strChild = str.left(index + 1);
+                QString strChild = location.left(index + 1);
                 setLocation.insert(strChild);
             }
         }
@@ -4388,6 +4397,9 @@ bool WizDatabase::updateDocumentAbstract(const QString& strDocumentGUID)
     return ret;
 }
 
+/*!
+    Given a slash-separated path-like location string \a strLocation, return it's first part.
+*/
 CString WizDatabase::getRootLocation(const CString& strLocation)
 {
     //FIXME:容错处理，如果路径的结尾不是 '/'，则增加该结尾符号

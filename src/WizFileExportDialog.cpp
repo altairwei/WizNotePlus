@@ -3,8 +3,10 @@
 //
 
 #include "WizFileExportDialog.h"
+
 #include <QDebug>
 #include <QTreeWidget>
+#include <QHeaderView>
 #include <QTreeWidgetItem>
 #include <QVBoxLayout>
 #include <QHBoxLayout>
@@ -16,12 +18,17 @@
 #include <QDir>
 #include <QFileDialog>
 #include <QDesktopServices>
+#include <QProgressBar>
+#include <QApplication>
+
 #include "WizDef.h"
 #include "share/WizSettings.h"
 #include "share/WizMisc.h"
 #include "database/WizDatabaseManager.h"
 #include "database/WizDatabase.h"
-class BaseItem : public QTreeWidgetItem {
+
+class BaseItem : public QTreeWidgetItem
+{
 public:
     BaseItem(WizExplorerApp& app, QString strName, QString kbGUID): m_name(strName), m_kbGUID(kbGUID) {
         setText(0, strName);
@@ -29,21 +36,25 @@ public:
     QString name() const { return m_name; }
     QString kbGUID() const { return m_kbGUID; }
     virtual bool isFolder() const { return false; }
+
 protected:
     QString m_name;
     QString m_kbGUID;
 };
-class FolderItem : public BaseItem {
+
+class FolderItem : public BaseItem
+{
 public:
     FolderItem(WizExplorerApp& app, QString strName, QString kbGUID): BaseItem(app, strName, kbGUID) {
-        QString iconKey = "category_folders";
+        QString iconKey = "category_folder";
         QIcon icon = WizLoadSkinIcon(app.userSettings().skin(), iconKey);
         setIcon(0, icon);
     }
     bool isFolder() const override { return true; }
-private:
 };
-class NoteItem : public BaseItem {
+
+class NoteItem : public BaseItem
+{
 public:
     NoteItem(WizExplorerApp& app, QString strName, QString kbGUID, QString docGUID, QString docType)
     : BaseItem(app, strName, kbGUID), m_docGUID(docGUID), m_docType(docType) {
@@ -56,25 +67,36 @@ public:
     bool isFolder() const override { return false; }
     QString docGUID() const { return m_docGUID; }
     QString docType() const { return m_docType; }
+
 private:
     QString m_docGUID;
     QString m_docType;
 };
+
 WizFileExportDialog::WizFileExportDialog(WizExplorerApp &app, QWidget *parent)
-: QDialog(parent)
-, m_isUpdateItemStatus(false)
-, m_app(app)
-, m_dbMgr(app.databaseManager()) {
+    : QDialog(parent)
+    , m_app(app)
+    , m_dbMgr(app.databaseManager())
+    , m_isUpdateItemStatus(false)
+{
     this->resize(800, 600);
     auto layout = new QVBoxLayout(this);
     setLayout(layout);
     layout->addWidget(new QLabel(tr("Choose notes")));
+
     m_treeWidget = new QTreeWidget(this);
+    m_treeWidget->header()->setSectionResizeMode(QHeaderView::ResizeToContents);
     // m_treeWidget->setHeaderHidden(true);
     m_treeWidget->setHeaderLabels({"Name", "GUID", "Type"});
     connect(m_treeWidget, &QTreeWidget::itemChanged, this, &WizFileExportDialog::handleItemChanged);
     connect(m_treeWidget, &QTreeWidget::itemDoubleClicked, this, &WizFileExportDialog::handleItemDoubleClicked);
     layout->addWidget(m_treeWidget);
+
+    m_progressLabel = new QLabel(this);
+    layout->addWidget(m_progressLabel);
+    m_progress = new QProgressBar(this);
+    layout->addWidget(m_progress);
+
     auto hbox = new QHBoxLayout();
     hbox->addStretch(1);
     auto confirmBtn = new QPushButton(tr("Confirm"));
@@ -85,13 +107,16 @@ WizFileExportDialog::WizFileExportDialog(WizExplorerApp &app, QWidget *parent)
 
     connect(confirmBtn, &QPushButton::clicked, this, &WizFileExportDialog::handleExportFile);
     connect(cancelBtn, &QPushButton::clicked, this, &QDialog::reject);
-    
+
+    show();
 
     initFolders();
 }
 
-void WizFileExportDialog::initFolders() {
+void WizFileExportDialog::initFolders()
+{
     auto pAllFoldersItem = new FolderItem(m_app, tr("Personal Notes"), m_dbMgr.db().kbGUID());
+    pAllFoldersItem->setIcon(0, WizLoadSkinIcon(m_app.userSettings().skin(), "category_folders"));
     pAllFoldersItem->setCheckState(0, Qt::Unchecked);
     m_treeWidget->addTopLevelItem(pAllFoldersItem);
     m_rootItem = pAllFoldersItem;
@@ -117,6 +142,8 @@ void WizFileExportDialog::initFolders() {
         arrayAllLocation.push_back(m_dbMgr.db().getDefaultNoteLocation());
     }
 
+    m_progressLabel->setText(tr("Scanning Database:"));
+    m_progress->setRange(1, arrayAllLocation.size());
     initFolders(pAllFoldersItem, "", arrayAllLocation);
 
     pAllFoldersItem->setExpanded(true);
@@ -124,13 +151,18 @@ void WizFileExportDialog::initFolders() {
 }
 
 void WizFileExportDialog::initFolders(QTreeWidgetItem *pParent, const QString &strParentLocation,
-                                      const CWizStdStringArray &arrayAllLocation) {
+                                      const CWizStdStringArray &arrayAllLocation)
+{
+    m_progress->setValue(m_progress->value() + 1);
+    qApp->processEvents();
+
     CWizStdStringArray arrayLocation;
     WizDatabase::getChildLocations(arrayAllLocation, strParentLocation, arrayLocation);
 
+    // Find all sub-folders
     CWizStdStringArray::const_iterator it;
-    for (const auto& strLocation: arrayLocation) {
-
+    for (const auto& strLocation : arrayLocation) {
+        qApp->processEvents();
         if (m_dbMgr.db().isInDeletedItems(strLocation))
             continue;
 
@@ -140,9 +172,12 @@ void WizFileExportDialog::initFolders(QTreeWidgetItem *pParent, const QString &s
 
         initFolders(pFolderItem, strLocation, arrayAllLocation);
     }
+
+    // Find all direct documents
     CWizDocumentDataArray arrayDocument;
     m_dbMgr.db().getDocumentsByLocation(strParentLocation, arrayDocument);
-    for(const auto& doc: arrayDocument) {
+    for (const auto& doc: arrayDocument) {
+        qApp->processEvents();
         if (!WizIsMarkdownNote(doc)) continue;
         auto pNoteItem = new NoteItem(m_app, doc.strTitle, m_dbMgr.db().kbGUID(), doc.strGUID, doc.strType);
         pNoteItem->setCheckState(0, Qt::Unchecked);
@@ -151,7 +186,8 @@ void WizFileExportDialog::initFolders(QTreeWidgetItem *pParent, const QString &s
 
 }
 
-void WizFileExportDialog::handleItemChanged(QTreeWidgetItem *item, int column) {
+void WizFileExportDialog::handleItemChanged(QTreeWidgetItem *item, int column)
+{
     if (m_isUpdateItemStatus) return;
     m_isUpdateItemStatus = true;
     updateChildItemStatus(item);
@@ -196,7 +232,8 @@ void WizFileExportDialog::updateChildItemStatus(QTreeWidgetItem* item)
     }
 }
 
-void WizFileExportDialog::handleItemDoubleClicked(QTreeWidgetItem *item, int column) {
+void WizFileExportDialog::handleItemDoubleClicked(QTreeWidgetItem *item, int column)
+{
     auto _item = static_cast<BaseItem*>(item);
     if (_item->isFolder()) {
         return;
@@ -209,7 +246,8 @@ void WizFileExportDialog::handleItemDoubleClicked(QTreeWidgetItem *item, int col
     }
 }
 
-void WizFileExportDialog::handleExportFile() {
+void WizFileExportDialog::handleExportFile()
+{
     if (m_rootItem->checkState(0) == Qt::Unchecked) {
         QMessageBox::warning(nullptr, tr("Export Error"), tr("No selected notes"));
         return;
@@ -222,7 +260,8 @@ void WizFileExportDialog::handleExportFile() {
     QDesktopServices::openUrl(QUrl(m_exportRootPath));
 }
 
-void WizFileExportDialog::exportFolder(QTreeWidgetItem *item) {
+void WizFileExportDialog::exportFolder(QTreeWidgetItem *item)
+{
     if (item->checkState(0) == Qt::Unchecked) return;
     int nCount = item->childCount();
     for (int nIndex = 0; nIndex < nCount; ++nIndex)
@@ -235,7 +274,9 @@ void WizFileExportDialog::exportFolder(QTreeWidgetItem *item) {
         }
     }
 }
-void WizFileExportDialog::exportNote(QTreeWidgetItem *item) {
+
+void WizFileExportDialog::exportNote(QTreeWidgetItem *item)
+{
     auto parentItem = static_cast<FolderItem*>(item->parent());
     if (!parentItem) return;
     QString path = m_exportRootPath + "/" + parentItem->name();
