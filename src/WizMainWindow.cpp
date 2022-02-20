@@ -3191,6 +3191,7 @@ void WizMainWindow::on_actionExportFile_triggered()
     dialog.exec();
     WizGetAnalyzer().logAction("MenuBarExportFile");
 }
+
 void WizMainWindow::on_actionPrintMargin_triggered()
 {
     WizPreferenceWindow preference(*this, this);

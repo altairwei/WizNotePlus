@@ -10,7 +10,7 @@
 
 class QTreeWidget;
 class QTreeWidgetItem;
-class QProgressBar;
+class QProgressDialog;
 class QLabel;
 
 class WizExplorerApp;
@@ -44,8 +44,7 @@ private:
     bool m_isUpdateItemStatus;
     QTreeWidgetItem* m_rootItem;
     QString m_exportRootPath;
-    QLabel* m_progressLabel;
-    QProgressBar* m_progress;
+    QProgressDialog* m_progress;
 };
 
 

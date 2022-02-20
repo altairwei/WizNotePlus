@@ -18,7 +18,7 @@
 #include <QDir>
 #include <QFileDialog>
 #include <QDesktopServices>
-#include <QProgressBar>
+#include <QProgressDialog>
 #include <QApplication>
 
 #include "WizDef.h"
@@ -92,10 +92,8 @@ WizFileExportDialog::WizFileExportDialog(WizExplorerApp &app, QWidget *parent)
     connect(m_treeWidget, &QTreeWidget::itemDoubleClicked, this, &WizFileExportDialog::handleItemDoubleClicked);
     layout->addWidget(m_treeWidget);
 
-    m_progressLabel = new QLabel(this);
-    layout->addWidget(m_progressLabel);
-    m_progress = new QProgressBar(this);
-    layout->addWidget(m_progress);
+    m_progress = new QProgressDialog(this);
+    m_progress->setFixedWidth(400);
 
     auto hbox = new QHBoxLayout();
     hbox->addStretch(1);
@@ -107,8 +105,6 @@ WizFileExportDialog::WizFileExportDialog(WizExplorerApp &app, QWidget *parent)
 
     connect(confirmBtn, &QPushButton::clicked, this, &WizFileExportDialog::handleExportFile);
     connect(cancelBtn, &QPushButton::clicked, this, &QDialog::reject);
-
-    show();
 
     initFolders();
 }
@@ -142,8 +138,10 @@ void WizFileExportDialog::initFolders()
         arrayAllLocation.push_back(m_dbMgr.db().getDefaultNoteLocation());
     }
 
-    m_progressLabel->setText(tr("Scanning Database:"));
+    m_progress->setLabelText(tr("Scanning Database:"));
     m_progress->setRange(1, arrayAllLocation.size());
+    m_progress->setModal(true);
+
     initFolders(pAllFoldersItem, "", arrayAllLocation);
 
     pAllFoldersItem->setExpanded(true);
@@ -156,6 +154,8 @@ void WizFileExportDialog::initFolders(QTreeWidgetItem *pParent, const QString &s
     m_progress->setValue(m_progress->value() + 1);
     qApp->processEvents();
 
+    if (m_progress->wasCanceled()) return;
+
     CWizStdStringArray arrayLocation;
     WizDatabase::getChildLocations(arrayAllLocation, strParentLocation, arrayLocation);
 
@@ -163,6 +163,8 @@ void WizFileExportDialog::initFolders(QTreeWidgetItem *pParent, const QString &s
     CWizStdStringArray::const_iterator it;
     for (const auto& strLocation : arrayLocation) {
         qApp->processEvents();
+        if (m_progress->wasCanceled()) return;
+
         if (m_dbMgr.db().isInDeletedItems(strLocation))
             continue;
 
@@ -178,6 +180,8 @@ void WizFileExportDialog::initFolders(QTreeWidgetItem *pParent, const QString &s
     m_dbMgr.db().getDocumentsByLocation(strParentLocation, arrayDocument);
     for (const auto& doc: arrayDocument) {
         qApp->processEvents();
+        if (m_progress->wasCanceled()) return;
+
         if (!WizIsMarkdownNote(doc)) continue;
         auto pNoteItem = new NoteItem(m_app, doc.strTitle, m_dbMgr.db().kbGUID(), doc.strGUID, doc.strType);
         pNoteItem->setCheckState(0, Qt::Unchecked);
