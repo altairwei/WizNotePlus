@@ -21,12 +21,17 @@ class BaseItem;
 class NoteItem;
 class WizFileExporter;
 
+namespace Ui {
+class WizFileExportDialog;
+}
+
 class WizFileExportDialog : public QDialog
 {
     Q_OBJECT
 
 public:
     WizFileExportDialog(WizExplorerApp& app, QWidget *parent = nullptr);
+    ~WizFileExportDialog();
 
 private:
     void initFolders();
@@ -41,6 +46,7 @@ private:
     QList<NoteItem*> findSelectedNotes(BaseItem* item);
 
 private:
+    Ui::WizFileExportDialog *ui;
     WizExplorerApp& m_app;
     WizDatabaseManager& m_dbMgr;
     QTreeWidget* m_treeWidget;

@@ -3,6 +3,7 @@
 //
 
 #include "WizFileExportDialog.h"
+#include "ui_WizFileExportDialog.h"
 
 #include <QDebug>
 #include <QTreeWidget>
@@ -99,39 +100,32 @@ private:
 
 WizFileExportDialog::WizFileExportDialog(WizExplorerApp &app, QWidget *parent)
     : QDialog(parent)
+    , ui(new Ui::WizFileExportDialog)
     , m_app(app)
     , m_dbMgr(app.databaseManager())
     , m_isUpdateItemStatus(false)
 {
-    this->resize(800, 600);
-    auto layout = new QVBoxLayout(this);
-    setLayout(layout);
-    layout->addWidget(new QLabel(tr("Choose notes")));
+    ui->setupUi(this);
 
-    m_treeWidget = new QTreeWidget(this);
-    m_treeWidget->header()->setSectionResizeMode(QHeaderView::ResizeToContents);
-    m_treeWidget->setHeaderHidden(true);
-    connect(m_treeWidget, &QTreeWidget::itemChanged, this, &WizFileExportDialog::handleItemChanged);
-    connect(m_treeWidget, &QTreeWidget::itemDoubleClicked, this, &WizFileExportDialog::handleItemDoubleClicked);
-    layout->addWidget(m_treeWidget);
+    ui->treeSelectNotes->header()->setSectionResizeMode(QHeaderView::ResizeToContents);
+    ui->treeSelectNotes->setHeaderHidden(true);
+    connect(ui->treeSelectNotes, &QTreeWidget::itemChanged, this, &WizFileExportDialog::handleItemChanged);
+    connect(ui->treeSelectNotes, &QTreeWidget::itemDoubleClicked, this, &WizFileExportDialog::handleItemDoubleClicked);
 
     m_progress = new QProgressDialog(this);
     m_progress->setFixedWidth(400);
 
-    auto hbox = new QHBoxLayout();
-    hbox->addStretch(1);
-    auto confirmBtn = new QPushButton(tr("Confirm"));
-    auto cancelBtn = new QPushButton(tr("Cancel"));
-    hbox->addWidget(confirmBtn);
-    hbox->addWidget(cancelBtn);
-    layout->addLayout(hbox);
-
-    connect(confirmBtn, &QPushButton::clicked, this, &WizFileExportDialog::handleExportFile);
-    connect(cancelBtn, &QPushButton::clicked, this, &QDialog::reject);
+    connect(ui->buttonBox, &QDialogButtonBox::accepted, this, &WizFileExportDialog::handleExportFile);
+    connect(ui->buttonBox, &QDialogButtonBox::rejected, this, &QDialog::reject);
 
     m_exporter = new WizFileExporter(m_dbMgr, this);
 
     initFolders();
+}
+
+WizFileExportDialog::~WizFileExportDialog()
+{
+    delete ui;
 }
 
 void WizFileExportDialog::initFolders()
@@ -139,7 +133,7 @@ void WizFileExportDialog::initFolders()
     auto pAllFoldersItem = new FolderItem(m_app, tr("Personal Notes"), m_dbMgr.db().kbGUID());
     pAllFoldersItem->setIcon(0, WizLoadSkinIcon(m_app.userSettings().skin(), "category_folders"));
     pAllFoldersItem->setCheckState(0, Qt::Unchecked);
-    m_treeWidget->addTopLevelItem(pAllFoldersItem);
+    ui->treeSelectNotes->addTopLevelItem(pAllFoldersItem);
     m_rootItem = pAllFoldersItem;
 
     CWizStdStringArray arrayAllLocation;

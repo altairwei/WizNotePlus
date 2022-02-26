@@ -70,9 +70,8 @@
 #include "WizDocumentSelectionView.h"
 #include "WizDocumentTransitionView.h"
 #include "WizMessageListView.h"
-
 #include "WizPopupButton.h"
-#include "widgets/WizUserInfoWidget.h"
+
 #include "sync/WizApiEntry.h"
 #include "sync/WizKMSync.h"
 #include "sync/WizAvatarHost.h"
@@ -85,15 +84,18 @@
 #include "share/WizAnalyzer.h"
 #include "share/WizTranslater.h"
 #include "share/WizThreads.h"
-#include "widgets/WizShareLinkDialog.h"
 
+#include "widgets/WizUserInfoWidget.h"
+#include "widgets/WizShareLinkDialog.h"
 #include "widgets/WizCustomToolBar.h"
 #include "widgets/WizTipsWidget.h"
+#include "widgets/WizExecutingActionDialog.h"
+#include "widgets/WizUserServiceExprDialog.h"
+#include "widgets/WizFileExportDialog.h"
+
 #include "WizPositionDelegate.h"
 #include "core/WizAccountManager.h"
 #include "share/WizWebEngineView.h"
-#include "widgets/WizExecutingActionDialog.h"
-#include "widgets/WizUserServiceExprDialog.h"
 #include "share/jsoncpp/json/json.h"
 #include "WizCellButton.h"
 #include "WizFileImporter.h"
@@ -113,8 +115,6 @@
 #include "gui/documentviewer/WizDocumentWebView.h"
 #include "gui/documentviewer/WizEditorToolBar.h"
 #include "gui/documentviewer/WizSvgEditorDialog.h"
-
-#include "WizFileExportDialog.h"
 
 #define MAINWINDOW  "MainWindow"
 
