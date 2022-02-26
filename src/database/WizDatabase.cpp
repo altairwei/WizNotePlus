@@ -4611,6 +4611,10 @@ bool WizDatabase::QueryCertPassword()
     return false;
 }
 
+/*!
+    Unzip \a document to a temporary folder, and write path of "index.html" to
+    \a strFullPathFileName variable.
+*/
 bool WizDatabase::documentToTempHtmlFile(const WIZDOCUMENTDATA& document,
                                           QString& strFullPathFileName)
 {
@@ -4624,6 +4628,9 @@ bool WizDatabase::documentToTempHtmlFile(const WIZDOCUMENTDATA& document,
     return WizPathFileExists(strFullPathFileName);
 }
 
+/*!
+    Unzip \a document to a given folder of \a strPath.
+*/
 bool WizDatabase::documentToHtmlFile(const WIZDOCUMENTDATA& document,
                                           const QString& strPath)
 {

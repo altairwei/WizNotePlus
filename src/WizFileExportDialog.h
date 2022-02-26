@@ -6,6 +6,8 @@
 #define WIZNOTEPLUS_WIZFILEEXPORTDIALOG_H
 
 #include <QDialog>
+#include <QList>
+
 #include "share/WizQtHelper.h"
 
 class QTreeWidget;
@@ -16,6 +18,8 @@ class QLabel;
 class WizExplorerApp;
 class WizDatabaseManager;
 class BaseItem;
+class NoteItem;
+class WizFileExporter;
 
 class WizFileExportDialog : public QDialog
 {
@@ -34,17 +38,17 @@ private:
     void handleItemDoubleClicked(QTreeWidgetItem *item, int column);
     void updateParentItemStatus(QTreeWidgetItem* item);
     void updateChildItemStatus(QTreeWidgetItem* item);
-    void exportFolder(QTreeWidgetItem* item);
-    void exportNote(QTreeWidgetItem* item);
+    QList<NoteItem*> findSelectedNotes(BaseItem* item);
 
 private:
     WizExplorerApp& m_app;
     WizDatabaseManager& m_dbMgr;
     QTreeWidget* m_treeWidget;
     bool m_isUpdateItemStatus;
-    QTreeWidgetItem* m_rootItem;
+    BaseItem* m_rootItem;
     QString m_exportRootPath;
     QProgressDialog* m_progress;
+    WizFileExporter* m_exporter;
 };
 
 

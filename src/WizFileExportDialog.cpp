@@ -21,6 +21,7 @@
 #include <QProgressDialog>
 #include <QApplication>
 
+#include "WizFileExporter.h"
 #include "WizDef.h"
 #include "share/WizSettings.h"
 #include "share/WizMisc.h"
@@ -105,6 +106,8 @@ WizFileExportDialog::WizFileExportDialog(WizExplorerApp &app, QWidget *parent)
 
     connect(confirmBtn, &QPushButton::clicked, this, &WizFileExportDialog::handleExportFile);
     connect(cancelBtn, &QPushButton::clicked, this, &QDialog::reject);
+
+    m_exporter = new WizFileExporter(m_dbMgr, this);
 
     initFolders();
 }
@@ -256,79 +259,54 @@ void WizFileExportDialog::handleExportFile()
         QMessageBox::warning(nullptr, tr("Export Error"), tr("No selected notes"));
         return;
     }
+
     m_exportRootPath = QFileDialog::getExistingDirectory();
     if (m_exportRootPath.isEmpty()) return;
-    qDebug() << "export root path:" << m_exportRootPath;
-    exportFolder(m_rootItem);
+
+    auto notes = findSelectedNotes(m_rootItem);
+
+    m_progress->reset();
+    m_progress->setLabelText(tr("Exporting notes:"));
+    m_progress->setRange(1, notes.size());
+    m_progress->setModal(true);
+
+    foreach (auto note, notes) {
+        m_progress->setValue(m_progress->value() + 1);
+        qApp->processEvents();
+        if (m_progress->wasCanceled()) return;
+
+        WizDatabase& db = m_dbMgr.db(note->kbGUID());
+        WIZDOCUMENTDATA data;
+        if (!db.documentFromGuid(note->docGUID(), data))
+            return;
+
+        m_exporter->exportNote(data, m_exportRootPath, WizFileExporter::Markdown);
+    }
+
     QMessageBox::information(nullptr, tr("Export Success"), tr("All notes selected exported"));
     QDesktopServices::openUrl(QUrl(m_exportRootPath));
 }
 
-void WizFileExportDialog::exportFolder(QTreeWidgetItem *item)
+QList<NoteItem*> WizFileExportDialog::findSelectedNotes(BaseItem* item)
 {
-    if (item->checkState(0) == Qt::Unchecked) return;
+    QList<NoteItem*> notes;
+    if (item->checkState(0) == Qt::Unchecked)
+        return notes;
+
     int nCount = item->childCount();
     for (int nIndex = 0; nIndex < nCount; ++nIndex)
     {
         auto child = static_cast<BaseItem*>(item->child(nIndex));
         if (child->isFolder()) {
-            exportFolder(child);
+            if (child->checkState(0) == Qt::Unchecked)
+                continue;
+            notes.append(findSelectedNotes(child));
         } else {
-            exportNote(child);
+            if (child->checkState(0) == Qt::Checked) {
+                notes << static_cast<NoteItem*>(child);
+            }
         }
     }
-}
 
-void WizFileExportDialog::exportNote(QTreeWidgetItem *item)
-{
-    auto parentItem = static_cast<FolderItem*>(item->parent());
-    if (!parentItem) return;
-    QString path = m_exportRootPath + "/" + parentItem->name();
-    auto noteItem = static_cast<NoteItem*>(item);
-    QString filename = noteItem->name();
-    qDebug() << "export " << noteItem->name();
-    
-    WizDatabase& db = m_dbMgr.db(noteItem->kbGUID());
-    WIZDOCUMENTDATA data;
-    if (!db.documentFromGuid(noteItem->docGUID(), data))
-    {
-        return;
-    }
-    if (!WizMakeSureDocumentExistAndBlockWidthDialog(db, data)) {
-        return;
-    }
-    // TODO: handle cipher, not supported now
-    //
-    QString strHtmlFile;
-    if (db.documentToTempHtmlFile(data, strHtmlFile))
-    {
-        qDebug() << "html:" << strHtmlFile;
-        QFile file(strHtmlFile);
-        if (!file.open(QIODevice::ReadOnly)) {
-            qDebug() << "open html file fail:" << strHtmlFile;
-            return;
-        }
-        QString strHtml = file.readAll();
-        file.close();
-        QTextDocument doc;
-        doc.setHtml(strHtml);
-        QString strText = doc.toPlainText();
-        strText = strText.replace("&nbsp", " ");
-        // write text to file
-        QString outputFilePath = path + "/" + filename;
-        qDebug() << "export to:" << outputFilePath;
-        QDir().mkpath(path);
-        if (!WizSaveUnicodeTextToUtf8File(outputFilePath, strText)) {
-            qDebug() << "export fail:" << noteItem->name();
-            return;
-        }
-        qDebug() << "export success:" << noteItem->name();
-         
-    }
-    else
-    {
-        qDebug() << "error doc to html";
-    }
-
-
+    return notes;
 }
