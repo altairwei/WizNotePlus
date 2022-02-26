@@ -29,6 +29,7 @@ bool WizFileExporter::exportNote(
 {
     WizDatabase& db = m_dbMgr.db(doc.strKbGUID);
     if (!WizMakeSureDocumentExistAndBlockWidthEventloop(db, doc)) {
+        qWarning() << "Can't download document: " << doc.strTitle;
         return false;
     }
 
@@ -36,10 +37,12 @@ bool WizFileExporter::exportNote(
 
     CString folder = doc.strTitle;
     WizMakeValidFileNameNoPath(folder);
+
     QDir docFolder(destFolder);
-    if (!docFolder.exists())
+    if (!docFolder.mkpath(folder)) {
+        qWarning() << "Can't make directory: " << docFolder.filePath(folder);
         return false;
-    docFolder.mkpath(folder);
+    }
     docFolder.cd(folder);
 
     // TODO: write meta info to meta.json

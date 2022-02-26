@@ -296,7 +296,11 @@ void WizFileExportDialog::handleExportFile()
         if (!db.documentFromGuid(note->docGUID(), data))
             return;
 
-        m_exporter->exportNote(data, m_exportRootPath, WizFileExporter::Markdown);
+        QString destFolder = m_exportRootPath;
+        if (ui->checkKeepFolder->checkState() == Qt::Checked)
+            destFolder = m_exportRootPath + data.strLocation;
+
+        m_exporter->exportNote(data, destFolder, WizFileExporter::Markdown);
     }
 
     QMessageBox::information(nullptr, tr("Export Success"), tr("All notes selected exported"));
