@@ -30,10 +30,15 @@
 
 class BaseItem : public QTreeWidgetItem
 {
+
 public:
-    BaseItem(WizExplorerApp& app, QString strName, QString kbGUID): m_name(strName), m_kbGUID(kbGUID) {
+    BaseItem(WizExplorerApp& app, QString strName, QString kbGUID)
+        : m_name(strName)
+        , m_kbGUID(kbGUID)
+    {
         setText(0, strName);
     }
+
     QString name() const { return m_name; }
     QString kbGUID() const { return m_kbGUID; }
     virtual bool isFolder() const { return false; }
@@ -45,26 +50,44 @@ protected:
 
 class FolderItem : public BaseItem
 {
+
 public:
-    FolderItem(WizExplorerApp& app, QString strName, QString kbGUID): BaseItem(app, strName, kbGUID) {
-        QString iconKey = "category_folder";
-        QIcon icon = WizLoadSkinIcon(app.userSettings().skin(), iconKey);
+    FolderItem(WizExplorerApp& app, QString strName, QString kbGUID)
+        : BaseItem(app, strName, kbGUID)
+    {
+
+        auto name = WizDatabase::getLocationDisplayName(strName);
+        setText(0, name);
+
+        QIcon icon;
+        if (::WizIsPredefinedLocation(strName) && strName == "/My Journals/") {
+            icon = WizLoadSkinIcon(app.userSettings().skin(), "category_folder_diary");
+        } else {
+            icon  = WizLoadSkinIcon(app.userSettings().skin(), "category_folder");
+        }
+
         setIcon(0, icon);
     }
+
     bool isFolder() const override { return true; }
+    QString location() const { return m_name; }
 };
 
 class NoteItem : public BaseItem
 {
+
 public:
     NoteItem(WizExplorerApp& app, QString strName, QString kbGUID, QString docGUID, QString docType)
-    : BaseItem(app, strName, kbGUID), m_docGUID(docGUID), m_docType(docType) {
+        : BaseItem(app, strName, kbGUID)
+        , m_docGUID(docGUID)
+        , m_docType(docType)
+    {
+        // TODO: display icon for encrypted notes
         QString iconKey = "document_badge";
         QIcon icon = WizLoadSkinIcon(app.userSettings().skin(), iconKey);
         setIcon(0, icon);
-        setText(1, docGUID);
-        setText(2, docType);
     }
+
     bool isFolder() const override { return false; }
     QString docGUID() const { return m_docGUID; }
     QString docType() const { return m_docType; }
@@ -87,8 +110,7 @@ WizFileExportDialog::WizFileExportDialog(WizExplorerApp &app, QWidget *parent)
 
     m_treeWidget = new QTreeWidget(this);
     m_treeWidget->header()->setSectionResizeMode(QHeaderView::ResizeToContents);
-    // m_treeWidget->setHeaderHidden(true);
-    m_treeWidget->setHeaderLabels({"Name", "GUID", "Type"});
+    m_treeWidget->setHeaderHidden(true);
     connect(m_treeWidget, &QTreeWidget::itemChanged, this, &WizFileExportDialog::handleItemChanged);
     connect(m_treeWidget, &QTreeWidget::itemDoubleClicked, this, &WizFileExportDialog::handleItemDoubleClicked);
     layout->addWidget(m_treeWidget);
