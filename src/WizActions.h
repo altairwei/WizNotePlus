@@ -21,6 +21,7 @@ class QShortcut;
 #define WIZACTION_GLOBAL_SAVE_AS_HTML        "actionSaveAsHtml"
 #define WIZACTION_GLOBAL_SAVE_AS_MARKDOWN    "actionSaveAsMarkdown"
 #define WIZACTION_GLOBAL_IMPORT_FILE            "actionImportFile"
+#define WIZACTION_GLOBAL_EXPORT_FILE            "actionExportFile"
 #define WIZACTION_GLOBAL_PRINT_MARGIN        "actionPrintMargin"
 #define WIZACTION_GLOBAL_TOGGLE_CATEGORY    "actionViewToggleCategory"
 #define WIZACTION_GLOBAL_SHOW_SUB_FOLDER_DOCUMENTS      "actionViewShowSubFolderDocuments"
