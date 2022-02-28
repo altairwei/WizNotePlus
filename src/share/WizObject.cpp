@@ -610,6 +610,47 @@ bool WIZDOCUMENTDATAEX::fromJson(const Json::Value& value)
             && nVersion >= 0;
 }
 
+bool WIZDOCUMENTDATAEX::toJson(Json::Value& value) const
+{
+    try {
+        // Basic information
+        value["kbGuid"] = strKbGUID.toStdString();
+        value["version"] = nVersion;
+        value["docGuid"] = strGUID.toStdString();
+        value["title"] = strTitle.toStdString();
+        value["category"] = strLocation.toStdString();
+        value["dataMd5"] = strDataMD5.toStdString();
+        value["name"] = strName.toStdString();
+        value["url"] = strURL.toStdString();
+        value["seo"] = strSEO.toStdString();
+        value["author"] = strAuthor.toStdString();
+        value["keywords"] = strKeywords.toStdString();
+        value["type"] = strType.toStdString();
+        value["owner"] = strOwner.toStdString();
+        value["fileType"] = strFileType.toStdString();
+        value["styleGuid"] = strStyleGUID.toStdString();
+        value["protected"] = (int)nProtected;
+        value["readCount"] = (int)nReadCount;
+        value["attachmentCount"] = (int)nAttachmentCount;
+        // Tags
+        QStringList sl;
+        for (auto &tag : arrayTagGUID)
+            sl << tag;
+        value["tags"] = sl.join('*').toStdString();
+        // Time
+        value["created"] = (Json::UInt64)tCreated.toTime_t() * (Json::UInt64)1000;
+        value["accessed"] = (Json::UInt64)tAccessed.toTime_t() * (Json::UInt64)1000;
+        value["modified"] = (Json::UInt64)tModified.toTime_t() * (Json::UInt64)1000;
+        value["dataModified"] = (Json::UInt64)tDataModified.toTime_t() * (Json::UInt64)1000;
+
+    } catch (Json::Exception& e) {
+        TOLOG(e.what());
+        return false;
+    }
+
+    return true;
+}
+
 
 WIZDOCUMENTATTACHMENTDATAEX::WIZDOCUMENTATTACHMENTDATAEX()
     : nObjectPart(0)

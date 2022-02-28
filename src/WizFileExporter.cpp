@@ -12,6 +12,7 @@
 #include "database/WizDatabase.h"
 #include "database/WizDatabaseManager.h"
 #include "share/WizMisc.h"
+#include "share/jsoncpp/json/json.h"
 
 WizFileExporter::WizFileExporter(WizDatabaseManager& dbMgr, QObject *parent)
     : QObject(parent)
@@ -45,9 +46,12 @@ bool WizFileExporter::exportNote(
     }
     docFolder.cd(folder);
 
-    // TODO: write meta info to meta.json
-    // TODO: unzip index_files/ and index.html
+    // Write meta info
+    if (!writeDocumentInfoToJsonFile(doc, docFolder.filePath("metainfo.json"))) {
+        qWarning() << "Can't save meta info to json file: " << docFolder.filePath("metainfo.json");
+    }
 
+    // Unzip index.html and index_files/
     QString strHtmlFile = docFolder.filePath("index.html");
     if (db.documentToHtmlFile(doc, docFolder.absolutePath() + "/")) {
         QFile file(strHtmlFile);
@@ -90,6 +94,28 @@ bool WizFileExporter::extractMarkdownToFile(const QString &htmlContent, const QS
 
     // write text to file
     if (!WizSaveUnicodeTextToUtf8File(outputFile, strText)) {
+        return false;
+    }
+
+    return true;
+}
+
+bool WizFileExporter::writeDocumentInfoToJsonFile(const WIZDOCUMENTDATA &doc, const QString &outputFIle)
+{
+    Json::Value metainfo;
+    WIZDOCUMENTDATAEX data(doc);
+    if (!data.toJson(metainfo)) {
+        return false;
+    }
+
+    // Convert tagGUID to tag text
+    WizDatabase& db = m_dbMgr.db(doc.strKbGUID);
+    metainfo["tags"] = db.getDocumentTagDisplayNameText(doc.strGUID).toStdString();
+
+    Json::StreamWriterBuilder wbuilder;
+    wbuilder["indentation"] = "\t";
+    QString metainfoDocument = QString::fromStdString(Json::writeString(wbuilder, metainfo));
+    if (!WizSaveUnicodeTextToUtf8File(outputFIle, metainfoDocument)) {
         return false;
     }
 

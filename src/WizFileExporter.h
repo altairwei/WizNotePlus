@@ -28,6 +28,7 @@ public:
 
 private:
     bool extractMarkdownToFile(const QString &htmlContent, const QString &outputFile);
+    bool writeDocumentInfoToJsonFile(const WIZDOCUMENTDATA &doc, const QString &outputFIle);
 
 private:
     WizDatabaseManager& m_dbMgr;

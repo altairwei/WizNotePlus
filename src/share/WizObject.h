@@ -353,6 +353,7 @@ struct WIZDOCUMENTDATAEX : public WIZDOCUMENTDATA
 
     WIZDOCUMENTDATAEX& operator= (const WIZDOCUMENTDATAEX& right);
     bool fromJson(const Json::Value& value);
+    bool toJson(Json::Value& value) const;
 
     // field: document_tags, guid list
     CWizStdStringArray arrayTagGUID;

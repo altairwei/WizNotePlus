@@ -58,6 +58,7 @@ public:
     {
 
         auto name = WizDatabase::getLocationDisplayName(strName);
+        if (name.isEmpty()) name = strName;
         setText(0, name);
 
         QIcon icon;
@@ -116,7 +117,6 @@ WizFileExportDialog::WizFileExportDialog(WizExplorerApp &app, QWidget *parent)
     m_progress->setFixedWidth(400);
 
     connect(ui->buttonBox, &QDialogButtonBox::accepted, this, &WizFileExportDialog::handleExportFile);
-    connect(ui->buttonBox, &QDialogButtonBox::rejected, this, &QDialog::reject);
 
     m_exporter = new WizFileExporter(m_dbMgr, this);
 
