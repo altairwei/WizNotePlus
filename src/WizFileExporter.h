@@ -24,7 +24,11 @@ public:
         PDF      = 1 << 3
     };
 
-    bool exportNote(const WIZDOCUMENTDATA &doc, const QString &destFolder, const ExportFormat format, bool compress = false);
+    bool exportNote(const WIZDOCUMENTDATA &doc,
+                    const QString &destFolder,
+                    const ExportFormat format,
+                    bool compress = false,
+                    QString *errorMsg = nullptr);
 
 private:
     bool extractMarkdownToFile(const QString &htmlContent, const QString &outputFile);

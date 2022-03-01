@@ -25,12 +25,14 @@ bool WizFileExporter::exportNote(
     const WIZDOCUMENTDATA &doc,
     const QString &destFolder,
     const ExportFormat format,
-    bool compress /*= false*/
+    bool compress /*= false*/,
+    QString *errorMsg /*= nullptr*/
 )
 {
     WizDatabase& db = m_dbMgr.db(doc.strKbGUID);
     if (!WizMakeSureDocumentExistAndBlockWidthEventloop(db, doc)) {
-        qWarning() << "Can't download document: " << doc.strTitle;
+        if (errorMsg)
+            *errorMsg = "Can't download document: " + doc.strTitle;
         return false;
     }
 
@@ -41,15 +43,21 @@ bool WizFileExporter::exportNote(
 
     QDir docFolder(destFolder);
     if (!docFolder.mkpath(folder)) {
-        qWarning() << "Can't make directory: " << docFolder.filePath(folder);
+        if (errorMsg)
+            *errorMsg = "Can't make directory: " +
+                docFolder.filePath(folder);
         return false;
     }
     docFolder.cd(folder);
 
     // Write meta info
     if (!writeDocumentInfoToJsonFile(doc, docFolder.filePath("metainfo.json"))) {
-        qWarning() << "Can't save meta info to json file: " << docFolder.filePath("metainfo.json");
+        if (errorMsg)
+            *errorMsg =  "Can't save meta info to json file: " +
+                docFolder.filePath("metainfo.json");
     }
+
+    // TODO: export attachments, download if neccessaryy
 
     // Unzip index.html and index_files/
     QString strHtmlFile = docFolder.filePath("index.html");
@@ -79,7 +87,9 @@ bool WizFileExporter::exportNote(
         }
 
     } else {
-        qWarning() << "Can't unzip document to " << docFolder.absolutePath();
+        if (errorMsg)
+            *errorMsg = "Can't unzip document to " +
+                docFolder.absolutePath();
         return false;
     }
 

@@ -293,14 +293,40 @@ void WizFileExportDialog::handleExportFile()
 
         WizDatabase& db = m_dbMgr.db(note->kbGUID());
         WIZDOCUMENTDATA data;
-        if (!db.documentFromGuid(note->docGUID(), data))
-            return;
+        if (!db.documentFromGuid(note->docGUID(), data)) {
+            auto ret = QMessageBox::critical(
+                this,
+                tr("Error occurred! Do you want to continue?"),
+                tr("Can't find document for GUID: %1").arg(note->docGUID()),
+                QMessageBox::Ok | QMessageBox::Abort,
+                QMessageBox::Ok
+            );
+            if (ret == QMessageBox::Abort)
+                return;
+            else
+                continue;
+        }
 
         QString destFolder = m_exportRootPath;
         if (ui->checkKeepFolder->checkState() == Qt::Checked)
             destFolder = m_exportRootPath + data.strLocation;
 
-        m_exporter->exportNote(data, destFolder, WizFileExporter::Markdown);
+        QString error = "Unknown error";
+        bool ok = m_exporter->exportNote(
+            data, destFolder, WizFileExporter::Markdown, false, &error);
+        if (!ok) {
+            auto ret = QMessageBox::critical(
+                this,
+                tr("Error occurred! Do you want to continue?"),
+                error,
+                QMessageBox::Ok | QMessageBox::Abort,
+                QMessageBox::Ok
+            );
+            if (ret == QMessageBox::Abort)
+                return;
+            else
+                continue;
+        }
     }
 
     QMessageBox::information(nullptr, tr("Export Success"), tr("All notes selected exported"));
