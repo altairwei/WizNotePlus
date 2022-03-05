@@ -615,7 +615,7 @@ bool WIZDOCUMENTDATAEX::toJson(Json::Value& value) const
     try {
         // Basic information
         value["kbGuid"] = strKbGUID.toStdString();
-        value["version"] = nVersion;
+        value["version"] = (int)nVersion;
         value["docGuid"] = strGUID.toStdString();
         value["title"] = strTitle.toStdString();
         value["category"] = strLocation.toStdString();
