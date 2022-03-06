@@ -5,7 +5,7 @@
 #include <vector>
 
 #include "share/WizObject.h"
-#include "share/jsoncpp/json/json-forwards.h"
+#include "share/jsoncpp/json/json.h"
 
 namespace Ui {
 class DocumentResourcesDialog;
@@ -28,11 +28,17 @@ private:
         QString url;
     };
 
-    bool getDocResourceObjectListFromServer(const WIZDOCUMENTDATA &doc, std::vector<RESDATA> &res, Json::Value *json = nullptr);
+    bool getDocResourceObjectListFromServer();
+
+private Q_SLOTS:
+    void handleBtnDeleteInServerClicked();
 
 private:
     Ui::DocumentResourcesDialog *ui;
     WIZDOCUMENTDATA m_doc;
+    Json::Value m_json;
+    std::vector<RESDATA> m_resInServer;
+    std::vector<RESDATA> m_resToDelete;
 };
 
 #endif // DOCUMENTRESOURCESDIALOG_H

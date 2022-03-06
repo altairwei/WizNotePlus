@@ -1268,21 +1268,20 @@ bool uploadResources(WizKMDatabaseServer& server, const QString& url, const QStr
     return true;
 }
 
-/**
- * @brief 上传较大资源文件对象
- * @param server
- * @param url
- * @param key
- * @param kbGuid
- * @param docGuid
- * @param objType
- * @param objId
- * @param data 待上传的数据
- * @param isLast
- * @param res
- * @return
- */
-bool uploadObject(WizKMDatabaseServer& server, const QString& url, const QString& key, const QString& kbGuid, const QString& docGuid, const QString& objType, const QString& objId, const QByteArray& data, bool isLast, Json::Value& res)
+/*!
+    Upload big resources \a data to server.
+*/
+bool uploadObject(
+    WizKMDatabaseServer& server,
+    const QString& url,
+    const QString& key,
+    const QString& kbGuid,
+    const QString& docGuid,
+    const QString& objType,
+    const QString& objId,
+    const QByteArray& data,
+    bool isLast,
+    Json::Value& res)
 {
     // 将数据分割成1M的块
     int partSize = 1024 * 1024; //1M
@@ -1446,22 +1445,19 @@ bool WizKMDatabaseServer::attachment_postDataNew(WIZDOCUMENTATTACHMENTDATAEX& da
     return true;
 }
 
-/**
- * @brief 上传新数据
- * @param dataTemp 笔记数据
- * @param withData
- * @param nServerVersion
- * @return
- */
+/*!
+    Upload document \a dataTemp to server.
+*/
 bool WizKMDatabaseServer::document_postDataNew(const WIZDOCUMENTDATAEX& dataTemp, bool withData, __int64& nServerVersion)
 {
     m_strLastLocalError.clear();
-    // 拷贝笔记数据
+
     WIZDOCUMENTDATAEX data = dataTemp;
-    // 构建地址
+
     QString url_main = buildUrl("/ks/note/upload/" + m_userInfo.strKbGUID + "/" + data.strGUID);
     QString url_res = buildUrl("/ks/object/upload/" + m_userInfo.strKbGUID + "/" + data.strGUID);
-    //
+
+    // Check data encrypt state
     if (withData && data.arrayData.length() > 2)
     {
         if (data.arrayData[0] == 'P' && data.arrayData[1] == 'K')
@@ -1481,10 +1477,11 @@ bool WizKMDatabaseServer::document_postDataNew(const WIZDOCUMENTDATAEX& dataTemp
             }
         }
     }
-    //
+
     CString tags;
     ::WizStringArrayToText(data.arrayTagGUID, tags, "*");
-    // 准备要发送的笔记数据
+
+    // Construct document info
     Json::Value doc;
     doc["kbGuid"] = m_userInfo.strKbGUID.toStdString();
     doc["docGuid"] = data.strGUID.toStdString();
@@ -1507,13 +1504,13 @@ bool WizKMDatabaseServer::document_postDataNew(const WIZDOCUMENTDATAEX& dataTemp
     doc["keywords"] = data.strKeywords.toStdString();
     doc["tags"] = tags.toStdString();
     doc["withData"] = withData;
-    //
+
     std::vector<WIZZIPENTRYDATA> allLocalResources;
     WizUnzipFile zip;
-    // 如果有数据且笔记不是受保护的
+
+    // Prepare non-encrypted document data
     if (withData && !data.nProtected)
     {
-        // 打开压缩数据
         if (!zip.open(data.arrayData))
         {
             m_strLastLocalError = "WizErrorInvalidZip";
@@ -1521,7 +1518,7 @@ bool WizKMDatabaseServer::document_postDataNew(const WIZDOCUMENTDATAEX& dataTemp
             qDebug() << "Can't open document data";
             return false;
         }
-        // 读取主要的HTML和资源文件
+        // Read index.html and resources
         QString html;
         if (!zip.readMainHtmlAndResources(html, allLocalResources))
         {
@@ -1530,9 +1527,10 @@ bool WizKMDatabaseServer::document_postDataNew(const WIZDOCUMENTDATAEX& dataTemp
             qDebug() << "Can't load html and resources";
             return false;
         }
-        // 将HTML写入JSON
+
         doc["html"] = html.toStdString();
-        // 将资源文件信息写入JSON
+
+        // Prepare resources object info
         Json::Value res(Json::arrayValue);
         for (auto data : allLocalResources)
         {
@@ -1542,11 +1540,11 @@ bool WizKMDatabaseServer::document_postDataNew(const WIZDOCUMENTDATAEX& dataTemp
             elemObj["size"] = (Json::UInt64)data.size;
             res.append(elemObj);
         }
-        //
+
         doc["resources"] = res;
     }
 
-    // 服务端返回值
+    // Upload document meta information
     Json::Value ret;
     WIZSTANDARDRESULT jsonRet = WizRequest::execStandardJsonRequest(url_main, "POST", doc, ret);
     m_lastJsonResult = jsonRet;
@@ -1556,15 +1554,17 @@ bool WizKMDatabaseServer::document_postDataNew(const WIZDOCUMENTDATAEX& dataTemp
         qDebug() << "Failed to upload note";
         return false;
     }
-    //
+
     long long newVersion = -1;
-    // 建立连接后上传资源文件
+
+    // Upload document data and resources
     if (withData)
     {
         QString key = QString::fromUtf8(ret["key"].asString().c_str());
 
         if (data.nProtected)
-        {// 如果笔记是受保护的
+        {
+            // Upload encrypted document whole data (include index.html and resources).
             Json::Value res;
             if (!uploadObject(*this, url_res, key, m_userInfo.strKbGUID, data.strGUID, "document", data.strGUID, data.arrayData, true, res))
             {
@@ -1574,10 +1574,11 @@ bool WizKMDatabaseServer::document_postDataNew(const WIZDOCUMENTDATAEX& dataTemp
             newVersion = res["version"].asInt64();
         }
         else
-        {// 如果笔记不是受保护的
+        {
+            // Upload resources of non-encrypted document
             Json::Value resourcesWaitForUpload = ret["resources"];
             size_t resCount = resourcesWaitForUpload.size();
-            //
+
             if (resCount > 0)
             {
                 // 准备资源文件压缩包信息
@@ -1589,7 +1590,7 @@ bool WizKMDatabaseServer::document_postDataNew(const WIZDOCUMENTDATAEX& dataTemp
                 // 将资源文件按照大小分成两部分
                 std::vector<WIZZIPENTRYDATA> resLess300K;
                 std::vector<WIZZIPENTRYDATA> resLarge;
-                //
+
                 for (int i = 0; i < resCount; i++)
                 {
                     QString resName = QString::fromUtf8(resourcesWaitForUpload[i].asString().c_str());
@@ -1603,8 +1604,9 @@ bool WizKMDatabaseServer::document_postDataNew(const WIZDOCUMENTDATAEX& dataTemp
                         resLarge.push_back(entry);
                     }
                 }
-                //
+
                 bool hasLarge = !resLarge.empty();
+
                 // 解压并上传小于300K的资源文件
                 while (!resLess300K.empty())
                 {
@@ -1616,10 +1618,10 @@ bool WizKMDatabaseServer::document_postDataNew(const WIZDOCUMENTDATAEX& dataTemp
                         WIZZIPENTRYDATA last = resLess300K[count - 1];
                         if (size + last.size > 1024 * 1024)
                             break;
-                        //
+
                         resLess300K.pop_back();
                         size += last.size;
-                        //
+
                         QByteArray resData;
                         if (!zip.extractFile("index_files/" + last.name, resData))
                         {
@@ -1631,31 +1633,32 @@ bool WizKMDatabaseServer::document_postDataNew(const WIZDOCUMENTDATAEX& dataTemp
                         WIZRESOURCEDATA data;
                         data.name = last.name;
                         data.data = resData;
-                        //
+
                         uploads.push_back(data);
                     }
-                    //
+
                     bool isLast = resLess300K.empty() && !hasLarge;
-                    //
+
                     Json::Value res;
                     if (!uploadResources(*this, url_res, key, m_userInfo.strKbGUID, data.strGUID, uploads, isLast, res))
                     {
                         qDebug() << "Failed to upload note res";
                         return false;
                     }
-                    //
+
                     if (isLast)
                     {
                         newVersion = res["version"].asInt64();
                     }
                 }
+
                 // 解压并上传较大的资源文件
                 while (!resLarge.empty())
                 {
                     int count = resLarge.size();
                     WIZZIPENTRYDATA last = resLarge[count - 1];
                     resLarge.pop_back();
-                    //
+
                     QByteArray resData;
                     if (!zip.extractFile("index_files/" + last.name, resData))
                     {
@@ -1663,16 +1666,16 @@ bool WizKMDatabaseServer::document_postDataNew(const WIZDOCUMENTDATAEX& dataTemp
                         qDebug() << "Can't extract resource from zip file";
                         return false;
                     }
-                    //
+
                     bool isLast = resLarge.empty();
-                    //
+
                     Json::Value res;
                     if (!uploadObject(*this, url_res, key, m_userInfo.strKbGUID, data.strGUID, "resource", last.name, resData, isLast, res))
                     {
                         qDebug() << "Failed to upload note res";
                         return false;
                     }
-                    //
+
                     if (isLast)
                     {
                         newVersion = res["version"].asInt64();
@@ -1681,12 +1684,12 @@ bool WizKMDatabaseServer::document_postDataNew(const WIZDOCUMENTDATAEX& dataTemp
             }
         }
     }
-    //
+
     if (newVersion == -1)
     {
         newVersion = ret["version"].asInt64();
     }
-    //
+
     nServerVersion = newVersion;
     return true;
 }
