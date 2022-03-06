@@ -214,6 +214,7 @@ public Q_SLOTS:
     void on_action_copyWebClientLink();
     void on_action_documentHistory();
     void on_action_shareDocumentByLink();
+    void on_action_checkDocumentResources();
 
     void on_menu_aboutToHide();
 
@@ -241,6 +242,7 @@ Q_SIGNALS:
     void changeUploadRequest(const QString& strKbGUID);
     void addDocumentToShortcutsRequest(const WIZDOCUMENTDATA& doc);
     void loacteDocumetRequest(const WIZDOCUMENTDATA& doc);
+    void checkDocumentResourcesRequest(const WIZDOCUMENTDATA& doc);
 
 private:
     int numOfEncryptedDocuments(const CWizDocumentDataArray& docArray);

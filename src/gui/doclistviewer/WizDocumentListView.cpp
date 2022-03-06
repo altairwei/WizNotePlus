@@ -28,9 +28,8 @@
 #include "gui/categoryviewer/WizCategoryView.h"
 #include "WizCombineNotesDialog.h"
 #include "WizLineInputDialog.h"
-
 #include "sync/WizKMSync.h"
-
+#include "widgets/DocumentResourcesDialog.h"
 #include "WizThumbCache.h"
 
 
@@ -207,6 +206,8 @@ WizDocumentListView::WizDocumentListView(WizExplorerApp& app, QWidget *parent /*
     m_menuDocument->addAction(WIZACTION_LIST_COPY_WEB_GROUP_LINK, this,
                               SLOT(on_action_copyWebClientLink()));
 
+    m_menuDocument->addAction(tr("Check Document Resources..."), this,
+                              SLOT(on_action_checkDocumentResources()));
     m_menuDocument->addSeparator();
 
     QAction* actionAlwaysOnTop = m_menuDocument->addAction(WIZACTION_LIST_ALWAYS_ON_TOP,
@@ -1989,6 +1990,24 @@ void WizDocumentListView::on_action_copyWebClientLink()
     }
 
     WizCopyNotesAsWebClientLink(documents);
+}
+
+void WizDocumentListView::on_action_checkDocumentResources()
+{
+    ::WizGetAnalyzer().logAction("documentListMenuCheckDocumentResources");
+    if (m_rightButtonFocusedItems.isEmpty())
+        return;
+
+    QList<WIZDOCUMENTDATA> documents;
+    foreach(WizDocumentListViewDocumentItem* item, m_rightButtonFocusedItems)
+    {
+        const WIZDOCUMENTDATA& document = item->document();
+        documents.append(document);
+    }
+
+    //Q_EMIT checkDocumentResourcesRequest(documents.first());
+    DocumentResourcesDialog dialog(documents.first());
+    dialog.exec();
 }
 
 void WizDocumentListView::on_action_showDocumentInNewTab()

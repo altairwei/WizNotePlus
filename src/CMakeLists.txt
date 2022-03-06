@@ -237,6 +237,8 @@ set(wiznote_SOURCES
     api/ApiWizExplorerApp.cpp
 
     utils/ExternalEditorLauncher.cpp
+
+    widgets/DocumentResourcesDialog.cpp
 )
 
 set(wiznote_HEADERS
@@ -449,6 +451,8 @@ set(wiznote_HEADERS
     api/ApiWizExplorerApp.h
 
     utils/ExternalEditorLauncher.h
+
+    widgets/DocumentResourcesDialog.h
 )
 
 set(wiznote_FORMS
@@ -477,6 +481,7 @@ set(wiznote_FORMS
     ui/WizCombineNotesDialog.ui
     ui/WizExternalEditorSettingDialog.ui
     ui/WizExternalEditorInfoDialog.ui
+    ui/DocumentResourcesDialog.ui
 )
 
 set(wiznote_TRANSLATIONS

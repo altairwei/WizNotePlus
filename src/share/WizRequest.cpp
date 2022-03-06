@@ -102,6 +102,9 @@ bool WizRequest::execJsonRequest(const QString &url, QByteArray &resBody)
     return execJsonRequest(url, "GET", QByteArray(), resBody);
 }
 
+/*!
+    Parse json results \a resBody into a Json::Value \a res.
+*/
 WIZSTANDARDRESULT WizRequest::isSucceededStandardJsonRequest(const QByteArray& resBody, Json::Value& res)
 {
     std::string resultString = resBody.toStdString();
@@ -139,37 +142,37 @@ WIZSTANDARDRESULT WizRequest::isSucceededStandardJsonRequest(const QByteArray& r
 WIZSTANDARDRESULT WizRequest::isSucceededStandardJsonRequest(Json::Value& res)
 {
     try {
-        //
+
         Json::Value returnCode = res["returnCode"];
         if (returnCode.isNull())
         {
             returnCode = res["return_code"];
         }
-        //
+
         if (returnCode.asInt() != 200)
         {
             Json::Value returnMessage = res["returnMessage"];
             Json::Value externCodeValue = res["externCode"];
-            //
+
             if (returnMessage.isNull()) {
                 returnMessage = res["return_message"];
             }
-            //
+
             std::string externCode;
             if (externCodeValue.isString()) {
                 externCode = externCodeValue.asString();
             } else if (externCodeValue.isInt()) {
                 externCode = WizIntToStr(externCodeValue.asInt()).toUtf8().constData();
             }
-            //
+
             TOLOG3("Can't exec request, ret code=%1, message=%2, externCode=%3",
                    WizIntToStr(returnCode.asInt()),
                    QString::fromStdString(returnMessage.asString()),
                    QString::fromStdString(externCode));
-            //
+
             return WIZSTANDARDRESULT(returnCode.asInt(), returnMessage.asString(), externCode);
         }
-        //
+
         return WIZSTANDARDRESULT(200, QString("OK"), QString());
     }
     catch (std::exception& err)

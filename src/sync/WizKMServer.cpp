@@ -975,10 +975,11 @@ void WizKMDatabaseServer::onDocumentObjectDownloadProgress(QUrl url, qint64 down
 }
 
 
-bool WizKMDatabaseServer::document_downloadDataNew(const QString& strDocumentGUID, WIZDOCUMENTDATAEX& ret, const QString& oldFileName)
+bool WizKMDatabaseServer::document_downloadDataNew(
+    const QString& strDocumentGUID, WIZDOCUMENTDATAEX& ret, const QString& oldFileName)
 {
     QString url = buildUrl("/ks/note/download/" + m_userInfo.strKbGUID + "/" + strDocumentGUID + "?downloadData=1");
-    //
+
     Json::Value doc;
     WIZSTANDARDRESULT jsonRet = WizRequest::execStandardJsonRequest(url, doc);
     m_lastJsonResult = jsonRet;
@@ -988,7 +989,9 @@ bool WizKMDatabaseServer::document_downloadDataNew(const QString& strDocumentGUI
         TOLOG1("Failed to download document data: %1", ret.strTitle);
         return false;
     }
-    //
+
+    // If it is an encrypted note, the 'html' and 'resources' fields will not
+    // appear in the json result, but the 'url' field will appear instead.
     Json::Value urlValue = doc["url"];
     if (!urlValue.isNull())
     {
@@ -998,22 +1001,22 @@ bool WizKMDatabaseServer::document_downloadDataNew(const QString& strDocumentGUI
             TOLOG1("Failed to download document data: %1", ret.strTitle);
             return false;
         }
-        //
+
         return true;
     }
-    //
+
     QString html = QString::fromUtf8(doc["html"].asString().c_str());
     if (html.isEmpty())
         return false;
-    //
+
     Json::Value resourcesObj = doc["resources"];
-    //
+
     struct RESDATA : public WIZZIPENTRYDATA
     {
         QString url;
     };
 
-    //
+    // Get document resource object list
     std::vector<RESDATA> serverResources;
     if (resourcesObj.isArray())
     {
@@ -1029,7 +1032,8 @@ bool WizKMDatabaseServer::document_downloadDataNew(const QString& strDocumentGUI
             serverResources.push_back(data);
         }
     }
-    //
+
+    // Create zip file to collect document content and resources
     WizTempFileGuard tempFile;
     WizZipFile newZip;
     if (!newZip.open(tempFile.fileName()))
@@ -1037,7 +1041,7 @@ bool WizKMDatabaseServer::document_downloadDataNew(const QString& strDocumentGUI
         TOLOG1("Failed to create temp file: %1", tempFile.fileName());
         return false;
     }
-    //
+
     QByteArray htmlData;
     WizSaveUnicodeTextToData(htmlData, html, true);
     if (!newZip.compressFile(htmlData, "index.html"))
@@ -1045,7 +1049,7 @@ bool WizKMDatabaseServer::document_downloadDataNew(const QString& strDocumentGUI
         TOLOG("Failed to add index.html to zip file");
         return false;
     }
-    //
+
     WizUnzipFile oldZip;
     bool hasOldZip = false;
     if (WizPathFileExists(oldFileName))
@@ -1059,7 +1063,8 @@ bool WizKMDatabaseServer::document_downloadDataNew(const QString& strDocumentGUI
             hasOldZip = true;
         }
     }
-    //
+
+    // Copy resources from old zip file to new one.
     for (intptr_t i = serverResources.size() - 1; i >= 0; i--)
     {
         auto res = serverResources[i];
@@ -1081,35 +1086,38 @@ bool WizKMDatabaseServer::document_downloadDataNew(const QString& strDocumentGUI
             }
         }
     }
-    //
+
+    // Download new resources
+
     QMutex mutex;
-    //
+
     int totalWaitForDownload = (int)serverResources.size();
     int totalDownloaded = 0;
     int totalFailed = 0;
-    //
+
     int totalDownloadSize = 0;
     for (auto res : serverResources)
     {
         totalDownloadSize += res.size;
     }
-    //
+
     m_objectsTotalSize = totalDownloadSize;
-    //
+
     for (auto res : serverResources)
     {
         QString resName = "index_files/" + res.name;
-        //
+
 #ifdef QT_DEBUG
         qDebug() << res.url;
 #endif
         ::WizExecuteOnThread(WIZ_THREAD_DOWNLOAD_RESOURCES, [=, &mutex, &totalFailed, &totalDownloaded, &newZip] {
-            //
+
             QByteArray data;
             qDebug() << "downloading " << resName;
-            bool ret = WizURLDownloadToData(res.url, data, this, SLOT(onDocumentObjectDownloadProgress(QUrl, qint64, qint64)));
+            bool ret = WizURLDownloadToData(
+                res.url, data, this, SLOT(onDocumentObjectDownloadProgress(QUrl, qint64, qint64)));
             qDebug() << "downloaded " << resName;
-            //
+
             QMutexLocker locker(&mutex);
             if (!ret)
             {
@@ -1117,20 +1125,20 @@ bool WizKMDatabaseServer::document_downloadDataNew(const QString& strDocumentGUI
                 totalFailed++;
                 return;
             }
-            //
+
             if (!newZip.compressFile(data, resName))
             {
                 TOLOG("Failed to add data to zip file");
                 totalFailed++;
                 return;
-                //
+
             }
-            //
+
             totalDownloaded++;
 
         });
     }
-    //
+
     if (totalWaitForDownload > 0)
     {
         while (true)
@@ -1139,29 +1147,29 @@ bool WizKMDatabaseServer::document_downloadDataNew(const QString& strDocumentGUI
             {
                 if (totalFailed == 0)
                     break;
-                //
+
                 return false;
             }
-            //
+
             QEventLoop loop;
             loop.processEvents();
-            //
+
             QThread::msleep(300);
         }
     }
-    //
+
     if (!newZip.close())
     {
         TOLOG("Failed to close zip file");
         return false;
     }
-    //
+
     if (!WizLoadDataFromFile(tempFile.fileName(), ret.arrayData))
     {
         TOLOG1("Failed to load data from file: %1", tempFile.fileName());
         return false;
     }
-    //
+
     return true;
 }
 
