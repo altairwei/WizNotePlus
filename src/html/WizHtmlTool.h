@@ -22,6 +22,7 @@ namespace Utils {
 
     QString WizHtmlGetContent(const QString &htmlText);
     QString WizHtmlGetPureText(const QString &htmlText);
+    QStringList WizHtmlExtractAttrValues(const QString &htmlText, const QString &tagAttributeName);
 }
 
 #endif // HTML_WIZHTMLTOOL_H

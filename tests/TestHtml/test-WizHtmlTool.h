@@ -21,6 +21,9 @@ private slots:
 
     void check_WizHtmlGetPureText();
     void check_WizHtmlGetPureText_data();
+
+    void check_WizHtmlExtractAttrValues();
+    void check_WizHtmlExtractAttrValues_data();
 };
 
 #endif // TEST_WIZHTMLTOOL_H

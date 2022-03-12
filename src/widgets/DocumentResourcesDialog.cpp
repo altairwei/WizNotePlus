@@ -40,13 +40,13 @@ DocumentResourcesDialog::DocumentResourcesDialog(const WIZDOCUMENTDATA &doc, QWi
             QTableWidgetItem *urlItem = new QTableWidgetItem(m_resInServer[i].url);
             ui->tableResources->setItem(i, 3, urlItem);
         }
-    }
 
-    Json::StreamWriterBuilder wbuilder;
-    wbuilder["indentation"] = "    ";
-    QString jsonText = QString::fromStdString(Json::writeString(wbuilder, m_json));
-    ui->textJson->setPlainText(jsonText);
-    ui->textJson->setLineWrapMode(QTextEdit::NoWrap);
+        Json::StreamWriterBuilder wbuilder;
+        wbuilder["indentation"] = "    ";
+        QString jsonText = QString::fromStdString(Json::writeString(wbuilder, m_json));
+        ui->textJson->setPlainText(jsonText);
+        ui->textJson->setLineWrapMode(QTextEdit::NoWrap);
+    }
 }
 
 DocumentResourcesDialog::~DocumentResourcesDialog()
@@ -88,7 +88,7 @@ bool DocumentResourcesDialog::getDocResourceObjectListFromServer()
     for (int i = 0; i < resourceCount; i++)
     {
         Json::Value resObj = resourcesObj[i];
-        RESDATA data;
+        RESINFO data;
         data.name = QString::fromUtf8(resObj["name"].asString().c_str());
         data.url = QString::fromUtf8(resObj["url"].asString().c_str());
         data.size = atoi((resObj["size"].asString().c_str()));

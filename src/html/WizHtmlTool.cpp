@@ -110,5 +110,22 @@ QString WizHtmlGetPureText(const QString &htmlText)
    return content;
 }
 
+QStringList WizHtmlExtractAttrValues(const QString &htmlText, const QString &tagAttributeName)
+{
+    std::string rawHtmlString = htmlText.toStdString();
+    GumboOutput* output = Utils::Gumbo::parseFromString(rawHtmlString);
+
+    std::vector<GumboNode *> tags;
+    Utils::Gumbo::getElementsContainAttr(
+        output->root, tagAttributeName, tags);
+
+    QStringList values;
+    for (auto tag : tags) {
+        values << Utils::Gumbo::getAttribute(tag, tagAttributeName);
+    }
+
+    return values;
+}
+
 
 } // namespace Utils

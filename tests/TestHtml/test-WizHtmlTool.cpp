@@ -197,3 +197,36 @@ void TestWizHtmlTool::check_WizHtmlGetPureText_data()
         << "<p id='para'>Hello World&nbsp;&nbsp;&nbsp;&nbsp;</p><br/><div>This is WizNotePlus</div>"
         << "Hello World    \n\n\nThis is WizNotePlus";
 }
+
+
+void TestWizHtmlTool::check_WizHtmlExtractAttrValues()
+{
+    QFETCH(QString, htmlText);
+    QFETCH(QString, attribute);
+    QFETCH(QStringList, values);
+
+    QStringList ret = Utils::WizHtmlExtractAttrValues(htmlText, attribute);
+
+    QCOMPARE(ret, values);
+}
+
+void TestWizHtmlTool::check_WizHtmlExtractAttrValues_data()
+{
+    QTest::addColumn<QString>("htmlText");
+    QTest::addColumn<QString>("attribute");
+    QTest::addColumn<QStringList>("values");
+
+    QTest::newRow("Test src of img tag")
+        << wrapTextInHtml5("<body><img src='https://hello.png' /><img src='https://word.png' /></body>")
+        << "src" << QStringList({"https://hello.png", "https://word.png"});
+    QTest::newRow("Test relative src of img tag")
+        << wrapTextInHtml5("<body><img src='index_files/hello.png' /><img src='index_files/word.png' /></body>")
+        << "src" << QStringList({"index_files/hello.png", "index_files/word.png"});
+
+    QTest::newRow("Test href of a tag")
+        << wrapTextInHtml5("<body><a href='https://example.com'>Website</a><a href='https://helloworld.com'>Website</a></body>")
+        << "href" << QStringList({"https://example.com", "https://helloworld.com"});
+    QTest::newRow("Test href of link tag")
+        << "<html><head><link rel=\"File-List\" type=\"image/png\" href=\"index_files/cfwa5sd4js46adsf4.png\" /></head><body><p></p></body></html>"
+        << "href" << QStringList({"index_files/cfwa5sd4js46adsf4.png"});
+}

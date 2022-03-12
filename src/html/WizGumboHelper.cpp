@@ -409,6 +409,24 @@ void getElementsByTagAttr(
     tags = tempTags;
 }
 
+void getElementsContainAttr(GumboNode *node, const QString &attrName, std::vector<GumboNode *> &tags)
+{
+    if (node->type != GUMBO_NODE_ELEMENT) {
+        return;
+    }
+
+    auto attrname_ = attrName.toStdString();
+    GumboAttribute* attr = gumbo_get_attribute(&node->v.element.attributes, attrname_.c_str());
+    if (attr != nullptr) {
+        tags.push_back(node);
+    }
+
+    GumboVector *children = &node->v.element.children;
+    for (unsigned int i = 0; i < children->length; ++i)
+    {
+        getElementsContainAttr(static_cast<GumboNode *>(children->data[i]), attrName, tags);
+    }
+}
 
 QString getAttribute(GumboNode *node, const QString &attrName)
 {

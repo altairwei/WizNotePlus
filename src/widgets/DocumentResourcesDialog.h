@@ -20,12 +20,19 @@ public:
     ~DocumentResourcesDialog();
 
 private:
-    struct RESDATA
+    struct RESINFO
     {
         QString name;
         QDateTime time;
         size_t size;
         QString url;
+        enum FLAG {
+            Recorded = 1 << 0,
+            Referenced = 1 << 1,
+            Cached = 1 << 2,
+            Inserver = 1 << 3
+        };
+        FLAG status;
     };
 
     bool getDocResourceObjectListFromServer();
@@ -37,8 +44,8 @@ private:
     Ui::DocumentResourcesDialog *ui;
     WIZDOCUMENTDATA m_doc;
     Json::Value m_json;
-    std::vector<RESDATA> m_resInServer;
-    std::vector<RESDATA> m_resToDelete;
+    std::vector<RESINFO> m_resInServer;
+    std::vector<RESINFO> m_resToDelete;
 };
 
 #endif // DOCUMENTRESOURCESDIALOG_H
