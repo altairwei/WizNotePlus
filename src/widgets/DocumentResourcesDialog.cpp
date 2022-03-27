@@ -1,12 +1,17 @@
 #include "DocumentResourcesDialog.h"
 #include "ui_DocumentResourcesDialog.h"
 
+#include <QUrl>
+#include <QDir>
+#include <algorithm>
+
 #include "share/jsoncpp/json/json.h"
 
 #include "sync/WizToken.h"
 #include "sync/WizKMServer.h"
 #include "share/WizRequest.h"
 #include "utils/WizLogger.h"
+#include "html/WizHtmlTool.h"
 
 DocumentResourcesDialog::DocumentResourcesDialog(const WIZDOCUMENTDATA &doc, QWidget *parent)
     : QDialog(parent)
@@ -20,25 +25,35 @@ DocumentResourcesDialog::DocumentResourcesDialog(const WIZDOCUMENTDATA &doc, QWi
     connect(ui->buttonBox, &QDialogButtonBox::accepted, this, &QDialog::accept);
     connect(ui->buttonBox, &QDialogButtonBox::rejected, this, &QDialog::reject);
     connect(ui->btnDeleteInServer, &QPushButton::clicked, this, &DocumentResourcesDialog::handleBtnDeleteInServerClicked);
+    connect(ui->btnDownload, &QPushButton::clicked, this, &DocumentResourcesDialog::handleBtnDownloadClicked);
 
     ui->tableResources->setSelectionBehavior(QAbstractItemView::SelectRows);
     ui->tableResources->setEditTriggers(QAbstractItemView::NoEditTriggers);
-    ui->tableResources->setColumnCount(4);
+    ui->tableResources->setColumnCount(6);
     ui->tableResources->horizontalHeader()->setSectionResizeMode(QHeaderView::Interactive);
     ui->tableResources->horizontalHeader()->setStretchLastSection(true);
-    ui->tableResources->setHorizontalHeaderLabels({tr("Name"), tr("Size"), tr("Time"), tr("Url")});
+    ui->tableResources->setHorizontalHeaderLabels({
+        tr("Name"), tr("Recorded"), tr("Referenced"), tr("Size"), tr("Time"), tr("Url")});
 
-    if (getDocResourceObjectListFromServer()) {
-        ui->tableResources->setRowCount(m_resInServer.size());
-        for (int i = 0; i < m_resInServer.size(); i++) {
-            QTableWidgetItem *nameItem = new QTableWidgetItem(m_resInServer[i].name);
+    if (getDocumentInfoFromServer()) {
+        getRecordedResObjectList();
+        getReferencedResObjectList();
+        ui->tableResources->setRowCount(m_resTotal.size());
+        for (int i = 0; i < m_resTotal.size(); i++) {
+            QTableWidgetItem *nameItem = new QTableWidgetItem(m_resTotal[i].name);
             ui->tableResources->setItem(i, 0, nameItem);
-            QTableWidgetItem *sizeItem = new QTableWidgetItem(locale().formattedDataSize(m_resInServer[i].size));
-            ui->tableResources->setItem(i, 1, sizeItem);
-            QTableWidgetItem *timeItem = new QTableWidgetItem(m_resInServer[i].time.toString());
-            ui->tableResources->setItem(i, 2, timeItem);
-            QTableWidgetItem *urlItem = new QTableWidgetItem(m_resInServer[i].url);
-            ui->tableResources->setItem(i, 3, urlItem);
+            QTableWidgetItem *recordItem = new QTableWidgetItem(
+                m_resTotal[i].status & RESINFO::FLAG::Recorded ? "TRUE" : "FALSE");
+            ui->tableResources->setItem(i, 1, recordItem);
+            QTableWidgetItem *refItem = new QTableWidgetItem(
+                m_resTotal[i].status & RESINFO::FLAG::Referenced ? "TRUE" : "FALSE");
+            ui->tableResources->setItem(i, 2, refItem);
+            QTableWidgetItem *sizeItem = new QTableWidgetItem(locale().formattedDataSize(m_resTotal[i].size));
+            ui->tableResources->setItem(i, 3, sizeItem);
+            QTableWidgetItem *timeItem = new QTableWidgetItem(m_resTotal[i].time.toString());
+            ui->tableResources->setItem(i, 4, timeItem);
+            QTableWidgetItem *urlItem = new QTableWidgetItem(m_resTotal[i].url);
+            ui->tableResources->setItem(i, 5, urlItem);
         }
 
         Json::StreamWriterBuilder wbuilder;
@@ -54,7 +69,7 @@ DocumentResourcesDialog::~DocumentResourcesDialog()
     delete ui;
 }
 
-bool DocumentResourcesDialog::getDocResourceObjectListFromServer()
+bool DocumentResourcesDialog::getDocumentInfoFromServer()
 {
     QString token = WizToken::token();
     if (token.isEmpty()) {
@@ -80,7 +95,15 @@ bool DocumentResourcesDialog::getDocResourceObjectListFromServer()
 
     m_json = response;
 
-    Json::Value resourcesObj = response["resources"];
+    return true;
+}
+
+bool DocumentResourcesDialog::getRecordedResObjectList()
+{
+    if (m_json.isNull())
+        return false;
+
+    Json::Value resourcesObj = m_json["resources"];
     if (!resourcesObj.isArray())
         return false;
 
@@ -93,7 +116,41 @@ bool DocumentResourcesDialog::getDocResourceObjectListFromServer()
         data.url = QString::fromUtf8(resObj["url"].asString().c_str());
         data.size = atoi((resObj["size"].asString().c_str()));
         data.time = QDateTime::fromTime_t(resObj["time"].asInt64() / 1000);
-        m_resInServer.push_back(data);
+        data.status = data.status | RESINFO::FLAG::Inserver | RESINFO::FLAG::Recorded;
+        m_resTotal.push_back(data);
+    }
+
+    return true;
+}
+
+bool DocumentResourcesDialog::getReferencedResObjectList()
+{
+    if (m_json.isNull())
+        return false;
+
+    auto html = QString::fromStdString(m_json["html"].asString());
+    QStringList srcs = Utils::WizHtmlExtractAttrValues(html, "src");
+    srcs.append(Utils::WizHtmlExtractAttrValues(html, "href"));
+    foreach (const auto &src, srcs) {
+        if (src.startsWith("index_files") || src.startsWith("./index_files")) {
+            auto filename = QUrl(src).fileName();
+            auto it = std::find_if(m_resTotal.begin(), m_resTotal.end(),
+                [&filename](auto res) {
+                    return res.name == filename;
+                }
+            );
+
+            if (it != m_resTotal.end()) {
+                auto &res = *it;
+                res.status = res.status | RESINFO::FLAG::Referenced;
+            } else {
+                RESINFO newRes;
+                newRes.name = filename;
+                newRes.size = 0;
+                newRes.status = RESINFO::FLAG::Referenced;
+                m_resTotal.push_back(newRes);
+            }
+        }
     }
 
     return true;
@@ -148,7 +205,7 @@ void DocumentResourcesDialog::handleBtnDeleteInServerClicked()
     doc["html"] = m_json["html"];
 
     Json::Value res_array(Json::arrayValue);
-    for (const auto &res : m_resInServer) {
+    for (const auto &res : m_resTotal) {
         if (files.contains(res.name))
             continue;
         Json::Value elemObj;
@@ -166,4 +223,19 @@ void DocumentResourcesDialog::handleBtnDeleteInServerClicked()
     wbuilder["indentation"] = "    ";
     QString jsonText = QString::fromStdString(Json::writeString(wbuilder, ret));
     ui->textJson->setText(jsonText);
+}
+
+void DocumentResourcesDialog::handleBtnDownloadClicked()
+{
+    QStringList files;
+    QItemSelectionModel* selection = ui->tableResources->selectionModel();
+    if (selection->hasSelection())
+    {
+        for (QModelIndex& row : selection->selectedRows())
+        {
+            files << ui->tableResources->item(row.row(), 0)->text();
+        }
+    }
+
+
 }

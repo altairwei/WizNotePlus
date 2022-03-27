@@ -46,7 +46,14 @@
      <item>
       <widget class="QPushButton" name="btnDeleteInServer">
        <property name="text">
-        <string>Delete in server</string>
+        <string>Delete record</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QPushButton" name="btnDownload">
+       <property name="text">
+        <string>Download...</string>
        </property>
       </widget>
      </item>

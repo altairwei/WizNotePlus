@@ -32,19 +32,22 @@ private:
             Cached = 1 << 2,
             Inserver = 1 << 3
         };
-        FLAG status;
+        int status;
     };
 
-    bool getDocResourceObjectListFromServer();
+    bool getDocumentInfoFromServer();
+    bool getRecordedResObjectList();
+    bool getReferencedResObjectList();
 
 private Q_SLOTS:
     void handleBtnDeleteInServerClicked();
+    void handleBtnDownloadClicked();
 
 private:
     Ui::DocumentResourcesDialog *ui;
     WIZDOCUMENTDATA m_doc;
     Json::Value m_json;
-    std::vector<RESINFO> m_resInServer;
+    std::vector<RESINFO> m_resTotal;
     std::vector<RESINFO> m_resToDelete;
 };
 
