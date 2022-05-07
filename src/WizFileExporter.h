@@ -8,7 +8,7 @@
 #include <QObject>
 
 class WizDatabaseManager;
-class WIZDOCUMENTDATA;
+struct WIZDOCUMENTDATA;
 
 class WizFileExporter : public QObject {
 

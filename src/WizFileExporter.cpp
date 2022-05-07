@@ -13,6 +13,7 @@
 #include "database/WizDatabaseManager.h"
 #include "share/WizMisc.h"
 #include "share/jsoncpp/json/json.h"
+#include "share/WizObject.h"
 
 WizFileExporter::WizFileExporter(WizDatabaseManager& dbMgr, QObject *parent)
     : QObject(parent)
@@ -26,8 +27,7 @@ bool WizFileExporter::exportNote(
     const QString &destFolder,
     const ExportFormat format,
     bool compress /*= false*/,
-    QString *errorMsg /*= nullptr*/
-)
+    QString *errorMsg /*= nullptr*/)
 {
     WizDatabase& db = m_dbMgr.db(doc.strKbGUID);
     if (!WizMakeSureDocumentExistAndBlockWidthEventloop(db, doc)) {

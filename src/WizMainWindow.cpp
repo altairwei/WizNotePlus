@@ -91,7 +91,7 @@
 #include "widgets/WizTipsWidget.h"
 #include "widgets/WizExecutingActionDialog.h"
 #include "widgets/WizUserServiceExprDialog.h"
-#include "widgets/WizFileExportDialog.h"
+#include "widgets/FileExportWizard.h"
 
 #include "WizPositionDelegate.h"
 #include "core/WizAccountManager.h"
@@ -3187,7 +3187,7 @@ void WizMainWindow::on_actionImportFile_triggered()
 
 void WizMainWindow::on_actionExportFile_triggered()
 {
-    WizFileExportDialog dialog(*this, this);
+    FileExportWizard dialog(*this, this);
     dialog.exec();
     WizGetAnalyzer().logAction("MenuBarExportFile");
 }

@@ -206,6 +206,7 @@ set(wiznote_SOURCES
     WizFileImporter.cpp
     WizFileExporter.cpp
     widgets/WizFileExportDialog.cpp
+    widgets/FileExportWizard.cpp
     WizProgressDialog.cpp
     WizDocumentSelectionView.cpp
     WizDocumentTransitionView.cpp
@@ -239,6 +240,7 @@ set(wiznote_SOURCES
     api/ApiWizExplorerApp.cpp
 
     utils/ExternalEditorLauncher.cpp
+    widgets/FileLineEdit.cpp
 )
 
 set(wiznote_HEADERS
@@ -389,6 +391,7 @@ set(wiznote_HEADERS
     WizFileImporter.h
     WizFileExporter.h
     widgets/WizFileExportDialog.h
+    widgets/FileExportWizard.h
     WizProgressDialog.h
     WizDocumentSelectionView.h
     WizUserVerifyDialog.h
@@ -453,6 +456,7 @@ set(wiznote_HEADERS
     api/ApiWizExplorerApp.h
 
     utils/ExternalEditorLauncher.h
+    widgets/FileLineEdit.h
 )
 
 set(wiznote_FORMS
