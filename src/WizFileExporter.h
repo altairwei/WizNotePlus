@@ -9,6 +9,7 @@
 
 class WizDatabaseManager;
 struct WIZDOCUMENTDATA;
+struct WIZDOCUMENTATTACHMENTDATAEX;
 
 class WizFileExporter : public QObject {
 
@@ -29,6 +30,9 @@ public:
                     const ExportFormat format,
                     bool compress = false,
                     QString *errorMsg = nullptr);
+
+    bool exportAttachment(const WIZDOCUMENTATTACHMENTDATAEX &att,
+                          const QString &destFolder);
 
 private:
     bool extractMarkdownToFile(const QString &htmlContent, const QString &outputFile);

@@ -29,7 +29,7 @@ class FileExportWizard : public QWizard
 
 public:
     FileExportWizard(WizExplorerApp& app, QWidget *parent = nullptr);
-
+    FileExportWizard(const QString &location, WizExplorerApp& app, QWidget *parent = nullptr);
 };
 
 class FileExportPageIntro : public QWizardPage
@@ -45,7 +45,9 @@ class FileExportPageDocList : public QWizardPage
     Q_OBJECT
 
 public:
-    FileExportPageDocList(WizExplorerApp& app, QWidget *parent = nullptr);
+    FileExportPageDocList(WizExplorerApp& app, QWidget *parent = nullptr)
+        : FileExportPageDocList("", app, parent) {}
+    FileExportPageDocList(const QString &location, WizExplorerApp& app, QWidget *parent = nullptr);
     void initializePage() override;
     bool isComplete() const override;
     int nextId() const override;
@@ -53,6 +55,7 @@ public:
 public Q_SLOTS:
     void handleCancelBtnClicked() { m_cancel = true; };
     void initFolders();
+    void initFoldersFromLocation(const QString &location);
     void handleItemChanged(QTreeWidgetItem *item, int column);
     void handleItemDoubleClicked(QTreeWidgetItem *item, int column);
     void updateSelection();
@@ -78,6 +81,7 @@ private:
     BaseItem* m_rootItem;
     bool m_cancel;
     bool m_isUpdateItemStatus;
+    QString m_rootLocation;
 };
 
 class FileExportPageOptions : public QWizardPage

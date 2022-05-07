@@ -37,6 +37,19 @@ FileExportWizard::FileExportWizard(WizExplorerApp& app, QWidget *parent)
     addPage(new FileExportPageExport(app));
 }
 
+FileExportWizard::FileExportWizard(const QString &location, WizExplorerApp& app, QWidget *parent)
+    : QWizard(parent)
+{
+    setWindowTitle("Export Wizard");
+#ifndef Q_OS_MAC
+    setWizardStyle(ModernStyle);
+#endif
+
+    addPage(new FileExportPageDocList(location, app));
+    addPage(new FileExportPageOptions);
+    addPage(new FileExportPageExport(app));
+}
+
 FileExportPageIntro::FileExportPageIntro(QWidget *parent)
     : QWizardPage(parent)
 {
@@ -127,12 +140,13 @@ private:
 };
 
 
-FileExportPageDocList::FileExportPageDocList(WizExplorerApp& app, QWidget *parent)
+FileExportPageDocList::FileExportPageDocList(const QString &location, WizExplorerApp& app, QWidget *parent)
     : QWizardPage(parent)
     , m_app(app)
     , m_dbMgr(app.databaseManager())
     , m_cancel(false)
     , m_isUpdateItemStatus(false)
+    , m_rootLocation(location)
 {
     setTitle(tr("Select Documents"));
     setSubTitle(tr("Please select documents you want to export."));
@@ -156,8 +170,16 @@ FileExportPageDocList::FileExportPageDocList(WizExplorerApp& app, QWidget *paren
     layout->addWidget(m_treeWidget);
     setLayout(layout);
 
+    auto init = [this]() {
+        if (m_rootLocation.isEmpty()) {
+            initFolders();
+        } else {
+            initFoldersFromLocation(m_rootLocation);
+        }
+    };
+
     connect(this, &FileExportPageDocList::initialized,
-            this, &FileExportPageDocList::initFolders, Qt::QueuedConnection);
+            this, init, Qt::QueuedConnection);
     connect(m_treeWidget, &QTreeWidget::itemChanged,
             this, &FileExportPageDocList::handleItemChanged);
     connect(m_treeWidget, &QTreeWidget::itemDoubleClicked,
@@ -232,6 +254,36 @@ void FileExportPageDocList::initFolders()
     Q_EMIT completeChanged();
 }
 
+void FileExportPageDocList::initFoldersFromLocation(const QString &location)
+{
+    auto pAllFoldersItem = new FolderItem(m_app, location, m_dbMgr.db().kbGUID());
+    pAllFoldersItem->setIcon(0, WizLoadSkinIcon(m_app.userSettings().skin(), "category_folder"));
+    pAllFoldersItem->setCheckState(0, Qt::Unchecked);
+    m_treeWidget->addTopLevelItem(pAllFoldersItem);
+    m_rootItem = pAllFoldersItem;
+
+    CWizStdStringArray childLocations;
+    m_dbMgr.db().getAllChildLocations(location, childLocations);
+
+    if (childLocations.size() > 1) {
+        m_statusText->setText(tr("<i>Scanning Database...</i>"));
+        m_progress->setRange(1, (int)childLocations.size());
+    } else {
+        m_progress->setRange(1, 1);
+    }
+
+    initFolderItem(pAllFoldersItem, location, childLocations);
+
+    pAllFoldersItem->setExpanded(true);
+    pAllFoldersItem->sortChildren(0, Qt::AscendingOrder);
+
+    m_treeWidget->show();
+    m_progress->hide();
+
+    m_statusText->setText(tr("Choose documents:"));
+    Q_EMIT completeChanged();
+}
+
 void FileExportPageDocList::initFolderItem(QTreeWidgetItem *pParent, const QString &strParentLocation,
                                       const CWizStdStringArray &arrayAllLocation)
 {
@@ -266,7 +318,6 @@ void FileExportPageDocList::initFolderItem(QTreeWidgetItem *pParent, const QStri
         qApp->processEvents();
         if (m_cancel) return;
 
-        if (!WizIsMarkdownNote(doc)) continue;
         auto pNoteItem = new NoteItem(m_app, doc.strTitle, m_dbMgr.db().kbGUID(), doc.strGUID, doc.strType);
         pNoteItem->setCheckState(0, Qt::Unchecked);
         pParent->addChild(pNoteItem);
@@ -463,13 +514,17 @@ void FileExportPageExport::handleExportFile()
         }
 
         QString destFolder = outputFolder;
-        // TODO: sanitize strLocation
         if (keepFolder)
             destFolder = outputFolder + data.strLocation;
 
         QString error = "Unknown error";
+
+        auto format = WizFileExporter::HTML;
+        if (WizIsMarkdownNote(data))
+            format = WizFileExporter::Markdown;
+
         bool ok = m_exporter->exportNote(
-            data, destFolder, WizFileExporter::Markdown, false, &error);
+            data, destFolder, format, false, &error);
         if (!ok) {
             auto ret = QMessageBox::critical(
                 this,

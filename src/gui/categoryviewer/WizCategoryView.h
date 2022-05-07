@@ -170,6 +170,7 @@ public:
         ActionNewDocument,
         ActionLoadDocument,
         ActionImportFile,
+        ActionExportFiles,
         ActionNewItem,
         ActionMoveItem,
         ActionCopyItem,
@@ -365,6 +366,7 @@ public Q_SLOTS:
     void on_action_newDocument();
     void on_action_loadDocument();
     void on_action_importFile();
+    void on_action_exportFiles();
 
     void on_action_newItem();
     void on_action_user_newFolder();

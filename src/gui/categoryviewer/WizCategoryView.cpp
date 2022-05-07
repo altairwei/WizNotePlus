@@ -40,6 +40,7 @@
 #include "WizWebSettingsDialog.h"
 #include "WizFileImporter.h"
 #include "WizOEMSettings.h"
+#include "widgets/FileExportWizard.h"
 
 
 #define CATEGORY_GENERAL    QObject::tr("General")
@@ -55,7 +56,8 @@
 // for context menu text
 #define CATEGORY_ACTION_DOCUMENT_NEW    QObject::tr("New Note")
 #define CATEGORY_ACTION_DOCUMENT_LOAD   QObject::tr("Load Note")
-#define CATEGORY_ACTION_IMPORT_FILE   QObject::tr("Import File...")
+#define CATEGORY_ACTION_IMPORT_FILE     QObject::tr("Import File...")
+#define CATEGORY_ACTION_EXPORT_FILES    QObject::tr("Export Files...")
 #define CATEGORY_ACTION_FOLDER_NEW      QObject::tr("New Folder...")
 #define CATEGORY_ACTION_FOLDER_COPY     QObject::tr("Copy to...")
 #define CATEGORY_ACTION_FOLDER_MOVE     QObject::tr("Move to...")
@@ -1336,12 +1338,18 @@ void WizCategoryView::initMenus()
 //    addAction(actionLoadDoc);
 //    connect(actionLoadDoc,SIGNAL(triggered()),SLOT(on_action_loadDocument()));
 
-    QAction* actionImportFile = new QAction("ActionImportFile",this);
+    QAction* actionImportFile = new QAction("ActionImportFile", this);
     actionImportFile->setShortcutContext(Qt::WidgetShortcut);
     actionImportFile->setShortcut(QKeySequence("Ctrl+Shift+I"));
     actionImportFile->setData(ActionImportFile);
     addAction(actionImportFile);
     connect(actionImportFile,SIGNAL(triggered()),SLOT(on_action_importFile()));
+
+    QAction* actionExportFiles = new QAction("ActionExportFiles");
+    actionExportFiles->setShortcutContext(Qt::WidgetShortcut);
+    actionExportFiles->setData(ActionExportFiles);
+    addAction(actionExportFiles);
+    connect(actionExportFiles, SIGNAL(triggered()), SLOT(on_action_exportFiles()));
 
     QAction* actionNewItem = new QAction("ActionNewItem", this);
     actionNewItem->setShortcutContext(Qt::WidgetShortcut);
@@ -1468,6 +1476,7 @@ void WizCategoryView::initMenus()
     m_menuFolder = std::make_shared<QMenu>();
     m_menuFolder->addAction(actionNewDoc);
     m_menuFolder->addAction(actionImportFile);
+    m_menuFolder->addAction(actionExportFiles);
     m_menuFolder->addAction(actionNewItem);
     m_menuFolder->addSeparator();
     m_menuFolder->addAction(actionRenameItem);
@@ -1568,6 +1577,10 @@ void WizCategoryView::resetMenu(CategoryMenuType type)
             if(type==FolderItem || type == GroupRootItem || type == GroupItem) {
                 act->setText(CATEGORY_ACTION_IMPORT_FILE);
             }
+            break;
+        case ActionExportFiles:
+            if (type== FolderRootItem || type == FolderItem)
+                act->setText(CATEGORY_ACTION_EXPORT_FILES);
             break;
         case ActionNewItem:
             if (type == FolderRootItem || type == FolderItem
@@ -2026,6 +2039,16 @@ void WizCategoryView::on_action_importFile()
     "All files(*.*);;Text files(*.txt *.md *.html *.htm *.cpp *.h *.rtf *.doc *.docx *.pages);;Images (*.png *.xpm *.jpg *.jpeg *.svg);;Webarchive (*.webarchive)");
 #endif
     importFiles(files);
+}
+
+void WizCategoryView::on_action_exportFiles()
+{
+    ::WizGetAnalyzer().logAction("categoryMenuExportFiles");
+    auto item = currentCategoryItem<WizCategoryViewFolderItem>();
+    if (item) {
+        FileExportWizard wizard(item->location(), m_app, this);
+        wizard.exec();
+    }
 }
 
 void WizCategoryView::on_action_newItem()

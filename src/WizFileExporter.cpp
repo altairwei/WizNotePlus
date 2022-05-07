@@ -5,6 +5,7 @@
 #include "WizFileExporter.h"
 
 #include <QFile>
+#include <QFileInfo>
 #include <QTextDocument>
 #include <QDir>
 #include <QDebug>
@@ -14,6 +15,8 @@
 #include "share/WizMisc.h"
 #include "share/jsoncpp/json/json.h"
 #include "share/WizObject.h"
+
+#define GUIDLEN 38
 
 WizFileExporter::WizFileExporter(WizDatabaseManager& dbMgr, QObject *parent)
     : QObject(parent)
@@ -55,9 +58,22 @@ bool WizFileExporter::exportNote(
         if (errorMsg)
             *errorMsg =  "Can't save meta info to json file: " +
                 docFolder.filePath("metainfo.json");
+        return false;
     }
 
-    // TODO: export attachments, download if neccessaryy
+    // Export attachments, download if neccessary
+    CWizDocumentAttachmentDataArray arrayAttachment;
+    db.getDocumentAttachments(doc.strGUID, arrayAttachment);
+    if (!arrayAttachment.empty())
+        docFolder.mkpath("attachments");
+    for (auto &att : arrayAttachment) {
+        if (!exportAttachment(att, docFolder.filePath("attachments"))) {
+            if (errorMsg)
+                *errorMsg = "Can't export attachment: " +
+                    att.strName.remove(0, GUIDLEN);
+            return false;
+        }
+    }
 
     // Unzip index.html and index_files/
     QString strHtmlFile = docFolder.filePath("index.html");
@@ -79,9 +95,6 @@ bool WizFileExporter::exportNote(
             break;
         }
         case HTML:
-        {
-
-        }
         default:
             break;
         }
@@ -94,6 +107,28 @@ bool WizFileExporter::exportNote(
     }
 
     return true;
+}
+
+bool WizFileExporter::exportAttachment(
+        const WIZDOCUMENTATTACHMENTDATAEX &att,
+        const QString &destFolder)
+{
+    WizDatabase& db = m_dbMgr.db(att.strKbGUID);
+    bool bIsLocal = db.isObjectDataDownloaded(att.strGUID, "attachment");
+    QString strFileName = db.getAttachmentFileName(att.strGUID);
+    bool bExists = WizPathFileExists(strFileName);
+    if (!bIsLocal || !bExists) {
+        bool ok = WizMakeSureAttachmentExistAndBlockWidthEventloop(db, att);
+        if (!ok) return false;
+    }
+
+    QFileInfo attfile(strFileName);
+    QString newFilename = destFolder + "/" + attfile.fileName().remove(0, GUIDLEN);
+
+    if (QFile::exists(newFilename))
+        QFile::remove(newFilename);
+
+    return QFile::copy(attfile.absoluteFilePath(), newFilename);
 }
 
 bool WizFileExporter::extractMarkdownToFile(const QString &htmlContent, const QString &outputFile) {
