@@ -205,7 +205,6 @@ set(wiznote_SOURCES
     WizButton.cpp
     WizFileImporter.cpp
     WizFileExporter.cpp
-    widgets/WizFileExportDialog.cpp
     widgets/FileExportWizard.cpp
     WizProgressDialog.cpp
     WizDocumentSelectionView.cpp
@@ -390,7 +389,6 @@ set(wiznote_HEADERS
     WizButton.h
     WizFileImporter.h
     WizFileExporter.h
-    widgets/WizFileExportDialog.h
     widgets/FileExportWizard.h
     WizProgressDialog.h
     WizDocumentSelectionView.h
