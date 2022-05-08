@@ -69,9 +69,6 @@ class WizNotePlusConan(ConanFile):
         "quazip/0.7.6@altairwei/testing",
         "Gumbo/0.10.1@altairwei/testing"
     )
-    build_requires = (
-        "cmake/3.16.9"
-    )
     keep_imports = True
     options = {
         "qtdir": "ANY"
