@@ -246,7 +246,7 @@ void FileExportPageDocList::initFolders()
     initFolderItem(pAllFoldersItem, "", arrayAllLocation);
 
     pAllFoldersItem->setExpanded(true);
-    pAllFoldersItem->sortChildren(0, Qt::AscendingOrder);
+    //pAllFoldersItem->sortChildren(0, Qt::AscendingOrder);
 
     m_treeWidget->show();
     m_progress->hide();
@@ -276,7 +276,7 @@ void FileExportPageDocList::initFoldersFromLocation(const QString &location)
     initFolderItem(pAllFoldersItem, location, childLocations);
 
     pAllFoldersItem->setExpanded(true);
-    pAllFoldersItem->sortChildren(0, Qt::AscendingOrder);
+    //pAllFoldersItem->sortChildren(0, Qt::AscendingOrder);
 
     m_treeWidget->show();
     m_progress->hide();
