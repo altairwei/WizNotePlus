@@ -9,6 +9,7 @@
 #include <QTextDocument>
 #include <QDir>
 #include <QDebug>
+#include <quazip/JlCompress.h>
 
 #include "database/WizDatabase.h"
 #include "database/WizDatabaseManager.h"
@@ -104,6 +105,12 @@ bool WizFileExporter::exportNote(
         return false;
     }
 
+    if (compress) {
+        if (!compressDocumentFolder(docFolder.absolutePath())) {
+            if (errorMsg) *errorMsg = "Can't remove folder after compress";
+        }
+    }
+
     return true;
 }
 
@@ -161,6 +168,16 @@ bool WizFileExporter::writeDocumentInfoToJsonFile(const WIZDOCUMENTDATA &doc, co
     if (!WizSaveUnicodeTextToUtf8File(outputFIle, metainfoDocument)) {
         return false;
     }
+
+    return true;
+}
+
+bool WizFileExporter::compressDocumentFolder(const QString &folder, bool removeSource) {
+    if (!JlCompress::compressDir(folder + ".zip", folder, true))
+        return false;
+
+    if (removeSource && !QDir(folder).removeRecursively())
+        return false;
 
     return true;
 }

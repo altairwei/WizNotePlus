@@ -432,12 +432,23 @@ FileExportPageOptions::FileExportPageOptions(QWidget *parent)
     registerField("outputFolder*", m_outputFolder->lineEdit());
 
     m_keepFolder = new QCheckBox;
+    m_keepFolder->setChecked(true);
     m_keepFolder->setText(tr("Keep document folder"));
+    m_keepFolder->setToolTip(tr(
+            "Ensure that the folder hierarchy "
+            "of the output is consistent with that in the software"));
     registerField("keepFolder", m_keepFolder);
+
+    m_compress = new QCheckBox;
+    m_compress->setText(tr("Compress document folder"));
+    m_compress->setToolTip(tr("Compress each note's file and its associated "
+                              "resources together"));
+    registerField("compress", m_compress);
 
     QVBoxLayout *layout = new QVBoxLayout;
     layout->addWidget(m_outputFolder);
     layout->addWidget(m_keepFolder);
+    layout->addWidget(m_compress);
     setLayout(layout);
 }
 
@@ -500,6 +511,7 @@ void FileExportPageExport::handleExportFile()
     QStringList notes = field("documents").toStringList();
     QString outputFolder = field("outputFolder").toString();
     bool keepFolder = field("keepFolder").toBool();
+    bool compress = field("compress").toBool();
 
     if (notes.size() > 1) {
         m_progress->setRange(1, notes.size());
@@ -522,6 +534,8 @@ void FileExportPageExport::handleExportFile()
             );
         }
 
+        insertLog(QString("Exporting %1\n").arg(data.strTitle));
+
         if (data.nProtected == 1) {
             if (!db.loadUserCert()) {
                 ASKCONTINUE(
@@ -531,6 +545,7 @@ void FileExportPageExport::handleExportFile()
             }
 
             if (db.getCertPassword().isEmpty()) {
+                insertLog("Asking for password...\n");
                 bool ok;
                 QString password = QInputDialog::getText(
                     this, tr("Password for Encrypted Notes"),
@@ -563,15 +578,13 @@ void FileExportPageExport::handleExportFile()
             format = WizFileExporter::Markdown;
 
         bool ok = m_exporter->exportNote(
-            data, destFolder, format, false, &error);
+            data, destFolder, format, compress, &error);
         if (!ok) {
             ASKCONTINUE(
                 tr("Do you want to continue?"),
                 error
             );
         }
-
-        insertLog(QString("Exported: %1\n").arg(data.strTitle));
     }
 
     Q_EMIT completeChanged();
