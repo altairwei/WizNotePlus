@@ -39,8 +39,6 @@ bool WizFileExporter::exportNote(
         return false;
     }
 
-    // TODO: handle cipher, not supported now
-
     CString folder = doc.strTitle;
     WizMakeValidFileNameNoPath(folder);
 

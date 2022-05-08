@@ -104,6 +104,7 @@ public:
     FileExportPageExport(WizExplorerApp& app, QWidget *parent = nullptr);
 
     void initializePage() override;
+    bool isComplete() const override;
 
 Q_SIGNALS:
     void initialized();

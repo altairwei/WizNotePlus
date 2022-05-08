@@ -15,6 +15,7 @@
 #include <QCheckBox>
 #include <QDebug>
 #include <QLineEdit>
+#include <QInputDialog>
 
 #include "WizDef.h"
 #include "database/WizDatabase.h"
@@ -483,13 +484,28 @@ void FileExportPageExport::insertLog(const QString& text)
 }
 
 
+#define ASKCONTINUE(x, y) \
+    QMessageBox::StandardButton ret = QMessageBox::critical(    \
+        this, (x), (y),                                         \
+        QMessageBox::Ok | QMessageBox::Abort,                   \
+        QMessageBox::Ok                                         \
+    );                                                          \
+    if (ret == QMessageBox::Abort)                              \
+        return;                                                 \
+    else                                                        \
+        continue                                               \
+
 void FileExportPageExport::handleExportFile()
 {
     QStringList notes = field("documents").toStringList();
     QString outputFolder = field("outputFolder").toString();
     bool keepFolder = field("keepFolder").toBool();
 
-    m_progress->setRange(1, notes.size());
+    if (notes.size() > 1) {
+        m_progress->setRange(1, notes.size());
+    } else {
+        m_progress->setRange(1, 1);
+    }
 
     // TODO: add databse option
     WizDatabase& db = m_dbMgr.db();
@@ -500,17 +516,40 @@ void FileExportPageExport::handleExportFile()
 
         WIZDOCUMENTDATA data;
         if (!db.documentFromGuid(note, data)) {
-            auto ret = QMessageBox::critical(
-                this,
-                tr("Error occurred! Do you want to continue?"),
-                tr("Can't find document for GUID: %1").arg(note),
-                QMessageBox::Ok | QMessageBox::Abort,
-                QMessageBox::Ok
+            ASKCONTINUE(
+                tr("Do you want to continue?"),
+                tr("Can't find document for GUID: %1").arg(note)
             );
-            if (ret == QMessageBox::Abort)
-                return;
-            else
-                continue;
+        }
+
+        if (data.nProtected == 1) {
+            if (!db.loadUserCert()) {
+                ASKCONTINUE(
+                    tr("Do you want to continue?"),
+                    tr("Can't load user cert.")
+                );
+            }
+
+            if (db.getCertPassword().isEmpty()) {
+                bool ok;
+                QString password = QInputDialog::getText(
+                    this, tr("Password for Encrypted Notes"),
+                    tr("Password:"), QLineEdit::Password, "", &ok);
+                if (ok && !password.isEmpty()) {
+                    if (!db.verifyCertPassword(password)) {
+                        ASKCONTINUE(
+                            tr("Do you want to continue?"),
+                            tr("Invalid password.")
+                        );
+                    }
+                } else {
+                    ASKCONTINUE(
+                        tr("Do you want to continue?"),
+                        tr("Can't get password.")
+                    );
+                }
+
+            }
         }
 
         QString destFolder = outputFolder;
@@ -526,24 +565,26 @@ void FileExportPageExport::handleExportFile()
         bool ok = m_exporter->exportNote(
             data, destFolder, format, false, &error);
         if (!ok) {
-            auto ret = QMessageBox::critical(
-                this,
-                tr("Error occurred! Do you want to continue?"),
-                error,
-                QMessageBox::Ok | QMessageBox::Abort,
-                QMessageBox::Ok
+            ASKCONTINUE(
+                tr("Do you want to continue?"),
+                error
             );
-            if (ret == QMessageBox::Abort)
-                return;
-            else
-                continue;
         }
 
         insertLog(QString("Exported: %1\n").arg(data.strTitle));
     }
 
-    QMessageBox::information(nullptr, tr("Export Success"), tr("All notes selected exported"));
+    Q_EMIT completeChanged();
     QDesktopServices::openUrl(QUrl(outputFolder));
+}
+
+bool FileExportPageExport::isComplete() const
+{
+    if (m_progress->value() != m_progress->maximum()) {
+        return false;
+    } else {
+        return true;
+    }
 }
 
 
