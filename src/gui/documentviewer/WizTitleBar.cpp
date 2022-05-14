@@ -274,37 +274,80 @@ WizTitleBar::WizTitleBar(WizExplorerApp& app, QWidget *parent)
             SLOT(on_commentCountAcquired(QString,int)));
 }
 
-/**
- * @brief Init plugins' tool button on document tool bar.
- */
+/*!
+    Init plugins' tool button on document tool bar.
+*/
 void WizTitleBar::initPlugins()
 {
     int nTitleHeight = Utils::WizStyleHelper::titleEditorHeight();
     JSPluginManager &jsPluginMgr = JSPluginManager::instance();
-    QList<JSPluginModule *> modules = jsPluginMgr.modulesByKeyValue("ModuleType", "Action");
-    for (auto moduleData : modules) {
-        if (moduleData->spec()->buttonLocation() != "Document")
-            continue;
-        QAction *ac = jsPluginMgr.createPluginAction(m_documentToolBar, moduleData);
-        connect(ac, &QAction::triggered, 
-            &jsPluginMgr, &JSPluginManager::handlePluginActionTriggered);
 
-        m_documentToolBar->addAction(ac);
-        if (auto acWgt = qobject_cast<QToolButton *>(m_documentToolBar->widgetForAction(ac))) {
-            acWgt->setFixedHeight(nTitleHeight);
+    auto menus = jsPluginMgr.modulesByModuleType("Menu");
+    foreach (auto menuData, menus) {
+        if (menuData->spec()->buttonLocation() != "Document")
+            continue;
+        auto btn = new WizToolButton(this, WizToolButton::ImageOnly | WizToolButton::WithMenu);
+        btn->setFixedHeight(nTitleHeight);
+        btn->setPopupMode(QToolButton::MenuButtonPopup);
+        QMenu *m = new QMenu(btn);
+        foreach (int i, menuData->spec()->actionIndexes()) {
+            auto parent = menuData->parentPlugin();
+            auto acm = parent->module(i);
+            QAction *ac = jsPluginMgr.createPluginAction(btn, acm);
+            m->addAction(ac);
+            if (acm->spec()->slotType() == "DocumentSidebar") {
+                ac->setCheckable(true);
+                connect(ac, &QAction::triggered, this, [this, ac] (bool checked) {
+                    Q_EMIT pluginSidebarRequest(ac, checked);
+                });
+            } else {
+                connect(ac, &QAction::triggered, this,
+                    [this, btn, ac] (bool checked) {
+                        QRect rc = btn->rect();
+                        QPoint pt = btn->mapToGlobal(QPoint(rc.width()/2, rc.height()));
+                        Q_EMIT pluginPopupRequest(ac, pt);
+                    }
+                );
+            }
+
+        }
+
+        btn->setMenu(m);
+        auto acs = m->actions();
+        if (!acs.isEmpty()) {
+            btn->setDefaultAction(acs.first());
+            m_documentToolBar->addWidget(btn);
         }
     }
 
+    QList<JSPluginModule *> modules = jsPluginMgr.modulesByKeyValue("ModuleType", "Action");    
+    foreach (auto moduleData, modules) {
+        if (moduleData->spec()->buttonLocation() != "Document")
+            continue;
+        auto btn = new WizToolButton(this, WizToolButton::ImageOnly);
+        QAction *ac = m_documentToolBar->addWidget(btn);
+        JSPluginManager::initPluginAction(ac, moduleData);
+        btn->setDefaultAction(ac);
+        btn->setFixedHeight(nTitleHeight);
+        QString slotType = moduleData->spec()->slotType();
+        if (slotType == "DocumentSidebar") {
+            ac->setCheckable(true);
+            connect(ac, &QAction::triggered, this, [this, ac] (bool checked) {
+                Q_EMIT pluginSidebarRequest(ac, checked);
+            });
+
+        } else if (slotType == "SelectorWindow") {
+            connect(btn, &QToolButton::triggered, this, &WizTitleBar::handlePluginPopup);
+        }
+    }
+
+    connect(this, &WizTitleBar::pluginPopupRequest,
+            &jsPluginMgr, &JSPluginManager::handlePluginPopupRequest);
     connect(this, &WizTitleBar::launchPluginEditorRequest, 
-        &jsPluginMgr, &JSPluginManager::handlePluginEditorRequest);
+            &jsPluginMgr, &JSPluginManager::handlePluginEditorRequest);
 }
 
-/**
- * @brief 从部件父组件中搜寻并返回文档视图
- *
- * TODO: 这种获取方式太粗暴了，不值得提倡
- * @return
- */
+// FIXME: urgly impl
 WizDocumentView* WizTitleBar::noteView()
 {
     QWidget* pParent = parentWidget();
@@ -768,6 +811,16 @@ void WizTitleBar::onViewMindMapClicked()
     //m_mindmapBtn->setChecked(on);
     emit onViewMindMap(on);
     m_mindmapBtn->setState(on ? WizCellButton::Checked : WizCellButton::Normal);
+}
+
+void WizTitleBar::handlePluginPopup(QAction* ac)
+{
+    QWidget *btn = m_documentToolBar->widgetForAction(ac);
+
+    QRect rc = btn->rect();
+    QPoint pt = btn->mapToGlobal(QPoint(rc.width()/2, rc.height()));
+
+    Q_EMIT pluginPopupRequest(ac, pt);
 }
 
 QAction* actionFromMenu(QMenu* menu, const QString& text)

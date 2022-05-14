@@ -1184,7 +1184,7 @@ void WizDocumentWebView::onEditorLoadFinished(bool ok)
         }
     });
     // Notify all plugins
-    JSPluginManager::instance().notifyDocumentChanged();
+    JSPluginManager::instance().handleDocumentChanged();
 }
 
 /**

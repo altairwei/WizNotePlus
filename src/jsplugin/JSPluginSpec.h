@@ -78,6 +78,7 @@ private:
 
     bool validateActionTypeModule();
     bool validateEditorTypeModule();
+    bool validateMenuTypeModule();
 
 public:
     JSPluginSpec *parentSpec() { return m_parentSpec; }
@@ -94,6 +95,7 @@ public:
     QStringList scriptFiles() { return m_scriptFiles; }
     QStringList styleFiles() { return m_styleFiles; }
     QStringList supportedFormats() { return m_supportedFormats; }
+    QList<int> actionIndexes() { return m_actionIndexes; }
     int width() { return m_width; }
     int height() { return m_height; }
 
@@ -129,6 +131,9 @@ private:
     QStringList m_scriptFiles;
     QStringList m_styleFiles;
     QStringList m_supportedFormats;
+
+    // ModuleType=Menu
+    QList<int> m_actionIndexes;
 
 public:
     friend class JSPluginSpec;

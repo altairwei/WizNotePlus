@@ -134,8 +134,7 @@ set(wiznote_SOURCES
     jsplugin/JSPlugin.cpp
     jsplugin/JSPluginManager.cpp
     jsplugin/JSPluginSpec.cpp
-    jsplugin/JSPluginSelectorWindow.cpp
-    jsplugin/JSPluginHtmlDialog.cpp
+    jsplugin/JSPluginWidgets.cpp
 
     api/PublicAPIsServer.cpp
     api/WebSocketClientWrapper.cpp
@@ -311,8 +310,7 @@ set(wiznote_HEADERS
     jsplugin/JSPlugin.h
     jsplugin/JSPluginManager.h
     jsplugin/JSPluginSpec.h
-    jsplugin/JSPluginSelectorWindow.h
-    jsplugin/JSPluginHtmlDialog.h
+    jsplugin/JSPluginWidgets.h
 
     api/PublicAPIsServer.h
     api/WebSocketClientWrapper.h

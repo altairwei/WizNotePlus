@@ -725,8 +725,6 @@ void WizMainWindow::on_viewMessage_request(const WIZMESSAGEDATA& msg)
             && !m_dbMgr.db(msg.kbGUID).documentFromGuid(msg.documentGUID, doc)
             )
     {
-        //FIXME: 在当前文档视图弹出消息，但如果新标签是网页呢？
-        //m_doc->promptMessage(tr("Can't find note %1 , may be it has been deleted.").arg(msg.title));
         QMessageBox::information(this, tr("Warning"), tr("Can't find note %1 , may be it has been deleted.").arg(msg.title));
         return;
     }

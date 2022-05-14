@@ -36,6 +36,7 @@ class WizDocumentTransitionView;
 class WizTitleBar;
 class WizEditorToolBar;
 class WizTagBar;
+class JSPluginDocSidebar;
 
 class WizDocumentView : public AbstractTabPage
 {
@@ -71,12 +72,10 @@ protected:
     WizDocumentTransitionView* m_transitionView;
 
     QStackedWidget* m_stack;
-    QWidget* m_msgWidget;
-    QLabel* m_msgLabel;
-
     QWidget* m_docView;
     WizDocumentWebView* m_web;
     WizWebEngineView* m_comments;
+    JSPluginDocSidebar* m_pluginSidebar;
     WizLocalProgressWebView* m_commentWidget;
     WizSplitter* m_splitter;
     WizTitleBar* m_title;
@@ -122,7 +121,6 @@ public:
     void settingsChanged();
     void sendDocumentSavedSignal(const QString& strGUID, const QString& strKbGUID);
     void resetTitle(const QString& strTitle);
-    void promptMessage(const QString& strMsg);
     bool checkListClickable();
     void setStatusToEditingByCheckList();
     //
@@ -171,7 +169,8 @@ public Q_SLOTS:
     void on_viewNoteInExternalEditor_request(QString& Name, QString& ProgramFile,
                                                 QString& Arguments, int TextEditor, int UTF8Encoding);
     void handleDiscardChangesRequest();
-    void handleWindowCloseRequested();
+    void handleWindowCloseRequest();
+    void handlePluginSidebarRequest(QAction *ac, bool checked);
 
 private:
     void loadNote(const WIZDOCUMENTDATAEX &doc);

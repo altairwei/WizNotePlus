@@ -22,6 +22,7 @@ public:
 
     JSPluginSpec *spec() { return m_data; }
     QVector<JSPluginModule *> modules() { return m_modules; }
+    JSPluginModule *module(int i) { return m_modules[i]; }
 
     QString name() { return m_data->name(); }
     QString path() { return m_data->path(); }
@@ -65,6 +66,7 @@ private:
 
 Q_SIGNALS:
     void documentChanged();
+    void documentHtmlChanged();
     void willShow();
 
 private:

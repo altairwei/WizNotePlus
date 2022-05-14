@@ -77,6 +77,7 @@ public Q_SLOTS:
     void onHistoryButtonClicked();
     void onInfoButtonClicked();
     void onViewMindMapClicked();
+    void handlePluginPopup(QAction*);
 
     void onEmailActionClicked();
     void onShareActionClicked();
@@ -115,6 +116,8 @@ signals:
                                 QString& Arguments, int TextEditor, int UTF8Encoding);
     void discardChangesRequest();
     void launchPluginEditorRequest(const WIZDOCUMENTDATA &doc, const QString &guid);
+    void pluginPopupRequest(QAction *ac, const QPoint &pos);
+    void pluginSidebarRequest(QAction *ac, bool checked);
 
 private:
     void showInfoBar();

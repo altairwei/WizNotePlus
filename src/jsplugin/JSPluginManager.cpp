@@ -33,8 +33,7 @@
 #include "gui/tabbrowser/WizMainTabBrowser.h"
 #include "JSPlugin.h"
 #include "JSPluginSpec.h"
-#include "JSPluginHtmlDialog.h"
-#include "JSPluginSelectorWindow.h"
+#include "JSPluginWidgets.h"
 
 JSPluginManager::JSPluginManager()
     : QObject(nullptr)
@@ -92,6 +91,19 @@ QList<JSPluginModule *> JSPluginManager::modulesByButtonLocation(QString buttonL
     return ret;
 }
 
+QList<JSPluginModule *> JSPluginManager::modulesByModuleType(QString type) const
+{
+    QList<JSPluginModule *> ret;
+    for (JSPlugin *pluginData : m_pluginDataCollection) {
+        for (JSPluginModule *moduleData : pluginData->modules()) {
+            if (moduleData->spec()->moduleType() == type) {
+                ret.push_back(moduleData);
+            }
+        }
+    }
+    return ret;
+}
+
 QList<JSPluginModule *> JSPluginManager::modulesByKeyValue(QString key, QString value) const
 {
     QList<JSPluginModule *> ret;
@@ -124,12 +136,17 @@ JSPluginModule *JSPluginManager::moduleByGUID(QString guid) const
 QAction *JSPluginManager::createPluginAction(QWidget *parent, JSPluginModule *moduleData)
 {
     QAction *ac = new QAction(parent);
+    initPluginAction(ac, moduleData);
+    return ac;
+}
+
+void JSPluginManager::initPluginAction(QAction *ac, JSPluginModule *moduleData)
+{
     ac->setData(moduleData->spec()->guid());
     ac->setIcon(QIcon(moduleData->spec()->iconFileName()));
     ac->setIconText(moduleData->spec()->caption());
     ac->setText(moduleData->spec()->caption());
     ac->setToolTip(moduleData->spec()->caption());
-    return ac;
 }
 
 JSPluginHtmlDialog *JSPluginManager::initPluginHtmlDialog(JSPluginModule *moduleData)
@@ -137,13 +154,6 @@ JSPluginHtmlDialog *JSPluginManager::initPluginHtmlDialog(JSPluginModule *module
     JSPluginHtmlDialog *htmlDialog = new JSPluginHtmlDialog(m_app, moduleData, nullptr);
     m_pluginHtmlDialogCollection.insert(moduleData->spec()->guid(), htmlDialog);
     return htmlDialog;
-}
-
-JSPluginSelectorWindow *JSPluginManager::initPluginSelectorWindow(JSPluginModule *moduleData)
-{
-    JSPluginSelectorWindow *selectorWindow = new JSPluginSelectorWindow(m_app, moduleData, nullptr);
-    m_pluginPopupDialogCollection.insert(moduleData->spec()->guid(), selectorWindow);
-    return selectorWindow;
 }
 
 WizWebsiteView *JSPluginManager::initPluginMainTabView(JSPluginModule *moduleData)
@@ -184,17 +194,11 @@ void JSPluginManager::showPluginHtmlDialog(JSPluginModule *moduleData)
     dialog->raise();
 }
 
-void JSPluginManager::showPluginSelectorWindow(JSPluginModule *moduleData, QPoint &pt)
+void JSPluginManager::showPluginSelectorWindow(JSPluginModule *moduleData, const QPoint &pt)
 {
     QString guid = moduleData->spec()->guid();
-    JSPluginSelectorWindow* selectorWindow;
-    auto it = m_pluginPopupDialogCollection.find(guid);
-    if ( it == m_pluginPopupDialogCollection.end()) {
-        selectorWindow = initPluginSelectorWindow(moduleData);
-    } else {
-        selectorWindow = it.value();
-    }
-    //
+    JSPluginSelectorWindow *selectorWindow = new JSPluginSelectorWindow(m_app, moduleData, nullptr);
+    selectorWindow->setAttribute(Qt::WA_DeleteOnClose);
     moduleData->emitShowEvent();
     selectorWindow->showAtPoint(pt);
 }
@@ -250,7 +254,27 @@ void JSPluginManager::handlePluginActionTriggered()
     }
 }
 
-void JSPluginManager::notifyDocumentChanged()
+void JSPluginManager::handlePluginPopupRequest(QAction *ac, const QPoint &pos)
+{
+    QString moduleGuid = ac->data().toString();
+    if (moduleGuid.isEmpty())
+        return;
+
+    JSPluginModule *moduleData = moduleByGUID(moduleGuid);
+    if (!moduleData)
+        return;
+
+    QString slotType = moduleData->spec()->slotType();
+    if ( slotType == "SelectorWindow" ) {
+        showPluginSelectorWindow(moduleData, pos);
+    } else if ( slotType == "HtmlDialog" ) {
+        showPluginHtmlDialog(moduleData);
+    } else if ( slotType == "MainTabView") {
+        showPluginMainTabView(moduleData);
+    }
+}
+
+void JSPluginManager::handleDocumentChanged()
 {
     for (auto data : m_pluginDataCollection) {
         data->emitDocumentChanged();
