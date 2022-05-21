@@ -327,7 +327,9 @@ void WizDocumentView::handlePluginSidebarRequest(QAction *ac, bool checked)
         m_pluginSidebar = new JSPluginDocSidebar(m_app, moduleData, this);
         m_splitter->addWidget(m_pluginSidebar);
         connect(m_web, &WizDocumentWebView::currentHtmlChanged,
-                moduleData, &JSPluginModule::documentHtmlChanged);
+                m_pluginSidebar, &JSPluginDocSidebar::documentHtmlChanged);
+        connect(m_web, &WizDocumentWebView::loadFinishedEx,
+                m_pluginSidebar, &JSPluginDocSidebar::editorLoadFinished);
     }
 
     if (checked) {

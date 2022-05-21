@@ -50,7 +50,6 @@ public:
     JSPluginSelectorWindow(WizExplorerApp& app,
                            JSPluginModule* module,
                            QWidget* parent = nullptr);
-    virtual ~JSPluginSelectorWindow();
 
 public:
     WizWebEngineView* web() const {return m_web; }
@@ -77,6 +76,10 @@ public:
 
     virtual QSize sizeHint() const;
     JSPluginModule* module() { return m_module; }
+
+Q_SIGNALS:
+    void documentHtmlChanged();
+    void editorLoadFinished();
 
 private:
     int m_sidebarWidth;

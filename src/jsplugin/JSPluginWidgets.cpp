@@ -14,7 +14,8 @@ JSPluginWebsiteView::JSPluginWebsiteView(WizExplorerApp& app, JSPluginModule* mo
     WizWebEngineInjectObjectCollection objects = {
         {"JSPlugin", module->parentPlugin()},
         {"JSPluginModule", module},
-        {"WizExplorerApp", mw->publicAPIsObject()}
+        {"WizExplorerApp", mw->publicAPIsObject()},
+        {"JSPluginWindow", this}
     };
     m_web = new WizWebEngineView(objects, this);
     QVBoxLayout* layout = new QVBoxLayout();
@@ -64,7 +65,8 @@ JSPluginSelectorWindow::JSPluginSelectorWindow(WizExplorerApp& app, JSPluginModu
     WizWebEngineInjectObjectCollection objects = {
         {"JSPlugin", module->parentPlugin()},
         {"JSPluginModule", module},
-        {"WizExplorerApp", mw->publicAPIsObject()}
+        {"WizExplorerApp", mw->publicAPIsObject()},
+        {"JSPluginWindow", this}
     };
     m_web = new WizWebEngineView(objects, this);
 
@@ -75,11 +77,6 @@ JSPluginSelectorWindow::JSPluginSelectorWindow(WizExplorerApp& app, JSPluginModu
     layout->addWidget(m_web);
     m_web->load(QUrl::fromLocalFile(m_module->spec()->htmlFileName()));
 
-}
-
-JSPluginSelectorWindow::~JSPluginSelectorWindow()
-{
-    qDebug() << "~~~~~~~~~~~~~~~~~~~~~~~~~";
 }
 
 QSize JSPluginSelectorWindow::sizeHint() const
