@@ -17,7 +17,11 @@ PublicAPIsServer::PublicAPIsServer(QHash<QString, QObject *> publicObjectCollect
     // create websocket server
     m_server = new QWebSocketServer(
         QStringLiteral("WizNotePlus Public APIs Server"), QWebSocketServer::NonSecureMode, this);
+
     if (!m_server->listen(QHostAddress::LocalHost, 8848)) {
+        QMessageBox::critical(nullptr,
+            tr("Abort"), tr("Unable to listen to port 8848, "
+                            "browser webclipping plugin depends on it."));
         qFatal("Failed to open web socket server.");
     }
     

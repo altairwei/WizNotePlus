@@ -175,6 +175,9 @@ WizMainWindow::WizMainWindow(WizDatabaseManager& dbMgr, QWidget *parent)
     windowInstance = this;
     qRegisterMetaType<WIZGROUPDATA>("WIZGROUPDATA");
 
+    m_publicAPIsServer = new PublicAPIsServer(
+        {{"WizExplorerApp", m_IWizExplorerApp}}, this);
+
     initSyncQuick();
 
     initQuitHandler();
@@ -258,9 +261,6 @@ WizMainWindow::WizMainWindow(WizDatabaseManager& dbMgr, QWidget *parent)
         syncMessageTimer->setInterval(3 * 1000 * 60);
         syncMessageTimer->start(3 * 1000 * 60);
     }
-
-    m_publicAPIsServer = new PublicAPIsServer(
-        {{"WizExplorerApp", m_IWizExplorerApp}}, this);
 
     connect(Utils::WizLogger::logger(), &Utils::WizLogger::notifyRequested,
             this, &WizMainWindow::showBubbleNotification);
