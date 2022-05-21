@@ -106,6 +106,7 @@ JSPluginModuleSpec::JSPluginModuleSpec(QString& section, QSettings *setting, QOb
     foreach (const QString &ind, indexes) {
         m_actionIndexes.append(ind.toInt());
     }
+    m_sidebarLocation = setting->value(section + "/SidebarLocation", "Right").toString();
 }
 
 QStringList JSPluginModuleSpec::getFileList(QSettings *setting, const QString &key)
@@ -185,6 +186,12 @@ bool JSPluginModuleSpec::validateActionTypeModule()
             warn("The file of HtmlFileName does not exist.");
             return false;
         }
+    }
+
+    QStringList sidebars = {"Left", "Right"};
+    if (!sidebars.contains(m_sidebarLocation)) {
+        warn("SidebarLocation must be: 'Right' or 'Left'.");
+        return false;
     }
 
     return true;

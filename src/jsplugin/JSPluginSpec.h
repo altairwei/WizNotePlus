@@ -98,6 +98,7 @@ public:
     QList<int> actionIndexes() { return m_actionIndexes; }
     int width() { return m_width; }
     int height() { return m_height; }
+    QString sidebarLocation() { return m_sidebarLocation; }
 
 private:
     QString getFilePath(QSettings *setting, const QString &key);
@@ -134,6 +135,7 @@ private:
 
     // ModuleType=Menu
     QList<int> m_actionIndexes;
+    QString m_sidebarLocation;
 
 public:
     friend class JSPluginSpec;

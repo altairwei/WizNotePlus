@@ -325,7 +325,10 @@ void WizDocumentView::handlePluginSidebarRequest(QAction *ac, bool checked)
 
     if (!m_pluginSidebar) {
         m_pluginSidebar = new JSPluginDocSidebar(m_app, moduleData, this);
-        m_splitter->addWidget(m_pluginSidebar);
+        if (moduleData->spec()->sidebarLocation() == "Left")
+            m_splitter->insertWidget(0, m_pluginSidebar);
+        else
+            m_splitter->addWidget(m_pluginSidebar);
         connect(m_web, &WizDocumentWebView::currentHtmlChanged,
                 m_pluginSidebar, &JSPluginDocSidebar::documentHtmlChanged);
         connect(m_web, &WizDocumentWebView::loadFinishedEx,
