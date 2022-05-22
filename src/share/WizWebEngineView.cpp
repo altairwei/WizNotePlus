@@ -15,6 +15,7 @@
 #include <QClipboard>
 #include <QFileDialog>
 #include <QTimer>
+#include <QMessageBox>
 
 #ifdef Q_OS_MAC
 #include "mac/WizMacHelper.h"
@@ -170,6 +171,30 @@ WizWebEngineView::WizWebEngineView(const WizWebEngineInjectObjectCollection& obj
     memset(m_viewActions, 0, sizeof(m_viewActions));
 
     setupPage(new WizWebEnginePage(objects, this));
+
+    connect(this, &QWebEngineView::renderProcessTerminated,
+            [this](QWebEnginePage::RenderProcessTerminationStatus termStatus, int statusCode) {
+        QString status;
+        switch (termStatus) {
+        case QWebEnginePage::NormalTerminationStatus:
+            status = tr("Render process normal exit");
+            break;
+        case QWebEnginePage::AbnormalTerminationStatus:
+            status = tr("Render process abnormal exit");
+            break;
+        case QWebEnginePage::CrashedTerminationStatus:
+            status = tr("Render process crashed");
+            break;
+        case QWebEnginePage::KilledTerminationStatus:
+            status = tr("Render process killed");
+            break;
+        }
+        QMessageBox::StandardButton btn = QMessageBox::question(window(), status,
+                                                   tr("Render process exited with code: %1\n"
+                                                      "Do you want to reload the page ?").arg(statusCode));
+        if (btn == QMessageBox::Yes)
+            QTimer::singleShot(0, [this] { reload(); });
+    });
 }
 
 WizWebEngineView::~WizWebEngineView()
