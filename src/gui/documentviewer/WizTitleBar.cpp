@@ -17,16 +17,18 @@
 #include "share/jsoncpp/json/json.h"
 
 #include "widgets/WizTagBar.h"
-#include "gui/documentviewer/WizTitleEdit.h"
+
 #include "WizCellButton.h"
 #include "WizInfoBar.h"
 #include "WizNotifyBar.h"
+#include "gui/documentviewer/WizTitleEdit.h"
 #include "gui/documentviewer/WizEditorToolBar.h"
 #include "gui/documentviewer/WizDocumentView.h"
-#include "WizTagListWidget.h"
-#include "WizAttachmentListWidget.h"
 #include "gui/documentviewer/WizDocumentWebView.h"
 #include "gui/documentviewer/WizNoteInfoForm.h"
+#include "gui/documentviewer/AbstractDocumentView.h"
+#include "WizTagListWidget.h"
+#include "WizAttachmentListWidget.h"
 #include "WizNoteStyle.h"
 #include "share/WizMisc.h"
 #include "database/WizDatabase.h"
@@ -72,9 +74,7 @@ WizTitleBar::WizTitleBar(WizExplorerApp& app, QWidget *parent)
     , m_documentToolBar(new QToolBar(this))
     , m_editTitle(new WizTitleEdit(this))
     , m_tagBar(new WizTagBar(app, this))
-    , m_infoBar(new WizInfoBar(app, this))
     , m_notifyBar(new WizNotifyBar(this))
-    , m_editorBar(new WizEditorToolBar(app, this))
     , m_editor(nullptr)
     , m_tags(nullptr)
     , m_info(nullptr)
@@ -91,15 +91,11 @@ WizTitleBar::WizTitleBar(WizExplorerApp& app, QWidget *parent)
     m_editTitle->setAlignment(Qt::AlignVCenter);
     m_editTitle->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Preferred);
 
-    // 编辑器工具栏
-//    m_editorBar->setFixedHeight(nEditToolBarHeight);
-    m_editorBar->layout()->setAlignment(Qt::AlignVCenter);
-
     QString strTheme = Utils::WizStyleHelper::themeName();
 
     // 添加垂直布局<工具栏+状态栏？>
     QVBoxLayout* layout = new QVBoxLayout;
-    layout->setContentsMargins(0, 0, 0, 6);
+    layout->setContentsMargins(0, 0, 0, 0);
     layout->setSpacing(0);
     setLayout(layout);
 
@@ -251,15 +247,12 @@ WizTitleBar::WizTitleBar(WizExplorerApp& app, QWidget *parent)
 
     // 笔记状态信息布局
     QVBoxLayout* layoutInfo1 = new QVBoxLayout();
-    layoutInfo1->setContentsMargins(Utils::WizStyleHelper::editorBarMargins());
+    layoutInfo1->setContentsMargins(0, 0, 0, 0);
     layoutInfo1->setSpacing(0);
     //layoutInfo1->addLayout(layoutInfo2); // 将标题工具栏放入整体布局中
     layoutInfo1->addWidget(m_documentToolBar);
     layoutInfo1->addWidget(m_tagBar);
-    layoutInfo1->addWidget(m_infoBar);
-    layoutInfo1->addWidget(m_editorBar);
     layoutInfo1->addWidget(m_notifyBar);
-    m_editorBar->hide();
 
     layout->addLayout(layoutInfo1);
     //layout->addLayout(layoutInfo4);
@@ -320,7 +313,7 @@ void WizTitleBar::initPlugins()
         }
     }
 
-    QList<JSPluginModule *> modules = jsPluginMgr.modulesByKeyValue("ModuleType", "Action");    
+    QList<JSPluginModule *> modules = jsPluginMgr.modulesByKeyValue("ModuleType", "Action");
     foreach (auto moduleData, modules) {
         if (moduleData->spec()->buttonLocation() != "Document")
             continue;
@@ -343,7 +336,7 @@ void WizTitleBar::initPlugins()
 
     connect(this, &WizTitleBar::pluginPopupRequest,
             &jsPluginMgr, &JSPluginManager::handlePluginPopupRequest);
-    connect(this, &WizTitleBar::launchPluginEditorRequest, 
+    connect(this, &WizTitleBar::launchPluginEditorRequest,
             &jsPluginMgr, &JSPluginManager::handlePluginEditorRequest);
 }
 
@@ -361,11 +354,6 @@ WizDocumentView* WizTitleBar::noteView()
 
     Q_ASSERT(0);
     return 0;
-}
-
-WizEditorToolBar*WizTitleBar::editorToolBar()
-{
-    return m_editorBar;
 }
 
 void WizTitleBar::setLocked(bool bReadOnly, int nReason, bool bIsGroup)
@@ -473,16 +461,12 @@ void WizTitleBar::handlePluginEditorActionTriggered()
     emit launchPluginEditorRequest(doc, moduleGuid);
 }
 
-void WizTitleBar::setEditor(WizDocumentWebView* editor)
+void WizTitleBar::setEditor(AbstractDocumentEditor* editor)
 {
     Q_ASSERT(!m_editor);
 
-    m_editorBar->setDelegate(editor);
-
-    connect(editor, SIGNAL(focusIn()), SLOT(onEditorFocusIn()));
-    connect(editor, SIGNAL(focusOut()), SLOT(onEditorFocusOut()));
-
-    connect(m_editTitle, SIGNAL(titleEdited(QString)), editor, SLOT(onTitleEdited(QString)));
+    connect(m_editTitle, &WizTitleEdit::titleEdited,
+            editor, &AbstractDocumentEditor::onTitleEdited);
 
     m_editor = editor;
 }
@@ -492,25 +476,6 @@ void WizTitleBar::setBackgroundColor(QColor color)
     QPalette pal = m_editTitle->palette();
     pal.setColor(QPalette::Window, color);
     m_editTitle->setPalette(pal);
-
-    //m_editTitle->setStyleSheet("QLineEdit{background:#F5F5F5; border: 1px solid red;}");
-
-//    pal = m_infoBar->palette();
-//    pal.setColor(QPalette::Window, color);
-//    m_infoBar->setPalette(pal);
-}
-
-
-void WizTitleBar::onEditorFocusIn()
-{
-    showEditorBar();
-}
-
-void WizTitleBar::onEditorFocusOut()
-{
-    showEditorBar();
-    if (!m_editorBar->hasFocus())
-        showInfoBar();
 }
 
 void WizTitleBar::updateTagButtonStatus()
@@ -552,19 +517,6 @@ void WizTitleBar::updateCommentsButtonStatus()
 void WizTitleBar::onTitleEditFinished()
 {
     m_editTitle->onTitleEditingFinished();
-}
-
-void WizTitleBar::showInfoBar()
-{
-    m_editorBar->hide();
-    m_infoBar->show();
-}
-
-void WizTitleBar::showEditorBar()
-{
-    m_infoBar->hide();
-    m_editorBar->show();
-    m_editorBar->adjustButtonPosition();
 }
 
 void WizTitleBar::loadErrorPage()
@@ -610,7 +562,6 @@ void WizTitleBar::setNote(const WIZDOCUMENTDATA& data, WizEditorMode editorMode,
 
 void WizTitleBar::updateInfo(const WIZDOCUMENTDATA& doc)
 {
-    m_infoBar->setDocument(doc);
     m_editTitle->setText(doc.strTitle);
     m_attachBtn->setCount(doc.nAttachmentCount);
 }
@@ -623,17 +574,6 @@ void WizTitleBar::setEditorMode(WizEditorMode editorMode)
     m_editBtn->menu()->deleteLater();
     QMenu* extEditorMenu = createEditorMenu();
     m_editBtn->setMenu(extEditorMenu);
-    //
-    if (editorMode == modeReader)
-    {
-        showInfoBar();
-        m_editorBar->switchToNormalMode();
-    }
-    else
-    {
-        m_editorBar->switchToNormalMode();
-        showEditorBar();
-    }
 }
 
 void WizTitleBar::setEditButtonEnabled(bool enable)
@@ -687,7 +627,7 @@ void WizTitleBar::showCoachingTips()
         widget->setText(tr("Switch to reading mode"), tr("In reading mode, the note can not be "
                                                          "edited and markdown note can be redered."));
         widget->setSizeHint(QSize(290, 82));
-        widget->setButtonVisible(false);       
+        widget->setButtonVisible(false);
         widget->bindCloseFunction([](){
             if (WizMainWindow* mainWindow = WizMainWindow::instance())
             {
@@ -782,7 +722,7 @@ void WizTitleBar::onExternalEditorMenuSelected()
 void WizTitleBar::handleDiscardChanges()
 {
     // Confirm
-    QMessageBox::StandardButton res = QMessageBox::question(this, 
+    QMessageBox::StandardButton res = QMessageBox::question(this,
         tr("Discard changes"), tr("Do you really want to discard changes ?"));
     if (res == QMessageBox::Yes) {
         emit discardChangesRequest();
@@ -864,14 +804,14 @@ void WizTitleBar::onEmailActionClicked()
 {
     WizGetAnalyzer().logAction("shareByEmail");
 
-    m_editor->shareNoteByEmail();
+    Q_EMIT shareNoteByEmailRequest();
 }
 
 void WizTitleBar::onShareActionClicked()
 {
     WizGetAnalyzer().logAction("shareByLink");
 
-    m_editor->shareNoteByLink();
+    Q_EMIT shareNoteByLinkRequest();
 }
 
 void WizTitleBar::onAttachButtonClicked()
@@ -1007,11 +947,11 @@ void WizTitleBar::onCommentPageLoaded(bool ok)
 void WizTitleBar::onViewNoteLoaded(WizDocumentView* view, const WIZDOCUMENTDATAEX& note, bool bOk)
 {
     if (!bOk)
-        return;    
+        return;
 
     if (view != noteView()) {
         return;
-    }    
+    }
 
     m_commentsBtn->setCount(0);
     m_commentManager->queryCommentCount(note.strKbGUID, note.strGUID, true);

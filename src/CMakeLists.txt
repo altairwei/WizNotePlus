@@ -183,6 +183,7 @@ set(wiznote_SOURCES
     gui/documentviewer/WizSvgEditorDialog.cpp
     gui/documentviewer/CollaborationDocView.cpp
     gui/documentviewer/DocumentLoaderSaver.cpp
+    gui/documentviewer/AbstractDocumentView.cpp
 
     WizActions.cpp
     WizNoteStyle.cpp
@@ -365,6 +366,7 @@ set(wiznote_HEADERS
     gui/documentviewer/WizSvgEditorDialog.h
     gui/documentviewer/CollaborationDocView.h
     gui/documentviewer/DocumentLoaderSaver.h
+    gui/documentviewer/AbstractDocumentView.h
 
     WizDocumentHistory.h
     WizAttachmentListWidget.h

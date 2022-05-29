@@ -14,7 +14,7 @@ class WizDatabase;
 class WizTagListWidget;
 class WizNoteInfoForm;
 class WizDocumentWebEngine;
-class WizDocumentWebView;
+class AbstractDocumentEditor;
 class WizAttachmentListWidget;
 class WizAnimateAction;
 class WizExplorerApp;
@@ -45,7 +45,7 @@ public:
     void setLocked(bool bReadOnly, int nReason, bool bIsGroup);
     void showMessageTips(Qt::TextFormat format, const QString& strInfo);
     void hideMessageTips(bool useAnimation);
-    void setEditor(WizDocumentWebView* editor);
+    void setEditor(AbstractDocumentEditor* editor);
 
     void setBackgroundColor(QColor color);
 
@@ -90,8 +90,6 @@ public Q_SLOTS:
     void on_commentCountAcquired(QString GUID, int count);
 
     void onEditorChanged();
-    void onEditorFocusIn();
-    void onEditorFocusOut();
 
     //
     void updateTagButtonStatus();
@@ -118,23 +116,21 @@ signals:
     void launchPluginEditorRequest(const WIZDOCUMENTDATA &doc, const QString &guid);
     void pluginPopupRequest(QAction *ac, const QPoint &pos);
     void pluginSidebarRequest(QAction *ac, bool checked);
+    void shareNoteByEmailRequest();
+    void shareNoteByLinkRequest();
 
 private:
-    void showInfoBar();
-    void showEditorBar();
     void setTagBarVisible(bool visible);
     void initPlugins();
     QMenu* createEditorMenu();
-    //
-    WizDocumentWebView* m_editor;
+
+    AbstractDocumentEditor* m_editor;
     WizExplorerApp& m_app;
 
     QToolBar* m_documentToolBar;
     WizTitleEdit* m_editTitle;
     WizTagBar* m_tagBar;
-    WizInfoBar* m_infoBar;
     WizNotifyBar* m_notifyBar;
-    WizEditorToolBar* m_editorBar;
 
     WizEditButton* m_editBtn;
     WizToolButton* m_mindmapBtn;

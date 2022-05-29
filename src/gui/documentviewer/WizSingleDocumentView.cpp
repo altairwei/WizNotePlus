@@ -136,7 +136,7 @@ void WizSingleDocumentViewer::resizeEvent(QResizeEvent* ev)
 {
     QWidget::resizeEvent(ev);
 
-    m_docView->titleBar()->editorToolBar()->adjustButtonPosition();    
+    m_docView->editorToolBar()->adjustButtonPosition();    
 }
 
 void WizSingleDocumentViewer::closeEvent(QCloseEvent *ev)

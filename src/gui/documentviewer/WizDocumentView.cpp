@@ -12,7 +12,6 @@
 #include <QAction>
 
 #include "share/WizGlobal.h"
-
 #include "share/WizObjectDataDownloader.h"
 #include "database/WizDatabaseManager.h"
 #include "share/WizSettings.h"
@@ -24,19 +23,18 @@
 #include "widgets/WizLocalProgressWebView.h"
 #include "widgets/WizSegmentedButton.h"
 #include "widgets/WizTipsWidget.h"
-#include "gui/documentviewer/WizDocumentWebView.h"
-#include "gui/documentviewer/WizEditorToolBar.h"
+#include "widgets/WizEmailShareDialog.h"
 #include "WizNoteStyle.h"
 #include "WizDocumentTransitionView.h"
 #include "gui/documentviewer/WizDocumentWebView.h"
 #include "WizButton.h"
 #include "WizUserCipherForm.h"
-#include "gui/documentviewer/WizDocumentEditStatus.h"
 #include "WizNotifyBar.h"
 #include "WizMainWindow.h"
-
+#include "gui/documentviewer/WizEditorToolBar.h"
+#include "gui/documentviewer/WizDocumentWebView.h"
+#include "gui/documentviewer/WizDocumentEditStatus.h"
 #include "gui/documentviewer/WizTitleBar.h"
-
 #include "share/WizThreads.h"
 #include "share/WizWebEngineView.h"
 #include "share/WizEnc.h"
@@ -44,6 +42,8 @@
 #include "jsplugin/JSPluginWidgets.h"
 #include "jsplugin/JSPluginManager.h"
 #include "jsplugin/JSPlugin.h"
+#include "utils/WizPathResolve.h"
+#include "WizInfoBar.h"
 
 
 #define DOCUMENT_STATUS_NOSTATUS            0x0000
@@ -74,6 +74,8 @@ WizDocumentView::WizDocumentView(WizExplorerApp& app, QWidget* parent)
     , m_sizeHint(QSize(200, 1))
     , m_comments(nullptr)
     , m_pluginSidebar(nullptr)
+    , m_editorBar(new WizEditorToolBar(app, this))
+    , m_infoBar(new WizInfoBar(app, this))
 {
     // docView is the widget to view/edit document actually.
     QVBoxLayout* layoutDoc = new QVBoxLayout();
@@ -115,16 +117,30 @@ WizDocumentView::WizDocumentView(WizExplorerApp& app, QWidget* parent)
     wgtEditor->setObjectName("editor-container");
     m_web = new WizDocumentWebView(app, wgtEditor);
     m_title->setEditor(m_web);
+    m_editorBar->layout()->setAlignment(Qt::AlignVCenter);
+    m_editorBar->setDelegate(m_web);
+    connect(m_web, &WizDocumentWebView::focusIn, this, &WizDocumentView::onEditorFocusIn);
+    connect(m_web, &WizDocumentWebView::focusOut, this, &WizDocumentView::onEditorFocusOut);
     connect(m_comments->getPage(), &WizWebEnginePage::linkClicked,
             m_web, &WizDocumentWebView::onEditorLinkClicked);
 
     QVBoxLayout* layoutEditor = new QVBoxLayout(wgtEditor);
     layoutEditor->setSpacing(0);
     layoutEditor->setContentsMargins(0, 5, 0, 0);
-    layoutEditor->addWidget(m_title);
+
+    QVBoxLayout* layoutTitle = new QVBoxLayout;
+    layoutTitle->setContentsMargins(14, 0, 14, 6);
+    layoutTitle->setSpacing(0);
+    layoutTitle->addWidget(m_title);
+    layoutTitle->addWidget(m_infoBar);
+    layoutTitle->addWidget(m_editorBar);
+    layoutTitle->addStretch();
+
+    layoutEditor->addLayout(layoutTitle);
     layoutEditor->addWidget(m_web);
-    layoutEditor->setStretchFactor(m_title, 0);
+    layoutEditor->setStretchFactor(layoutTitle, 0);
     layoutEditor->setStretchFactor(m_web, 1);
+    m_editorBar->hide();
 
     m_splitter = new WizSplitter(this);
     m_splitter->addWidget(wgtEditor);
@@ -181,6 +197,10 @@ WizDocumentView::WizDocumentView(WizExplorerApp& app, QWidget* parent)
             this, &WizDocumentView::handleDiscardChangesRequest);
     connect(m_title, &WizTitleBar::pluginSidebarRequest,
             this, &WizDocumentView::handlePluginSidebarRequest);
+    connect(m_title, &WizTitleBar::shareNoteByEmailRequest,
+            this, &WizDocumentView::shareNoteByEmail);
+    connect(m_title, &WizTitleBar::shareNoteByLinkRequest,
+            this, &WizDocumentView::shareNoteByLink);
 
     // 编辑状态同步线程
     m_editStatusSyncThread->start(QThread::IdlePriority);
@@ -358,7 +378,7 @@ void WizDocumentView::resizeEvent(QResizeEvent* ev)
     QWidget::resizeEvent(ev);
     qDebug() << "oldSize: " << ev->oldSize() << ", newSize: " << ev->size();
 
-    m_title->editorToolBar()->adjustButtonPosition();
+    m_editorBar->adjustButtonPosition();
 }
 
 /**
@@ -392,6 +412,7 @@ bool WizDocumentView::reload()
 {
     bool ret = m_dbMgr.db(m_note.strKbGUID).documentFromGuid(m_note.strGUID, m_note);
     m_title->updateInfo(note());
+    m_infoBar->setDocument(note());
     emit titleChanged(m_note.strTitle);
 
     return ret;
@@ -609,6 +630,18 @@ void WizDocumentView::setEditorMode(WizEditorMode mode)
         m_title->onTitleEditFinished();
         m_title->hideMessageTips(false);
     }
+
+    if (mode == modeReader)
+    {
+        showInfoBar();
+        m_editorBar->switchToNormalMode();
+    }
+    else
+    {
+        m_editorBar->switchToNormalMode();
+        showEditorBar();
+    }
+
     m_title->setEditorMode(mode);
 
     m_web->setEditorMode(mode);
@@ -694,7 +727,7 @@ void WizDocumentView::setStatusToEditingByCheckList()
 
 void WizDocumentView::showCoachingTips()
 {
-    if (WizTipsWidget* tipWidget = m_title->editorToolBar()->showCoachingTips())
+    if (WizTipsWidget* tipWidget = m_editorBar->showCoachingTips())
     {
         connect(tipWidget, SIGNAL(finished()), m_title, SLOT(showCoachingTips()));
     }
@@ -766,6 +799,7 @@ void WizDocumentView::loadNote(const WIZDOCUMENTDATAEX& doc)
 {
     m_web->viewDocument(doc, m_editorMode);
     m_title->setNote(doc, m_editorMode, m_bLocked);
+    m_infoBar->setDocument(doc);
 
     // save last
     m_note = doc;
@@ -1144,8 +1178,73 @@ void WizDocumentView::on_commentWidget_statusChanged()
 
     }
 
-    m_title->editorToolBar()->adjustButtonPosition();
+    m_editorBar->adjustButtonPosition();
+}
+
+void WizDocumentView::shareNoteByEmail()
+{
+    getMailSender([=](QString sendTo){
+        WizEmailShareDialog dlg(m_app);
+        dlg.setNote(note(), sendTo);
+        connect(&dlg, &WizEmailShareDialog::insertCommentToNoteRequest,
+                m_web, &WizDocumentWebView::on_insertCommentToNote_request);
+        dlg.exec();
+    });
+}
+
+void WizDocumentView::getMailSender(std::function<void(QString)> callback)
+{
+    QString scriptFileName = Utils::WizPathResolve::resourcesPath() + "files/scripts/GetMailSender.js";
+    QString code;
+    ::WizLoadUnicodeTextFromFile(scriptFileName, code);
+
+    m_web->page()->runJavaScript(code, [=](const QVariant& vRet){
+        QString mailSender = vRet.toString();
+
+        if (mailSender.isEmpty())
+        {
+            QRegExp rxlen("\\b[A-Z0-9._%+-]+@[A-Z0-9.-]+\\.[A-Z]{2,4}\\b");
+            rxlen.setCaseSensitivity(Qt::CaseInsensitive);
+            rxlen.setPatternSyntax(QRegExp::RegExp);
+            QString strTitle = note().strTitle;
+            int pos = rxlen.indexIn(strTitle);
+            if (pos > -1) {
+                mailSender = rxlen.cap(0);
+            }
+        }
+
+        callback(mailSender);
+    });
+}
+
+void WizDocumentView::shareNoteByLink()
+{
+    auto &doc = note();
+    emit shareDocumentByLinkRequest(doc.strKbGUID, doc.strGUID);
 }
 
 
+void WizDocumentView::onEditorFocusIn()
+{
+    showEditorBar();
+}
 
+void WizDocumentView::onEditorFocusOut()
+{
+    showEditorBar();
+    if (!m_editorBar->hasFocus())
+        showInfoBar();
+}
+
+void WizDocumentView::showInfoBar()
+{
+    m_editorBar->hide();
+    m_infoBar->show();
+}
+
+void WizDocumentView::showEditorBar()
+{
+    m_infoBar->hide();
+    m_editorBar->show();
+    m_editorBar->adjustButtonPosition();
+}

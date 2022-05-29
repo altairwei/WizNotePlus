@@ -139,7 +139,7 @@ void WizDocumentWebViewPage::javaScriptConsoleMessage(QWebEnginePage::JavaScript
 static int nWindowIDCounter = 0;
 
 WizDocumentWebView::WizDocumentWebView(WizExplorerApp& app, QWidget* parent)
-    : WizWebEngineView(parent)
+    : AbstractDocumentEditor(parent)
     , m_app(app)
     , m_dbMgr(app.databaseManager())
     , m_bNewNote(false)
@@ -420,7 +420,7 @@ void WizDocumentWebView::contextMenuEvent(QContextMenuEvent *event)
 {
     if (isEditing()) {
         // Edit mode
-        Q_EMIT showContextMenuRequest(mapToGlobal(event->pos()));
+        showContextMenu(mapToGlobal(event->pos()));
     } else {
         // Read mode
         createReadModeContextMenu(event);
@@ -989,68 +989,6 @@ void WizDocumentWebView::addAttachmentThumbnail(const QString strFile, const QSt
     }
     QString strHtml = WizGetImageHtmlLabelWithLink(strDestFile, szImg, strLink);
     editorCommandExecuteInsertHtml(strHtml, true);
-}
-
-void WizDocumentWebView::getMailSender(std::function<void(QString)> callback)
-{
-    QString scriptFileName = Utils::WizPathResolve::resourcesPath() + "files/scripts/GetMailSender.js";
-    QString code;
-    ::WizLoadUnicodeTextFromFile(scriptFileName, code);
-    //
-    page()->runJavaScript(code, [=](const QVariant& vRet){
-        //
-        QString mailSender = vRet.toString();
-
-        if (mailSender.isEmpty())
-        {
-            QRegExp rxlen("\\b[A-Z0-9._%+-]+@[A-Z0-9.-]+\\.[A-Z]{2,4}\\b");
-            rxlen.setCaseSensitivity(Qt::CaseInsensitive);
-            rxlen.setPatternSyntax(QRegExp::RegExp);
-            QString strTitle = view()->note().strTitle;
-            int pos = rxlen.indexIn(strTitle);
-            if (pos > -1) {
-                mailSender = rxlen.cap(0);
-            }
-        }
-        //
-        callback(mailSender);
-    });
-}
-
-///*
-// * judge should add user self define style, current has font style, font size, bg color et.
-// */
-//bool CWizDocumentWebView::shouldAddUserDefaultCSS()
-//{
-//    if (!shouldAddCustomCSS())
-//        return false;
-
-//    bool isTemplate = page()->runJavaScript("wizIsTemplate()").toBool();
-
-//    return !isTemplate;
-//}
-
-void WizDocumentWebView::shareNoteByEmail()
-{
-    getMailSender([=](QString sendTo){
-        //
-
-        WizEmailShareDialog dlg(m_app);
-        //
-        dlg.setNote(view()->note(), sendTo);
-        //
-        connect(&dlg, SIGNAL(insertCommentToNoteRequest(QString,QString)),
-                SLOT(on_insertCommentToNote_request(QString,QString)));
-
-        dlg.exec();
-
-    });
-}
-
-void WizDocumentWebView::shareNoteByLink()
-{
-    const WIZDOCUMENTDATA& doc = view()->note();
-    emit shareDocumentByLinkRequest(doc.strKbGUID, doc.strGUID);
 }
 
 QString WizDocumentWebView::getNoteType()
@@ -2717,4 +2655,142 @@ void WizDocumentWebView::onMarkerUndoStatusChanged(QString data)
 void WizDocumentWebView::onMarkerInitiated(QString data)
 {
     emit markerInitiated(data);
+}
+
+static std::map<QString, QWebEnginePage::WebAction> g_webActions;
+void initWebActions(QWebEnginePage* page)
+{
+    if (!g_webActions.empty())
+        return;
+    //
+    for (int action = QWebEnginePage::NoWebAction + 1;
+         action < QWebEnginePage::WebActionCount;
+         action++)
+    {
+        QWebEnginePage::WebAction a = (QWebEnginePage::WebAction)action;
+        QAction* actionObj = page->action(a);
+        //
+        QString text = actionObj->text();
+        g_webActions[text] = a;
+        //
+        text = text.replace("&", "");
+        g_webActions[text] = a;
+    }
+}
+
+QWebEnginePage::WebAction menuText2WebAction(QWebEnginePage* page, QString text)
+{
+    initWebActions(page);
+
+    text = text.replace("&", "");
+    auto it = g_webActions.find(text);
+    if (it == g_webActions.end())
+        return QWebEnginePage::NoWebAction;
+
+    return it->second;
+}
+
+#define WIZEDITOR_ACTION_GOOGLE         QObject::tr("Use \"Google\" search")
+#define WIZEDITOR_ACTION_BAIDU           QObject::tr("Use \"Baidu\" search")
+#define WIZEDITOR_ACTION_CUT            QObject::tr("Cut")
+#define WIZEDITOR_ACTION_COPY           QObject::tr("Copy")
+#define WIZEDITOR_ACTION_PASTE          QObject::tr("Paste")
+#define WIZEDITOR_ACTION_PASTE_PLAIN    QObject::tr("Paste plain text")
+#define WIZEDITOR_ACTION_REMOVE_LINK    QObject::tr("Remove link")
+
+void WizDocumentWebView::showContextMenu(const QPoint &pos)
+{
+    QWebEnginePage* page = this->page();
+    if (!page)
+        return;
+
+    QMenu *menu = createStandardContextMenu();
+    if (!menu)
+        return;
+
+    bool editing = isEditing();
+
+    bool hasPasteMenu = false;
+    bool hasLinkMenu = false;
+
+    // get all actions of menu
+    // FIXME: 不要使用这种遍历方法，速度有点慢，参考Qt浏览器实现示例
+    QList<QAction*> actions = menu->actions();
+    for (QAction* action : actions)
+    {
+        QWebEnginePage::WebAction a = menuText2WebAction(page, action->iconText());
+        switch (a)
+        {
+        case QWebEnginePage::Copy:
+            action->setText(QObject::tr("Copy"));
+            break;
+        case QWebEnginePage::Unselect:
+            action->setText(QObject::tr("Unselect"));
+            break;
+        case QWebEnginePage::Back:
+        case QWebEnginePage::Forward:
+        case QWebEnginePage::Stop:
+        case QWebEnginePage::Reload:
+#if QT_VERSION >= 0x050600
+        case QWebEnginePage::DownloadImageToDisk:
+#endif
+#if QT_VERSION >= 0x050800
+        case QWebEnginePage::ViewSource:
+#endif
+            menu->removeAction(action);
+            break;
+
+        case QWebEnginePage::Paste:
+            hasPasteMenu = true;
+            break;
+        case QWebEnginePage::OpenLinkInThisWindow:
+        case QWebEnginePage::OpenLinkInNewWindow:
+        case QWebEnginePage::OpenLinkInNewTab:
+        case QWebEnginePage::DownloadLinkToDisk:
+            menu->removeAction(action);
+            hasLinkMenu = true;
+            break;
+        case QWebEnginePage::CopyLinkToClipboard:
+            hasLinkMenu = true;
+            break;
+        default:
+            break;
+        }
+    }
+
+    if (!selectedText().isEmpty())
+    {
+        if (!menu->actions().isEmpty())
+        {
+            menu->addSeparator();
+        }
+        menu->addAction(WIZEDITOR_ACTION_GOOGLE, this, SLOT(on_editor_google_triggered()));
+        menu->addAction(WIZEDITOR_ACTION_BAIDU, this, SLOT(on_editor_baidu_triggered()));
+    }
+    //
+    if (editing)
+    {
+        if (!hasPasteMenu)
+        {
+            if (!menu->actions().isEmpty())
+            {
+                menu->addSeparator();
+            }
+
+            menu->addAction(WIZEDITOR_ACTION_PASTE, this, SLOT(on_editor_paste_triggered()));
+            menu->addAction(WIZEDITOR_ACTION_PASTE_PLAIN, this, SLOT(on_editor_pastePlain_triggered()));
+        }
+
+        if (hasLinkMenu)
+        {
+            menu->addAction(WIZEDITOR_ACTION_REMOVE_LINK, this, SLOT(on_editor_removeLink_triggered()));
+        }
+    }
+
+    if (menu->actions().isEmpty())
+        return;
+
+    menu->popup(pos);
+
+    WizGetAnalyzer().logAction("editorContextMenu");
 }

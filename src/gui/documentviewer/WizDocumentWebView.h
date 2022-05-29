@@ -17,6 +17,7 @@
 #include "share/WizWebEngineView.h"
 #include "api/ApiWizHtmlEditorApp.h"
 #include "DocumentLoaderSaver.h"
+#include "AbstractDocumentView.h"
 
 class WizObjectDownloaderHost;
 class WizEditorInsertLinkForm;
@@ -52,7 +53,7 @@ private:
 /**
  * @brief WizDocumentWebView is responsible for display notes and server as WizQtEditor.
  */
-class WizDocumentWebView : public WizWebEngineView
+class WizDocumentWebView : public AbstractDocumentEditor
 {
     Q_OBJECT
 
@@ -124,10 +125,8 @@ public:
     void saveAsPlainText(QString& destFileName, std::function<void(QString fileName)> callback);
     void saveAsRenderedHtml(QString& destFileName, std::function<void(QString fileName)> callback);
     void saveAsHtml();
-    void shareNoteByEmail();
-    void shareNoteByLink();
 
-    void isModified(std::function<void(bool modified)> callback);
+    void isModified(std::function<void(bool modified)> callback) override;
     void setModified(bool b);
 
     //use undo func provied by editor
@@ -237,7 +236,7 @@ public Q_SLOTS:
 
     void onTimerAutoSaveTimout();
 
-    void onTitleEdited(QString strTitle);
+    void onTitleEdited(QString strTitle) override;
 
     void onDocumentReady(const QString kbGUID, const QString strGUID, const QString strFileName, WizEditorMode editorMode);
     void onDocumentSaved(const QString kbGUID, const QString strGUID, bool ok, QObject *requester);
@@ -245,6 +244,7 @@ public Q_SLOTS:
     void on_editorCommandExecuteLinkInsert_accepted();
 
     void on_insertCodeHtml_requset(QString strOldHtml);
+    void on_insertCommentToNote_request(const QString& docGUID, const QString& comment);
 
     void onActionSaveTriggered();
     void handleReloadTriggered();
@@ -327,7 +327,6 @@ Q_SIGNALS:
 
     void viewDocumentFinished();
 
-    void shareDocumentByLinkRequest(const QString& strKbGUID, const QString& strGUID);
     void isPersonalDocumentChanged();
     void hasEditPermissionOnCurrentNoteChanged();
     void canEditNoteChanged();
@@ -343,17 +342,13 @@ Q_SIGNALS:
 
     void devToolsRequested(QWebEnginePage* sourcePage);
 
-private slots:
-    void on_insertCommentToNote_request(const QString& docGUID, const QString& comment);
-
 private:
     void setWindowVisibleOnScreenShot(bool bVisible);
     void insertImage(const QString& strFileName);
     void addAttachmentThumbnail(const QString strFile, const QString& strGuid);
     void openVipPageInWebBrowser();
+    void showContextMenu(const QPoint &pos);
     QString getNoteType();
-
-    void getMailSender(std::function<void(QString)> callback);
 
     void innerFindText(QString text, bool next, bool matchCase);
 

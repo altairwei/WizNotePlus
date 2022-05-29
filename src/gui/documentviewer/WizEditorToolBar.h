@@ -216,7 +216,6 @@ protected Q_SLOTS:
     void on_editor_copyImage_triggered();
     void on_editor_copyImageLink_triggered();
 
-    void on_delegate_showContextMenuRequest(const QPoint& pos);
     void on_delegate_selectionChanged(const QString&);
     void on_delegate_markerUndoStatusChanged(const QString&);
     void on_delegate_markerInitiated(const QString&);

@@ -35,6 +35,7 @@ class WizDocumentTransitionView;
 
 class WizTitleBar;
 class WizEditorToolBar;
+class WizInfoBar;
 class WizTagBar;
 class JSPluginDocSidebar;
 
@@ -99,6 +100,8 @@ private:
     QSize m_sizeHint;
     QAction *m_locateAction;
     QAction *m_copyInternalLinkAction;
+    WizEditorToolBar* m_editorBar;
+    WizInfoBar* m_infoBar;
 
 public:
     const WIZDOCUMENTDATAEX& note() const { return m_note; }
@@ -127,12 +130,14 @@ public:
     void showCoachingTips();
     //
     void wordCount(std::function<void(const QString&)> callback);
+    WizEditorToolBar *editorToolBar() { return m_editorBar; }
 
 signals:
     void documentSaved(const QString& strGUID, WizDocumentView* viewer);
     void checkDocumentEditStatusRequest(const QString& strKbGUID, const QString& strGUID);
     void stopCheckDocumentEditStatusRequest(const QString& strKbGUID, const QString& strGUID);
     void viewNoteInExternalEditorRequest(const WizExternalEditorData &editorData, const WIZDOCUMENTDATAEX &noteData);
+    void shareDocumentByLinkRequest(const QString& strKbGUID, const QString& strGUID);
 
 public Q_SLOTS:
     void onViewNoteRequested(WizDocumentView* view, const WIZDOCUMENTDATAEX& doc, bool forceEditing);
@@ -171,6 +176,10 @@ public Q_SLOTS:
     void handleDiscardChangesRequest();
     void handleWindowCloseRequest();
     void handlePluginSidebarRequest(QAction *ac, bool checked);
+    void shareNoteByEmail();
+    void shareNoteByLink();
+    void onEditorFocusIn();
+    void onEditorFocusOut();
 
 private:
     void loadNote(const WIZDOCUMENTDATAEX &doc);
@@ -182,6 +191,9 @@ private:
     bool checkDocumentEditable(bool checklist);
     //
     void stopCheckDocumentAnimations();
+    void getMailSender(std::function<void(QString)> callback);
+    void showInfoBar();
+    void showEditorBar();
 };
 
 

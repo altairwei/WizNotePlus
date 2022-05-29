@@ -3665,8 +3665,8 @@ WizDocumentView* WizMainWindow::createDocumentView()
     connect(newWebView, &WizDocumentWebView::saveDocumentRequested, m_docSaver, &WizDocumentSaverThread::save);
     connect(m_docSaver, &WizDocumentSaverThread::saved, newWebView, &WizDocumentWebView::onDocumentSaved, Qt::QueuedConnection);
 
-    connect(newDocView->web(), SIGNAL(shareDocumentByLinkRequest(QString,QString)),
-            SLOT(on_shareDocumentByLink_request(QString,QString)));
+    connect(newDocView, &WizDocumentView::shareDocumentByLinkRequest,
+            this, &WizMainWindow::on_shareDocumentByLink_request);
     connect(newDocView, SIGNAL(documentSaved(QString,WizDocumentView*)),
             m_singleViewMgr, SIGNAL(documentChanged(QString,WizDocumentView*)));
     connect(m_singleViewMgr, SIGNAL(documentChanged(QString,WizDocumentView*)),
