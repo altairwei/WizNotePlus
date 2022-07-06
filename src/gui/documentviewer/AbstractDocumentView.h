@@ -14,8 +14,12 @@ public:
     AbstractDocumentView(QWidget *parent = nullptr)
         : AbstractTabPage(parent) {}
 
-    virtual WizEditorMode editorMode() = 0;
+    virtual void setEditorMode(WizEditorMode mode) = 0;
+    virtual WizEditorMode editorMode() const = 0;
     virtual const WIZDOCUMENTDATAEX& note() const = 0;
+
+protected:
+    void paintEvent(QPaintEvent *) override;
 };
 
 class AbstractDocumentEditor : public WizWebEngineView
@@ -28,6 +32,7 @@ public:
         : WizWebEngineView(parent) {}
 
     virtual void isModified(std::function<void(bool modified)> callback) = 0;
+    virtual void setEditorMode(WizEditorMode mode) = 0;
 
 public Q_SLOTS:
     virtual void onTitleEdited(QString strTitle) = 0;

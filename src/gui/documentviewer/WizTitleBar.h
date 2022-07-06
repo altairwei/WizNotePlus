@@ -8,7 +8,7 @@
 class QString;
 class QMenu;
 class QToolBar;
-
+class QPushButton;
 struct WIZDOCUMENTDATA;
 class WizDatabase;
 class WizTagListWidget;
@@ -104,7 +104,7 @@ public Q_SLOTS:
     void loadErrorPage();
 
     void handlePluginEditorActionTriggered();
-    
+
 signals:
     void notifyBar_link_clicked(const QString& link);
     void loadComment_request(const QString& url);
@@ -157,5 +157,25 @@ private:
     WizAnimateAction* m_editButtonAnimation;
 };
 
+class CollaborationTitleBar : public QWidget
+{
+    Q_OBJECT
+
+public:
+    explicit CollaborationTitleBar(WizExplorerApp& app, QWidget *parent = nullptr);
+    WizEditButton* editButton() { return m_editBtn; }
+
+    void startEditButtonAnimation();
+    void stopEditButtonAnimation();
+
+Q_SIGNALS:
+    void editButtonClicked();
+
+private:
+    WizExplorerApp& m_app;
+    QToolBar* m_documentToolBar;
+    WizEditButton* m_editBtn;
+    WizAnimateAction* m_editButtonAnimation;
+};
 
 #endif // CORE_TITLEBAR_H

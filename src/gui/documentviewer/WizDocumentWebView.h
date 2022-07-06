@@ -67,7 +67,7 @@ public:
 
     // view and save
     void viewDocument(const WIZDOCUMENTDATA& doc, WizEditorMode editorMode);
-    void setEditorMode(WizEditorMode editorMode);
+    void setEditorMode(WizEditorMode editorMode) override;
     void trySaveDocument(const WIZDOCUMENTDATA& data, bool force, std::function<void(const QVariant &)> callback);
     void reloadNoteData(const WIZDOCUMENTDATA& data);
 

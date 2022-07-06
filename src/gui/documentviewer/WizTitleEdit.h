@@ -27,6 +27,7 @@ public slots:
 
 signals:
     void titleEdited(QString strTitle);
+    void newTitleRequest(const QString &newTitle);
 
 protected:
     QSize sizeHint() const;
@@ -41,11 +42,8 @@ private:
     QString textUnderCursor();
     QChar charBeforeCursor();
 
-    WizDocumentView* noteView();
-
 private Q_SLOTS:
     void onInsertCompletion(const QModelIndex &index);    
-    void onTitleReturnPressed();
     void onTextEdit(const QString & text);
     void onTextChanged(const QString & text);
 };

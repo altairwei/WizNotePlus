@@ -135,6 +135,10 @@ QWidget#editor-container {
   background-color: white;
 }
 
+CollaborationDocView {
+  background-color: white;
+}
+
 
 /*
  * Tab browser

@@ -23,7 +23,6 @@ WizTitleEdit::WizTitleEdit(QWidget *parent)
     setAttribute(Qt::WA_MacShowFocusRect, false);
     setFrame(false);
 
-    connect(this, SIGNAL(returnPressed()), SLOT(onTitleReturnPressed()));
     connect(this, SIGNAL(editingFinished()), SLOT(onTitleEditingFinished()));
     connect(this, SIGNAL(textEdited(QString)), SLOT(onTextEdit(QString)));
     connect(this, SIGNAL(textChanged(QString)), SLOT(onTextChanged(QString)));
@@ -131,22 +130,6 @@ QChar WizTitleEdit::charBeforeCursor()
     return QChar();
 }
 
-WizDocumentView* WizTitleEdit::noteView()
-{
-    QWidget* pParent = parentWidget();
-    while (pParent) {
-        WizDocumentView* view = dynamic_cast<WizDocumentView*>(pParent);
-        if (view) {
-            return view;
-        }
-
-        pParent = pParent->parentWidget();
-    }
-
-    Q_ASSERT(0);
-    return 0;
-}
-
 void WizTitleEdit::resetTitle(const QString& strTitle)
 {
     if (strTitle.isEmpty())
@@ -164,8 +147,6 @@ void WizTitleEdit::setReadOnly(bool b)
     setAttribute(Qt::WA_MacShowFocusRect, false);
 
     // Focre to update document title right now
-//    if (b)
-//        onTitleEditingFinished();
 }
 
 void WizTitleEdit::setCompleter(QCompleter* completer)
@@ -200,28 +181,14 @@ void WizTitleEdit::onInsertCompletion(const QModelIndex& index)
 void WizTitleEdit::onTitleEditingFinished()
 {
     setCursorPosition(0);
-    //
-    WIZDOCUMENTDATA data;
-    WizDatabase& db = WizDatabaseManager::instance()->db(noteView()->note().strKbGUID);
-    if (db.documentFromGuid(noteView()->note().strGUID, data)) {
-        if (!db.canEditDocument(data))
-            return;
-
-        QString strNewTitle = text().left(255);
-        if (strNewTitle.isEmpty() && !placeholderText().isEmpty()) {
-            strNewTitle = placeholderText().left(255);
-        }
-        strNewTitle.replace("\n", " ");
-        strNewTitle.replace("\r", " ");
-        strNewTitle = strNewTitle.trimmed();
-        if (strNewTitle != data.strTitle) {
-            data.strTitle = strNewTitle;
-            data.tDataModified = WizGetCurrentTime();
-            db.modifyDocumentInfo(data);
-
-            emit titleEdited(strNewTitle);
-        }
+    QString strNewTitle = text().left(255);
+    if (strNewTitle.isEmpty() && !placeholderText().isEmpty()) {
+        strNewTitle = placeholderText().left(255);
     }
+    strNewTitle.replace("\n", " ");
+    strNewTitle.replace("\r", " ");
+    strNewTitle = strNewTitle.trimmed();
+    Q_EMIT newTitleRequest(strNewTitle);
 }
 
 void WizTitleEdit::setText(const QString& text)
@@ -229,13 +196,6 @@ void WizTitleEdit::setText(const QString& text)
     QLineEdit::setText(text);
     setCursorPosition(0);
     setStyleSheet("color:#535353;");
-}
-
-void WizTitleEdit::onTitleReturnPressed()
-{
-    noteView()->setEditorFocus();
-    noteView()->web()->setFocus(Qt::MouseFocusReason);
-    noteView()->web()->editorFocus();
 }
 
 void WizTitleEdit::onTextEdit(const QString& text)

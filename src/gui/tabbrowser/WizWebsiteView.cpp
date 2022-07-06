@@ -21,7 +21,7 @@ WizWebsiteView::WizWebsiteView(WizWebEngineView *webView, WizExplorerApp& app, Q
     this->setLayout(layout);
     // create default web view
     if (!m_webView) {
-        m_webView = new WizWebEngineView(this);
+        m_webView = new WizWebEngineView;
     }
     // set web view
     layout->addWidget(m_webView);

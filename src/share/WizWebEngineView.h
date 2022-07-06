@@ -70,9 +70,9 @@ class WizWebEngineView : public QWebEngineView
     Q_OBJECT
 
 public:
-    WizWebEngineView(const WizWebEngineInjectObjectCollection& objects, QWidget* parent);
+    WizWebEngineView(const WizWebEngineInjectObjectCollection& objects, QWidget* parent = nullptr);
     // Do not use {{}} to initialize InjectObjectCollection.
-    WizWebEngineView(QWidget* parent): WizWebEngineView({}, parent) { }
+    WizWebEngineView(QWidget* parent = nullptr): WizWebEngineView({}, parent) { }
     virtual ~WizWebEngineView();
 
 public:

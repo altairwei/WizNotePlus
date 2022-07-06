@@ -8,6 +8,7 @@
 #include "share/WizObject.h"
 #include "utils/ExternalEditorLauncher.h"
 #include "gui/tabbrowser/AbstractTabPage.h"
+#include "AbstractDocumentView.h"
 
 class QScrollArea;
 class QLineEdit;
@@ -39,7 +40,7 @@ class WizInfoBar;
 class WizTagBar;
 class JSPluginDocSidebar;
 
-class WizDocumentView : public AbstractTabPage
+class WizDocumentView : public AbstractDocumentView
 {
     Q_OBJECT
 
@@ -47,7 +48,7 @@ public:
     WizDocumentView(WizExplorerApp& app, QWidget* parent = nullptr);
     ~WizDocumentView();
 
-    virtual QSize sizeHint() const;
+    virtual QSize sizeHint() const override;
     void setSizeHint(QSize size);
 
     QWidget* client() const { return m_stack; }
@@ -104,10 +105,10 @@ private:
     WizInfoBar* m_infoBar;
 
 public:
-    const WIZDOCUMENTDATAEX& note() const { return m_note; }
+    const WIZDOCUMENTDATAEX& note() const override { return m_note; }
     bool isLocked() const { return m_bLocked; }
     bool isEditing() const { return m_editorMode == modeEditor; }
-    WizEditorMode editorMode() const { return m_editorMode; }
+    WizEditorMode editorMode() const override { return m_editorMode; }
 
     bool reload();
     void reloadNote();
@@ -180,6 +181,8 @@ public Q_SLOTS:
     void shareNoteByLink();
     void onEditorFocusIn();
     void onEditorFocusOut();
+    void onTitleReturnPressed();
+    void onTitleEditingFinished(const QString &newTitle);
 
 private:
     void loadNote(const WIZDOCUMENTDATAEX &doc);

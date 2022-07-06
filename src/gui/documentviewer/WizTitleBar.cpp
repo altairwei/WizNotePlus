@@ -13,6 +13,7 @@
 #include <QVariant>
 #include <QMap>
 #include <QShortcut>
+#include <QPushButton>
 
 #include "share/jsoncpp/json/json.h"
 
@@ -464,10 +465,6 @@ void WizTitleBar::handlePluginEditorActionTriggered()
 void WizTitleBar::setEditor(AbstractDocumentEditor* editor)
 {
     Q_ASSERT(!m_editor);
-
-    connect(m_editTitle, &WizTitleEdit::titleEdited,
-            editor, &AbstractDocumentEditor::onTitleEdited);
-
     m_editor = editor;
 }
 
@@ -1020,3 +1017,72 @@ WizTitleEdit* WizTitleBar::getTitleEdit()
 {
     return m_editTitle;
 }
+
+//////////////////////////////////////////////////////////////////
+
+CollaborationTitleBar::CollaborationTitleBar(WizExplorerApp& app, QWidget *parent)
+    : QWidget(parent)
+    , m_app(app)
+    , m_documentToolBar(new QToolBar(this))
+    , m_editButtonAnimation(nullptr)
+{
+    setObjectName("collaboration-title-bar");
+
+    int nTitleHeight = Utils::WizStyleHelper::titleEditorHeight();
+    QString strTheme = Utils::WizStyleHelper::themeName();
+
+    // Edit button
+    QSize iconSize = QSize(Utils::WizStyleHelper::titleIconHeight(), Utils::WizStyleHelper::titleIconHeight());
+    m_editBtn = new WizEditButton(this);
+    m_editBtn->setFixedHeight(nTitleHeight);
+    QString shortcut = ::WizGetShortcut("EditNote", "Alt+R");
+    m_editBtn->setStatefulIcon(::WizLoadSkinIcon(strTheme, "document_lock", iconSize), WizToolButton::Normal);
+    m_editBtn->setStatefulText(tr("Edit"), tr("Switch to Editing View  %1").arg(shortcut), WizToolButton::Normal);
+    m_editBtn->setStatefulIcon(::WizLoadSkinIcon(strTheme, "document_unlock", iconSize), WizToolButton::Checked);
+    m_editBtn->setStatefulText(tr("Read") , tr("Switch to Reading View  %1").arg(shortcut), WizToolButton::Checked);
+    connect(m_editBtn, &WizToolButton::clicked, this, &CollaborationTitleBar::editButtonClicked);
+    m_editBtn->setState(WizToolButton::Normal);
+
+    //m_editBtn->setShortcut(QKeySequence::fromString(shortcut));
+    // Title bar toolbar
+    m_documentToolBar->setIconSize(iconSize);
+    m_documentToolBar->setContextMenuPolicy(Qt::PreventContextMenu);
+    m_documentToolBar->setMovable(false);
+    QWidget* spacer = new QWidget;
+    spacer->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
+    m_documentToolBar->addWidget(spacer);
+    m_documentToolBar->addWidget(m_editBtn);
+    m_documentToolBar->addWidget(new WizFixedSpacer(QSize(10, 1)));
+
+    QVBoxLayout* layout = new QVBoxLayout;
+    layout->setContentsMargins(0, 0, 0, 0);
+    layout->setSpacing(0);
+    setLayout(layout);
+    layout->addWidget(m_documentToolBar);
+
+}
+
+void CollaborationTitleBar::startEditButtonAnimation()
+{
+    if (!m_editButtonAnimation)
+    {
+        m_editButtonAnimation = new WizAnimateAction(this);
+        m_editButtonAnimation->setToolButton(m_editBtn);
+        m_editButtonAnimation->setSingleIcons("editButtonProcessing");
+    }
+    m_editButtonAnimation->startPlay();
+}
+
+
+void CollaborationTitleBar::stopEditButtonAnimation()
+{
+    if (!m_editButtonAnimation)
+        return;
+    if (m_editButtonAnimation->isPlaying())
+    {
+        m_editButtonAnimation->stopPlay();
+    }
+}
+
+
+

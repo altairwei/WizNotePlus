@@ -3760,6 +3760,7 @@ void WizMainWindow::viewDocument(const WIZDOCUMENTDATAEX& data)
 
     if (data.strType == "collaboration") {
         CollaborationDocView *newView = new CollaborationDocView(data, *this, this);
+        newView->setEditorMode(modeReader);
         int index = m_mainTabBrowser->createTab(newView);
         m_mainTabBrowser->setTabText(index, data.strTitle);
     } else  {

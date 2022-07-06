@@ -44,6 +44,7 @@
 #include "jsplugin/JSPlugin.h"
 #include "utils/WizPathResolve.h"
 #include "WizInfoBar.h"
+#include "WizTitleEdit.h"
 
 
 #define DOCUMENT_STATUS_NOSTATUS            0x0000
@@ -57,7 +58,7 @@
 #define DOCUMENT_STATUS_ON_CHECKLIST       0x0080
 
 WizDocumentView::WizDocumentView(WizExplorerApp& app, QWidget* parent)
-    : AbstractTabPage(parent)
+    : AbstractDocumentView(parent)
     , m_app(app)
     , m_dbMgr(app.databaseManager())
     , m_userSettings(app.userSettings())
@@ -201,6 +202,10 @@ WizDocumentView::WizDocumentView(WizExplorerApp& app, QWidget* parent)
             this, &WizDocumentView::shareNoteByEmail);
     connect(m_title, &WizTitleBar::shareNoteByLinkRequest,
             this, &WizDocumentView::shareNoteByLink);
+    connect(m_title->getTitleEdit(), &WizTitleEdit::returnPressed,
+            this, &WizDocumentView::onTitleReturnPressed);
+    connect(m_title->getTitleEdit(), &WizTitleEdit::newTitleRequest,
+            this, &WizDocumentView::onTitleEditingFinished);
 
     // 编辑状态同步线程
     m_editStatusSyncThread->start(QThread::IdlePriority);
@@ -1234,6 +1239,31 @@ void WizDocumentView::onEditorFocusOut()
     showEditorBar();
     if (!m_editorBar->hasFocus())
         showInfoBar();
+}
+
+void WizDocumentView::onTitleReturnPressed()
+{
+    setEditorFocus();
+    web()->setFocus(Qt::MouseFocusReason);
+    web()->editorFocus();
+}
+
+void WizDocumentView::onTitleEditingFinished(const QString &newTitle)
+{
+    WIZDOCUMENTDATA data;
+    WizDatabase& db = WizDatabaseManager::instance()->db(note().strKbGUID);
+    if (db.documentFromGuid(note().strGUID, data)) {
+        if (!db.canEditDocument(data))
+            return;
+
+        if (newTitle != data.strTitle) {
+            data.strTitle = newTitle;
+            data.tDataModified = WizGetCurrentTime();
+            db.modifyDocumentInfo(data);
+
+            m_web->onTitleEdited(newTitle);
+        }
+    }
 }
 
 void WizDocumentView::showInfoBar()
