@@ -11,6 +11,7 @@
 #include <QDebug>
 #include <QUrl>
 #include <QMutexLocker>
+#include <QUrlQuery>
 
 #include "WizToken.h"
 #include "WizKMServer.h"
@@ -284,6 +285,42 @@ QString WizCommonApiEntry::shareNoteUrl()
     return url;
 }
 
+QString WizCommonApiEntry::svgEditorUrl()
+{
+    QString url = makeUpUrlFromCommand("svg_editor");
+
+#ifdef Q_OS_WIN
+    // Official WizNote windows client conflicts WizQTClient,
+    // so we pretend to be a macosx client.
+    QUrl urlobj(url);
+    QUrlQuery query(urlobj.query());
+    query.removeQueryItem("plat");
+    query.addQueryItem("plat", "macosx");
+    urlobj.setQuery(query);
+    url = urlobj.toString();
+#endif
+
+    return url;
+}
+
+QString WizCommonApiEntry::noteplusUrl(
+    const QString &kbGUID, const QString &docGUID,
+    const QString &userGUID, const QString &displayName)
+{
+    QUrl url = makeUpUrlFromCommand("note_plus");
+
+    QUrlQuery query(url.query());
+    query.addQueryItem("a", QUrl::toPercentEncoding("theme=light&disableVideo=1&top=0").constData());
+    query.addQueryItem("skin", "lite");
+    query.addQueryItem("clientType", "macos");
+    query.addQueryItem("kbGuid", kbGUID);
+    query.addQueryItem("docGuid", docGUID);
+    query.addQueryItem("userGuid", userGUID);
+    query.addQueryItem("displayName", displayName);
+
+    url.setQuery(query);
+    return url.toString();
+}
 
 QString WizCommonApiEntry::makeUpUrlFromCommand(const QString& strCommand, const QString& strToken)
 {

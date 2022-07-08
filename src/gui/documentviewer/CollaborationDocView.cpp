@@ -8,6 +8,7 @@
 #include "share/WizThreads.h"
 #include "share/WizMisc.h"
 #include "sync/WizToken.h"
+#include "sync/WizApiEntry.h"
 #include "database/WizDatabaseManager.h"
 #include "WizDef.h"
 #include "WizMainWindow.h"
@@ -19,7 +20,7 @@ CollaborationDocView::CollaborationDocView(const WIZDOCUMENTDATAEX &doc, WizExpl
     : AbstractDocumentView(parent)
     , m_doc(doc)
     , m_title(new CollaborationTitleBar(app, this))
-    , m_editor(new CollaborationEditor)
+    , m_editor(new CollaborationEditor(app))
     , m_app(app)
     , m_dbMgr(app.databaseManager())
     , m_userSettings(app.userSettings())
@@ -27,7 +28,7 @@ CollaborationDocView::CollaborationDocView(const WIZDOCUMENTDATAEX &doc, WizExpl
 {
     // set layout
     QVBoxLayout* layout = new QVBoxLayout();
-    layout->setContentsMargins(0, 0, 0, 6);
+    layout->setContentsMargins(0, 5, 0, 6);
     layout->setSpacing(0);
     this->setLayout(layout);
     layout->addWidget(m_title);
@@ -127,8 +128,10 @@ void CollaborationDocView::setEditorMode(WizEditorMode mode)
 
 //////////////////////////////////////////////////////////////////////////
 
-CollaborationEditor::CollaborationEditor(QWidget *parent)
+CollaborationEditor::CollaborationEditor(WizExplorerApp &app, QWidget *parent)
     : AbstractDocumentEditor(parent)
+    , m_app(app)
+    , m_dbMgr(app.databaseManager())
 {
     // create default web view
     WizWebEngineInjectObjectCollection objects = {{"wizQt", this}};
@@ -147,8 +150,13 @@ CollaborationEditor::~CollaborationEditor()
 
 void CollaborationEditor::loadDocument(const WIZDOCUMENTDATAEX &doc)
 {
-    QUrl liveEditorUrl("https://www.wiz.cn/note-plus/note/" + doc.strKbGUID + "/" + doc.strGUID);
-    liveEditorUrl.setQuery("l=zh-cn&clientType=macos&clientVersion=4.13.32.0&p=wiz&theme=light&disableVideo=1&top=0");
+    auto &db = m_dbMgr.db(doc.strKbGUID);
+    WIZUSERINFO info;
+    if (!db.getUserInfo(info))
+        return;
+
+    QString liveEditorUrl = WizCommonApiEntry::noteplusUrl(
+        doc.strKbGUID, doc.strGUID, info.strUserGUID, info.strDisplayName);
     load(liveEditorUrl);
 }
 

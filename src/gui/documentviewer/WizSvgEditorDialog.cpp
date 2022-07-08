@@ -162,24 +162,6 @@ void saveSvgCore(WizDatabaseManager& dbMgr, const WIZDOCUMENTDATAEX& doc, QStrin
     });
 }
 
-QString getSvgEditorUrl()
-{
-    QString url = ::WizCommonApiEntry::makeUpUrlFromCommand("svg_editor");
-
-#ifdef Q_OS_WIN
-    // Official WizNote windows client conflicts WizQTClient,
-    // so we pretend to be a macosx client.
-    QUrl urlobj(url);
-    QUrlQuery query(urlobj.query());
-    query.removeQueryItem("plat");
-    query.addQueryItem("plat", "macosx");
-    urlobj.setQuery(query);
-    url = urlobj.toString();
-#endif
-
-    return url;
-}
-
 void editHandwritingNote(WizDatabaseManager& dbMgr, const WIZDOCUMENTDATAEX& doc, QString strHtmlFile, QString data, QWidget* parent)
 {
     auto saveSvgCallback = [=, &dbMgr] (bool changed, std::function<void(bool)> saved) {
@@ -188,7 +170,7 @@ void editHandwritingNote(WizDatabaseManager& dbMgr, const WIZDOCUMENTDATAEX& doc
 
     };
 
-    QString url = getSvgEditorUrl();
+    QString url = WizCommonApiEntry::svgEditorUrl();
     WizSvgEditorDialog* dialog = new WizSvgEditorDialog(url, data, saveSvgCallback, strHtmlFile, parent);
 
     dialog->exec();
@@ -216,7 +198,7 @@ void createHandwritingNote(WizDatabaseManager& dbMgr, const WIZDOCUMENTDATAEX& d
 
     };
 
-    QString url = getSvgEditorUrl();
+    QString url = WizCommonApiEntry::svgEditorUrl();
     WizSvgEditorDialog* dialog = new WizSvgEditorDialog(url, "", saveSvgCallback, strHtmlFile, parent);
 
     dialog->exec();

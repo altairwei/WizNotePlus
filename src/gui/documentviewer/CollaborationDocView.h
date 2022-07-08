@@ -45,7 +45,7 @@ class CollaborationEditor : public AbstractDocumentEditor
     Q_OBJECT
 
 public:
-    CollaborationEditor(QWidget *parent = nullptr);
+    CollaborationEditor(WizExplorerApp &app, QWidget *parent = nullptr);
     ~CollaborationEditor();
     void loadDocument(const WIZDOCUMENTDATAEX &doc);
 
@@ -56,6 +56,10 @@ public:
 
 public Q_SLOTS:
     void onTitleEdited(QString strTitle) override;
+
+private:
+    WizExplorerApp& m_app;
+    WizDatabaseManager& m_dbMgr;
 };
 
 #endif // GUI_DOCUMENTVIEWER_COLLABORATIONDOCVIEW_H
