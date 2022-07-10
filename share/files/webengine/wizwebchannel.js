@@ -328,11 +328,13 @@ function QObject(name, data, webChannel)
         var methodIdx = methodData[1];
         object[methodName] = function() {
             var args = [];
-            var callback;
             for (var i = 0; i < arguments.length; ++i) {
                 var argument = arguments[i];
                 if (typeof argument === "function")
-                    callback = argument;
+                    // FIXME: Workaround for note-plus editor. Try to find anonymous function's
+                    // name in window object.
+                    args.push(argument.name ? argument.name :
+                        Object.keys(window).find(key => window[key] == argument));
                 else if (argument instanceof QObject && webChannel.objects[argument.__id__] !== undefined)
                     args.push({
                         "id": argument.__id__

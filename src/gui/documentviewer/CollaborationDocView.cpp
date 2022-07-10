@@ -3,12 +3,17 @@
 #include <QWebEnginePage>
 #include <QVBoxLayout>
 #include <QWebChannel>
+#include <QJsonDocument>
+#include <QEventLoop>
+#include <QApplication>
 
 #include "share/WizWebEngineView.h"
 #include "share/WizThreads.h"
 #include "share/WizMisc.h"
+#include "utils/WizLogger.h"
 #include "sync/WizToken.h"
 #include "sync/WizApiEntry.h"
+#include "sync/WizKMSync.h"
 #include "database/WizDatabaseManager.h"
 #include "WizDef.h"
 #include "WizMainWindow.h"
@@ -38,33 +43,27 @@ CollaborationDocView::CollaborationDocView(const WIZDOCUMENTDATAEX &doc, WizExpl
     layout->setStretchFactor(m_title, 0);
     layout->setStretchFactor(m_editor, 1);
 
-    m_editor->loadDocument(doc);
-    m_editor->show();
-
     connect(m_title, &CollaborationTitleBar::editButtonClicked,
             this, &CollaborationDocView::handleEditButtonClicked);
     connect(m_editor->page(), &QWebEnginePage::windowCloseRequested,
             this, &CollaborationDocView::handleWindowCloseRequested);
     connect(m_editor->page(), &QWebEnginePage::titleChanged,
             this, &CollaborationDocView::titleChanged);
+
     connect(m_editor, &QWebEngineView::loadStarted,
             this, [this]() {
                 m_title->editButton()->setEnabled(false);
                 m_title->startEditButtonAnimation();
             });
-    connect(m_editor, &QWebEngineView::loadFinished,
-            this, [this](bool ok) {
-                m_title->editButton()->setEnabled(ok);
+    connect(m_editor, &CollaborationEditor::editorLoaded,
+            this, [this](const QString &docGuid) {
+                m_title->editButton()->setEnabled(true);
+                if (m_mode == modeEditor && m_editor->isEditorLoaded())
+                    m_title->editButton()->setState(WizToolButton::Checked);
                 m_title->stopEditButtonAnimation();
             });
-
-    if (doc.tCreated.secsTo(QDateTime::currentDateTime()) <= 1) {
-        // 新建笔记
-        //m_title->clearAndSetPlaceHolderText(doc.strTitle);
-    } else {
-        // 已有笔记
-        //m_title->clearPlaceHolderText();
-    }
+    connect(m_editor, &CollaborationEditor::noteCreated,
+            this, &CollaborationDocView::handleNoteCreated);
 }
 
 CollaborationDocView::~CollaborationDocView()
@@ -126,15 +125,72 @@ void CollaborationDocView::setEditorMode(WizEditorMode mode)
     m_editor->setEditorMode(mode);
 }
 
+void CollaborationDocView::loadDocument()
+{
+    m_editor->loadDocument(m_doc);
+}
+
+void CollaborationDocView::createDocument(const WIZTAGDATA& tag)
+{
+    m_tag = tag;
+    if (m_doc.strKbGUID.isEmpty())
+        m_doc.strKbGUID = m_dbMgr.db().kbGUID();
+    m_editor->createDocument(m_doc.strKbGUID);
+    m_mode = modeEditor;
+}
+
+void CollaborationDocView::handleNoteCreated(const QString &docGuid, const QString &title)
+{
+    WizDatabase& pdb = WizDatabaseManager::instance()->db();
+    WizKMSyncThread sync(pdb, false);
+    sync.start(QThread::TimeCriticalPriority);
+
+    bool done = false;
+    connect(&sync, &WizKMSyncThread::syncFinished,
+        this, [&] (int nErrorCode, bool isNetworkError,
+                   const QString& strErrorMesssage, bool isBackground) {
+            
+            WIZDOCUMENTDATA data;
+            WizDatabase& db = WizDatabaseManager::instance()->db(m_doc.strKbGUID);
+            if (db.documentFromGuid(docGuid, data)) {
+                data.strTitle = title.isEmpty() ? data.strTitle : title;
+                data.tDataModified = WizGetCurrentTime();
+                data.strLocation = m_doc.strLocation;
+                db.modifyDocumentInfo(data);
+                m_doc = data;
+
+                if (!m_tag.strGUID.isEmpty()) {
+                    WizDocument doc(db, m_doc);
+                    doc.addTag(m_tag);
+                }
+            }
+
+            done = true;
+        }
+    );
+
+    sync.startSyncAll();
+
+    while(!done)
+        QApplication::processEvents();
+
+    sync.waitForDone();
+}
+
 //////////////////////////////////////////////////////////////////////////
 
 CollaborationEditor::CollaborationEditor(WizExplorerApp &app, QWidget *parent)
     : AbstractDocumentEditor(parent)
     , m_app(app)
     , m_dbMgr(app.databaseManager())
+    , m_editorLoaded(false)
 {
     // create default web view
-    WizWebEngineInjectObjectCollection objects = {{"wizQt", this}};
+    WizWebEngineInjectObjectCollection objects = {
+        {"wizQt", this},
+        {"WizChromeBrowser", this},
+        {"ReactNativeWebView", this}
+    };
     auto profile = createWebEngineProfile(objects, this);
     auto webPage = new WizWebEnginePage(objects, profile, this);
     setPage(webPage);
@@ -160,6 +216,92 @@ void CollaborationEditor::loadDocument(const WIZDOCUMENTDATAEX &doc)
     load(liveEditorUrl);
 }
 
+void CollaborationEditor::createDocument(const QString &kbGUID)
+{
+    auto &db = m_dbMgr.db(kbGUID);
+    WIZUSERINFO info;
+    if (!db.getUserInfo(info))
+        return;
+
+    QString liveEditorUrl = WizCommonApiEntry::noteplusUrl(
+        kbGUID, "create", info.strUserGUID, info.strDisplayName);
+    load(liveEditorUrl);
+}
+
+void CollaborationEditor::setEditorMode(WizEditorMode mode)
+{
+    QString code = "wizEditor.setReadOnly(%1)";
+    if (m_editorLoaded)
+        page()->runJavaScript(code.arg(
+            mode == modeReader ? "true" : "false"));
+}
+
+void CollaborationEditor::isModified(std::function<void(bool modified)> callback)
+{
+
+}
+
+void CollaborationEditor::onTitleEdited(QString strTitle)
+{
+
+}
+
+void CollaborationEditor::Execute(const QString &method,
+    const QVariant &arg1, const QVariant &arg2,
+    const QVariant &arg3, const QVariant &arg4)
+{
+    if (method == "GetToken")
+        GetToken(arg1.toString());
+    else if (method == "ChangeCommandStatus")
+        OnCommandStatusChanged(arg1.toString(), arg2.toJsonObject());
+    else if (method == "CreateNote")
+        OnCreateNote(arg1.toString(), arg2.toString());
+    else if (method == "OnEditorLoad")
+        OnEditorLoad(arg1.toString());
+    else if (method == "ChangeModifiedStatus")
+        OnModifiedStatusChanged(arg1.toString(), arg2.toJsonObject());
+    else if (method == "ChangeRemoteUser")
+        OnRemoteUserChanged(arg1.toString(), arg2.toJsonObject());
+    else if (method == "ChangeTitle")
+        OnTitleChanged(arg1.toString(), arg2.toString());
+    else if (method == "ChangeAbstract")
+        OnAbstractChanged(arg1.toString(), arg2.toString());
+    else
+        TOLOG1("Unknown method invoked: %1", method);
+}
+
+void CollaborationEditor::postMessage(const QString &message)
+{
+    auto msg = QJsonDocument::fromJson(message.toUtf8()).object();
+    auto type = msg["type"].toString();
+    if (type == "getToken")
+        GetToken(msg["callback"].toString());
+    else if (type == "onCommandStatusChanged")
+        OnCommandStatusChanged(
+            msg["docGuid"].toString(), msg["commandStatus"].toObject());
+    else if (type == "onCreateNote")
+        OnCreateNote(msg["docGuid"].toString(), msg["title"].toString());
+    else if (type == "onEditorLoad")
+        OnEditorLoad(msg["docGuid"].toString());
+    else if (type == "onModifiedStatusChanged")
+        OnModifiedStatusChanged(
+            msg["docGuid"].toString(), msg["modifiedStatus"].toObject());
+    else if (type == "onRemoteUserChanged")
+        OnRemoteUserChanged(
+            msg["docGuid"].toString(), msg["users"].toObject());
+    else if (type == "onTitleChanged")
+        OnTitleChanged(msg["docGuid"].toString(), msg["title"].toString());
+    else if (type == "onAbstractChanged")
+        OnAbstractChanged(msg["docGuid"].toString(), msg["abstract"].toString());
+    else if (type == "onFilePreview")
+        OnFilePreview(msg["docGuid"].toString(), msg["previewUrl"].toString(),
+                      msg["downloadUrl"].toString(), msg["fileName"].toString(),
+                      msg["fileSize"].toInt(), msg["fileType"].toString());
+    else
+        TOLOG1("Unknown method invoked: %1", type);
+
+}
+
 void CollaborationEditor::GetToken(const QString &func)
 {
     QString functionName(func);
@@ -173,19 +315,44 @@ void CollaborationEditor::GetToken(const QString &func)
     });
 }
 
-void CollaborationEditor::setEditorMode(WizEditorMode mode)
-{
-    QString code = "wizEditor.setReadOnly(%1)";
-    page()->runJavaScript(code.arg(
-        mode == modeReader ? "true" : "false"));
-}
-
-void CollaborationEditor::isModified(std::function<void(bool modified)> callback)
+void CollaborationEditor::OnCommandStatusChanged(const QString &docGuid, const QJsonObject &commandStatus)
 {
 
 }
 
-void CollaborationEditor::onTitleEdited(QString strTitle)
+void CollaborationEditor::OnCreateNote(const QString &docGuid, const QString &title)
+{
+    Q_EMIT noteCreated(docGuid, title);
+}
+
+void CollaborationEditor::OnEditorLoad(const QString &docGuid)
+{
+    m_editorLoaded = true;
+    Q_EMIT editorLoaded(docGuid);
+}
+
+void CollaborationEditor::OnModifiedStatusChanged(const QString &docGuid, const QJsonObject &modifiedStatus)
+{
+
+}
+
+void CollaborationEditor::OnRemoteUserChanged(const QString &docGuid, const QJsonObject &users)
+{
+
+}
+
+void CollaborationEditor::OnTitleChanged(const QString &docGuid, const QString &title)
+{
+    Q_EMIT titleChanged(docGuid, title);
+}
+
+void CollaborationEditor::OnAbstractChanged(const QString &docGuid, const QString &abstract)
+{
+    Q_EMIT abstractChanged(docGuid, abstract);
+}
+
+void CollaborationEditor::OnFilePreview(const QString &docGuid, const QString &previewUrl, const QString &downloadUrl,
+                                        const QString &fileName, const int fileSize, const QString &fileType)
 {
 
 }

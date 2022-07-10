@@ -11,15 +11,24 @@ class AbstractDocumentView : public AbstractTabPage
     Q_OBJECT
 
 public:
-    AbstractDocumentView(QWidget *parent = nullptr)
-        : AbstractTabPage(parent) {}
+    AbstractDocumentView(QWidget *parent = nullptr);
 
     virtual void setEditorMode(WizEditorMode mode) = 0;
     virtual WizEditorMode editorMode() const = 0;
     virtual const WIZDOCUMENTDATAEX& note() const = 0;
 
+    QList<QAction *> TabContextMenuActions() override;
+
 protected:
     void paintEvent(QPaintEvent *) override;
+
+Q_SIGNALS:
+    void locateDocumentRequest(const WIZDOCUMENTDATA &data);
+
+protected:
+    QAction *m_locateAction;
+    QAction *m_copyInternalLinkAction;
+
 };
 
 class AbstractDocumentEditor : public WizWebEngineView

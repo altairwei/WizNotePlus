@@ -3223,10 +3223,9 @@ void WizCategoryView::addDocumentToShortcuts(const WIZDOCUMENTDATA& doc)
 
 void WizCategoryView::createGroup()
 {
-    QString strExtInfo = WizCommonApiEntry::appstoreParam(false);
-    QString strUrl = WizCommonApiEntry::makeUpUrlFromCommand("create_group", WIZ_TOKEN_IN_URL_REPLACE_PART, strExtInfo);
+    QString strUrl = WizCommonApiEntry::createGroupUrl(WIZ_TOKEN_IN_URL_REPLACE_PART);
     WizShowWebDialogWithToken(tr("Create Team for Free"), strUrl, window());
-    //
+
     WizMainWindow::instance()->setNeedResetGroups();
 }
 

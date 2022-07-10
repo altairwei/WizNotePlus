@@ -1150,6 +1150,9 @@ void WizMainWindow::on_editor_statusChanged(const QString& currentStyle)
 {
 }
 
+/*!
+    Download templates data if necessary
+ */
 void WizMainWindow::createNoteByTemplate(const TemplateData& tmplData)
 {
     QFileInfo info(tmplData.strFileName);
@@ -1160,78 +1163,63 @@ void WizMainWindow::createNoteByTemplate(const TemplateData& tmplData)
     else
     {
         qDebug() << "template file not exists : " << tmplData.strFileName;
-        //
         WizExecutingActionDialog::executeAction(tr("Downloading template..."), WIZ_THREAD_DEFAULT, [=]{
-            //
             bool ret = WizNoteManager::downloadTemplateBlocked(tmplData);
-            //
             ::WizExecuteOnThread(WIZ_THREAD_MAIN, [=]{
-
-                if (ret)
-                {
+                if (ret) {
                     createNoteByTemplateCore(tmplData);
-                }
-                else
-                {
-                    QMessageBox::warning(this, tr("Error"), tr("Can't download template from server. Please try again later."));
+                } else {
+                    QMessageBox::warning(this,
+                        tr("Error"), tr("Can't download template from server. Please try again later."));
                 }
             });
         });
     }
 }
 
-/**
- * @brief Create document from template.
- * @param tmplData Template information.
+/*!
+    Create document from template \a tmplData.
  */
 void WizMainWindow::createNoteByTemplateCore(const TemplateData& tmplData)
 {
     QFileInfo info(tmplData.strFileName);
-    //
     initVariableBeforCreateNote();
-    //
+
     QString kbGUID;
     WIZTAGDATA currTag;
     QString currLocation;
     m_category->getAvailableNewNoteTagAndLocation(kbGUID, currTag, currLocation);
-    //
+
     if (currLocation.isEmpty())
-    {
         currLocation = m_dbMgr.db(kbGUID).getDefaultNoteLocation();
-    }
-    //
-    WIZDOCUMENTDATA data;
+
+    WIZDOCUMENTDATAEX data;
     data.strKbGUID = kbGUID;
     data.strType = tmplData.buildInName;
-    //
     data.strTitle = tmplData.strTitle.isEmpty() ? info.completeBaseName() : tmplData.strTitle;
-    //  Journal {date}({week})
-    if (tmplData.strTitle.isEmpty())
-    {
+
+    // Journal {date}({week})
+    if (tmplData.strTitle.isEmpty()) {
         data.strTitle = tmplData.strName;
-    }
-    else
-    {
+    } else {
         WizOleDateTime dt;
         data.strTitle.replace("{date}", dt.toLocalLongDate());
         data.strTitle.replace("{date_time}", dt.toLocalLongDate() + " " + dt.toString("hh:mm:ss"));
         QLocale local;
         data.strTitle.replace("{week}", local.toString(dt.toLocalTime(), "ddd"));
     }
-    //
-    if (kbGUID.isEmpty())   //personal
-    {
+
+    // Personal
+    if (kbGUID.isEmpty()) {
+        data.strKbGUID = m_dbMgr.db().kbGUID();
         data.strLocation = tmplData.strFolder;
 
-        if (data.strLocation.isEmpty())
-        {
+        if (data.strLocation.isEmpty()) {
             data.strLocation = currLocation;
-        }
-        else
-        {
+        } else {
             data.strLocation.replace("{year}", QDate::currentDate().toString("yyyy"));
             data.strLocation.replace("{month}", QDate::currentDate().toString("MM"));
-            //
+
             if (WizCategoryViewFolderItem* folder = m_category->findFolder(data.strLocation, true, false))
             {
                 if (m_category->currentItem() != folder)
@@ -1240,19 +1228,23 @@ void WizMainWindow::createNoteByTemplateCore(const TemplateData& tmplData)
                 }
             }
         }
-    }
-    else        
-    {
+    } else {
         data.strLocation = currLocation;
     }
-    //
-    WizNoteManager noteManager(m_dbMgr);
-    if (!noteManager.createNoteByTemplate(data, currTag, tmplData.strFileName))
-        return;
 
-    bool isHandwriting = false;
+    // Actually create the note
+    WizNoteManager noteManager(m_dbMgr);
+    if (data.strType == "collaboration") {
+        CollaborationDocView *newView = new CollaborationDocView(data, *this, this);
+        newView->createDocument(currTag);
+        m_mainTabBrowser->createTab(newView);
+        return;
+    } else {
+        if (!noteManager.createNoteByTemplate(data, currTag, tmplData.strFileName))
+            return;
+    }
+
     if (data.strType == "svgpainter") {
-        isHandwriting = true;
         createHandwritingNote(m_dbMgr, data, this);
     }
 
@@ -1603,8 +1595,8 @@ void WizMainWindow::prepareNewNoteMenu()
 }
 
 
-/**
- * @brief 根据新建笔记菜单的选项来从模板创建笔记
+/*!
+    Decode templates data from action
  */
 void WizMainWindow::on_newNoteByExtraMenu_request()
 {
@@ -3758,11 +3750,14 @@ void WizMainWindow::viewDocument(const WIZDOCUMENTDATAEX& data)
         m_documentForEditing = WIZDOCUMENTDATA();
     }
 
+    AbstractDocumentView *view = nullptr;
     if (data.strType == "collaboration") {
         CollaborationDocView *newView = new CollaborationDocView(data, *this, this);
         newView->setEditorMode(modeReader);
+        newView->loadDocument();
         int index = m_mainTabBrowser->createTab(newView);
         m_mainTabBrowser->setTabText(index, data.strTitle);
+        view = newView;
     } else  {
         WizDocumentView* newDocView = createDocumentView();
         int index = m_mainTabBrowser->createTab(newDocView);
@@ -3770,7 +3765,11 @@ void WizMainWindow::viewDocument(const WIZDOCUMENTDATAEX& data)
         //TODO: directly invoke newDocView->viewNote() instead of signaling.
         WizGlobal::emitViewNoteRequested(newDocView, data, forceEditing);
         setCurrentDocumentView(newDocView); //FIXME: do not keep m_doc
+        view = newDocView;
     }
+
+    connect(view, &AbstractDocumentView::locateDocumentRequest,
+            this, qOverload<const WIZDOCUMENTDATA&>(&WizMainWindow::locateDocument));
 
     m_actions->actionFromName(WIZACTION_GLOBAL_SAVE_AS_MARKDOWN)->setEnabled(WizIsMarkdownNote(data));
 

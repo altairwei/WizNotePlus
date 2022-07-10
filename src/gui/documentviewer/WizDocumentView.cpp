@@ -230,20 +230,6 @@ WizDocumentView::WizDocumentView(WizExplorerApp& app, QWidget* parent)
     m_editStatusChecker->moveToThread(checkThread);
     checkThread->start();
 
-    m_locateAction = new QAction(tr("Locate this document in category"), this);
-    connect(m_locateAction, &QAction::triggered, [this] {
-        WizMainWindow *mainWindow = WizMainWindow::instance();
-        if (mainWindow)
-        {
-            mainWindow->locateDocument(
-                this->note().strKbGUID, this->note().strGUID);
-        }
-    });
-
-    m_copyInternalLinkAction = new QAction(tr("Copy internal link"), this);
-    connect(m_copyInternalLinkAction, &QAction::triggered, [this] {
-        WizCopyNoteAsInternalLink(this->note());
-    });
 }
 
 WizDocumentView::~WizDocumentView()
@@ -307,15 +293,6 @@ void WizDocumentView::RequestClose(bool force /*= false*/)
         waitForSave();
         m_web->triggerPageAction(QWebEnginePage::RequestClose);
     }
-}
-
-QList<QAction *> WizDocumentView::TabContextMenuActions()
-{
-    QList<QAction *> actions;
-    actions.append(m_locateAction);
-    actions.append(m_copyInternalLinkAction);
-
-    return actions;
 }
 
 void WizDocumentView::handleWindowCloseRequest()

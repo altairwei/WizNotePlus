@@ -576,6 +576,7 @@ bool WIZDOCUMENTDATAEX::fromJson(const Json::Value& value)
         nDataChanged = 0;
         //strKbGuid = QString::fromStdString(value["kbGuid"].asString());
         nVersion = value["version"].asInt64();
+        strKbGUID = QString::fromStdString(value["kbGuid"].asString());
         strGUID = QString::fromStdString(value["docGuid"].asString());
         strTitle = QString::fromStdString(value["title"].asString());
         strLocation = QString::fromStdString(value["category"].asString());

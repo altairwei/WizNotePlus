@@ -247,9 +247,17 @@ QString WizCommonApiEntry::accountInfoUrl(const QString& strToken)
 
 QString WizCommonApiEntry::createGroupUrl(const QString& strToken)
 {
-    QString strExt = QString("token=%1").arg(strToken);
-    QString strUrl = makeUpUrlFromCommand("create_group");
-    return addExtendedInfo(strUrl, strExt);
+    QUrl url = makeUpUrlFromCommand("create_group");
+    QString extra = QString("token=%1&%2")
+        .arg(strToken, WizCommonApiEntry::appstoreParam(false));
+
+    QUrlQuery query(url.query());
+    query.addQueryItem("a", QUrl::toPercentEncoding(extra).constData());
+    query.removeQueryItem("plat");
+    query.addQueryItem("plat", "macosx");
+    url.setQuery(query);
+
+    return url.toString();
 }
 
 QString WizCommonApiEntry::captchaUrl(const QString& strCaptchaID, int nWidth, int nHeight)
@@ -312,7 +320,8 @@ QString WizCommonApiEntry::noteplusUrl(
     QUrlQuery query(url.query());
     query.addQueryItem("a", QUrl::toPercentEncoding("theme=light&disableVideo=1&top=0").constData());
     query.addQueryItem("skin", "lite");
-    query.addQueryItem("clientType", "macos");
+    // Mimic Android client
+    query.addQueryItem("clientType", "win");
     query.addQueryItem("kbGuid", kbGUID);
     query.addQueryItem("docGuid", docGUID);
     query.addQueryItem("userGuid", userGUID);

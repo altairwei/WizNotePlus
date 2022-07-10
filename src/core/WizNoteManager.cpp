@@ -178,7 +178,7 @@ bool WizNoteManager::createNoteByTemplate(WIZDOCUMENTDATA& data, const WIZTAGDAT
 
     if (!m_dbMgr.db(data.strKbGUID).createDocumentByTemplate(strZiw, data.strLocation, tag, data))
     {
-        qDebug() << "Failed to new document! " << strZiw;
+        qDebug() << "Failed to create new document! " << strZiw;
         return false;
     }
     return true;

@@ -123,6 +123,7 @@ public:
 class WizKMDatabaseServer: public WizKMApiServerBase
 {
     Q_OBJECT
+
 public:
     WizKMDatabaseServer(const WIZUSERINFOBASE& userInfo, const WIZKBINFO& kbInfo = WIZKBINFO(), const WIZKBVALUEVERSIONS& versions = WIZKBVALUEVERSIONS(), QObject* parent = 0);
     virtual ~WizKMDatabaseServer();
@@ -137,6 +138,7 @@ public:
     WIZSTANDARDRESULT lastJsonResult() const { return m_lastJsonResult; }
     void clearLocalError() { m_strLastLocalError.clear(); }
     QString lastLocalError() const { return m_strLastLocalError; }
+
 protected:
     WIZUSERINFOBASE m_userInfo;
     WIZKBINFO m_kbInfo;
@@ -147,6 +149,7 @@ protected:
 
     qint64 m_objectsTotalSize;
     std::map<QString, qint64> m_objectDownloadedSize;
+
 private:
     bool document_postDataNew(const WIZDOCUMENTDATAEX& data, bool bWithDocumentData, __int64& nServerVersion);
     bool document_downloadDataNew(const QString& strDocumentGUID, WIZDOCUMENTDATAEX& ret, const QString& fileName);
