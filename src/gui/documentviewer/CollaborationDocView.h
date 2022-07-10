@@ -31,11 +31,15 @@ public:
 
     void createDocument(const WIZTAGDATA& tag);
     void loadDocument();
+    void waitForSave();
+    void trySaveDocument(std::function<void(const QVariant &)> callback);
 
 public slots:
     void handleWindowCloseRequested();
     void handleEditButtonClicked();
     void handleNoteCreated(const QString &docGuid, const QString &title);
+    void handleNoteDeleted(const WIZDOCUMENTDATA& data);
+    void handleNoteTitleChanged(const QString &docGuid, const QString &title);
 
 private:
     WIZDOCUMENTDATAEX m_doc;

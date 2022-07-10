@@ -6,6 +6,7 @@
 #include <QJsonDocument>
 #include <QEventLoop>
 #include <QApplication>
+#include <QMessageBox>
 
 #include "share/WizWebEngineView.h"
 #include "share/WizThreads.h"
@@ -48,7 +49,9 @@ CollaborationDocView::CollaborationDocView(const WIZDOCUMENTDATAEX &doc, WizExpl
     connect(m_editor->page(), &QWebEnginePage::windowCloseRequested,
             this, &CollaborationDocView::handleWindowCloseRequested);
     connect(m_editor->page(), &QWebEnginePage::titleChanged,
-            this, &CollaborationDocView::titleChanged);
+            this, &AbstractTabPage::titleChanged);
+    connect(m_editor, &CollaborationEditor::titleChanged,
+            this, &CollaborationDocView::handleNoteTitleChanged);
 
     connect(m_editor, &QWebEngineView::loadStarted,
             this, [this]() {
@@ -64,6 +67,9 @@ CollaborationDocView::CollaborationDocView(const WIZDOCUMENTDATAEX &doc, WizExpl
             });
     connect(m_editor, &CollaborationEditor::noteCreated,
             this, &CollaborationDocView::handleNoteCreated);
+
+    connect(&m_dbMgr, &WizDatabaseManager::documentDeleted,
+            this, &CollaborationDocView::handleNoteDeleted);
 }
 
 CollaborationDocView::~CollaborationDocView()
@@ -81,6 +87,7 @@ void CollaborationDocView::RequestClose(bool force /*= false*/)
     if (force) {
         handleWindowCloseRequested();
     } else {
+        waitForSave();
         m_editor->triggerPageAction(QWebEnginePage::RequestClose);
     }
 }
@@ -90,6 +97,36 @@ void CollaborationDocView::handleWindowCloseRequested()
     emit pageCloseRequested();
 }
 
+void CollaborationDocView::trySaveDocument(std::function<void(const QVariant &)> callback)
+{
+    m_editor->page()->runJavaScript("wizEditor.getTitle()",
+        [&, callback](const QVariant& vRet){
+            if (vRet.type() == QVariant::String) {
+                WIZDOCUMENTDATA data;
+                WizDatabase& db = m_dbMgr.db(note().strKbGUID);
+                if (db.documentFromGuid(note().strGUID, data)) {
+                    if (!db.canEditDocument(data)) {
+                        callback(QVariant(false));
+                        return;
+                    }
+
+                    QString newTitle = vRet.toString();
+                    if (newTitle != data.strTitle) {
+                        data.strTitle = newTitle;
+                        data.tDataModified = WizGetCurrentTime();
+                        db.modifyDocumentInfo(data);
+                    }
+
+                    callback(QVariant(true));
+
+                } else {
+                    callback(QVariant(false));
+                }
+            }
+        }
+    );
+}
+
 void CollaborationDocView::handleEditButtonClicked()
 {
     auto oldMode = m_mode;
@@ -97,24 +134,7 @@ void CollaborationDocView::handleEditButtonClicked()
     m_editor->setEditorMode(m_mode);
 
     if (oldMode == modeEditor) {
-        m_editor->page()->runJavaScript("wizEditor.getTitle()",
-            [&](const QVariant& vRet){
-                if (vRet.type() == QVariant::String) {
-                    WIZDOCUMENTDATA data;
-                    WizDatabase& db = WizDatabaseManager::instance()->db(note().strKbGUID);
-                    if (db.documentFromGuid(note().strGUID, data)) {
-                        if (!db.canEditDocument(data))
-                            return;
-                        QString newTitle = vRet.toString();
-                        if (newTitle != data.strTitle) {
-                            data.strTitle = newTitle;
-                            data.tDataModified = WizGetCurrentTime();
-                            db.modifyDocumentInfo(data);
-                        }
-                    }
-                }
-            }
-        );
+        trySaveDocument([] (const QVariant &) {});
     }
 }
 
@@ -149,7 +169,10 @@ void CollaborationDocView::handleNoteCreated(const QString &docGuid, const QStri
     connect(&sync, &WizKMSyncThread::syncFinished,
         this, [&] (int nErrorCode, bool isNetworkError,
                    const QString& strErrorMesssage, bool isBackground) {
-            
+            if (nErrorCode != 0)
+                QMessageBox::critical(this,
+                    tr("Sync failed"), strErrorMesssage);
+
             WIZDOCUMENTDATA data;
             WizDatabase& db = WizDatabaseManager::instance()->db(m_doc.strKbGUID);
             if (db.documentFromGuid(docGuid, data)) {
@@ -175,6 +198,35 @@ void CollaborationDocView::handleNoteCreated(const QString &docGuid, const QStri
         QApplication::processEvents();
 
     sync.waitForDone();
+}
+
+void CollaborationDocView::handleNoteDeleted(const WIZDOCUMENTDATA& data)
+{
+    if (note().strGUID != data.strGUID)
+        return;
+
+    RequestClose();
+}
+
+void CollaborationDocView::waitForSave()
+{
+    bool done = false;
+    trySaveDocument([&done](const QVariant& ret){
+        done = true;
+    });
+
+    while (!done)
+    {
+        QApplication::processEvents();
+    }
+}
+
+void CollaborationDocView::handleNoteTitleChanged(const QString &docGuid, const QString &title)
+{
+    if (m_doc.strGUID != docGuid)
+        return;
+
+    trySaveDocument([] (const QVariant &) {});
 }
 
 //////////////////////////////////////////////////////////////////////////
