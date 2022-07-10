@@ -3769,7 +3769,7 @@ void WizMainWindow::viewDocument(const WIZDOCUMENTDATAEX& data)
     }
 
     connect(view, &AbstractDocumentView::locateDocumentRequest,
-            this, qOverload<const WIZDOCUMENTDATA&>(&WizMainWindow::locateDocument));
+            this, QOverload<const WIZDOCUMENTDATA&>::of(&WizMainWindow::locateDocument));
 
     m_actions->actionFromName(WIZACTION_GLOBAL_SAVE_AS_MARKDOWN)->setEnabled(WizIsMarkdownNote(data));
 
