@@ -151,5 +151,5 @@ void WizCategoryViewTagItem::reload(WizDatabase& db)
 
 void WizCategoryViewTagItem::setTagPosition(int nPos)
 {
-    m_tag.nPostion = nPos;
+    m_tag.nPosition = nPos;
 }
