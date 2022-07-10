@@ -66,7 +66,7 @@ CollaborationDocView::CollaborationDocView(const WIZDOCUMENTDATAEX &doc, WizExpl
                 m_title->stopEditButtonAnimation();
             });
     connect(m_editor, &CollaborationEditor::noteCreated,
-            this, &CollaborationDocView::handleNoteCreated);
+            this, &CollaborationDocView::handleNoteCreated, Qt::QueuedConnection);
 
     connect(&m_dbMgr, &WizDatabaseManager::documentDeleted,
             this, &CollaborationDocView::handleNoteDeleted);
