@@ -14,9 +14,7 @@
    <string>Downloads</string>
   </property>
   <property name="styleSheet">
-   <string notr="true">#DownloadManagerWidget {
-    background: palette(button)
-}</string>
+   <string notr="true"/>
   </property>
   <layout class="QVBoxLayout" name="m_topLevelLayout">
    <property name="sizeConstraint">
@@ -37,10 +35,7 @@
    <item>
     <widget class="QScrollArea" name="m_scrollArea">
      <property name="styleSheet">
-      <string notr="true">#m_scrollArea {
-  margin: 2px;
-  border: none;
-}</string>
+      <string notr="true"/>
      </property>
      <property name="verticalScrollBarPolicy">
       <enum>Qt::ScrollBarAlwaysOn</enum>
@@ -59,12 +54,12 @@
        <rect>
         <x>0</x>
         <y>0</y>
-        <width>482</width>
-        <height>296</height>
+        <width>477</width>
+        <height>298</height>
        </rect>
       </property>
       <property name="styleSheet">
-       <string notr="true">#m_items {background: palette(mid)}</string>
+       <string notr="true"/>
       </property>
       <layout class="QVBoxLayout" name="m_itemsLayout">
        <property name="spacing">
@@ -91,7 +86,7 @@
           </sizepolicy>
          </property>
          <property name="styleSheet">
-          <string notr="true">color: palette(shadow)</string>
+          <string notr="true"/>
          </property>
          <property name="text">
           <string>No downloads</string>

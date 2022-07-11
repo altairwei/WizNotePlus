@@ -75,6 +75,8 @@ DownloadWidget::DownloadWidget(QWebEngineDownloadItem *download, QWidget *parent
     m_dstName->setText(QFileInfo(m_download->path()).fileName());
 #endif
     m_srcUrl->setText(m_download->url().toDisplayString());
+    QIcon removeIcon(WizLoadSkinIcon(Utils::WizStyleHelper::themeName(), "trash"));
+    m_cancelButton->setIcon(removeIcon);
 
     connect(m_cancelButton, &QPushButton::clicked,
             [this](bool) {
@@ -159,14 +161,9 @@ void DownloadWidget::updateWidget()
         break;
     }
 
-    static QString strTheme = Utils::WizStyleHelper::themeName();
     if (state == QWebEngineDownloadItem::DownloadInProgress) {
-        static QIcon cancelIcon(WizLoadSkinIcon(strTheme, "action_deleteEditorBarItem"));
-        m_cancelButton->setIcon(cancelIcon);
         m_cancelButton->setToolTip(tr("Stop downloading"));
     } else {
-        static QIcon removeIcon(WizLoadSkinIcon(strTheme, "trash"));
-        m_cancelButton->setIcon(removeIcon);
         m_cancelButton->setToolTip(tr("Remove from list"));
     }
 }
@@ -180,9 +177,6 @@ DownloadManagerWidget::DownloadManagerWidget(QWidget *parent)
 
     // Quit application if the download manager window is the only remaining window
     setAttribute(Qt::WA_QuitOnClose, false);
-
-    connect(QWebEngineProfile::defaultProfile(), &QWebEngineProfile::downloadRequested,
-            this, &DownloadManagerWidget::downloadRequested);
 }
 
 void DownloadManagerWidget::downloadRequested(QWebEngineDownloadItem *download)

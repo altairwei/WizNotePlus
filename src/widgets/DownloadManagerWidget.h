@@ -15,6 +15,7 @@ class QWebEngineDownloadItem;
 class DownloadWidget final : public QFrame, public Ui::DownloadWidget
 {
     Q_OBJECT
+
 public:
     // Precondition: The QWebEngineDownloadItem has been accepted.
     explicit DownloadWidget(QWebEngineDownloadItem *download, QWidget *parent = nullptr);

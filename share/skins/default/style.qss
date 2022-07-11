@@ -601,3 +601,76 @@ WizDocumentView WizTitleBar QLineEdit{
   border: 0px;
   border-radius: 0px;
 }
+
+
+/*
+ * Download Manager
+ * -----------------------------------------------------------
+ */
+
+QFrame#DownloadWidget {
+  background: palette(button);
+  border: 1px solid palette(dark);
+  margin: 0px;
+}
+
+QFrame#DownloadWidget > QPushButton {
+  border-width: 0px;
+  /*font: 14px;*/
+  padding: 5px 5px;
+  border-style: solid;
+  border-color: #ececec;
+  border-radius: 4px;
+  border-bottom-color: #e0e0e0;
+}
+
+QFrame#DownloadWidget {
+  margin-left: 6px;
+  margin-right: 6px;
+  margin-top: 6px;
+  margin-bottom: 0px;
+  border-radius: 6px;
+}
+
+QFrame#DownloadWidget >
+QPushButton:pressed {
+  background-color: rgba(211, 211, 211, 1);
+}
+
+QFrame#DownloadWidget >
+QPushButton:hover {
+  background-color: rgba(211, 211, 211, 0.5);
+}
+
+QFrame#DownloadWidget >
+QLabel#m_dstName {
+  font-weight: bold;
+}
+
+QFrame#DownloadWidget >
+QProgressBar {
+  font-size: 12px;
+}
+
+QWidget#DownloadManagerWidget {
+  background: palette(button);
+}
+
+QWidget#DownloadManagerWidget
+QScrollArea#m_scrollArea {
+  margin: 2px;
+  border: none;
+}
+
+QWidget#DownloadManagerWidget
+QScrollArea#m_scrollArea
+QWidget#m_items {
+  background: palette(mid);
+}
+
+QWidget#DownloadManagerWidget
+QScrollArea#m_scrollArea
+QWidget#m_items
+QLabel#m_zeroItemsLabel {
+  color: palette(shadow);
+}

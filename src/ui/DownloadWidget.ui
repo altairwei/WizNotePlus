@@ -2,12 +2,16 @@
 <ui version="4.0">
  <class>DownloadWidget</class>
  <widget class="QFrame" name="DownloadWidget">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>146</width>
+    <height>90</height>
+   </rect>
+  </property>
   <property name="styleSheet">
-   <string notr="true">#DownloadWidget {
-  background: palette(button);
-  border: 1px solid palette(dark);
-  margin: 0px;
-}</string>
+   <string notr="true"/>
   </property>
   <layout class="QGridLayout" name="m_topLevelLayout">
    <property name="sizeConstraint">
@@ -16,8 +20,7 @@
    <item row="0" column="0">
     <widget class="QLabel" name="m_dstName">
      <property name="styleSheet">
-      <string notr="true">font-weight: bold
-</string>
+      <string notr="true"/>
      </property>
      <property name="text">
       <string>TextLabel</string>
@@ -27,18 +30,10 @@
    <item row="0" column="1">
     <widget class="QPushButton" name="m_cancelButton">
      <property name="sizePolicy">
-      <sizepolicy hsizetype="Fixed" vsizetype="Fixed"/>
-     </property>
-     <property name="styleSheet">
-      <string notr="true">QPushButton {
-  margin: 1px;
-  border: none;
-}
-QPushButton:pressed {
-  margin: none;
-  border: 1px solid palette(shadow);
-  background: palette(midlight);
-}</string>
+      <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+       <horstretch>0</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
      </property>
      <property name="flat">
       <bool>false</bool>
@@ -64,7 +59,7 @@ QPushButton:pressed {
    <item row="2" column="0" colspan="2">
     <widget class="QProgressBar" name="m_progressBar">
      <property name="styleSheet">
-      <string notr="true">font-size: 12px</string>
+      <string notr="true"/>
      </property>
      <property name="value">
       <number>24</number>
@@ -73,8 +68,6 @@ QPushButton:pressed {
    </item>
   </layout>
  </widget>
- <resources>
-  <include location="data/simplebrowser.qrc"/>
- </resources>
+ <resources/>
  <connections/>
 </ui>
