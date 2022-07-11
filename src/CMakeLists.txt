@@ -242,6 +242,7 @@ set(wiznote_SOURCES
 
     utils/ExternalEditorLauncher.cpp
     widgets/FileLineEdit.cpp
+    widgets/DownloadManagerWidget.cpp
 )
 
 set(wiznote_HEADERS
@@ -459,6 +460,7 @@ set(wiznote_HEADERS
 
     utils/ExternalEditorLauncher.h
     widgets/FileLineEdit.h
+    widgets/DownloadManagerWidget.h
 )
 
 set(wiznote_FORMS
@@ -488,6 +490,8 @@ set(wiznote_FORMS
     ui/WizExternalEditorSettingDialog.ui
     ui/WizExternalEditorInfoDialog.ui
     ui/WizFileExportDialog.ui
+    ui/DownloadManagerWidget.ui
+    ui/DownloadWidget.ui
 )
 
 set(wiznote_TRANSLATIONS

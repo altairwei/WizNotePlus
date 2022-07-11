@@ -110,7 +110,6 @@ public Q_SLOTS:
 #if (QT_VERSION >= QT_VERSION_CHECK(5, 11, 0))
     void openDevTools();
 #endif
-    void handleSavePageTriggered();
     
 Q_SIGNALS:
     void loadFinishedEx(bool);

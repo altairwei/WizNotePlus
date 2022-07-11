@@ -61,6 +61,7 @@
 #include "widgets/WizLocalProgressWebView.h"
 #include "widgets/WizTemplatePurchaseDialog.h"
 #include "widgets/WizCodeEditorDialog.h"
+#include "widgets/DownloadManagerWidget.h"
 
 #include "WizNoteStyle.h"
 #include "WizDocumentHistory.h"
@@ -3133,6 +3134,11 @@ void WizMainWindow::resetSearchStatus()
     quitSearchStatus();
     m_searchWidget->clear();
     m_category->restoreSelection();
+}
+
+void WizMainWindow::on_actionDownloadManager_triggered()
+{
+    DownloadManagerWidget::instance().show();
 }
 
 void WizMainWindow::on_actionResetSearch_triggered()

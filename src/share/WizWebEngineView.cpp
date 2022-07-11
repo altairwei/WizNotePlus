@@ -30,6 +30,7 @@
 #include "WizDevToolsDialog.h"
 #include "gui/documentviewer/WizDocumentView.h"
 #include "share/WizSettings.h"
+#include "widgets/DownloadManagerWidget.h"
 
 
 WizWebEngineAsyncMethodResultObject::WizWebEngineAsyncMethodResultObject(QObject* parent)
@@ -100,6 +101,9 @@ QWebEngineProfile* createWebEngineProfile(const WizWebEngineInjectObjectCollecti
         script.setRunsOnSubFrames(false); // if set True, it will cause some error in javascript.
         profile->scripts()->insert(script);
     }
+
+    QObject::connect(profile, &QWebEngineProfile::downloadRequested,
+                     &DownloadManagerWidget::instance(), &DownloadManagerWidget::downloadRequested);
 
     return profile;
 }
@@ -423,9 +427,6 @@ void WizWebEngineView::setupWebActions()
             this, &WizWebEngineView::openDevTools);
 #endif
 
-    // save page action
-    connect(pageAction(QWebEnginePage::SavePage), &QAction::triggered, 
-            this, &WizWebEngineView::handleSavePageTriggered);
 }
 
 /*!
@@ -532,19 +533,6 @@ void WizWebEngineView::openDevTools()
 }
 #endif
 
-void WizWebEngineView::handleSavePageTriggered()
-{
-    QString fileName = QFileDialog::getSaveFileName(this, tr("Save Page"),
-        QDir::home().absoluteFilePath(documentTitle() + ".mhtml"),
-        tr("MIME HTML (*.mht *.mhtml)"));
-    if (!fileName.isEmpty())
-        page()->save(fileName);
-}
-
-/**
- * @brief WizWebEngineView::getPage
- * @return
- */
 WizWebEnginePage* WizWebEngineView::getPage() {
     return qobject_cast<WizWebEnginePage*>(page());
 }
@@ -745,3 +733,5 @@ void WizNavigationForwarderPage::setWebWindowType(QWebEnginePage::WebWindowType 
 {
     m_windowType = type;
 }
+
+

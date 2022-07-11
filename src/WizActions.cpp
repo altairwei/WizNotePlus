@@ -84,6 +84,7 @@ WIZACTION* WizActions::actionsData()
         {"actionConsole",                       QObject::tr("Console..."),                  "",                                     QKeySequence()},
         {"actionSearch",                        QObject::tr("Search Note"),                 "",                                     QKeySequence("Ctrl+Alt+F")},
         {"actionResetSearch",                   QObject::tr("Reset Search"),                "",                                     QKeySequence("Ctrl+R")},
+        {"actionDownloadManager",                        QObject::tr("Download Manager"),            "",                                     QKeySequence()},
         {"actionFeedback",                      QObject::tr("User Feedback..."),            "",                                     QKeySequence()},
         {"actionSupport",                       QObject::tr("User Support..."),             "",                                     QKeySequence()},
         {"actionManual",                        QObject::tr("User Manual..."),              "",                                     QKeySequence()},
