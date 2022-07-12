@@ -55,8 +55,10 @@ CollaborationDocView::CollaborationDocView(const WIZDOCUMENTDATAEX &doc, WizExpl
 
     connect(m_editor, &QWebEngineView::loadStarted,
             this, [this]() {
-                m_title->editButton()->setEnabled(false);
-                m_title->startEditButtonAnimation();
+                if (!m_editor->isEditorLoaded()) {
+                    m_title->editButton()->setEnabled(false);
+                    m_title->startEditButtonAnimation();
+                }
             });
     connect(m_editor, &CollaborationEditor::editorLoaded,
             this, [this](const QString &docGuid) {
