@@ -1114,6 +1114,17 @@ void WizDocumentView::handleDiscardChangesRequest()
     m_editStatus = DOCUMENT_STATUS_NOSTATUS;
     m_title->setEditorMode(modeReader);
 
+    if (m_editorMode == modeReader)
+    {
+        showInfoBar();
+        m_editorBar->switchToNormalMode();
+    }
+    else
+    {
+        m_editorBar->switchToNormalMode();
+        showEditorBar();
+    }
+
     // Discard changes
     m_web->discardChanges();
 
