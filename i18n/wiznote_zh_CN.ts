@@ -17,7 +17,7 @@
 <context>
     <name>CollaborationDocView</name>
     <message>
-        <location filename="../src/gui/documentviewer/CollaborationDocView.cpp" line="174"/>
+        <location filename="../src/gui/documentviewer/CollaborationDocView.cpp" line="172"/>
         <source>Sync failed</source>
         <translation>同步失败</translation>
     </message>
@@ -25,22 +25,22 @@
 <context>
     <name>CollaborationTitleBar</name>
     <message>
-        <location filename="../src/gui/documentviewer/WizTitleBar.cpp" line="1040"/>
+        <location filename="../src/gui/documentviewer/WizTitleBar.cpp" line="1067"/>
         <source>Edit</source>
         <translation>编辑</translation>
     </message>
     <message>
-        <location filename="../src/gui/documentviewer/WizTitleBar.cpp" line="1040"/>
+        <location filename="../src/gui/documentviewer/WizTitleBar.cpp" line="1067"/>
         <source>Switch to Editing View  %1</source>
         <translation>切换到编辑视图  %1</translation>
     </message>
     <message>
-        <location filename="../src/gui/documentviewer/WizTitleBar.cpp" line="1042"/>
+        <location filename="../src/gui/documentviewer/WizTitleBar.cpp" line="1069"/>
         <source>Read</source>
         <translation>阅读</translation>
     </message>
     <message>
-        <location filename="../src/gui/documentviewer/WizTitleBar.cpp" line="1042"/>
+        <location filename="../src/gui/documentviewer/WizTitleBar.cpp" line="1069"/>
         <source>Switch to Reading View  %1</source>
         <translation>切换到阅读视图  %1</translation>
     </message>
@@ -1278,25 +1278,25 @@
     </message>
     <message>
         <location filename="../src/WizActions.cpp" line="96"/>
-        <location filename="../src/gui/documentviewer/WizDocumentWebView.cpp" line="2695"/>
+        <location filename="../src/gui/documentviewer/WizDocumentWebView.cpp" line="2705"/>
         <source>Cut</source>
         <translation>剪切</translation>
     </message>
     <message>
         <location filename="../src/WizActions.cpp" line="97"/>
-        <location filename="../src/gui/documentviewer/WizDocumentWebView.cpp" line="2696"/>
-        <location filename="../src/gui/documentviewer/WizDocumentWebView.cpp" line="2725"/>
+        <location filename="../src/gui/documentviewer/WizDocumentWebView.cpp" line="2706"/>
+        <location filename="../src/gui/documentviewer/WizDocumentWebView.cpp" line="2735"/>
         <source>Copy</source>
         <translation>拷贝</translation>
     </message>
     <message>
         <location filename="../src/WizActions.cpp" line="98"/>
-        <location filename="../src/gui/documentviewer/WizDocumentWebView.cpp" line="2697"/>
+        <location filename="../src/gui/documentviewer/WizDocumentWebView.cpp" line="2707"/>
         <source>Paste</source>
         <translation>粘贴</translation>
     </message>
     <message>
-        <location filename="../src/gui/documentviewer/WizDocumentWebView.cpp" line="2693"/>
+        <location filename="../src/gui/documentviewer/WizDocumentWebView.cpp" line="2703"/>
         <source>Use &quot;Google&quot; search</source>
         <translation>使用 “Google&quot; 搜索</translation>
     </message>
@@ -1492,22 +1492,22 @@
         <translation>雅痞-简</translation>
     </message>
     <message>
-        <location filename="../src/gui/documentviewer/WizDocumentWebView.cpp" line="2694"/>
+        <location filename="../src/gui/documentviewer/WizDocumentWebView.cpp" line="2704"/>
         <source>Use &quot;Baidu&quot; search</source>
         <translation>使用 &quot;百度&quot; 搜索</translation>
     </message>
     <message>
-        <location filename="../src/gui/documentviewer/WizDocumentWebView.cpp" line="2698"/>
+        <location filename="../src/gui/documentviewer/WizDocumentWebView.cpp" line="2708"/>
         <source>Paste plain text</source>
         <translation>粘贴为纯文本</translation>
     </message>
     <message>
-        <location filename="../src/gui/documentviewer/WizDocumentWebView.cpp" line="2699"/>
+        <location filename="../src/gui/documentviewer/WizDocumentWebView.cpp" line="2709"/>
         <source>Remove link</source>
         <translation>删除链接</translation>
     </message>
     <message>
-        <location filename="../src/gui/documentviewer/WizDocumentWebView.cpp" line="2728"/>
+        <location filename="../src/gui/documentviewer/WizDocumentWebView.cpp" line="2738"/>
         <source>Unselect</source>
         <translation>取消选择</translation>
     </message>
@@ -2405,7 +2405,7 @@
         <translation>日</translation>
     </message>
     <message>
-        <location filename="../src/gui/documentviewer/WizDocumentWebView.cpp" line="915"/>
+        <location filename="../src/gui/documentviewer/WizDocumentWebView.cpp" line="922"/>
         <source>Saving comments...</source>
         <translation>正在保存备注...</translation>
     </message>
@@ -2501,6 +2501,14 @@ Password hint: %1</source>
         <location filename="../src/gui/tabbrowser/WebEngineWindow.cpp" line="26"/>
         <source>Untitled</source>
         <translation>无标题</translation>
+    </message>
+</context>
+<context>
+    <name>WebPageZoomWidget</name>
+    <message>
+        <location filename="../src/share/WizWebEngineView.cpp" line="844"/>
+        <source>Reset</source>
+        <translation>重置</translation>
     </message>
 </context>
 <context>
@@ -3489,47 +3497,47 @@ Go to create a note</source>
 <context>
     <name>WizDocumentView</name>
     <message>
-        <location filename="../src/gui/documentviewer/WizDocumentView.cpp" line="508"/>
+        <location filename="../src/gui/documentviewer/WizDocumentView.cpp" line="511"/>
         <source>Encrypted group password</source>
         <translation>绝密群组密码</translation>
     </message>
     <message>
-        <location filename="../src/gui/documentviewer/WizDocumentView.cpp" line="510"/>
+        <location filename="../src/gui/documentviewer/WizDocumentView.cpp" line="513"/>
         <source>Personal notes certificate password</source>
         <translation>个人笔记证书密码</translation>
     </message>
     <message>
-        <location filename="../src/gui/documentviewer/WizDocumentView.cpp" line="706"/>
+        <location filename="../src/gui/documentviewer/WizDocumentView.cpp" line="709"/>
         <source>You have occupied this note by clicking checklist !  Switch to other notes to free this note.</source>
         <translation>您点击了阅读状态的清单项，当前笔记正被您占用！如需解除，请切换到其他笔记。</translation>
     </message>
     <message>
-        <location filename="../src/gui/documentviewer/WizDocumentView.cpp" line="902"/>
+        <location filename="../src/gui/documentviewer/WizDocumentView.cpp" line="905"/>
         <source>WizNote</source>
         <translation>为知笔记</translation>
     </message>
     <message>
-        <location filename="../src/gui/documentviewer/WizDocumentView.cpp" line="902"/>
+        <location filename="../src/gui/documentviewer/WizDocumentView.cpp" line="905"/>
         <source>Invalid password.</source>
         <translation>密码错误。</translation>
     </message>
     <message>
-        <location filename="../src/gui/documentviewer/WizDocumentView.cpp" line="998"/>
+        <location filename="../src/gui/documentviewer/WizDocumentView.cpp" line="1001"/>
         <source>%1 is currently editing this note. Note has been locked.</source>
         <translation>当前笔记正在被 %1 编辑，笔记已处于锁定状态。</translation>
     </message>
     <message>
-        <location filename="../src/gui/documentviewer/WizDocumentView.cpp" line="1002"/>
+        <location filename="../src/gui/documentviewer/WizDocumentView.cpp" line="1005"/>
         <source>%1 is currently editing this note.</source>
         <translation>当前笔记正在被 %1 编辑。</translation>
     </message>
     <message>
-        <location filename="../src/gui/documentviewer/WizDocumentView.cpp" line="1026"/>
+        <location filename="../src/gui/documentviewer/WizDocumentView.cpp" line="1029"/>
         <source>The current network in poor condition, you are &lt;b&gt; offline editing mode &lt;/b&gt;.</source>
         <translation>当前网络状况不佳，您正处于 &lt;b&gt; 离线编辑模式 &lt;/b&gt;。</translation>
     </message>
     <message>
-        <location filename="../src/gui/documentviewer/WizDocumentView.cpp" line="1041"/>
+        <location filename="../src/gui/documentviewer/WizDocumentView.cpp" line="1044"/>
         <source>New version on server avalible. &lt;a href=&apos;%1&apos;&gt;Click to download new version.&lt;a&gt;</source>
         <translation>服务器上有新版本 &lt;a href=&apos;%1&apos;&gt;点击下载新版本&lt;a&gt;</translation>
     </message>
@@ -3542,65 +3550,65 @@ Go to create a note</source>
         <translation>保存笔记</translation>
     </message>
     <message>
-        <location filename="../src/gui/documentviewer/WizDocumentWebView.cpp" line="587"/>
-        <location filename="../src/gui/documentviewer/WizDocumentWebView.cpp" line="592"/>
-        <location filename="../src/gui/documentviewer/WizDocumentWebView.cpp" line="888"/>
+        <location filename="../src/gui/documentviewer/WizDocumentWebView.cpp" line="594"/>
+        <location filename="../src/gui/documentviewer/WizDocumentWebView.cpp" line="599"/>
+        <location filename="../src/gui/documentviewer/WizDocumentWebView.cpp" line="895"/>
         <source>Info</source>
         <translation>提示</translation>
     </message>
     <message>
-        <location filename="../src/gui/documentviewer/WizDocumentWebView.cpp" line="587"/>
+        <location filename="../src/gui/documentviewer/WizDocumentWebView.cpp" line="594"/>
         <source>Can not add a 0 bit size file as attachment! File name : &apos; %1 &apos;</source>
         <translation>不能添加0字节的文件作为附件！文件名：&apos; %1 &apos;</translation>
     </message>
     <message>
-        <location filename="../src/gui/documentviewer/WizDocumentWebView.cpp" line="592"/>
+        <location filename="../src/gui/documentviewer/WizDocumentWebView.cpp" line="599"/>
         <source>Can not add a bundle file as attachment! File name : &apos; %1 &apos;</source>
         <translation>不能添加包文件作为附件！文件名：&apos; %1 &apos;</translation>
     </message>
     <message>
-        <location filename="../src/gui/documentviewer/WizDocumentWebView.cpp" line="888"/>
+        <location filename="../src/gui/documentviewer/WizDocumentWebView.cpp" line="895"/>
         <source>Do not support insert comment into markdown note.</source>
         <translation>暂不支持插入评论到Markdown笔记中。</translation>
     </message>
     <message>
-        <location filename="../src/gui/documentviewer/WizDocumentWebView.cpp" line="1267"/>
+        <location filename="../src/gui/documentviewer/WizDocumentWebView.cpp" line="1274"/>
         <source>Failed to save note.</source>
         <translation>保存笔记失败。</translation>
     </message>
     <message>
-        <location filename="../src/gui/documentviewer/WizDocumentWebView.cpp" line="1268"/>
-        <location filename="../src/gui/documentviewer/WizDocumentWebView.cpp" line="1325"/>
+        <location filename="../src/gui/documentviewer/WizDocumentWebView.cpp" line="1275"/>
+        <location filename="../src/gui/documentviewer/WizDocumentWebView.cpp" line="1332"/>
         <source>Error</source>
         <translation>错误</translation>
     </message>
     <message>
-        <location filename="../src/gui/documentviewer/WizDocumentWebView.cpp" line="1325"/>
+        <location filename="../src/gui/documentviewer/WizDocumentWebView.cpp" line="1332"/>
         <source>Can&apos;t copy style files</source>
         <translation>不能复制样式文件</translation>
     </message>
     <message>
-        <location filename="../src/gui/documentviewer/WizDocumentWebView.cpp" line="2024"/>
+        <location filename="../src/gui/documentviewer/WizDocumentWebView.cpp" line="2034"/>
         <source>Image File</source>
         <translation>图片文件</translation>
     </message>
     <message>
-        <location filename="../src/gui/documentviewer/WizDocumentWebView.cpp" line="2024"/>
+        <location filename="../src/gui/documentviewer/WizDocumentWebView.cpp" line="2034"/>
         <source>Images (*.png *.bmp *.gif *.jpg)</source>
         <translation>图片 (*.png *.bmp *.gif *.jpg)</translation>
     </message>
     <message>
-        <location filename="../src/gui/documentviewer/WizDocumentWebView.cpp" line="2205"/>
+        <location filename="../src/gui/documentviewer/WizDocumentWebView.cpp" line="2215"/>
         <source>PDF Files (*.pdf)</source>
         <translation>PDF 文件 (*.pdf)</translation>
     </message>
     <message>
-        <location filename="../src/gui/documentviewer/WizDocumentWebView.cpp" line="2346"/>
+        <location filename="../src/gui/documentviewer/WizDocumentWebView.cpp" line="2356"/>
         <source>Html Files (*.html)</source>
         <translation>Html文件(*.html)</translation>
     </message>
     <message>
-        <location filename="../src/gui/documentviewer/WizDocumentWebView.cpp" line="2239"/>
+        <location filename="../src/gui/documentviewer/WizDocumentWebView.cpp" line="2249"/>
         <source>Markdown Files (*.md)</source>
         <translation>Markdown文件(*.md)</translation>
     </message>
@@ -6045,28 +6053,33 @@ w: %3  h: %4</translation>
         <translation>浏览并添加评论  %1</translation>
     </message>
     <message>
-        <location filename="../src/gui/documentviewer/WizTitleBar.cpp" line="403"/>
-        <location filename="../src/gui/documentviewer/WizTitleBar.cpp" line="723"/>
+        <location filename="../src/gui/documentviewer/WizTitleBar.cpp" line="217"/>
+        <source>Show page zoom widget</source>
+        <translation>显示页面缩放工具</translation>
+    </message>
+    <message>
+        <location filename="../src/gui/documentviewer/WizTitleBar.cpp" line="413"/>
+        <location filename="../src/gui/documentviewer/WizTitleBar.cpp" line="733"/>
         <source>Discard changes</source>
         <translation>丢弃修改</translation>
     </message>
     <message>
-        <location filename="../src/gui/documentviewer/WizTitleBar.cpp" line="407"/>
+        <location filename="../src/gui/documentviewer/WizTitleBar.cpp" line="417"/>
         <source>Editor Options</source>
         <translation>编辑器选项</translation>
     </message>
     <message>
-        <location filename="../src/gui/documentviewer/WizTitleBar.cpp" line="624"/>
+        <location filename="../src/gui/documentviewer/WizTitleBar.cpp" line="634"/>
         <source>Switch to reading mode</source>
         <translation>切换到阅读模式</translation>
     </message>
     <message>
-        <location filename="../src/gui/documentviewer/WizTitleBar.cpp" line="624"/>
+        <location filename="../src/gui/documentviewer/WizTitleBar.cpp" line="634"/>
         <source>In reading mode, the note can not be edited and markdown note can be redered.</source>
         <translation>在阅读模式下，不能编辑笔记。Markdown笔记会在阅读模式下进行渲染。</translation>
     </message>
     <message>
-        <location filename="../src/gui/documentviewer/WizTitleBar.cpp" line="723"/>
+        <location filename="../src/gui/documentviewer/WizTitleBar.cpp" line="733"/>
         <source>Do you really want to discard changes ?</source>
         <translation>你真的想要丢弃修改吗？</translation>
     </message>
@@ -6355,44 +6368,44 @@ w: %3  h: %4</translation>
 <context>
     <name>WizWebEngineView</name>
     <message>
-        <location filename="../src/share/WizWebEngineView.cpp" line="197"/>
+        <location filename="../src/share/WizWebEngineView.cpp" line="200"/>
         <source>Render process normal exit</source>
         <translation>渲染进程正常退出</translation>
     </message>
     <message>
-        <location filename="../src/share/WizWebEngineView.cpp" line="200"/>
+        <location filename="../src/share/WizWebEngineView.cpp" line="203"/>
         <source>Render process abnormal exit</source>
         <translation>渲染进程不正常退出</translation>
     </message>
     <message>
-        <location filename="../src/share/WizWebEngineView.cpp" line="203"/>
+        <location filename="../src/share/WizWebEngineView.cpp" line="206"/>
         <source>Render process crashed</source>
         <translation>渲染进程崩溃</translation>
     </message>
     <message>
-        <location filename="../src/share/WizWebEngineView.cpp" line="206"/>
+        <location filename="../src/share/WizWebEngineView.cpp" line="209"/>
         <source>Render process killed</source>
         <translation>渲染进程终止</translation>
     </message>
     <message>
-        <location filename="../src/share/WizWebEngineView.cpp" line="210"/>
+        <location filename="../src/share/WizWebEngineView.cpp" line="213"/>
         <source>Render process exited with code: %1
 Do you want to reload the page ?</source>
         <translation>渲染进程退出代码：%1
 你想要重载页面吗？</translation>
     </message>
     <message>
-        <location filename="../src/share/WizWebEngineView.cpp" line="384"/>
+        <location filename="../src/share/WizWebEngineView.cpp" line="468"/>
         <source>Open DevTools</source>
         <translation>打开页面开发者工具</translation>
     </message>
     <message>
-        <location filename="../src/share/WizWebEngineView.cpp" line="387"/>
+        <location filename="../src/share/WizWebEngineView.cpp" line="471"/>
         <source>Open temporary file&apos;s location</source>
         <translation>打开临时文件位置</translation>
     </message>
     <message>
-        <location filename="../src/share/WizWebEngineView.cpp" line="457"/>
+        <location filename="../src/share/WizWebEngineView.cpp" line="541"/>
         <source>Inspect element</source>
         <translation>审查元素</translation>
     </message>
