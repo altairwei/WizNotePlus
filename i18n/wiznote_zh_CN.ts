@@ -194,24 +194,29 @@
         <translation>选择文档</translation>
     </message>
     <message>
-        <location filename="../src/widgets/FileExportWizard.cpp" line="153"/>
+        <location filename="../src/widgets/FileExportWizard.cpp" line="154"/>
         <source>Please select documents you want to export.</source>
-        <translation>请选择你想要导出的文档。</translation>
+        <translation>请选择想要导出的文档。</translation>
     </message>
     <message>
-        <location filename="../src/widgets/FileExportWizard.cpp" line="216"/>
+        <location filename="../src/widgets/FileExportWizard.cpp" line="155"/>
+        <source>Collaboration notes are not supported now!</source>
+        <translation>协作笔记尚不支持！</translation>
+    </message>
+    <message>
+        <location filename="../src/widgets/FileExportWizard.cpp" line="219"/>
         <source>Personal Notes</source>
         <translation>个人笔记</translation>
     </message>
     <message>
-        <location filename="../src/widgets/FileExportWizard.cpp" line="243"/>
-        <location filename="../src/widgets/FileExportWizard.cpp" line="270"/>
+        <location filename="../src/widgets/FileExportWizard.cpp" line="246"/>
+        <location filename="../src/widgets/FileExportWizard.cpp" line="273"/>
         <source>&lt;i&gt;Scanning Database...&lt;/i&gt;</source>
         <translation>&lt;i&gt;扫描数据库...&lt;/i&gt;</translation>
     </message>
     <message>
-        <location filename="../src/widgets/FileExportWizard.cpp" line="254"/>
-        <location filename="../src/widgets/FileExportWizard.cpp" line="284"/>
+        <location filename="../src/widgets/FileExportWizard.cpp" line="257"/>
+        <location filename="../src/widgets/FileExportWizard.cpp" line="287"/>
         <source>Choose documents:</source>
         <translation>选择文档：</translation>
     </message>
@@ -219,46 +224,46 @@
 <context>
     <name>FileExportPageExport</name>
     <message>
-        <location filename="../src/widgets/FileExportWizard.cpp" line="465"/>
+        <location filename="../src/widgets/FileExportWizard.cpp" line="471"/>
         <source>Exporting</source>
         <translation>导出</translation>
     </message>
     <message>
-        <location filename="../src/widgets/FileExportWizard.cpp" line="532"/>
-        <location filename="../src/widgets/FileExportWizard.cpp" line="542"/>
-        <location filename="../src/widgets/FileExportWizard.cpp" line="556"/>
+        <location filename="../src/widgets/FileExportWizard.cpp" line="538"/>
+        <location filename="../src/widgets/FileExportWizard.cpp" line="548"/>
         <location filename="../src/widgets/FileExportWizard.cpp" line="562"/>
-        <location filename="../src/widgets/FileExportWizard.cpp" line="584"/>
+        <location filename="../src/widgets/FileExportWizard.cpp" line="568"/>
+        <location filename="../src/widgets/FileExportWizard.cpp" line="590"/>
         <source>Do you want to continue?</source>
         <translation>你想要继续吗？</translation>
     </message>
     <message>
-        <location filename="../src/widgets/FileExportWizard.cpp" line="533"/>
+        <location filename="../src/widgets/FileExportWizard.cpp" line="539"/>
         <source>Can&apos;t find document for GUID: %1</source>
         <translation>无法找到文档，其 GUID 为： %1</translation>
     </message>
     <message>
-        <location filename="../src/widgets/FileExportWizard.cpp" line="543"/>
+        <location filename="../src/widgets/FileExportWizard.cpp" line="549"/>
         <source>Can&apos;t load user cert.</source>
         <translation>无法加载用户证书。</translation>
     </message>
     <message>
-        <location filename="../src/widgets/FileExportWizard.cpp" line="551"/>
+        <location filename="../src/widgets/FileExportWizard.cpp" line="557"/>
         <source>Password for Encrypted Notes</source>
         <translation>加密笔记的密码</translation>
     </message>
     <message>
-        <location filename="../src/widgets/FileExportWizard.cpp" line="552"/>
+        <location filename="../src/widgets/FileExportWizard.cpp" line="558"/>
         <source>Password:</source>
         <translation>密码:</translation>
     </message>
     <message>
-        <location filename="../src/widgets/FileExportWizard.cpp" line="557"/>
+        <location filename="../src/widgets/FileExportWizard.cpp" line="563"/>
         <source>Invalid password.</source>
         <translation>密码错误。</translation>
     </message>
     <message>
-        <location filename="../src/widgets/FileExportWizard.cpp" line="563"/>
+        <location filename="../src/widgets/FileExportWizard.cpp" line="569"/>
         <source>Can&apos;t get password.</source>
         <translation>无法获取密码。</translation>
     </message>
@@ -266,39 +271,48 @@
 <context>
     <name>FileExportPageOptions</name>
     <message>
-        <location filename="../src/widgets/FileExportWizard.cpp" line="427"/>
+        <location filename="../src/widgets/FileExportWizard.cpp" line="433"/>
         <source>Options</source>
         <translation>选项</translation>
     </message>
     <message>
-        <location filename="../src/widgets/FileExportWizard.cpp" line="428"/>
+        <location filename="../src/widgets/FileExportWizard.cpp" line="434"/>
         <source>Please choose exporting options.</source>
         <translation>请选择导出选项。</translation>
     </message>
     <message>
-        <location filename="../src/widgets/FileExportWizard.cpp" line="431"/>
+        <location filename="../src/widgets/FileExportWizard.cpp" line="437"/>
         <source>Output Folder:</source>
         <translation>导出文件夹：</translation>
     </message>
     <message>
-        <location filename="../src/widgets/FileExportWizard.cpp" line="436"/>
+        <location filename="../src/widgets/FileExportWizard.cpp" line="442"/>
         <source>Keep document folder</source>
         <translation>保持文档目录</translation>
     </message>
     <message>
-        <location filename="../src/widgets/FileExportWizard.cpp" line="437"/>
+        <location filename="../src/widgets/FileExportWizard.cpp" line="443"/>
         <source>Ensure that the folder hierarchy of the output is consistent with that in the software</source>
         <translation>确保导出的目录层级与软件一致</translation>
     </message>
     <message>
-        <location filename="../src/widgets/FileExportWizard.cpp" line="443"/>
+        <location filename="../src/widgets/FileExportWizard.cpp" line="449"/>
         <source>Compress document folder</source>
         <translation>压缩文档文件夹</translation>
     </message>
     <message>
-        <location filename="../src/widgets/FileExportWizard.cpp" line="444"/>
+        <location filename="../src/widgets/FileExportWizard.cpp" line="450"/>
         <source>Compress each note&apos;s file and its associated resources together</source>
         <translation>将笔记相关的资源压缩在一起</translation>
+    </message>
+</context>
+<context>
+    <name>FileExportWizard</name>
+    <message>
+        <location filename="../src/widgets/FileExportWizard.cpp" line="30"/>
+        <location filename="../src/widgets/FileExportWizard.cpp" line="44"/>
+        <source>Export Wizard</source>
+        <translation>文档导出向导</translation>
     </message>
 </context>
 <context>

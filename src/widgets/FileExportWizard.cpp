@@ -27,7 +27,7 @@
 FileExportWizard::FileExportWizard(WizExplorerApp& app, QWidget *parent)
     : QWizard(parent)
 {
-    setWindowTitle("Export Wizard");
+    setWindowTitle(tr("Export Wizard"));
 #ifndef Q_OS_MAC
     setWizardStyle(ModernStyle);
 #endif
@@ -41,7 +41,7 @@ FileExportWizard::FileExportWizard(WizExplorerApp& app, QWidget *parent)
 FileExportWizard::FileExportWizard(const QString &location, WizExplorerApp& app, QWidget *parent)
     : QWizard(parent)
 {
-    setWindowTitle("Export Wizard");
+    setWindowTitle(tr("Export Wizard"));
 #ifndef Q_OS_MAC
     setWizardStyle(ModernStyle);
 #endif
@@ -150,7 +150,10 @@ FileExportPageDocList::FileExportPageDocList(const QString &location, WizExplore
     , m_rootLocation(location)
 {
     setTitle(tr("Select Documents"));
-    setSubTitle(tr("Please select documents you want to export."));
+    setSubTitle(
+        tr("Please select documents you want to export.") +
+        " " + tr("Collaboration notes are not supported now!")
+    );
     //setCommitPage(true);
 
     m_statusText = new QLabel;
@@ -318,6 +321,9 @@ void FileExportPageDocList::initFolderItem(QTreeWidgetItem *pParent, const QStri
     for (const auto& doc: arrayDocument) {
         qApp->processEvents();
         if (m_cancel) return;
+
+        if (doc.strType == "collaboration")
+            continue;
 
         auto pNoteItem = new NoteItem(m_app, doc.strTitle, m_dbMgr.db().kbGUID(), doc.strGUID, doc.strType);
         pNoteItem->setCheckState(0, Qt::Unchecked);
