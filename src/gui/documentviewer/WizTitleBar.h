@@ -77,6 +77,8 @@ public Q_SLOTS:
     void onHistoryButtonClicked();
     void onInfoButtonClicked();
     void onViewMindMapClicked();
+    void onPageZoomButtonToggled(bool checked);
+    void onPageZoomWidgetClosed();
     void handlePluginPopup(QAction*);
 
     void onEmailActionClicked();
@@ -118,6 +120,7 @@ signals:
     void pluginSidebarRequest(QAction *ac, bool checked);
     void shareNoteByEmailRequest();
     void shareNoteByLinkRequest();
+    void showPageZoomWidgetRequested(bool show, const QRect &btnLocation);
 
 private:
     void setTagBarVisible(bool visible);
@@ -146,6 +149,7 @@ private:
     QMenu* m_shareMenu;
 
     WizToolButton* m_commentsBtn;
+    WizToolButton* m_pageZoomBtn;
 
     WizCommentManager* m_commentManager;
 

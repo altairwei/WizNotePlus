@@ -205,6 +205,10 @@ WizDocumentView::WizDocumentView(WizExplorerApp& app, QWidget* parent)
             this, &WizDocumentView::onTitleReturnPressed);
     connect(m_title->getTitleEdit(), &WizTitleEdit::newTitleRequest,
             this, &WizDocumentView::onTitleEditingFinished);
+    connect(m_title, &WizTitleBar::showPageZoomWidgetRequested,
+            m_web, &WizWebEngineView::handleShowZoomWidgetRequest);
+    connect(m_web, &WizDocumentWebView::zoomWidgetFinished,
+            m_title, &WizTitleBar::onPageZoomWidgetClosed);
 
     // 编辑状态同步线程
     m_editStatusSyncThread->start(QThread::IdlePriority);

@@ -210,6 +210,14 @@ WizTitleBar::WizTitleBar(WizExplorerApp& app, QWidget *parent)
     connect(WizGlobal::instance(), SIGNAL(viewNoteLoaded(WizDocumentView*,const WIZDOCUMENTDATAEX&,bool)),
             SLOT(onViewNoteLoaded(WizDocumentView*,const WIZDOCUMENTDATAEX&,bool)));
 
+    m_pageZoomBtn = new WizToolButton(this, WizToolButton::ImageOnly);
+    m_pageZoomBtn->setFixedHeight(nTitleHeight);
+    m_pageZoomBtn->setCheckable(true);
+    m_pageZoomBtn->setIcon(::WizLoadSkinIcon(strTheme, "document_zoom", iconSize));
+    m_pageZoomBtn->setToolTip(tr("Show page zoom widget"));
+    connect(m_pageZoomBtn, &QToolButton::toggled,
+            this, &WizTitleBar::onPageZoomButtonToggled);
+
     // 标题工具栏
     m_documentToolBar->setIconSize(iconSize);
     m_documentToolBar->setContextMenuPolicy(Qt::PreventContextMenu);
@@ -224,6 +232,8 @@ WizTitleBar::WizTitleBar(WizExplorerApp& app, QWidget *parent)
     m_documentToolBar->addWidget(m_infoBtn);
     m_documentToolBar->addWidget(m_attachBtn);
     m_documentToolBar->addWidget(m_commentsBtn);
+    m_documentToolBar->addWidget(m_pageZoomBtn);
+
     // 标题工具栏布局
     /*
     QHBoxLayout* layoutInfo2 = new QHBoxLayout();
@@ -769,6 +779,23 @@ QAction* actionFromMenu(QMenu* menu, const QString& text)
             return action;
     }
     return nullptr;
+}
+
+void WizTitleBar::onPageZoomButtonToggled(bool checked)
+{
+    QToolButton* btn = qobject_cast<QToolButton *>(sender());
+    if (!btn) return;
+
+    QPoint topLeft = mapToGlobal(btn->pos());
+    QRect location(topLeft, btn->size());
+
+    Q_EMIT showPageZoomWidgetRequested(checked, location);
+}
+
+void WizTitleBar::onPageZoomWidgetClosed()
+{
+    m_pageZoomBtn->setChecked(false);
+    m_pageZoomBtn->setState(WizToolButton::Normal);
 }
 
 void WizTitleBar::onShareButtonClicked()

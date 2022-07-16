@@ -4,6 +4,8 @@
 #include <QWidget>
 #include <QPoint>
 
+class QGraphicsDropShadowEffect;
+
 class ShadowWidget : public QWidget
 {
     Q_OBJECT
@@ -11,8 +13,10 @@ public:
     explicit ShadowWidget(QWidget *parent = nullptr);
 
     QWidget *widget() { return m_widget; }
+    QGraphicsDropShadowEffect *shadowEffect() { return m_shadowEffect; }
     void setTimeOut(unsigned int timeout) { m_timeout = timeout; }
     void resetTimer();
+    void clearTimer();
     void setMovable(bool movable) { m_movable = movable; }
 
 protected:
@@ -25,6 +29,7 @@ protected:
 
 private:
     QWidget *m_widget;
+    QGraphicsDropShadowEffect *m_shadowEffect;
     int m_timerId;
     unsigned int m_timeout;
     bool m_movable;

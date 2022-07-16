@@ -1768,7 +1768,10 @@ void WizDocumentWebView::editorCommandExecuteFindReplace()
     }
 
     QRect rect = geometry();
-    rect.moveTo(mapToGlobal(pos()));
+    QPoint leftTop = pos();
+    if (parentWidget())
+        leftTop = parentWidget()->mapToGlobal(leftTop);
+    rect.moveTo(leftTop);
     m_searchReplaceWidget->showInEditor(rect);
     m_searchReplaceWidget->setSourceText(selectedText());
 

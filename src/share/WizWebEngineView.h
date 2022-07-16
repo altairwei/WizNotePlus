@@ -115,10 +115,15 @@ public Q_SLOTS:
 #endif
     double scaleUp();
     double scaleDown();
+    void handleShowZoomWidgetRequest(bool show, const QRect &btnLocation);
+
+private:
+    void createZoomWidget();
 
 Q_SIGNALS:
     void loadFinishedEx(bool);
     void zoomFactorChanged(qreal factor);
+    void zoomWidgetFinished();
 
 private:
     WizDevToolsDialog* m_devToolsWindow = nullptr;
@@ -187,6 +192,9 @@ Q_SIGNALS:
     void scaleUpRequested();
     void scaleDownRequested();
     void resetZoomFactorRequested();
+
+protected:
+    void closeEvent(QCloseEvent *event) override;
 
 public Q_SLOTS:
     void onZoomFactorChanged(qreal factor);

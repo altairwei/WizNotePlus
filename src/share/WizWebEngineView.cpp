@@ -16,6 +16,7 @@
 #include <QFileDialog>
 #include <QTimer>
 #include <QMessageBox>
+#include <QMargins>
 
 #ifdef Q_OS_MAC
 #include "mac/WizMacHelper.h"
@@ -388,31 +389,70 @@ void WizWebEngineView::hideEvent(QHideEvent *event)
     QWebEngineView::hideEvent(event);
 }
 
+void WizWebEngineView::createZoomWidget()
+{
+    m_zoomWgt = new WebPageZoomWidget(this);
+    connect(this, &WizWebEngineView::zoomFactorChanged,
+            m_zoomWgt, &WebPageZoomWidget::onZoomFactorChanged);
+    connect(m_zoomWgt, &WebPageZoomWidget::scaleUpRequested,
+            this, &WizWebEngineView::scaleUp);
+    connect(m_zoomWgt, &WebPageZoomWidget::scaleDownRequested,
+            this, &WizWebEngineView::scaleDown);
+    connect(m_zoomWgt, &WebPageZoomWidget::resetZoomFactorRequested,
+            this, [&] { SetZoom(100); });
+    connect(m_zoomWgt, &WebPageZoomWidget::zoomFinished,
+            this, &WizWebEngineView::zoomWidgetFinished);
+}
+
 void WizWebEngineView::displayZoomWidget()
 {
     if (!m_zoomWgt) {
-        m_zoomWgt = new WebPageZoomWidget(this);
-        connect(this, &WizWebEngineView::zoomFactorChanged,
-                m_zoomWgt, &WebPageZoomWidget::onZoomFactorChanged);
-        connect(m_zoomWgt, &WebPageZoomWidget::scaleUpRequested,
-                this, &WizWebEngineView::scaleUp);
-        connect(m_zoomWgt, &WebPageZoomWidget::scaleDownRequested,
-                this, &WizWebEngineView::scaleDown);
-        connect(m_zoomWgt, &WebPageZoomWidget::resetZoomFactorRequested,
-                this, [&] { SetZoom(100); });
-
-        QPoint pos = this->pos();
+        createZoomWidget();
+        QPoint leftTop = this->pos();
         if (parentWidget())
-            pos = parentWidget()->mapToGlobal(pos);
+            leftTop = parentWidget()->mapToGlobal(leftTop);
+        QRect loc(leftTop, size());
+        QMargins margin = m_zoomWgt->layout()->contentsMargins();
+        loc.moveTop(loc.top() - margin.top() + 4);
         m_zoomWgt->setGeometry(
             QStyle::alignedRect(
                 Qt::LeftToRight,
                 Qt::AlignHCenter | Qt::AlignTop,
                 m_zoomWgt->sizeHint(),
-                QRect(pos, this->size())
+                loc
             )
         );
         m_zoomWgt->show();
+    }
+}
+
+void WizWebEngineView::handleShowZoomWidgetRequest(bool show, const QRect &btnLocation)
+{
+    if (show) {
+        if (!m_zoomWgt)
+            createZoomWidget();
+
+        m_zoomWgt->clearTimer();
+        m_zoomWgt->setTimeOut(0);
+
+        QRect loc = btnLocation;
+        loc.moveTop(loc.top() + loc.height());
+        QMargins margin = m_zoomWgt->layout()->contentsMargins();
+        loc.moveRight(loc.right() + margin.right());
+        loc.moveTop(loc.top() - margin.top());
+        m_zoomWgt->setGeometry(
+            QStyle::alignedRect(
+                Qt::LeftToRight,
+                Qt::AlignRight | Qt::AlignTop,
+                m_zoomWgt->sizeHint(),
+                loc
+            )
+        );
+        m_zoomWgt->show();
+
+    } else {
+        if (m_zoomWgt)
+            m_zoomWgt->close();
     }
 }
 
@@ -813,6 +853,12 @@ WebPageZoomWidget::WebPageZoomWidget(QWidget *parent)
             this, &WebPageZoomWidget::scaleDownRequested);
     connect(m_resetBtn, &QPushButton::clicked,
             this, &WebPageZoomWidget::resetZoomFactorRequested);
+}
+
+void WebPageZoomWidget::closeEvent(QCloseEvent *event)
+{
+    Q_EMIT zoomFinished();
+    ShadowWidget::closeEvent(event);
 }
 
 void WebPageZoomWidget::onZoomFactorChanged(qreal factor)
