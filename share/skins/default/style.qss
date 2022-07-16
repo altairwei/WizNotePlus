@@ -551,6 +551,50 @@ WizNoteInfoForm QLineEdit:hover {
   border-bottom: 1px solid #DADAD9;
 }
 
+ShadowWidget > QWidget#innerWidget {
+  border: 1px solid #FFFFFF;
+  border-radius: 7px;
+  background-color: #FFFFFF;
+}
+
+WebPageZoomWidget
+QLabel#factorLabel {
+  color: #787878;
+  margin-right: 20px;
+}
+
+WebPageZoomWidget
+QPushButton#scaleUpBtn,
+QPushButton#scaleDownBtn,
+QPushButton#resetBtn {
+  height: 20px;
+  width: 20px;
+  padding: 2px 2px;
+  margin: 2px;
+  border-radius: 12px;
+  background: none;
+}
+
+WebPageZoomWidget
+QPushButton#scaleUpBtn:hover,
+QPushButton#scaleDownBtn:hover,
+QPushButton#resetBtn:hover {
+  background: rgba(211, 211, 211, 0.5);
+}
+
+WebPageZoomWidget
+QPushButton#resetBtn {
+  color: #787878;
+  width: auto;
+  border-radius: 4px;
+}
+
+WebPageZoomWidget
+QPushButton#resetBtn:hover {
+  color: #448adf;
+}
+
+
 /*
  * Document list view
  * -----------------------------------------------------------

@@ -243,6 +243,7 @@ set(wiznote_SOURCES
     utils/ExternalEditorLauncher.cpp
     widgets/FileLineEdit.cpp
     widgets/DownloadManagerWidget.cpp
+    widgets/ShadowWidget.cpp
 )
 
 set(wiznote_HEADERS
@@ -461,6 +462,7 @@ set(wiznote_HEADERS
     utils/ExternalEditorLauncher.h
     widgets/FileLineEdit.h
     widgets/DownloadManagerWidget.h
+    widgets/ShadowWidget.h
 )
 
 set(wiznote_FORMS

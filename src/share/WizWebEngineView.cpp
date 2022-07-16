@@ -24,12 +24,14 @@
 #endif
 
 #include "WizMisc.h"
-#include "utils/WizPathResolve.h"
 #include "WizMainWindow.h"
-#include "gui/tabbrowser/WizMainTabBrowser.h"
 #include "WizDevToolsDialog.h"
+#include "utils/WizPathResolve.h"
+#include "utils/WizStyleHelper.h"
+#include "gui/tabbrowser/WizMainTabBrowser.h"
 #include "gui/documentviewer/WizDocumentView.h"
 #include "share/WizSettings.h"
+#include "share/WizMisc.h"
 #include "widgets/DownloadManagerWidget.h"
 
 
@@ -338,6 +340,7 @@ void WizWebEngineView::SetZoom(int percent)
         return;
     qreal factor = static_cast<qreal>(percent) / 100;
     setZoomFactor(factor);
+    Q_EMIT zoomFactorChanged(factor);
 }
 
 /*!
@@ -358,6 +361,9 @@ double WizWebEngineView::scaleUp()
     factor = (factor > 5.0) ? 5.0 : factor;
     setZoomFactor(factor);
 
+    displayZoomWidget();
+    Q_EMIT zoomFactorChanged(factor);
+
     return zoomFactor();
 }
 
@@ -369,7 +375,45 @@ double WizWebEngineView::scaleDown()
     factor = (factor < 0.5) ? 0.5 : factor;
     setZoomFactor(factor);
 
+    displayZoomWidget();
+    Q_EMIT zoomFactorChanged(factor);
+
     return zoomFactor();
+}
+
+void WizWebEngineView::hideEvent(QHideEvent *event)
+{
+    if (m_zoomWgt)
+        m_zoomWgt->close();
+    QWebEngineView::hideEvent(event);
+}
+
+void WizWebEngineView::displayZoomWidget()
+{
+    if (!m_zoomWgt) {
+        m_zoomWgt = new WebPageZoomWidget(this);
+        connect(this, &WizWebEngineView::zoomFactorChanged,
+                m_zoomWgt, &WebPageZoomWidget::onZoomFactorChanged);
+        connect(m_zoomWgt, &WebPageZoomWidget::scaleUpRequested,
+                this, &WizWebEngineView::scaleUp);
+        connect(m_zoomWgt, &WebPageZoomWidget::scaleDownRequested,
+                this, &WizWebEngineView::scaleDown);
+        connect(m_zoomWgt, &WebPageZoomWidget::resetZoomFactorRequested,
+                this, [&] { SetZoom(100); });
+
+        QPoint pos = this->pos();
+        if (parentWidget())
+            pos = parentWidget()->mapToGlobal(pos);
+        m_zoomWgt->setGeometry(
+            QStyle::alignedRect(
+                Qt::LeftToRight,
+                Qt::AlignHCenter | Qt::AlignTop,
+                m_zoomWgt->sizeHint(),
+                QRect(pos, this->size())
+            )
+        );
+        m_zoomWgt->show();
+    }
 }
 
 QAction *WizWebEngineView::viewAction(ViewAction action) const
@@ -521,7 +565,7 @@ void WizWebEngineView::openDevTools()
                 Qt::LeftToRight,
                 Qt::AlignCenter,
                 QSize(800, 500),
-                qApp->desktop()->availableGeometry()
+                this->screen()->availableGeometry()
             )
         );
     }
@@ -732,6 +776,50 @@ bool WizNavigationForwarderPage::acceptNavigationRequest(const QUrl &url, QWebEn
 void WizNavigationForwarderPage::setWebWindowType(QWebEnginePage::WebWindowType type)
 {
     m_windowType = type;
+}
+
+
+WebPageZoomWidget::WebPageZoomWidget(QWidget *parent)
+    : ShadowWidget(parent)
+    , m_resetBtn(new QPushButton)
+    , m_scaleUpBtn(new QPushButton)
+    , m_scaleDownBtn(new QPushButton)
+    , m_factorLabel(new QLabel)
+{
+    m_scaleUpBtn->setObjectName("scaleUpBtn");
+    m_scaleDownBtn->setObjectName("scaleDownBtn");
+    m_resetBtn->setObjectName("resetBtn");
+    m_factorLabel->setObjectName("factorLabel");
+
+    auto layout = new QHBoxLayout;
+    layout->addWidget(m_factorLabel);
+    layout->addStretch();
+    layout->addWidget(m_scaleDownBtn);
+    layout->addWidget(m_scaleUpBtn);
+    layout->addWidget(m_resetBtn);
+    widget()->setLayout(layout);
+
+    QString strTheme = Utils::WizStyleHelper::themeName();
+    m_factorLabel->setText("100%");
+    m_resetBtn->setText(tr("Reset"));
+    m_scaleDownBtn->setIcon(WizLoadSkinIcon(strTheme, "scaleDown"));
+    m_scaleUpBtn->setIcon(WizLoadSkinIcon(strTheme, "scaleUp"));
+
+    setTimeOut(2000);
+
+    connect(m_scaleUpBtn, &QPushButton::clicked,
+            this, &WebPageZoomWidget::scaleUpRequested);
+    connect(m_scaleDownBtn, &QPushButton::clicked,
+            this, &WebPageZoomWidget::scaleDownRequested);
+    connect(m_resetBtn, &QPushButton::clicked,
+            this, &WebPageZoomWidget::resetZoomFactorRequested);
+}
+
+void WebPageZoomWidget::onZoomFactorChanged(qreal factor)
+{
+    int fa = static_cast<int>( qRound(factor * 100) );
+    m_factorLabel->setText(QString("%1%").arg(fa, 3, 10));
+    resetTimer();
 }
 
 

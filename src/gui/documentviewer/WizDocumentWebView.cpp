@@ -411,6 +411,13 @@ void WizDocumentWebView::focusOutEvent(QFocusEvent *event)
     QWebEngineView::focusOutEvent(event);
 }
 
+void WizDocumentWebView::hideEvent(QHideEvent *event)
+{
+    if (m_searchReplaceWidget)
+        m_searchReplaceWidget->hide();
+    WizWebEngineView::hideEvent(event);
+}
+
 /**
  * @brief handle right menu event
  * 

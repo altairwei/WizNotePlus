@@ -89,7 +89,6 @@ WizDocumentView::WizDocumentView(WizExplorerApp& app, QWidget* parent)
     m_stack = new QStackedWidget(this);
 
     // This page will ask password to view encrypted note
-    m_passwordView->setGeometry(this->geometry());
     connect(m_passwordView, SIGNAL(cipherCheckRequest()), SLOT(onCipherCheckRequest()));
 
     m_blankView = new QWidget(this);

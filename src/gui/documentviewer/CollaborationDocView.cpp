@@ -34,15 +34,11 @@ CollaborationDocView::CollaborationDocView(const WIZDOCUMENTDATAEX &doc, WizExpl
 {
     // set layout
     QVBoxLayout* layout = new QVBoxLayout();
-    layout->setContentsMargins(0, 5, 0, 6);
-    layout->setSpacing(0);
-    this->setLayout(layout);
+    layout->setContentsMargins(0, 5, 0, 0);
+    layout->setSpacing(5);
     layout->addWidget(m_title);
-    layout->addStretch();
     layout->addWidget(m_editor);
-    layout->addStretch();
-    layout->setStretchFactor(m_title, 0);
-    layout->setStretchFactor(m_editor, 1);
+    this->setLayout(layout);
 
     connect(m_title, &CollaborationTitleBar::editButtonClicked,
             this, &CollaborationDocView::handleEditButtonClicked);
@@ -248,6 +244,7 @@ CollaborationEditor::CollaborationEditor(WizExplorerApp &app, QWidget *parent)
     auto profile = createWebEngineProfile(objects, this);
     auto webPage = new WizWebEnginePage(objects, profile, this);
     setPage(webPage);
+    setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
 }
 
 CollaborationEditor::~CollaborationEditor()
