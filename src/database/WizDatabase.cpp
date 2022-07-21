@@ -4279,6 +4279,41 @@ bool WizDatabase::saveCompressedAttachmentData(const CString& strGUID, const QBy
     return true;
 }
 
+bool WizDatabase::emptyProtectedAbstract(const QString &docGuid)
+{
+    WIZDOCUMENTDATA data;
+    if (!documentFromGuid(docGuid, data)) {
+        qDebug() << "[emptyProtectedAbstract]invalide guid: " << docGuid;
+        return false;
+    }
+
+    if (!data.nProtected)
+        return false;
+
+    //check if note abstract is empty
+    WIZABSTRACT abstract;
+    padAbstractFromGuid(data.strGUID, abstract);
+    if (abstract.image.isNull() && abstract.text.isEmpty())
+    {
+        return false;
+    }
+    else
+    {
+        WIZABSTRACT emptyAbstract;
+        emptyAbstract.guid = data.strGUID;
+        bool ret = updatePadAbstract(emptyAbstract);
+        if (!ret) {
+            Q_EMIT updateError("Failed to update note abstract!");
+        }
+        Q_EMIT documentAbstractModified(data);
+
+        return ret;
+    }
+}
+
+/*!
+    Update document abstract from local cache.
+ */
 bool WizDatabase::updateDocumentAbstract(const QString& strDocumentGUID)
 {
     CString strFileName = getDocumentFileName(strDocumentGUID);
@@ -4292,27 +4327,8 @@ bool WizDatabase::updateDocumentAbstract(const QString& strDocumentGUID)
         return false;
     }
 
-    if (data.nProtected) {
-        //check if note abstract is empty
-        WIZABSTRACT abstract;
-        padAbstractFromGuid(data.strGUID, abstract);
-        if (abstract.image.isNull() && abstract.text.isEmpty())
-        {
-            return false;
-        }
-        else
-        {
-            WIZABSTRACT emptyAbstract;
-            emptyAbstract.guid = data.strGUID;
-            bool ret = updatePadAbstract(emptyAbstract);
-            if (!ret) {
-                Q_EMIT updateError("Failed to update note abstract!");
-            }
-            Q_EMIT documentAbstractModified(data);
-
-            return ret;
-        }
-    }
+    if (data.nProtected)
+        emptyProtectedAbstract(strDocumentGUID);
 
     QString strTempFolder = Utils::WizPathResolve::tempPath() + data.strGUID + "-thumb/";
     // delete folder to clear unused images.
@@ -4391,6 +4407,38 @@ bool WizDatabase::updateDocumentAbstract(const QString& strDocumentGUID)
     }
 
     ::WizDeleteFolder(strHtmlTempPath);
+
+    Q_EMIT documentAbstractModified(data);
+
+    return ret;
+}
+
+/*!
+    Update document abstract with given content.
+ */
+bool WizDatabase::updateDocumentAbstract(const QString &strDocGUID, const QString &strAbstract)
+{
+    WIZDOCUMENTDATA data;
+    if (!documentFromGuid(strDocGUID, data)) {
+        qDebug() << "[updateDocumentAbstract]invalide guid: " << strDocGUID;
+        return false;
+    }
+
+    // Protected document should have empty abstract
+    if (data.nProtected)
+        emptyProtectedAbstract(strDocGUID);
+
+    QString content = strAbstract;
+    content.replace(QChar('\n'), QChar(' '));
+    content.replace(QChar::ObjectReplacementCharacter, QChar(' '));
+
+    WIZABSTRACT abstract;
+    padAbstractFromGuid(data.strGUID, abstract);
+    abstract.text = content;
+
+    bool ret = updatePadAbstract(abstract);
+    if (!ret)
+        Q_EMIT updateError("Failed to update note abstract!");
 
     Q_EMIT documentAbstractModified(data);
 

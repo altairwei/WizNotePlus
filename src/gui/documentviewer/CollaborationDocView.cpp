@@ -48,6 +48,8 @@ CollaborationDocView::CollaborationDocView(const WIZDOCUMENTDATAEX &doc, WizExpl
             this, &AbstractTabPage::titleChanged);
     connect(m_editor, &CollaborationEditor::titleChanged,
             this, &CollaborationDocView::handleNoteTitleChanged);
+    connect(m_editor, &CollaborationEditor::abstractChanged,
+            this, &CollaborationDocView::handleNoteAbstractChanged);
 
     connect(m_editor, &QWebEngineView::loadStarted,
             this, [this]() {
@@ -172,7 +174,7 @@ void CollaborationDocView::handleNoteCreated(const QString &docGuid, const QStri
                     tr("Sync failed"), strErrorMesssage);
 
             WIZDOCUMENTDATA data;
-            WizDatabase& db = WizDatabaseManager::instance()->db(m_doc.strKbGUID);
+            WizDatabase& db = m_dbMgr.db(m_doc.strKbGUID);
             if (db.documentFromGuid(docGuid, data)) {
                 data.strTitle = title.isEmpty() ? data.strTitle : title;
                 data.tDataModified = WizGetCurrentTime();
@@ -225,6 +227,12 @@ void CollaborationDocView::handleNoteTitleChanged(const QString &docGuid, const 
         return;
 
     trySaveDocument([] (const QVariant &) {});
+}
+
+void CollaborationDocView::handleNoteAbstractChanged(const QString &docGuid, const QString &abstract)
+{
+    WizDatabase& db = m_dbMgr.db(m_doc.strKbGUID);
+    db.updateDocumentAbstract(docGuid, abstract);
 }
 
 //////////////////////////////////////////////////////////////////////////

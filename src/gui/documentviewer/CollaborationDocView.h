@@ -40,6 +40,7 @@ public slots:
     void handleNoteCreated(const QString &docGuid, const QString &title);
     void handleNoteDeleted(const WIZDOCUMENTDATA& data);
     void handleNoteTitleChanged(const QString &docGuid, const QString &title);
+    void handleNoteAbstractChanged(const QString &docGuid, const QString &abstract);
 
 private:
     WIZDOCUMENTDATAEX m_doc;
