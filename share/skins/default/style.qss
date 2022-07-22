@@ -491,24 +491,14 @@ WizAttachmentListWidget QScrollBar::sub-line {
 
 WizScrollBar {
   background: transparent;
-  width: 6px;
-}
-
-WizScrollBar:hover {
-  background: rgba(155, 155, 155, 0.2);
 }
 
 WizScrollBar::handle {
   background: #c1c1c1;
-  min-height: 30px;
 }
 
 WizScrollBar::handle:hover {
   background: #a8a8a8;
-}
-
-WizScrollBar::handle:vertical {
-  width: 6px;
 }
 
 WizScrollBar::add-page,
@@ -527,6 +517,15 @@ WizScrollBar::add-line,
 WizScrollBar::sub-line {
   height: 0px;
   width: 0px;
+}
+
+WizScrollBar:vertical {
+  width: 7px;
+}
+
+WizScrollBar::handle:vertical {
+  min-height: 30px;
+  border-radius: 3px;
 }
 
 WizTagListWidget QListView {

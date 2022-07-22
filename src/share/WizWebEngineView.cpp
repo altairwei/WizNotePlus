@@ -105,10 +105,46 @@ QWebEngineProfile* createWebEngineProfile(const WizWebEngineInjectObjectCollecti
         profile->scripts()->insert(script);
     }
 
+    insertScrollbarStyleSheet(profile);
+
     QObject::connect(profile, &QWebEngineProfile::downloadRequested,
                      &DownloadManagerWidget::instance(), &DownloadManagerWidget::downloadRequested);
 
     return profile;
+}
+
+void insertStyleSheet(QWebEngineProfile *profile, const QString &name, const QString &source)
+{
+      QWebEngineScript script;
+      QString s = QString::fromLatin1("(function() {"\
+                                      "    css = document.createElement('style');"\
+                                      "    css.type = 'text/css';"\
+                                      "    css.id = '%1';"\
+                                      "    document.head.appendChild(css);"\
+                                      "    css.innerText = '%2';"\
+                                      "})()").arg(name).arg(source.simplified());
+
+      script.setName(name);
+      script.setSourceCode(s);
+      script.setInjectionPoint(QWebEngineScript::DocumentReady);
+      script.setRunsOnSubFrames(true);
+      script.setWorldId(QWebEngineScript::ApplicationWorld);
+      profile->scripts()->insert(script);
+}
+
+void insertScrollbarStyleSheet(QWebEngineProfile *profile)
+{
+    QString strTheme = Utils::WizStyleHelper::themeName();
+    QDir skinFolder = WizGetSkinResourcePath(strTheme);
+    if (skinFolder.exists("webkit_scrollbar.css")) {
+        QString source;
+        bool ok = WizLoadUnicodeTextFromFile(
+            skinFolder.absoluteFilePath("webkit_scrollbar.css"),
+            source, "UTF-8");
+        if (ok)
+            insertStyleSheet(profile, "webkit_scrollbar", source);
+    }
+
 }
 
 WizWebEnginePage::WizWebEnginePage(const WizWebEngineInjectObjectCollection& objects, QWebEngineProfile *profile, QObject* parent)

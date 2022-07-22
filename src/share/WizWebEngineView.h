@@ -148,6 +148,8 @@ public:
 };
 
 QWebEngineProfile* createWebEngineProfile(const WizWebEngineInjectObjectCollection& objects, QObject* parent);
+void insertStyleSheet(QWebEngineProfile *profile, const QString &name, const QString &source);
+void insertScrollbarStyleSheet(QWebEngineProfile *profile);
 
 class WizNavigationForwarderPage : public QWebEnginePage
 {

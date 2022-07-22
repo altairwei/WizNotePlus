@@ -271,6 +271,7 @@ WizMainWindow::WizMainWindow(WizDatabaseManager& dbMgr, QWidget *parent)
     m_docSaver = new WizDocumentSaverThread(dbMgr, this);
     m_docLoader = new WizDocumentLoaderThread(dbMgr, this);
 
+    insertScrollbarStyleSheet(QWebEngineProfile::defaultProfile());
     connect(QWebEngineProfile::defaultProfile(), &QWebEngineProfile::downloadRequested,
             &DownloadManagerWidget::instance(), &DownloadManagerWidget::downloadRequested);
 }
