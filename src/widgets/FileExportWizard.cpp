@@ -54,11 +54,11 @@ FileExportWizard::FileExportWizard(const QString &location, WizExplorerApp& app,
 FileExportPageIntro::FileExportPageIntro(QWidget *parent)
     : QWizardPage(parent)
 {
-    setTitle("Introduction");
+    setTitle(tr("Introduction"));
 
-    QLabel *label = new QLabel(
+    QLabel *label = new QLabel(tr(
         "This wizard will help you export documents to "
-        "various formats.");
+        "various formats."));
     label->setWordWrap(true);
 
     QVBoxLayout *layout = new QVBoxLayout;

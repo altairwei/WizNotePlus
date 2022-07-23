@@ -269,6 +269,19 @@
     </message>
 </context>
 <context>
+    <name>FileExportPageIntro</name>
+    <message>
+        <location filename="../src/widgets/FileExportWizard.cpp" line="57"/>
+        <source>Introduction</source>
+        <translation>介绍</translation>
+    </message>
+    <message>
+        <location filename="../src/widgets/FileExportWizard.cpp" line="59"/>
+        <source>This wizard will help you export documents to various formats.</source>
+        <translation>这个向导帮助你将笔记导出成各种格式。</translation>
+    </message>
+</context>
+<context>
     <name>FileExportPageOptions</name>
     <message>
         <location filename="../src/widgets/FileExportWizard.cpp" line="433"/>
