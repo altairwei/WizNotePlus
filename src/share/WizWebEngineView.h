@@ -134,7 +134,7 @@ protected:
     QWebEngineView *createWindow(QWebEnginePage::WebWindowType type) override;
     virtual void setupPage(WizWebEnginePage *page);
     virtual void setupWebActions();
-    void contextMenuEvent(QContextMenuEvent *event);
+    void contextMenuEvent(QContextMenuEvent *event) override;
     void childEvent(QChildEvent *event) override;
     bool eventFilter(QObject *obj, QEvent *ev) override;
     void hideEvent(QHideEvent *event) override;
@@ -187,7 +187,11 @@ class WebPageZoomWidget : public ShadowWidget
     Q_OBJECT
 
 public:
-    explicit WebPageZoomWidget(QWidget *parent = nullptr);
+    explicit WebPageZoomWidget(QWidget *parent = nullptr)
+        : WebPageZoomWidget(1, parent) { }
+    WebPageZoomWidget(qreal factor, QWidget *parent = nullptr);
+
+    void setZoomFactor(qreal factor);
 
 Q_SIGNALS:
     void zoomFinished();
