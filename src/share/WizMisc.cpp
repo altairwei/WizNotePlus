@@ -2672,7 +2672,7 @@ bool WizCreateThumbnailForAttachment(QImage& img, const QString& attachFileName,
                                       QString(QString::number(info.size()) + " B");
     QString dateInfo = QDate::currentDate().toString(Qt::ISODate) + " " + QTime::currentTime().toString();
 
-    const int FONTSIZE = 12;
+    const int FONTSIZE = 14;
     QFont font;
     font.setPixelSize(FONTSIZE);
     QFontMetrics fm(font);
@@ -2680,38 +2680,40 @@ bool WizCreateThumbnailForAttachment(QImage& img, const QString& attachFileName,
     int nWidth = nTextWidth + nIconMargin * 4 - 4 + iconSize.width();
     int nHeight = iconSize.height() + nIconMargin * 2;
 
-    // draw icon and text on image
+    // draw border and background
     int nBgWidth = nWidth;
     int nBgHeight = nHeight;
-    img = QImage(nBgWidth, nBgHeight, QImage::Format_RGB888);
+    img = QImage(nBgWidth, nBgHeight, QImage::Format_RGB32);
     QPainter p(&img);
     QRect rcd = QRect(0, 0, nBgWidth, nBgHeight);
-    p.fillRect(rcd, QBrush(QColor(Qt::white)));
-    p.setPen(QPen(QColor("#E7E7E7")));
+    p.fillRect(rcd, QBrush(QColor(0xF7, 0xF7, 0xF7)));
+    p.setPen(QPen(QColor(0xCE, 0xCE, 0xCE)));
     p.setRenderHint(QPainter::Antialiasing);
-    p.drawRoundedRect(rcd.adjusted(1, 1, -2, -2), 8, 10);
+    p.setRenderHint(QPainter::SmoothPixmapTransform);
+    p.drawRect(rcd.adjusted(1, 1, -2, -2));
 
-    QFont f = p.font();
-    f.setPixelSize(FONTSIZE);
-    p.setFont(f);
-
+    // draw file icon
     QFileIconProvider ip;
     QIcon icon = ip.icon(info);
     QPixmap pixIcon = icon.pixmap(iconSize);
     p.drawPixmap(nIconMargin, (nHeight - iconSize.height()) / 2, pixIcon);
 
-    //    
-    p.setPen(QPen(QColor("#535353")));
+    // draw filename
+    QFont f = p.font();
+    f.setPixelSize(FONTSIZE);
+    p.setFont(f);
+    p.setPen(QPen(QColor(0x53, 0x53, 0x53)));
     QRect titleRect(QPoint(nIconMargin * 2 - 3 + iconSize.width(), nIconMargin), QPoint(nWidth, nHeight / 2));
     QString strTitle = fm.elidedText(info.fileName(), Qt::ElideMiddle, titleRect.width() - nIconMargin * 2);
     p.drawText(titleRect, strTitle);
-    //
+
+    // draw file information
     QRect infoRect(QPoint(nIconMargin * 2 - 3 + iconSize.width(), nHeight / 2 + 2),
                       QPoint(nWidth, nHeight));
-    p.setPen(QColor("#888888"));
+    p.setPen(QColor(0x88, 0x88, 0x88));
     p.drawText(infoRect, dateInfo);
 
-    int dateWidth = fm.width(dateInfo);
+    int dateWidth = fm.horizontalAdvance(dateInfo);
     infoRect.adjust(dateWidth + 4, 0, 0, 0);
     QPixmap pixGreyPoint(Utils::WizStyleHelper::skinResourceFileName("document_grey_point", true));
     QRect rcPix = infoRect.adjusted(0, 6, 0, 0);
