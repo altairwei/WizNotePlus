@@ -573,19 +573,18 @@ void WizDocumentWebView::dropEvent(QDropEvent* event)
     {
         QList<QUrl> li = mimeData->urls();
         QList<QUrl>::const_iterator it;
-        for (it = li.begin(); it != li.end(); it++) {
+        for (it = li.constBegin(); it != li.constEnd(); it++) {
             QUrl url = *it;
-            url.setScheme(0);
 
             //paste image file as images, add attachment for other file
-            QString strFileName = url.toString();
+            QString strFileName = url.toLocalFile();
 #ifdef Q_OS_MAC
             if (wizIsYosemiteFilePath(strFileName))
             {
                 strFileName = wizConvertYosemiteFilePathToNormalPath(strFileName);
             }
 #endif
-//            QImageReader reader(strFileName);
+
             QFileInfo info(strFileName);
 
             //FIXME: //TODO: should merged with add attachment in attachment list
@@ -601,7 +600,7 @@ void WizDocumentWebView::dropEvent(QDropEvent* event)
             }
 
             QList<QByteArray> imageFormats = QImageReader::supportedImageFormats();
-            if (imageFormats.contains(info.suffix().toUtf8()))
+            if (imageFormats.contains(info.suffix().toLower().toUtf8()))
             {
                 QString strHtml;
                 if (WizImage2Html(strFileName, strHtml, noteResourcesPath())) {
@@ -621,7 +620,7 @@ void WizDocumentWebView::dropEvent(QDropEvent* event)
                     continue;
                 }
                 addAttachmentThumbnail(strFileName, data.strGUID);
-                nAccepted ++;
+                nAccepted++;
             }
         }
     }
@@ -990,10 +989,12 @@ void WizDocumentWebView::addAttachmentThumbnail(const QString strFile, const QSt
     img.save(strDestFile, "PNG");
     QString strLink = QString("wiz://open_attachment?guid=%1").arg(strGuid);
     QSize szImg = img.size();
+    /*
     if (WizIsHighPixel())
     {
         szImg.scale(szImg.width() / 2, szImg.height() / 2, Qt::IgnoreAspectRatio);
     }
+    */
     QString strHtml = WizGetImageHtmlLabelWithLink(strDestFile, szImg, strLink);
     editorCommandExecuteInsertHtml(strHtml, true);
 }

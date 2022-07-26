@@ -2673,17 +2673,16 @@ bool WizCreateThumbnailForAttachment(QImage& img, const QString& attachFileName,
     QString dateInfo = QDate::currentDate().toString(Qt::ISODate) + " " + QTime::currentTime().toString();
 
     const int FONTSIZE = 12;
-    bool isHighPix = WizIsHighPixel();    
     QFont font;
     font.setPixelSize(FONTSIZE);
     QFontMetrics fm(font);
-    int nTextWidth = fm.width(dateInfo + fileSize);
+    int nTextWidth = fm.horizontalAdvance(dateInfo + fileSize);
     int nWidth = nTextWidth + nIconMargin * 4 - 4 + iconSize.width();
     int nHeight = iconSize.height() + nIconMargin * 2;
 
     // draw icon and text on image
-    int nBgWidth = isHighPix ? 2 * nWidth : nWidth;
-    int nBgHeight = isHighPix ? 2 * nHeight : nHeight;
+    int nBgWidth = nWidth;
+    int nBgHeight = nHeight;
     img = QImage(nBgWidth, nBgHeight, QImage::Format_RGB888);
     QPainter p(&img);
     QRect rcd = QRect(0, 0, nBgWidth, nBgHeight);
@@ -2696,11 +2695,6 @@ bool WizCreateThumbnailForAttachment(QImage& img, const QString& attachFileName,
     f.setPixelSize(FONTSIZE);
     p.setFont(f);
 
-    if (isHighPix)
-    {
-        // 如果是高分辨率的屏幕，则将坐标放大二倍进行绘制，使用时进行缩放，否则会造成图片模糊。
-        Utils::WizStyleHelper::initPainterByDevice(&p);
-    }
     QFileIconProvider ip;
     QIcon icon = ip.icon(info);
     QPixmap pixIcon = icon.pixmap(iconSize);
