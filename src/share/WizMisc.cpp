@@ -2685,7 +2685,7 @@ bool WizCreateThumbnailForAttachment(QImage& img, const QString& attachFileName,
     int nBgHeight = nHeight;
     img = QImage(nBgWidth, nBgHeight, QImage::Format_RGB32);
     QPainter p(&img);
-    QRect rcd = QRect(0, 0, nBgWidth, nBgHeight);
+    QRectF rcd = QRectF(0, 0, nBgWidth, nBgHeight);
     p.fillRect(rcd, QBrush(QColor(0xF7, 0xF7, 0xF7)));
     p.setPen(QPen(QColor(0xCE, 0xCE, 0xCE)));
     p.setRenderHint(QPainter::Antialiasing);
@@ -2703,7 +2703,7 @@ bool WizCreateThumbnailForAttachment(QImage& img, const QString& attachFileName,
     f.setPixelSize(FONTSIZE);
     p.setFont(f);
     p.setPen(QPen(QColor(0x53, 0x53, 0x53)));
-    QRect titleRect(QPoint(nIconMargin * 2 - 3 + iconSize.width(), nIconMargin), QPoint(nWidth, nHeight / 2));
+    QRectF titleRect(QPoint(nIconMargin * 2 - 3 + iconSize.width(), nIconMargin), QPoint(nWidth, nHeight / 2));
     QString strTitle = fm.elidedText(info.fileName(), Qt::ElideMiddle, titleRect.width() - nIconMargin * 2);
     p.drawText(titleRect, strTitle);
 

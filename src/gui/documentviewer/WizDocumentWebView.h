@@ -180,6 +180,7 @@ private:
     void saveReadingViewDocument(const WIZDOCUMENTDATA& data, bool force, std::function<void(const QVariant &)> callback);
 
     void createReadModeContextMenu(QContextMenuEvent *event);
+    bool acceptUrlAsAttachment(const QUrl &url);
 
 protected:
     virtual void keyPressEvent(QKeyEvent* event) override;
