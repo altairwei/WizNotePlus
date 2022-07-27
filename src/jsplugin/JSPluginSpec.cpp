@@ -1,14 +1,15 @@
 #include "JSPluginSpec.h"
 
 #include <algorithm>
-
 #include <QJsonObject>
 #include <QJsonDocument>
 #include <QDebug>
 #include <QDir>
 #include <QFileInfo>
 #include <QVector>
+#include <QVersionNumber>
 
+#include "WizDef.h"
 
 #define MANIFESTVERSION 2
 
@@ -29,6 +30,7 @@ JSPluginSpec::JSPluginSpec(const QString &manifestFileName, QObject* parent)
     m_guid = m_settings->value("Common/AppGUID", "").toString();
     m_moduleCount = m_settings->value("Common/ModuleCount", 0).toInt();
     m_manifestVersion = m_settings->value("Common/ManifestVersion", 0).toInt();
+    m_apiMinimumRequired = m_settings->value("Common/ApiMinimumRequired", "").toString();
 
     // Parse Modules
     m_realModuleCount = 0;
@@ -66,6 +68,17 @@ bool JSPluginSpec::validate() {
     if (m_moduleCount != m_realModuleCount) {
         warn("ModuleCount isn't equal to real count.");
         return false;
+    }
+
+    if (!m_apiMinimumRequired.isEmpty()) {
+        QVersionNumber current = QVersionNumber::fromString(WIZ_CLIENT_VERSION);
+        QVersionNumber required = QVersionNumber::fromString(m_apiMinimumRequired);
+        if (current < required) {
+            warn(QString(
+                "Minimum WizNotePlus version required is '%1', but current version is '%2'")
+                    .arg(required.toString(), current.toString()));
+            return false;
+        }
     }
 
     return true;
