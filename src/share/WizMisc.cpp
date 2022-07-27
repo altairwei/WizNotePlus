@@ -24,6 +24,7 @@
 #include <QNetworkAccessManager>
 #include <QNetworkRequest>
 #include <QNetworkReply>
+#include <QLocale>
 
 #include "utils/WizLogger.h"
 #include "utils/WizPathResolve.h"
@@ -2658,18 +2659,20 @@ QString WizStr2Title(const QString& str)
     return str.left(idx);
 }
 
-bool WizCreateThumbnailForAttachment(QImage& img, const QString& attachFileName, const QSize& iconSize)
+static QString formatFileSize(qint64 size)
 {
-    QFileInfo info(attachFileName);
-    if (!info.exists())
-        return false;
+    QLocale locale(QLocale::English);
+    return locale.formattedDataSize(size, 1);
+}
 
+bool WizCreateThumbnailForAttachment(
+        QImage& img, const QFileInfo& info,
+        const QSize& iconSize, const QString fileTitle)
+{
     // get info text and calculate width of image
-    const int nMb = 1024 * 1024;
     int nIconMargin = 14;
-    QString fileSize = info.size() > 1024 ? (info.size() > nMb ? QString(QString::number(qCeil(info.size() / (double)nMb)) + " MB")
-                                                         : QString(QString::number(qCeil(info.size() / (double)1024)) + " KB")) :
-                                      QString(QString::number(info.size()) + " B");
+    int nTextMargin = 10;
+    QString fileSize = formatFileSize(info.size());
     QString dateInfo = QDate::currentDate().toString(Qt::ISODate) + " " + QTime::currentTime().toString();
 
     const int FONTSIZE = 14;
@@ -2696,23 +2699,30 @@ bool WizCreateThumbnailForAttachment(QImage& img, const QString& attachFileName,
     QFileIconProvider ip;
     QIcon icon = ip.icon(info);
     QPixmap pixIcon = icon.pixmap(iconSize);
-    p.drawPixmap(nIconMargin, (nHeight - iconSize.height()) / 2, pixIcon);
+    p.drawPixmap(nIconMargin, nIconMargin, pixIcon);
 
     // draw filename
     QFont f = p.font();
     f.setPixelSize(FONTSIZE);
     p.setFont(f);
     p.setPen(QPen(QColor(0x53, 0x53, 0x53)));
-    QRectF titleRect(QPoint(nIconMargin * 2 - 3 + iconSize.width(), nIconMargin), QPoint(nWidth, nHeight / 2));
-    QString strTitle = fm.elidedText(info.fileName(), Qt::ElideMiddle, titleRect.width() - nIconMargin * 2);
-    p.drawText(titleRect, strTitle);
+    int textPosX = nIconMargin * 2 - 3 + iconSize.width();
+    QRect titleRect(
+        QPoint(textPosX, nTextMargin),
+        QPoint(nWidth, nHeight / 2 - 2));
+    QString strTitle = fm.elidedText(
+        fileTitle.isEmpty() ? info.fileName() : fileTitle,
+        Qt::ElideMiddle, titleRect.width() - nIconMargin * 2);
+    p.drawText(titleRect, Qt::AlignVCenter, strTitle);
 
-    // draw file information
-    QRect infoRect(QPoint(nIconMargin * 2 - 3 + iconSize.width(), nHeight / 2 + 2),
-                      QPoint(nWidth, nHeight));
+    // draw attachment creation date
+    QRect infoRect(
+        QPoint(textPosX, nHeight / 2 + 2),
+        QPoint(nWidth, nHeight - nTextMargin));
     p.setPen(QColor(0x88, 0x88, 0x88));
-    p.drawText(infoRect, dateInfo);
+    p.drawText(infoRect, Qt::AlignVCenter, dateInfo);
 
+    // draw separator
     int dateWidth = fm.horizontalAdvance(dateInfo);
     infoRect.adjust(dateWidth + 4, 0, 0, 0);
     QPixmap pixGreyPoint(Utils::WizStyleHelper::skinResourceFileName("document_grey_point", true));
@@ -2720,12 +2730,22 @@ bool WizCreateThumbnailForAttachment(QImage& img, const QString& attachFileName,
     rcPix.setSize(QSize(4, 4));
     p.drawPixmap(rcPix, pixGreyPoint);
 
+    // draw file size
     infoRect.adjust(8, 0, 0, 0);
     p.drawText(infoRect, fileSize);
 
     return true;
 }
 
+bool WizCreateThumbnailForAttachment(QImage& img, const QString& attachFileName,
+                                     const QSize& iconSize, const QString fileTitle)
+{
+    QFileInfo info(attachFileName);
+    if (!info.exists())
+        return false;
+
+    return WizCreateThumbnailForAttachment(img, info, iconSize, fileTitle);
+}
 
 WizOleDateTime WizIniReadDateTimeDef(const CString& strFile, const CString& strSection, const CString& strKey, WizOleDateTime defaultData)
 {
