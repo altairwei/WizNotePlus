@@ -8,7 +8,7 @@
 #include "share/WizObject.h"
 
 class QFileSystemWatcher;
-class WizDocumentWebViewSaverThread;
+class WizDocumentSaverThread;
 class WizMainWindow;
 
 struct WizExternalEditorData
@@ -36,7 +36,7 @@ public:
 
     void startExternalEditor(QString cacheFileName, const WizExternalEditorData& editorData, const WIZDOCUMENTDATAEX& noteData);
     void saveWatchedFile(const QString& path);
-    WizDocumentWebViewSaverThread* watchedDocSaver() { return m_watchedDocSaver; }
+    WizDocumentSaverThread* watchedDocSaver() { return m_watchedDocSaver; }
     void waitForDone();
 
     static QStringList splitCommand(const QString &command);
@@ -57,7 +57,7 @@ protected:
 private:
     QFileSystemWatcher* m_externalEditorFileWatcher;
     QMap<QString, WizExternalEditTask> m_externalEditorTasks; /* filename as key. */
-    WizDocumentWebViewSaverThread* m_watchedDocSaver;
+    WizDocumentSaverThread* m_watchedDocSaver;
 };
 
 

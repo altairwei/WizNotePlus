@@ -14,6 +14,7 @@ class JSPluginModule;
 class JSPluginModuleSpec;
 class JSPluginSpec;
 class JSPluginHtmlDialog;
+class JSPluginDocSidebar;
 
 /**
  * @brief The manager for JavaScript plugins.
@@ -34,16 +35,17 @@ public:
     }
 
     QList<JSPluginModule *> modulesByButtonLocation(QString buttonLocation) const;
+    QList<JSPluginModule *> modulesByModuleType(QString type) const;
     QList<JSPluginModule *> modulesByKeyValue(QString key, QString value) const;
     JSPluginModule *moduleByGUID(QString guid) const;
 
     static QAction *createPluginAction(QWidget *parent, JSPluginModule *moduleData);
+    static void initPluginAction(QAction *ac, JSPluginModule *moduleData);
 
     JSPluginHtmlDialog *initPluginHtmlDialog(JSPluginModule *moduleData);
     void showPluginHtmlDialog(JSPluginModule *moduleData);
 
-    JSPluginSelectorWindow *initPluginSelectorWindow(JSPluginModule *moduleData);
-    void showPluginSelectorWindow(JSPluginModule *moduleData, QPoint &pt);
+    void showPluginSelectorWindow(JSPluginModule *moduleData, const QPoint &pt);
 
     WizWebsiteView *initPluginMainTabView(JSPluginModule *moduleData);
     void showPluginMainTabView(JSPluginModule *moduleData);
@@ -60,16 +62,15 @@ public:
 
 public slots:
     void handlePluginActionTriggered();
-    void notifyDocumentChanged();
+    void handleDocumentChanged();
     void handlePluginEditorRequest(const WIZDOCUMENTDATA &doc, const QString &guid);
+    void handlePluginPopupRequest(QAction *ac, const QPoint &pos);
 
 private:
     WizExplorerApp &m_app;
     QList<JSPlugin *> m_pluginDataCollection;
     QHash<QString, JSPluginHtmlDialog *> m_pluginHtmlDialogCollection;
-    QHash<QString, JSPluginSelectorWindow *> m_pluginPopupDialogCollection;
     QHash<QString, QPointer<WizWebsiteView > > m_pluginMainTabViewCollection;
-
 };
 
 

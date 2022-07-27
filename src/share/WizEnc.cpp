@@ -110,7 +110,7 @@ bool WizAES::encrypt(QDataStream* pStreamSrc, QDataStream* pStreamDest)
             memcpy(padding, pBufferSrc + prefix, pad);
         }
         memset(padding + pad, 16 - pad, 16 - pad);
-        enc.ProcessLastBlock(pBufferDest + prefix, padding, 16);
+        enc.ProcessLastBlock(pBufferDest + prefix, 16, padding, 16);
 
         if (pStreamDest->writeRawData((char *)pBufferDest, prefix + 16) == -1) {
             //throw std::exception("Failed to write data to stream!");
@@ -232,7 +232,7 @@ bool WizAES::decrypt(QDataStream* pStreamSrc, QDataStream* pStreamDest)
             return false;
         }
 
-        dec.ProcessLastBlock(padding, pBufferSrc, 16);
+        dec.ProcessLastBlock(padding, 16, pBufferSrc, 16);
         int pad = padding[15];
         if (pad > 16) {
             //throw std::exception("Failed to process last block!\nInvalid password?");

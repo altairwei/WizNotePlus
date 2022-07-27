@@ -134,8 +134,7 @@ set(wiznote_SOURCES
     jsplugin/JSPlugin.cpp
     jsplugin/JSPluginManager.cpp
     jsplugin/JSPluginSpec.cpp
-    jsplugin/JSPluginSelectorWindow.cpp
-    jsplugin/JSPluginHtmlDialog.cpp
+    jsplugin/JSPluginWidgets.cpp
 
     api/PublicAPIsServer.cpp
     api/WebSocketClientWrapper.cpp
@@ -182,6 +181,9 @@ set(wiznote_SOURCES
     gui/documentviewer/WizSearchReplaceWidget.cpp
     gui/documentviewer/WizTitleEdit.cpp
     gui/documentviewer/WizSvgEditorDialog.cpp
+    gui/documentviewer/CollaborationDocView.cpp
+    gui/documentviewer/DocumentLoaderSaver.cpp
+    gui/documentviewer/AbstractDocumentView.cpp
 
     WizActions.cpp
     WizNoteStyle.cpp
@@ -204,6 +206,8 @@ set(wiznote_SOURCES
     WizUpgrade.cpp
     WizButton.cpp
     WizFileImporter.cpp
+    WizFileExporter.cpp
+    widgets/FileExportWizard.cpp
     WizProgressDialog.cpp
     WizDocumentSelectionView.cpp
     WizDocumentTransitionView.cpp
@@ -237,6 +241,9 @@ set(wiznote_SOURCES
     api/ApiWizExplorerApp.cpp
 
     utils/ExternalEditorLauncher.cpp
+    widgets/FileLineEdit.cpp
+    widgets/DownloadManagerWidget.cpp
+    widgets/ShadowWidget.cpp
 )
 
 set(wiznote_HEADERS
@@ -308,8 +315,7 @@ set(wiznote_HEADERS
     jsplugin/JSPlugin.h
     jsplugin/JSPluginManager.h
     jsplugin/JSPluginSpec.h
-    jsplugin/JSPluginSelectorWindow.h
-    jsplugin/JSPluginHtmlDialog.h
+    jsplugin/JSPluginWidgets.h
 
     api/PublicAPIsServer.h
     api/WebSocketClientWrapper.h
@@ -360,6 +366,9 @@ set(wiznote_HEADERS
     gui/documentviewer/WizSearchReplaceWidget.h
     gui/documentviewer/WizTitleEdit.h
     gui/documentviewer/WizSvgEditorDialog.h
+    gui/documentviewer/CollaborationDocView.h
+    gui/documentviewer/DocumentLoaderSaver.h
+    gui/documentviewer/AbstractDocumentView.h
 
     WizDocumentHistory.h
     WizAttachmentListWidget.h
@@ -385,6 +394,8 @@ set(wiznote_HEADERS
     WizDocumentTransitionView.h
     WizButton.h
     WizFileImporter.h
+    WizFileExporter.h
+    widgets/FileExportWizard.h
     WizProgressDialog.h
     WizDocumentSelectionView.h
     WizUserVerifyDialog.h
@@ -449,6 +460,9 @@ set(wiznote_HEADERS
     api/ApiWizExplorerApp.h
 
     utils/ExternalEditorLauncher.h
+    widgets/FileLineEdit.h
+    widgets/DownloadManagerWidget.h
+    widgets/ShadowWidget.h
 )
 
 set(wiznote_FORMS
@@ -477,6 +491,9 @@ set(wiznote_FORMS
     ui/WizCombineNotesDialog.ui
     ui/WizExternalEditorSettingDialog.ui
     ui/WizExternalEditorInfoDialog.ui
+    ui/WizFileExportDialog.ui
+    ui/DownloadManagerWidget.ui
+    ui/DownloadWidget.ui
 )
 
 set(wiznote_TRANSLATIONS

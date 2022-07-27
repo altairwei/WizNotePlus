@@ -6,12 +6,17 @@
 #include <QDialog>
 #include <QHash>
 #include <QWebEngineProfile>
+#include <QPointer>
+
+#include "widgets/ShadowWidget.h"
 
 class QWebChannel;
 class QMenu;
+class QLabel;
 
 class WizWebEngineView;
 class WizDevToolsDialog;
+class WebPageZoomWidget;
 
 typedef QHash<QString, QObject *> WizWebEngineInjectObjectCollection;
 
@@ -70,9 +75,9 @@ class WizWebEngineView : public QWebEngineView
     Q_OBJECT
 
 public:
-    WizWebEngineView(const WizWebEngineInjectObjectCollection& objects, QWidget* parent);
+    WizWebEngineView(const WizWebEngineInjectObjectCollection& objects, QWidget* parent = nullptr);
     // Do not use {{}} to initialize InjectObjectCollection.
-    WizWebEngineView(QWidget* parent): WizWebEngineView({}, parent) { }
+    WizWebEngineView(QWidget* parent = nullptr): WizWebEngineView({}, parent) { }
     virtual ~WizWebEngineView();
 
 public:
@@ -100,9 +105,7 @@ public:
 
     Q_INVOKABLE void SetZoom(int percent);
     Q_INVOKABLE int GetZoom();
-
-    double scaleUp();
-    double scaleDown();
+    void displayZoomWidget();
 
 public Q_SLOTS:
     void innerLoadFinished(bool);
@@ -110,14 +113,22 @@ public Q_SLOTS:
 #if (QT_VERSION >= QT_VERSION_CHECK(5, 11, 0))
     void openDevTools();
 #endif
-    void handleSavePageTriggered();
-    
+    double scaleUp();
+    double scaleDown();
+    void handleShowZoomWidgetRequest(bool show, const QRect &btnLocation);
+
+private:
+    void createZoomWidget();
+
 Q_SIGNALS:
     void loadFinishedEx(bool);
+    void zoomFactorChanged(qreal factor);
+    void zoomWidgetFinished();
 
 private:
     WizDevToolsDialog* m_devToolsWindow = nullptr;
     mutable QAction *m_viewActions[ViewActionCount];
+    QPointer<WebPageZoomWidget> m_zoomWgt;
 
 protected:
     QWebEngineView *createWindow(QWebEnginePage::WebWindowType type) override;
@@ -126,6 +137,7 @@ protected:
     void contextMenuEvent(QContextMenuEvent *event);
     void childEvent(QChildEvent *event) override;
     bool eventFilter(QObject *obj, QEvent *ev) override;
+    void hideEvent(QHideEvent *event) override;
 
 };
 
@@ -136,6 +148,8 @@ public:
 };
 
 QWebEngineProfile* createWebEngineProfile(const WizWebEngineInjectObjectCollection& objects, QObject* parent);
+void insertStyleSheet(QWebEngineProfile *profile, const QString &name, const QString &source);
+void insertScrollbarStyleSheet(QWebEngineProfile *profile);
 
 class WizNavigationForwarderPage : public QWebEnginePage
 {
@@ -166,6 +180,32 @@ public:
 
 private:
     WizNavigationForwarderPage *m_page;
+};
+
+class WebPageZoomWidget : public ShadowWidget
+{
+    Q_OBJECT
+
+public:
+    explicit WebPageZoomWidget(QWidget *parent = nullptr);
+
+Q_SIGNALS:
+    void zoomFinished();
+    void scaleUpRequested();
+    void scaleDownRequested();
+    void resetZoomFactorRequested();
+
+protected:
+    void closeEvent(QCloseEvent *event) override;
+
+public Q_SLOTS:
+    void onZoomFactorChanged(qreal factor);
+
+private:
+    QPushButton *m_resetBtn;
+    QPushButton *m_scaleUpBtn;
+    QPushButton *m_scaleDownBtn;
+    QLabel *m_factorLabel;
 };
 
 #endif // MAINWINDOW_H

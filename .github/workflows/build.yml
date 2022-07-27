@@ -1,4 +1,4 @@
-name: Build
+name: build
 on:
   push:
     branches:
@@ -81,7 +81,7 @@ jobs:
 
   build_windows:
     name: Windows
-    runs-on: windows-2016
+    runs-on: windows-2019
     env:
       QT_INSTALL_TARGET_ARCH: msvc2017_64
       QT_INSTALL_TARGET_DIR_PREFIX: ${{ github.workspace }}
@@ -93,7 +93,7 @@ jobs:
       - name: Install dependencies
         shell: powershell
         run: |
-          choco install wget curl
+          choco install -y wget curl
       - name: Install and config conan
         shell: powershell
         run: |

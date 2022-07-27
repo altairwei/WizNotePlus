@@ -5,6 +5,8 @@
 #include <QAction>
 #include <QPainter>
 #include <QDebug>
+#include <QApplication>
+#include <QMessageBox>
 
 #include "utils/WizStyleHelper.h"
 #include "share/WizMisc.h"
@@ -46,6 +48,7 @@ WizSingleDocumentViewer::WizSingleDocumentViewer(WizExplorerApp& app, const QStr
   , m_guid(guid)
   , m_docView(nullptr)
   , m_containerWgt(nullptr)
+  , saving(false)
 {
     // 创建本部件布局
     setAttribute(Qt::WA_DeleteOnClose);
@@ -86,6 +89,12 @@ WizSingleDocumentViewer::WizSingleDocumentViewer(WizExplorerApp& app, const QStr
 
     connect(m_docView->commentWidget(), SIGNAL(widgetStatusChanged()), SLOT(on_commentWidget_statusChanged()));
     connect(m_docView->commentWidget(), SIGNAL(willShow()), SLOT(on_commentWidget_willShow()));
+    connect(m_docView->web(), &WizDocumentWebView::saveDocumentRequested, [this] {
+        this->saving = true;
+    });
+    connect(m_docView, &WizDocumentView::documentSaved, [this] {
+        this->saving = false;
+    });
 
     containerLayout->addStretch(0);
     containerLayout->addWidget(m_docView);
@@ -127,12 +136,15 @@ void WizSingleDocumentViewer::resizeEvent(QResizeEvent* ev)
 {
     QWidget::resizeEvent(ev);
 
-    m_docView->titleBar()->editorToolBar()->adjustButtonPosition();    
+    m_docView->editorToolBar()->adjustButtonPosition();    
 }
 
 void WizSingleDocumentViewer::closeEvent(QCloseEvent *ev)
 {
     m_docView->waitForDone();
+
+    while (saving)
+        QApplication::processEvents();
 
     QWidget::closeEvent(ev);
 }
@@ -220,6 +232,16 @@ void WizSingleDocumentViewManager::viewDocument(const WIZDOCUMENTDATA& doc)
         WizMainWindow* mainWindow = dynamic_cast<WizMainWindow*>(m_app.mainWindow());
         WizSingleDocumentViewer* wgt = new WizSingleDocumentViewer(m_app, doc.strGUID);
         WizDocumentView* docView = wgt->docView();
+        auto webView = docView->web();
+
+        connect(webView, &WizDocumentWebView::loadDocumentRequested, mainWindow->docLoader(), &WizDocumentLoaderThread::load);
+        connect(mainWindow->docLoader(), &WizDocumentLoaderThread::loaded, webView, &WizDocumentWebView::onDocumentReady, Qt::QueuedConnection);
+        connect(mainWindow->docLoader(), &WizDocumentLoaderThread::loadFailed, [wgt] {
+            QMessageBox::critical(wgt, tr("Error"), tr("Can't view note: (Can't unzip note data)"));
+        });
+
+        connect(webView, &WizDocumentWebView::saveDocumentRequested, mainWindow->docSaver(), &WizDocumentSaverThread::save);
+        connect(mainWindow->docSaver(), &WizDocumentSaverThread::saved, webView, &WizDocumentWebView::onDocumentSaved, Qt::QueuedConnection);
 
         // Connecting signals to each other (tab viewer and single viewer)
         connect(docView, SIGNAL(documentSaved(QString,WizDocumentView*)), SIGNAL(documentChanged(QString,WizDocumentView*)));

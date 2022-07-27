@@ -135,6 +135,10 @@ QWidget#editor-container {
   background-color: white;
 }
 
+CollaborationDocView {
+  background-color: white;
+}
+
 
 /*
  * Tab browser
@@ -487,24 +491,14 @@ WizAttachmentListWidget QScrollBar::sub-line {
 
 WizScrollBar {
   background: transparent;
-  width: 6px;
-}
-
-WizScrollBar:hover {
-  background: rgba(155, 155, 155, 0.2);
 }
 
 WizScrollBar::handle {
   background: #c1c1c1;
-  min-height: 30px;
 }
 
 WizScrollBar::handle:hover {
   background: #a8a8a8;
-}
-
-WizScrollBar::handle:vertical {
-  width: 6px;
 }
 
 WizScrollBar::add-page,
@@ -523,6 +517,15 @@ WizScrollBar::add-line,
 WizScrollBar::sub-line {
   height: 0px;
   width: 0px;
+}
+
+WizScrollBar:vertical {
+  width: 7px;
+}
+
+WizScrollBar::handle:vertical {
+  min-height: 30px;
+  border-radius: 3px;
 }
 
 WizTagListWidget QListView {
@@ -546,6 +549,50 @@ WizNoteInfoForm QLineEdit:read-only:hover {
 WizNoteInfoForm QLineEdit:hover {
   border-bottom: 1px solid #DADAD9;
 }
+
+ShadowWidget > QWidget#innerWidget {
+  border: 1px solid #FFFFFF;
+  border-radius: 7px;
+  background-color: #FFFFFF;
+}
+
+WebPageZoomWidget
+QLabel#factorLabel {
+  color: #787878;
+  margin-right: 20px;
+}
+
+WebPageZoomWidget
+QPushButton#scaleUpBtn,
+QPushButton#scaleDownBtn,
+QPushButton#resetBtn {
+  height: 20px;
+  width: 20px;
+  padding: 2px 2px;
+  margin: 2px;
+  border-radius: 12px;
+  background: none;
+}
+
+WebPageZoomWidget
+QPushButton#scaleUpBtn:hover,
+QPushButton#scaleDownBtn:hover,
+QPushButton#resetBtn:hover {
+  background: rgba(211, 211, 211, 0.5);
+}
+
+WebPageZoomWidget
+QPushButton#resetBtn {
+  color: #787878;
+  width: auto;
+  border-radius: 4px;
+}
+
+WebPageZoomWidget
+QPushButton#resetBtn:hover {
+  color: #448adf;
+}
+
 
 /*
  * Document list view
@@ -596,4 +643,77 @@ WizDocumentView WizTitleBar QLineEdit{
   padding-bottom: 1px;
   border: 0px;
   border-radius: 0px;
+}
+
+
+/*
+ * Download Manager
+ * -----------------------------------------------------------
+ */
+
+QFrame#DownloadWidget {
+  background: palette(button);
+  border: 1px solid palette(dark);
+  margin: 0px;
+}
+
+QFrame#DownloadWidget > QPushButton {
+  border-width: 0px;
+  /*font: 14px;*/
+  padding: 5px 5px;
+  border-style: solid;
+  border-color: #ececec;
+  border-radius: 4px;
+  border-bottom-color: #e0e0e0;
+}
+
+QFrame#DownloadWidget {
+  margin-left: 6px;
+  margin-right: 6px;
+  margin-top: 6px;
+  margin-bottom: 0px;
+  border-radius: 6px;
+}
+
+QFrame#DownloadWidget >
+QPushButton:pressed {
+  background-color: rgba(211, 211, 211, 1);
+}
+
+QFrame#DownloadWidget >
+QPushButton:hover {
+  background-color: rgba(211, 211, 211, 0.5);
+}
+
+QFrame#DownloadWidget >
+QLabel#m_dstName {
+  font-weight: bold;
+}
+
+QFrame#DownloadWidget >
+QProgressBar {
+  font-size: 12px;
+}
+
+QWidget#DownloadManagerWidget {
+  background: palette(button);
+}
+
+QWidget#DownloadManagerWidget
+QScrollArea#m_scrollArea {
+  margin: 2px;
+  border: none;
+}
+
+QWidget#DownloadManagerWidget
+QScrollArea#m_scrollArea
+QWidget#m_items {
+  background: palette(mid);
+}
+
+QWidget#DownloadManagerWidget
+QScrollArea#m_scrollArea
+QWidget#m_items
+QLabel#m_zeroItemsLabel {
+  color: palette(shadow);
 }

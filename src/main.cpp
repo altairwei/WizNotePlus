@@ -14,6 +14,7 @@
 #include <QtWebEngine>
 #include <QStyleFactory>
 #include <QWebEngineSettings>
+#include <QVersionNumber>
 
 #include <sys/stat.h>
 
@@ -50,6 +51,30 @@
 #ifdef Q_OS_WIN
 #include <Windows.h>
 #endif
+
+#ifdef Q_OS_LINUX
+#include <gnu/libc-version.h>
+#endif
+
+void disableWebengineSandboxIfNeeded()
+{
+#ifndef Q_OS_LINUX
+    return;
+#else
+#   if (QT_VERSION > QT_VERSION_CHECK(6, 0, 0))
+    return;
+#   else
+    const char* version = gnu_get_libc_version();
+    QVersionNumber current = QVersionNumber::fromString(version);
+    QVersionNumber compareTo(2, 34);
+    if (current >= compareTo) {
+        qDebug() << "Disabling Qt WebEngine sandbox as GLIBC"
+                 << version << "will break it";
+        qputenv("QTWEBENGINE_DISABLE_SANDBOX", "1");
+    }
+#   endif
+#endif
+}
 
 //-------------------------------------------------------------------
 // 登录与启动
@@ -98,6 +123,7 @@ int mainCore(int argc, char *argv[])
 
 #endif // Q_OS_LINUX
 
+    disableWebengineSandboxIfNeeded();
     QtWebEngine::initialize();
     QWebEngineSettings::defaultSettings()->setAttribute(QWebEngineSettings::FocusOnNavigationEnabled, false);
 

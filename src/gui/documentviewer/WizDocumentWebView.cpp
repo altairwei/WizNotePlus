@@ -139,7 +139,7 @@ void WizDocumentWebViewPage::javaScriptConsoleMessage(QWebEnginePage::JavaScript
 static int nWindowIDCounter = 0;
 
 WizDocumentWebView::WizDocumentWebView(WizExplorerApp& app, QWidget* parent)
-    : WizWebEngineView(parent)
+    : AbstractDocumentEditor(parent)
     , m_app(app)
     , m_dbMgr(app.databaseManager())
     , m_bNewNote(false)
@@ -162,7 +162,7 @@ WizDocumentWebView::WizDocumentWebView(WizExplorerApp& app, QWidget* parent)
     }
 
     // minimum page size hint
-    setMinimumSize(400, 250);
+    //setMinimumSize(400, 250);
 
     // only accept focus by mouse click as the best way to trigger toolbar reset
     setFocusPolicy(Qt::ClickFocus);
@@ -186,13 +186,6 @@ WizDocumentWebView::WizDocumentWebView(WizExplorerApp& app, QWidget* parent)
 
     // refers
     qRegisterMetaType<WizEditorMode>("WizEditorMode");
-    m_docLoadThread = new WizDocumentWebViewLoaderThread(m_dbMgr, this);
-    connect(m_docLoadThread, SIGNAL(loaded(const QString&, const QString, const QString, WizEditorMode)),
-            SLOT(onDocumentReady(const QString&, const QString, const QString, WizEditorMode)), Qt::QueuedConnection);
-
-    m_docSaverThread = new WizDocumentWebViewSaverThread(m_dbMgr, this);
-    connect(m_docSaverThread, SIGNAL(saved(const QString, const QString,bool)),
-            SLOT(onDocumentSaved(const QString, const QString,bool)), Qt::QueuedConnection);
 
     // loading and saving thread
     m_timerAutoSave.setInterval(1*60*1000); // 1 minutes
@@ -230,18 +223,6 @@ void WizDocumentWebView::setupWebActions()
         QUrl tmpfileFolder = page()->url().adjusted(QUrl::RemoveFilename);
         QDesktopServices::openUrl(tmpfileFolder);
     });
-}
-
-void WizDocumentWebView::waitForDone()
-{
-    if (m_docLoadThread) {
-        m_docLoadThread->waitForDone();
-        m_docLoadThread = nullptr;
-    }
-    if (m_docSaverThread) {
-        m_docSaverThread->waitForDone();
-        m_docSaverThread = nullptr;
-    }
 }
 
 WizDocumentWebViewPage* WizDocumentWebView::getPage() {
@@ -430,6 +411,13 @@ void WizDocumentWebView::focusOutEvent(QFocusEvent *event)
     QWebEngineView::focusOutEvent(event);
 }
 
+void WizDocumentWebView::hideEvent(QHideEvent *event)
+{
+    if (m_searchReplaceWidget)
+        m_searchReplaceWidget->hide();
+    WizWebEngineView::hideEvent(event);
+}
+
 /**
  * @brief handle right menu event
  * 
@@ -439,7 +427,7 @@ void WizDocumentWebView::contextMenuEvent(QContextMenuEvent *event)
 {
     if (isEditing()) {
         // Edit mode
-        Q_EMIT showContextMenuRequest(mapToGlobal(event->pos()));
+        showContextMenu(mapToGlobal(event->pos()));
     } else {
         // Read mode
         createReadModeContextMenu(event);
@@ -716,6 +704,10 @@ void WizDocumentWebView::onTitleEdited(QString strTitle)
 
 void WizDocumentWebView::onDocumentReady(const QString kbGUID, const QString strGUID, const QString strFileName, WizEditorMode editorMode)
 {
+    const auto &note = view()->note();
+    if (note.strKbGUID != kbGUID || note.strGUID != strGUID)
+        return;
+
     m_mapFile.insert(strGUID, strFileName);
 
     WIZDOCUMENTDATA doc;
@@ -725,8 +717,12 @@ void WizDocumentWebView::onDocumentReady(const QString kbGUID, const QString str
     loadDocumentInWeb(editorMode);
 }
 
-void WizDocumentWebView::onDocumentSaved(const QString kbGUID, const QString strGUID, bool ok)
+void WizDocumentWebView::onDocumentSaved(const QString kbGUID, const QString strGUID, bool ok, QObject *requester)
 {
+    const auto &note = view()->note();
+    if (requester != this || note.strKbGUID != kbGUID || note.strGUID != strGUID)
+        return;
+
     if (!ok)
     {
         TOLOG("Save document failed");
@@ -740,8 +736,6 @@ void WizDocumentWebView::onDocumentSaved(const QString kbGUID, const QString str
 
 void WizDocumentWebView::viewDocument(const WIZDOCUMENTDATA& doc, WizEditorMode editorMode)
 {
-    if (!m_docLoadThread)
-        return;
     // set data
     // FIXME: not very well to decide a file is new through create time
     qint64 seconds = doc.tCreated.secsTo(QDateTime::currentDateTime());
@@ -756,14 +750,11 @@ void WizDocumentWebView::viewDocument(const WIZDOCUMENTDATA& doc, WizEditorMode 
     }
 
     // ask extract and load
-    m_docLoadThread->load(doc, editorMode);
+    Q_EMIT loadDocumentRequested(doc, editorMode);
 }
 
 void WizDocumentWebView::reloadNoteData(const WIZDOCUMENTDATA& data)
 {
-    if (!m_docLoadThread)
-        return;
-    //
     Q_ASSERT(!data.strGUID.isEmpty());
 
     // reset only if user not in editing mode
@@ -771,7 +762,7 @@ void WizDocumentWebView::reloadNoteData(const WIZDOCUMENTDATA& data)
         return;
 
     // reload may triggered when update from server or locally reflected by modify
-    m_docLoadThread->load(data, m_currentEditorMode);
+    Q_EMIT loadDocumentRequested(data, m_currentEditorMode);
 }
 
 
@@ -1007,68 +998,6 @@ void WizDocumentWebView::addAttachmentThumbnail(const QString strFile, const QSt
     editorCommandExecuteInsertHtml(strHtml, true);
 }
 
-void WizDocumentWebView::getMailSender(std::function<void(QString)> callback)
-{
-    QString scriptFileName = Utils::WizPathResolve::resourcesPath() + "files/scripts/GetMailSender.js";
-    QString code;
-    ::WizLoadUnicodeTextFromFile(scriptFileName, code);
-    //
-    page()->runJavaScript(code, [=](const QVariant& vRet){
-        //
-        QString mailSender = vRet.toString();
-
-        if (mailSender.isEmpty())
-        {
-            QRegExp rxlen("\\b[A-Z0-9._%+-]+@[A-Z0-9.-]+\\.[A-Z]{2,4}\\b");
-            rxlen.setCaseSensitivity(Qt::CaseInsensitive);
-            rxlen.setPatternSyntax(QRegExp::RegExp);
-            QString strTitle = view()->note().strTitle;
-            int pos = rxlen.indexIn(strTitle);
-            if (pos > -1) {
-                mailSender = rxlen.cap(0);
-            }
-        }
-        //
-        callback(mailSender);
-    });
-}
-
-///*
-// * judge should add user self define style, current has font style, font size, bg color et.
-// */
-//bool CWizDocumentWebView::shouldAddUserDefaultCSS()
-//{
-//    if (!shouldAddCustomCSS())
-//        return false;
-
-//    bool isTemplate = page()->runJavaScript("wizIsTemplate()").toBool();
-
-//    return !isTemplate;
-//}
-
-void WizDocumentWebView::shareNoteByEmail()
-{
-    getMailSender([=](QString sendTo){
-        //
-
-        WizEmailShareDialog dlg(m_app);
-        //
-        dlg.setNote(view()->note(), sendTo);
-        //
-        connect(&dlg, SIGNAL(insertCommentToNoteRequest(QString,QString)),
-                SLOT(on_insertCommentToNote_request(QString,QString)));
-
-        dlg.exec();
-
-    });
-}
-
-void WizDocumentWebView::shareNoteByLink()
-{
-    const WIZDOCUMENTDATA& doc = view()->note();
-    emit shareDocumentByLinkRequest(doc.strKbGUID, doc.strGUID);
-}
-
 QString WizDocumentWebView::getNoteType()
 {
     return WizGetNoteType(view()->note());
@@ -1184,7 +1113,7 @@ void WizDocumentWebView::onEditorLoadFinished(bool ok)
         }
     });
     // Notify all plugins
-    JSPluginManager::instance().notifyDocumentChanged();
+    JSPluginManager::instance().handleDocumentChanged();
 }
 
 /**
@@ -1334,7 +1263,7 @@ void WizDocumentWebView::saveEditingViewDocument(const WIZDOCUMENTDATA &data, bo
                     m_currentNoteHtml = html;
                     WizSaveUnicodeTextToUtf8File(m_strNoteHtmlFileName, m_currentNoteHtml);
                     emit currentHtmlChanged();
-                    m_docSaverThread->save(doc, html, strFileName, 0);
+                    Q_EMIT saveDocumentRequested(doc, html, strFileName, 0);
                     TOLOG("save note done...");
                 }
             }
@@ -1376,7 +1305,7 @@ void WizDocumentWebView::saveReadingViewDocument(const WIZDOCUMENTDATA &data, bo
                 QString strFileName = m_mapFile.value(doc.strGUID);
                 if (!strFileName.isEmpty())
                 {
-                    m_docSaverThread->save(doc, strHtml, strFileName, 0);
+                    Q_EMIT saveDocumentRequested(doc, strHtml, strFileName, 0);
                 }
             }
         }
@@ -1839,7 +1768,10 @@ void WizDocumentWebView::editorCommandExecuteFindReplace()
     }
 
     QRect rect = geometry();
-    rect.moveTo(mapToGlobal(pos()));
+    QPoint leftTop = pos();
+    if (parentWidget())
+        leftTop = parentWidget()->mapToGlobal(leftTop);
+    rect.moveTo(leftTop);
     m_searchReplaceWidget->showInEditor(rect);
     m_searchReplaceWidget->setSourceText(selectedText());
 
@@ -2735,268 +2667,140 @@ void WizDocumentWebView::onMarkerInitiated(QString data)
     emit markerInitiated(data);
 }
 
-
-
-/////////////////////////////////////////////////////////////////////////////////////////////////////
-
-WizDocumentWebViewLoaderThread::WizDocumentWebViewLoaderThread(WizDatabaseManager &dbMgr, QObject *parent)
-    : QThread(parent)
-    , m_dbMgr(dbMgr)
-    , m_stop(false)
-    , m_editorMode(modeReader)
+static std::map<QString, QWebEnginePage::WebAction> g_webActions;
+void initWebActions(QWebEnginePage* page)
 {
-}
-
-void WizDocumentWebViewLoaderThread::load(const WIZDOCUMENTDATA &doc, WizEditorMode editorMode)
-{
-    setCurrentDoc(doc.strKbGUID, doc.strGUID, editorMode);
-
-    if (!isRunning())
+    if (!g_webActions.empty())
+        return;
+    //
+    for (int action = QWebEnginePage::NoWebAction + 1;
+         action < QWebEnginePage::WebActionCount;
+         action++)
     {
-        start();
+        QWebEnginePage::WebAction a = (QWebEnginePage::WebAction)action;
+        QAction* actionObj = page->action(a);
+        //
+        QString text = actionObj->text();
+        g_webActions[text] = a;
+        //
+        text = text.replace("&", "");
+        g_webActions[text] = a;
     }
 }
 
-void WizDocumentWebViewLoaderThread::stop()
+QWebEnginePage::WebAction menuText2WebAction(QWebEnginePage* page, QString text)
 {
-    QMutexLocker locker(&m_mutex);
-    Q_UNUSED(locker);
+    initWebActions(page);
 
-    m_stop = true;
+    text = text.replace("&", "");
+    auto it = g_webActions.find(text);
+    if (it == g_webActions.end())
+        return QWebEnginePage::NoWebAction;
 
-    m_waitEvent.wakeAll();
+    return it->second;
 }
 
-void WizDocumentWebViewLoaderThread::waitForDone()
+#define WIZEDITOR_ACTION_GOOGLE         QObject::tr("Use \"Google\" search")
+#define WIZEDITOR_ACTION_BAIDU           QObject::tr("Use \"Baidu\" search")
+#define WIZEDITOR_ACTION_CUT            QObject::tr("Cut")
+#define WIZEDITOR_ACTION_COPY           QObject::tr("Copy")
+#define WIZEDITOR_ACTION_PASTE          QObject::tr("Paste")
+#define WIZEDITOR_ACTION_PASTE_PLAIN    QObject::tr("Paste plain text")
+#define WIZEDITOR_ACTION_REMOVE_LINK    QObject::tr("Remove link")
+
+void WizDocumentWebView::showContextMenu(const QPoint &pos)
 {
-    stop();
+    QWebEnginePage* page = this->page();
+    if (!page)
+        return;
 
-    while (this->isRunning())
+    QMenu *menu = createStandardContextMenu();
+    if (!menu)
+        return;
+
+    bool editing = isEditing();
+
+    bool hasPasteMenu = false;
+    bool hasLinkMenu = false;
+
+    // get all actions of menu
+    // FIXME: 不要使用这种遍历方法，速度有点慢，参考Qt浏览器实现示例
+    QList<QAction*> actions = menu->actions();
+    for (QAction* action : actions)
     {
-        QApplication::processEvents();
-    }
-
-    this->disconnect();
-}
-
-void WizDocumentWebViewLoaderThread::run()
-{
-    //FIXME: Document needs to be loaded once at least.
-    //  So, two conditional m_stop-return within the loop were commented.
-    while (!m_stop)
-    {
-        //if (m_stop)
-        //    return;
-        //
-        QString kbGuid;
-        QString docGuid;
-        WizEditorMode editorMode = modeReader;
-        peekCurrentDocGuid(kbGuid, docGuid, editorMode);
-        //if (m_stop)
-        //    return;
-        //
-        if (docGuid.isEmpty())
-            continue;
-        //
-        WizDatabase& db = m_dbMgr.db(kbGuid);
-        WIZDOCUMENTDATA data;
-        if (!db.documentFromGuid(docGuid, data))
+        QWebEnginePage::WebAction a = menuText2WebAction(page, action->iconText());
+        switch (a)
         {
-            continue;
-        }
-        //
-        QString strHtmlFile;
-        if (db.documentToTempHtmlFile(data, strHtmlFile))
-        {
-            emit loaded(kbGuid, docGuid, strHtmlFile, editorMode);
-        }
-        else
-        {
-            ::WizExecuteOnThread(WIZ_THREAD_MAIN, [=]{
-                QMessageBox::critical(WizMainWindow::instance(), tr("Error"), tr("Can't view note: (Can't unzip note data)"));
-            });
+        case QWebEnginePage::Copy:
+            action->setText(QObject::tr("Copy"));
+            break;
+        case QWebEnginePage::Unselect:
+            action->setText(QObject::tr("Unselect"));
+            break;
+        case QWebEnginePage::Back:
+        case QWebEnginePage::Forward:
+        case QWebEnginePage::Stop:
+        case QWebEnginePage::Reload:
+#if QT_VERSION >= 0x050600
+        case QWebEnginePage::DownloadImageToDisk:
+#endif
+#if QT_VERSION >= 0x050800
+        case QWebEnginePage::ViewSource:
+#endif
+            menu->removeAction(action);
+            break;
+
+        case QWebEnginePage::Paste:
+            hasPasteMenu = true;
+            break;
+        case QWebEnginePage::OpenLinkInThisWindow:
+        case QWebEnginePage::OpenLinkInNewWindow:
+        case QWebEnginePage::OpenLinkInNewTab:
+        case QWebEnginePage::DownloadLinkToDisk:
+            menu->removeAction(action);
+            hasLinkMenu = true;
+            break;
+        case QWebEnginePage::CopyLinkToClipboard:
+            hasLinkMenu = true;
+            break;
+        default:
+            break;
         }
     }
-}
 
-void WizDocumentWebViewLoaderThread::setCurrentDoc(QString kbGUID, QString docGUID, WizEditorMode editorMode)
-{
-    //
+    if (!selectedText().isEmpty())
     {
-        QMutexLocker locker(&m_mutex);
-        Q_UNUSED(locker);
-        //
-        m_strCurrentKbGUID = kbGUID;
-        m_strCurrentDocGUID = docGUID;
-        m_editorMode = editorMode;
-    }
-    //
-    //
-    m_waitEvent.wakeAll();
-}
-
-bool WizDocumentWebViewLoaderThread::isEmpty()
-{
-    QMutexLocker locker(&m_mutex);
-    Q_UNUSED(locker);
-    //
-    return m_strCurrentDocGUID.isEmpty();
-}
-
-void WizDocumentWebViewLoaderThread::peekCurrentDocGuid(QString& kbGUID, QString& docGUID, WizEditorMode& editorMode)
-{
-    if (isEmpty())
-    {
-        m_waitEvent.wait();
+        if (!menu->actions().isEmpty())
+        {
+            menu->addSeparator();
+        }
+        menu->addAction(WIZEDITOR_ACTION_GOOGLE, this, SLOT(on_editor_google_triggered()));
+        menu->addAction(WIZEDITOR_ACTION_BAIDU, this, SLOT(on_editor_baidu_triggered()));
     }
     //
-    //
+    if (editing)
     {
-        QMutexLocker locker(&m_mutex);
-        Q_UNUSED(locker);
-        //
-        kbGUID = m_strCurrentKbGUID;
-        docGUID = m_strCurrentDocGUID;
-        editorMode = m_editorMode;
-        //
-        m_strCurrentKbGUID.clear();
-        m_strCurrentDocGUID.clear();
-    }
-}
+        if (!hasPasteMenu)
+        {
+            if (!menu->actions().isEmpty())
+            {
+                menu->addSeparator();
+            }
 
-/////////////////////////////////////////////////////////////////////////////////////////////////////
+            menu->addAction(WIZEDITOR_ACTION_PASTE, this, SLOT(on_editor_paste_triggered()));
+            menu->addAction(WIZEDITOR_ACTION_PASTE_PLAIN, this, SLOT(on_editor_pastePlain_triggered()));
+        }
 
-
-
-WizDocumentWebViewSaverThread::WizDocumentWebViewSaverThread(WizDatabaseManager &dbMgr, QObject *parent)
-    : QThread(parent)
-    , m_dbMgr(dbMgr)
-    , m_stop(false)
-{
-}
-
-void WizDocumentWebViewSaverThread::save(const WIZDOCUMENTDATA& doc, const QString& strHtml,
-                                          const QString& strHtmlFile, int nFlags, bool bNotify /*= fasle*/)
-{
-    SAVEDATA data;
-    data.doc = doc;
-    data.html = strHtml;
-    data.htmlFile = strHtmlFile;
-    data.flags = nFlags;
-    data.notify = bNotify;
-
-    QMutexLocker locker(&m_mutex);
-    Q_UNUSED(locker);
-
-    m_arrayData.push_back(data);
-
-    m_waitEvent.wakeAll();
-
-    if (!isRunning())
-    {
-        start();
-    }
-}
-
-void WizDocumentWebViewSaverThread::waitForDone()
-{
-    stop();
-
-    while (this->isRunning())
-    {
-        QApplication::processEvents();
+        if (hasLinkMenu)
+        {
+            menu->addAction(WIZEDITOR_ACTION_REMOVE_LINK, this, SLOT(on_editor_removeLink_triggered()));
+        }
     }
 
-    this->disconnect();
+    if (menu->actions().isEmpty())
+        return;
+
+    menu->popup(pos);
+
+    WizGetAnalyzer().logAction("editorContextMenu");
 }
-
-void WizDocumentWebViewSaverThread::stop()
-{
-    m_stop = true;
-    m_waitEvent.wakeAll();
-}
-
-bool WizDocumentWebViewSaverThread::isEmpty()
-{
-    QMutexLocker locker(&m_mutex);
-    Q_UNUSED(locker);
-
-    return m_arrayData.empty();
-}
-
-WizDocumentWebViewSaverThread::SAVEDATA WizDocumentWebViewSaverThread::peekFirst()
-{
-    QMutexLocker locker(&m_mutex);
-    Q_UNUSED(locker);
-
-    SAVEDATA data = m_arrayData[0];
-    m_arrayData.erase(m_arrayData.begin());
-    return data;
-}
-
-void WizDocumentWebViewSaverThread::peekData(SAVEDATA& data)
-{
-    while (1)
-    {
-        if (m_stop)
-            return;
-
-        if (isEmpty())
-        {
-            m_waitEvent.wait();
-        }
-
-        if (isEmpty())
-        {
-            if (m_stop)
-                return;
-            continue;
-        }
-
-        data = peekFirst();
-
-        break;
-    }
-}
-
-void WizDocumentWebViewSaverThread::run()
-{
-    while (true)
-    {
-        SAVEDATA data;
-        peekData(data);
-
-        if (data.doc.strGUID.isEmpty())
-        {
-            if (m_stop)
-                return;
-            continue;
-        }
-
-        WizDatabase& db = m_dbMgr.db(data.doc.strKbGUID);
-
-        WIZDOCUMENTDATA doc;
-        if (!db.documentFromGuid(data.doc.strGUID, doc))
-        {
-            qDebug() << "fault error: can't find doc in database: " << doc.strGUID;
-            continue;
-        }
-
-        qDebug() << "Saving note: " << doc.strTitle;
-
-        bool ok = db.updateDocumentData(doc, data.html, data.htmlFile, data.flags, data.notify);
-
-        if (ok)
-        {
-            qDebug() << "Save note done: " << doc.strTitle;
-        }
-        else
-        {
-            qDebug() << "Save note failed: " << doc.strTitle;
-        }
-
-        QString kbGuid = db.isGroup() ? db.kbGUID() : "";
-        emit saved(kbGuid, doc.strGUID, ok);
-    }
-}
-

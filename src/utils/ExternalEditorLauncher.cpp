@@ -25,7 +25,7 @@ ExternalEditorLauncher::ExternalEditorLauncher(WizExplorerApp &app, QObject *par
     , m_externalEditorFileWatcher(new QFileSystemWatcher(this))
 {
     // initialize document saver thread
-    m_watchedDocSaver = new WizDocumentWebViewSaverThread(m_dbMgr, this);
+    m_watchedDocSaver = new WizDocumentSaverThread(m_dbMgr, this);
 
     connect(m_externalEditorFileWatcher, &QFileSystemWatcher::fileChanged, 
             this, &ExternalEditorLauncher::onWatchedDocumentChanged);

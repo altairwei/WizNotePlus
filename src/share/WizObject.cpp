@@ -285,7 +285,7 @@ QString WIZOBJECTDATA::objectTypeToTypeString(WizObjectType eType)
 
 WIZTAGDATA::WIZTAGDATA()
     : nVersion(-1)
-    , nPostion(0)
+    , nPosition(0)
 {
 }
 
@@ -298,7 +298,7 @@ WIZTAGDATA::WIZTAGDATA(const WIZTAGDATA& data)
     strDescription = data.strDescription;
     tModified = data.tModified;
     nVersion = data.nVersion;
-    nPostion = data.nPostion;
+    nPosition = data.nPosition;
 }
 
 BOOL WIZTAGDATA::equalForSync(const WIZTAGDATA& data) const
@@ -319,6 +319,7 @@ bool WIZTAGDATA::fromJson(const Json::Value& value)
         strName = QString::fromStdString(value["name"].asString());
         tModified = QDateTime::fromTime_t(value["modified"].asInt64() / 1000);
         nVersion = value["version"].asInt64();
+        nPosition = value["pos"].asInt64();
 
     } catch (Json::Exception& e) {
         TOLOG(e.what());
@@ -337,6 +338,7 @@ bool WIZTAGDATA::toJson(QString kbGuid, Json::Value& value) const
     value["parentTagGuid"] = strParentGUID.toStdString();
     value["name"] = strName.toStdString();
     value["modified"] = tModified.toTime_t() * (Json::UInt64)1000;
+    value["pos"] = (int)nPosition;
     //
     return true;
 }
@@ -576,6 +578,7 @@ bool WIZDOCUMENTDATAEX::fromJson(const Json::Value& value)
         nDataChanged = 0;
         //strKbGuid = QString::fromStdString(value["kbGuid"].asString());
         nVersion = value["version"].asInt64();
+        strKbGUID = QString::fromStdString(value["kbGuid"].asString());
         strGUID = QString::fromStdString(value["docGuid"].asString());
         strTitle = QString::fromStdString(value["title"].asString());
         strLocation = QString::fromStdString(value["category"].asString());
@@ -608,6 +611,47 @@ bool WIZDOCUMENTDATAEX::fromJson(const Json::Value& value)
     //
     return !strGUID.isEmpty()
             && nVersion >= 0;
+}
+
+bool WIZDOCUMENTDATAEX::toJson(Json::Value& value) const
+{
+    try {
+        // Basic information
+        value["kbGuid"] = strKbGUID.toStdString();
+        value["version"] = (int)nVersion;
+        value["docGuid"] = strGUID.toStdString();
+        value["title"] = strTitle.toStdString();
+        value["category"] = strLocation.toStdString();
+        value["dataMd5"] = strDataMD5.toStdString();
+        value["name"] = strName.toStdString();
+        value["url"] = strURL.toStdString();
+        value["seo"] = strSEO.toStdString();
+        value["author"] = strAuthor.toStdString();
+        value["keywords"] = strKeywords.toStdString();
+        value["type"] = strType.toStdString();
+        value["owner"] = strOwner.toStdString();
+        value["fileType"] = strFileType.toStdString();
+        value["styleGuid"] = strStyleGUID.toStdString();
+        value["protected"] = (int)nProtected;
+        value["readCount"] = (int)nReadCount;
+        value["attachmentCount"] = (int)nAttachmentCount;
+        // Tags
+        QStringList sl;
+        for (auto &tag : arrayTagGUID)
+            sl << tag;
+        value["tags"] = sl.join('*').toStdString();
+        // Time
+        value["created"] = (Json::UInt64)tCreated.toTime_t() * (Json::UInt64)1000;
+        value["accessed"] = (Json::UInt64)tAccessed.toTime_t() * (Json::UInt64)1000;
+        value["modified"] = (Json::UInt64)tModified.toTime_t() * (Json::UInt64)1000;
+        value["dataModified"] = (Json::UInt64)tDataModified.toTime_t() * (Json::UInt64)1000;
+
+    } catch (Json::Exception& e) {
+        TOLOG(e.what());
+        return false;
+    }
+
+    return true;
 }
 
 

@@ -12,3 +12,4 @@ version_info.txt
 .tmp
 .build
 _build
+cmake-build-*

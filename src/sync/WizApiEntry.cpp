@@ -11,6 +11,7 @@
 #include <QDebug>
 #include <QUrl>
 #include <QMutexLocker>
+#include <QUrlQuery>
 
 #include "WizToken.h"
 #include "WizKMServer.h"
@@ -246,9 +247,17 @@ QString WizCommonApiEntry::accountInfoUrl(const QString& strToken)
 
 QString WizCommonApiEntry::createGroupUrl(const QString& strToken)
 {
-    QString strExt = QString("token=%1").arg(strToken);
-    QString strUrl = makeUpUrlFromCommand("create_group");
-    return addExtendedInfo(strUrl, strExt);
+    QUrl url = makeUpUrlFromCommand("create_group");
+    QString extra = QString("token=%1&%2")
+        .arg(strToken, WizCommonApiEntry::appstoreParam(false));
+
+    QUrlQuery query(url.query());
+    query.addQueryItem("a", QUrl::toPercentEncoding(extra).constData());
+    query.removeQueryItem("plat");
+    query.addQueryItem("plat", "macosx");
+    url.setQuery(query);
+
+    return url.toString();
 }
 
 QString WizCommonApiEntry::captchaUrl(const QString& strCaptchaID, int nWidth, int nHeight)
@@ -284,6 +293,43 @@ QString WizCommonApiEntry::shareNoteUrl()
     return url;
 }
 
+QString WizCommonApiEntry::svgEditorUrl()
+{
+    QString url = makeUpUrlFromCommand("svg_editor");
+
+#ifdef Q_OS_WIN
+    // Official WizNote windows client conflicts WizQTClient,
+    // so we pretend to be a macosx client.
+    QUrl urlobj(url);
+    QUrlQuery query(urlobj.query());
+    query.removeQueryItem("plat");
+    query.addQueryItem("plat", "macosx");
+    urlobj.setQuery(query);
+    url = urlobj.toString();
+#endif
+
+    return url;
+}
+
+QString WizCommonApiEntry::noteplusUrl(
+    const QString &kbGUID, const QString &docGUID,
+    const QString &userGUID, const QString &displayName)
+{
+    QUrl url = makeUpUrlFromCommand("note_plus");
+
+    QUrlQuery query(url.query());
+    query.addQueryItem("a", QUrl::toPercentEncoding("theme=light&disableVideo=1&top=0").constData());
+    query.addQueryItem("skin", "lite");
+    // Mimic Android client
+    query.addQueryItem("clientType", "win");
+    query.addQueryItem("kbGuid", kbGUID);
+    query.addQueryItem("docGuid", docGUID);
+    query.addQueryItem("userGuid", userGUID);
+    query.addQueryItem("displayName", displayName);
+
+    url.setQuery(query);
+    return url.toString();
+}
 
 QString WizCommonApiEntry::makeUpUrlFromCommand(const QString& strCommand, const QString& strToken)
 {

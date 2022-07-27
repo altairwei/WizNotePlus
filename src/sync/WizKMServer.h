@@ -123,6 +123,7 @@ public:
 class WizKMDatabaseServer: public WizKMApiServerBase
 {
     Q_OBJECT
+
 public:
     WizKMDatabaseServer(const WIZUSERINFOBASE& userInfo, const WIZKBINFO& kbInfo = WIZKBINFO(), const WIZKBVALUEVERSIONS& versions = WIZKBVALUEVERSIONS(), QObject* parent = 0);
     virtual ~WizKMDatabaseServer();
@@ -130,23 +131,25 @@ public:
     const WIZKBINFO& kbInfo();
     void setKBInfo(const WIZKBINFO& info);
     const WIZUSERINFOBASE& userInfo() const { return m_userInfo; }
-    //
+
     bool isGroup() const;
-    //
+
     void clearJsonResult() { m_lastJsonResult = WIZSTANDARDRESULT(200, QString(""), QString("")); }
     WIZSTANDARDRESULT lastJsonResult() const { return m_lastJsonResult; }
     void clearLocalError() { m_strLastLocalError.clear(); }
     QString lastLocalError() const { return m_strLastLocalError; }
+
 protected:
     WIZUSERINFOBASE m_userInfo;
     WIZKBINFO m_kbInfo;
     WIZKBVALUEVERSIONS m_valueVersions;
-    //
+
     WIZSTANDARDRESULT m_lastJsonResult;
     QString m_strLastLocalError;
-    //
+
     qint64 m_objectsTotalSize;
     std::map<QString, qint64> m_objectDownloadedSize;
+
 private:
     bool document_postDataNew(const WIZDOCUMENTDATAEX& data, bool bWithDocumentData, __int64& nServerVersion);
     bool document_downloadDataNew(const QString& strDocumentGUID, WIZDOCUMENTDATAEX& ret, const QString& fileName);
@@ -159,36 +162,36 @@ public:
     int getMaxFileSize() const { return m_kbInfo.getMaxFileSize(); }
 
     bool kb_getInfo();
-    //
+
     bool document_downloadData(const QString& strDocumentGUID, WIZDOCUMENTDATAEX& ret, const QString& oldFileName);
     bool attachment_downloadData(const QString& strDocumentGUID, const QString& strAttachmentGUID, WIZDOCUMENTATTACHMENTDATAEX& ret);
-    //
+
     bool document_postData(const WIZDOCUMENTDATAEX& data, bool bWithDocumentData, __int64& nServerVersion);
     bool attachment_postData(WIZDOCUMENTATTACHMENTDATAEX& data, bool withData, __int64& nServerVersion);
-    //
+
     bool document_getList(int nCountPerPage, __int64 nStartVersion, std::deque<WIZDOCUMENTDATAEX>& arrayRet);
-    //
+
     bool attachment_getList(int nCountPerPage, __int64 nStartVersion, std::deque<WIZDOCUMENTATTACHMENTDATAEX>& arrayRet);
-    //
+
     bool tag_getList(int nCountPerPage, __int64 nStartVersion, std::deque<WIZTAGDATA>& arrayRet);
     bool tag_postList(std::deque<WIZTAGDATA>& arrayTag);
-    //
+
     bool style_getList(int nCountPerPage, __int64 nStartVersion, std::deque<WIZSTYLEDATA>& arrayRet);
     bool style_postList(const std::deque<WIZSTYLEDATA>& arrayStyle);
-    //
+
     bool param_getList(int nCountPerPage, __int64 nStartVersion, std::deque<WIZDOCUMENTPARAMDATA>& arrayRet);
     bool param_postList(const std::deque<WIZDOCUMENTPARAMDATA>& arrayParam);
-    //
+
     bool deleted_getList(int nCountPerPage, __int64 nVersion, std::deque<WIZDELETEDGUIDDATA>& arrayRet);
     bool deleted_postList(std::deque<WIZDELETEDGUIDDATA>& arrayDeletedGUID);
-    //
+
     bool document_getListByGuids(const CWizStdStringArray& arrayDocumentGUID, std::deque<WIZDOCUMENTDATAEX>& arrayRet);
     bool document_getInfo(const QString& strDocumentGuid, WIZDOCUMENTDATAEX& doc);
 
     bool getValueVersion(const QString& strKey, __int64& nVersion);
     bool getValue(const QString& strKey, QString& strValue, __int64& nVersion);
     bool setValue(const QString& strKey, const QString& strValue, __int64& nRetVersion);
-    //
+
     bool getCommentCount(const QString& strDocumentGuid, int& commentCount);
 
 public:

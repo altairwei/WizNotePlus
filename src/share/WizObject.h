@@ -208,7 +208,7 @@ struct WIZTAGDATA : public WIZOBJECTBASE
     CString strDescription;
     WizOleDateTime tModified;
     qint64 nVersion;
-    qint64 nPostion;
+    qint64 nPosition;
 
     friend bool operator< (const WIZTAGDATA& data1, const WIZTAGDATA& data2) throw();
 
@@ -353,6 +353,7 @@ struct WIZDOCUMENTDATAEX : public WIZDOCUMENTDATA
 
     WIZDOCUMENTDATAEX& operator= (const WIZDOCUMENTDATAEX& right);
     bool fromJson(const Json::Value& value);
+    bool toJson(Json::Value& value) const;
 
     // field: document_tags, guid list
     CWizStdStringArray arrayTagGUID;

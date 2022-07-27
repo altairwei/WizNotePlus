@@ -12,7 +12,7 @@
 
 cmake_minimum_required(VERSION 3.0)
 
-project(WizNotePlus VERSION 2.10.0)
+project(WizNotePlus VERSION 2.11.0)
 
 #============================================================================
 # Options and Variables
@@ -144,7 +144,7 @@ include(CheckCXXCompilerFlag)
 CHECK_CXX_COMPILER_FLAG("-std=c++11" COMPILER_SUPPORTS_CXX11)
 CHECK_CXX_COMPILER_FLAG("-std=c++0x" COMPILER_SUPPORTS_CXX0X)
 
-set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 

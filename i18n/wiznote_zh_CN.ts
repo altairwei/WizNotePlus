@@ -2,6 +2,156 @@
 <!DOCTYPE TS>
 <TS version="2.1" language="zh_CN">
 <context>
+    <name>AbstractDocumentView</name>
+    <message>
+        <location filename="../src/gui/documentviewer/AbstractDocumentView.cpp" line="14"/>
+        <source>Locate this document in category</source>
+        <translation>笔记定位</translation>
+    </message>
+    <message>
+        <location filename="../src/gui/documentviewer/AbstractDocumentView.cpp" line="18"/>
+        <source>Copy internal link</source>
+        <translation>复制笔记内链</translation>
+    </message>
+</context>
+<context>
+    <name>CollaborationDocView</name>
+    <message>
+        <location filename="../src/gui/documentviewer/CollaborationDocView.cpp" line="174"/>
+        <source>Sync failed</source>
+        <translation>同步失败</translation>
+    </message>
+</context>
+<context>
+    <name>CollaborationTitleBar</name>
+    <message>
+        <location filename="../src/gui/documentviewer/WizTitleBar.cpp" line="1067"/>
+        <source>Edit</source>
+        <translation>编辑</translation>
+    </message>
+    <message>
+        <location filename="../src/gui/documentviewer/WizTitleBar.cpp" line="1067"/>
+        <source>Switch to Editing View  %1</source>
+        <translation>切换到编辑视图  %1</translation>
+    </message>
+    <message>
+        <location filename="../src/gui/documentviewer/WizTitleBar.cpp" line="1069"/>
+        <source>Read</source>
+        <translation>阅读</translation>
+    </message>
+    <message>
+        <location filename="../src/gui/documentviewer/WizTitleBar.cpp" line="1069"/>
+        <source>Switch to Reading View  %1</source>
+        <translation>切换到阅读视图  %1</translation>
+    </message>
+</context>
+<context>
+    <name>DirLineEdit</name>
+    <message>
+        <location filename="../src/widgets/FileLineEdit.cpp" line="46"/>
+        <source>Choose directory</source>
+        <translation>选择目录</translation>
+    </message>
+</context>
+<context>
+    <name>DownloadManagerWidget</name>
+    <message>
+        <location filename="../src/ui/DownloadManagerWidget.ui" line="14"/>
+        <source>Downloads</source>
+        <translation>下载</translation>
+    </message>
+    <message>
+        <location filename="../src/ui/DownloadManagerWidget.ui" line="92"/>
+        <source>No downloads</source>
+        <translation>没有下载项</translation>
+    </message>
+    <message>
+        <location filename="../src/widgets/DownloadManagerWidget.cpp" line="190"/>
+        <source>MIME HTML (*.mht *.mhtml)</source>
+        <translation></translation>
+    </message>
+    <message>
+        <location filename="../src/widgets/DownloadManagerWidget.cpp" line="191"/>
+        <source>Single HTML without resources (*.html)</source>
+        <translation></translation>
+    </message>
+    <message>
+        <location filename="../src/widgets/DownloadManagerWidget.cpp" line="192"/>
+        <source>Complete HTML (*.html)</source>
+        <translation></translation>
+    </message>
+    <message>
+        <location filename="../src/widgets/DownloadManagerWidget.cpp" line="208"/>
+        <location filename="../src/widgets/DownloadManagerWidget.cpp" line="213"/>
+        <source>Save as</source>
+        <translation>另存为</translation>
+    </message>
+</context>
+<context>
+    <name>DownloadWidget</name>
+    <message>
+        <location filename="../src/ui/DownloadWidget.ui" line="26"/>
+        <location filename="../src/ui/DownloadWidget.ui" line="55"/>
+        <source>TextLabel</source>
+        <translation></translation>
+    </message>
+    <message>
+        <location filename="../src/widgets/DownloadManagerWidget.cpp" line="101"/>
+        <source>%L1 B</source>
+        <translation></translation>
+    </message>
+    <message>
+        <location filename="../src/widgets/DownloadManagerWidget.cpp" line="103"/>
+        <source>%L1 KiB</source>
+        <translation></translation>
+    </message>
+    <message>
+        <location filename="../src/widgets/DownloadManagerWidget.cpp" line="105"/>
+        <source>%L1 MiB</source>
+        <translation></translation>
+    </message>
+    <message>
+        <location filename="../src/widgets/DownloadManagerWidget.cpp" line="107"/>
+        <source>%L1 GiB</source>
+        <translation></translation>
+    </message>
+    <message>
+        <location filename="../src/widgets/DownloadManagerWidget.cpp" line="126"/>
+        <source>%p% - %1 of %2 downloaded - %3/s</source>
+        <translation></translation>
+    </message>
+    <message>
+        <location filename="../src/widgets/DownloadManagerWidget.cpp" line="134"/>
+        <source>unknown size - %1 downloaded - %2/s</source>
+        <translation>未知大小 - %1 已下载 - %2/s</translation>
+    </message>
+    <message>
+        <location filename="../src/widgets/DownloadManagerWidget.cpp" line="143"/>
+        <source>completed - %1 downloaded - %2/s</source>
+        <translation>已完成 - %1 已下载 - %2/s</translation>
+    </message>
+    <message>
+        <location filename="../src/widgets/DownloadManagerWidget.cpp" line="151"/>
+        <source>cancelled - %1 downloaded - %2/s</source>
+        <translation>已取消 - %1 已下载 - %2/s</translation>
+    </message>
+    <message>
+        <location filename="../src/widgets/DownloadManagerWidget.cpp" line="159"/>
+        <source>interrupted: %1</source>
+        <translation>被打断：%1</translation>
+    </message>
+    <message>
+        <location filename="../src/widgets/DownloadManagerWidget.cpp" line="165"/>
+        <source>Stop downloading</source>
+        <translation>停止下载</translation>
+    </message>
+    <message>
+        <location filename="../src/widgets/DownloadManagerWidget.cpp" line="167"/>
+        <source>Remove from list</source>
+        <translation>从列表移除</translation>
+    </message>
+</context>
+<context>
     <name>ExternalEditorLauncher</name>
     <message>
         <location filename="../src/utils/ExternalEditorLauncher.cpp" line="149"/>
@@ -37,6 +187,148 @@
     </message>
 </context>
 <context>
+    <name>FileExportPageDocList</name>
+    <message>
+        <location filename="../src/widgets/FileExportWizard.cpp" line="152"/>
+        <source>Select Documents</source>
+        <translation>选择文档</translation>
+    </message>
+    <message>
+        <location filename="../src/widgets/FileExportWizard.cpp" line="154"/>
+        <source>Please select documents you want to export.</source>
+        <translation>请选择想要导出的文档。</translation>
+    </message>
+    <message>
+        <location filename="../src/widgets/FileExportWizard.cpp" line="155"/>
+        <source>Collaboration notes are not supported now!</source>
+        <translation>协作笔记尚不支持！</translation>
+    </message>
+    <message>
+        <location filename="../src/widgets/FileExportWizard.cpp" line="219"/>
+        <source>Personal Notes</source>
+        <translation>个人笔记</translation>
+    </message>
+    <message>
+        <location filename="../src/widgets/FileExportWizard.cpp" line="246"/>
+        <location filename="../src/widgets/FileExportWizard.cpp" line="273"/>
+        <source>&lt;i&gt;Scanning Database...&lt;/i&gt;</source>
+        <translation>&lt;i&gt;扫描数据库...&lt;/i&gt;</translation>
+    </message>
+    <message>
+        <location filename="../src/widgets/FileExportWizard.cpp" line="257"/>
+        <location filename="../src/widgets/FileExportWizard.cpp" line="287"/>
+        <source>Choose documents:</source>
+        <translation>选择文档：</translation>
+    </message>
+</context>
+<context>
+    <name>FileExportPageExport</name>
+    <message>
+        <location filename="../src/widgets/FileExportWizard.cpp" line="471"/>
+        <source>Exporting</source>
+        <translation>导出</translation>
+    </message>
+    <message>
+        <location filename="../src/widgets/FileExportWizard.cpp" line="538"/>
+        <location filename="../src/widgets/FileExportWizard.cpp" line="548"/>
+        <location filename="../src/widgets/FileExportWizard.cpp" line="562"/>
+        <location filename="../src/widgets/FileExportWizard.cpp" line="568"/>
+        <location filename="../src/widgets/FileExportWizard.cpp" line="590"/>
+        <source>Do you want to continue?</source>
+        <translation>你想要继续吗？</translation>
+    </message>
+    <message>
+        <location filename="../src/widgets/FileExportWizard.cpp" line="539"/>
+        <source>Can&apos;t find document for GUID: %1</source>
+        <translation>无法找到文档，其 GUID 为： %1</translation>
+    </message>
+    <message>
+        <location filename="../src/widgets/FileExportWizard.cpp" line="549"/>
+        <source>Can&apos;t load user cert.</source>
+        <translation>无法加载用户证书。</translation>
+    </message>
+    <message>
+        <location filename="../src/widgets/FileExportWizard.cpp" line="557"/>
+        <source>Password for Encrypted Notes</source>
+        <translation>加密笔记的密码</translation>
+    </message>
+    <message>
+        <location filename="../src/widgets/FileExportWizard.cpp" line="558"/>
+        <source>Password:</source>
+        <translation>密码:</translation>
+    </message>
+    <message>
+        <location filename="../src/widgets/FileExportWizard.cpp" line="563"/>
+        <source>Invalid password.</source>
+        <translation>密码错误。</translation>
+    </message>
+    <message>
+        <location filename="../src/widgets/FileExportWizard.cpp" line="569"/>
+        <source>Can&apos;t get password.</source>
+        <translation>无法获取密码。</translation>
+    </message>
+</context>
+<context>
+    <name>FileExportPageOptions</name>
+    <message>
+        <location filename="../src/widgets/FileExportWizard.cpp" line="433"/>
+        <source>Options</source>
+        <translation>选项</translation>
+    </message>
+    <message>
+        <location filename="../src/widgets/FileExportWizard.cpp" line="434"/>
+        <source>Please choose exporting options.</source>
+        <translation>请选择导出选项。</translation>
+    </message>
+    <message>
+        <location filename="../src/widgets/FileExportWizard.cpp" line="437"/>
+        <source>Output Folder:</source>
+        <translation>导出文件夹：</translation>
+    </message>
+    <message>
+        <location filename="../src/widgets/FileExportWizard.cpp" line="442"/>
+        <source>Keep document folder</source>
+        <translation>保持文档目录</translation>
+    </message>
+    <message>
+        <location filename="../src/widgets/FileExportWizard.cpp" line="443"/>
+        <source>Ensure that the folder hierarchy of the output is consistent with that in the software</source>
+        <translation>确保导出的目录层级与软件一致</translation>
+    </message>
+    <message>
+        <location filename="../src/widgets/FileExportWizard.cpp" line="449"/>
+        <source>Compress document folder</source>
+        <translation>压缩文档文件夹</translation>
+    </message>
+    <message>
+        <location filename="../src/widgets/FileExportWizard.cpp" line="450"/>
+        <source>Compress each note&apos;s file and its associated resources together</source>
+        <translation>将笔记相关的资源压缩在一起</translation>
+    </message>
+</context>
+<context>
+    <name>FileExportWizard</name>
+    <message>
+        <location filename="../src/widgets/FileExportWizard.cpp" line="30"/>
+        <location filename="../src/widgets/FileExportWizard.cpp" line="44"/>
+        <source>Export Wizard</source>
+        <translation>文档导出向导</translation>
+    </message>
+</context>
+<context>
+    <name>FileLineEdit</name>
+    <message>
+        <location filename="../src/widgets/FileLineEdit.cpp" line="18"/>
+        <source>Open...</source>
+        <translation>打开...</translation>
+    </message>
+    <message>
+        <location filename="../src/widgets/FileLineEdit.cpp" line="39"/>
+        <source>Choose file</source>
+        <translation>选择文件</translation>
+    </message>
+</context>
+<context>
     <name>FullScreenNotification</name>
     <message>
         <location filename="../src/gui/tabbrowser/FullScreenNotification.cpp" line="11"/>
@@ -47,22 +339,22 @@
 <context>
     <name>JSPluginManager</name>
     <message>
-        <location filename="../src/jsplugin/JSPluginManager.cpp" line="268"/>
+        <location filename="../src/jsplugin/JSPluginManager.cpp" line="292"/>
         <source>Document data does not exist: </source>
         <translation>无法找到笔记数据: </translation>
     </message>
     <message>
-        <location filename="../src/jsplugin/JSPluginManager.cpp" line="274"/>
+        <location filename="../src/jsplugin/JSPluginManager.cpp" line="298"/>
         <source>Can&apos;t unzip note data: </source>
         <translation>无法解压笔记数据: </translation>
     </message>
     <message>
-        <location filename="../src/jsplugin/JSPluginManager.cpp" line="280"/>
+        <location filename="../src/jsplugin/JSPluginManager.cpp" line="304"/>
         <source>Can&apos;t read html file: </source>
         <translation>无法加载笔记 HTML 文件: </translation>
     </message>
     <message>
-        <location filename="../src/jsplugin/JSPluginManager.cpp" line="304"/>
+        <location filename="../src/jsplugin/JSPluginManager.cpp" line="328"/>
         <source>Can&apos;t write html file: </source>
         <translation>无法将内容写入笔记 HTML 文件: </translation>
     </message>
@@ -78,7 +370,17 @@
 <context>
     <name>PublicAPIsServer</name>
     <message>
-        <location filename="../src/api/PublicAPIsServer.cpp" line="64"/>
+        <location filename="../src/api/PublicAPIsServer.cpp" line="23"/>
+        <source>Abort</source>
+        <translation>终止</translation>
+    </message>
+    <message>
+        <location filename="../src/api/PublicAPIsServer.cpp" line="23"/>
+        <source>Unable to listen to port 8848, browser webclipping plugin depends on it.</source>
+        <translation>无法监听 8848 端口，浏览器剪裁插件依赖它。</translation>
+    </message>
+    <message>
+        <location filename="../src/api/PublicAPIsServer.cpp" line="68"/>
         <source>Remote APIs request</source>
         <translation>远程接口调用请求</translation>
     </message>
@@ -113,7 +415,7 @@
     </message>
     <message>
         <location filename="../src/WizActions.cpp" line="54"/>
-        <location filename="../src/WizActions.cpp" line="283"/>
+        <location filename="../src/WizActions.cpp" line="285"/>
         <source>Table</source>
         <translation>表格</translation>
     </message>
@@ -160,7 +462,7 @@
     </message>
     <message>
         <location filename="../src/WizActions.cpp" line="73"/>
-        <location filename="../src/gui/categoryviewer/WizCategoryView.cpp" line="56"/>
+        <location filename="../src/gui/categoryviewer/WizCategoryView.cpp" line="57"/>
         <source>New Note</source>
         <translation>新建笔记</translation>
     </message>
@@ -180,7 +482,7 @@
         <translation>导入文件...</translation>
     </message>
     <message>
-        <location filename="../src/WizActions.cpp" line="83"/>
+        <location filename="../src/WizActions.cpp" line="84"/>
         <source>Console...</source>
         <translation>消息控制台...</translation>
     </message>
@@ -190,110 +492,110 @@
         <translation>通过模板创建笔记...</translation>
     </message>
     <message>
-        <location filename="../src/WizActions.cpp" line="84"/>
+        <location filename="../src/WizActions.cpp" line="85"/>
         <source>Search Note</source>
         <translation>搜索笔记</translation>
     </message>
     <message>
-        <location filename="../src/WizActions.cpp" line="85"/>
+        <location filename="../src/WizActions.cpp" line="86"/>
         <source>Reset Search</source>
         <translation>重置搜索</translation>
     </message>
     <message>
-        <location filename="../src/WizActions.cpp" line="86"/>
+        <location filename="../src/WizActions.cpp" line="88"/>
         <source>User Feedback...</source>
         <translation>用户反馈...</translation>
     </message>
     <message>
-        <location filename="../src/WizActions.cpp" line="87"/>
+        <location filename="../src/WizActions.cpp" line="89"/>
         <source>User Support...</source>
         <translation>用户支持...</translation>
     </message>
     <message>
-        <location filename="../src/WizActions.cpp" line="88"/>
+        <location filename="../src/WizActions.cpp" line="90"/>
         <source>User Manual...</source>
         <translation>用户手册...</translation>
     </message>
     <message>
-        <location filename="../src/WizActions.cpp" line="89"/>
+        <location filename="../src/WizActions.cpp" line="91"/>
         <source>Find and Replace...</source>
         <translation>查找替换...</translation>
     </message>
     <message>
-        <location filename="../src/WizActions.cpp" line="92"/>
+        <location filename="../src/WizActions.cpp" line="94"/>
         <source>Undo</source>
         <translation>撤销</translation>
     </message>
     <message>
-        <location filename="../src/WizActions.cpp" line="93"/>
+        <location filename="../src/WizActions.cpp" line="95"/>
         <source>Redo</source>
         <translation>重做</translation>
     </message>
     <message>
-        <location filename="../src/WizActions.cpp" line="97"/>
+        <location filename="../src/WizActions.cpp" line="99"/>
         <source>Paste as Plain Text</source>
         <translation>粘贴为纯文本</translation>
     </message>
     <message>
-        <location filename="../src/WizActions.cpp" line="99"/>
+        <location filename="../src/WizActions.cpp" line="101"/>
         <source>Select All</source>
         <translation>全选</translation>
     </message>
     <message>
-        <location filename="../src/WizActions.cpp" line="102"/>
+        <location filename="../src/WizActions.cpp" line="104"/>
         <source>Hide Sidebar</source>
         <translation>隐藏侧边栏</translation>
     </message>
     <message>
-        <location filename="../src/WizActions.cpp" line="102"/>
+        <location filename="../src/WizActions.cpp" line="104"/>
         <source>Show Sidebar</source>
         <translation>显示侧边栏</translation>
     </message>
     <message>
-        <location filename="../src/WizActions.cpp" line="103"/>
+        <location filename="../src/WizActions.cpp" line="105"/>
         <source>Show sub folder documents</source>
         <translation>显示子文件夹笔记</translation>
     </message>
     <message>
-        <location filename="../src/WizActions.cpp" line="106"/>
         <location filename="../src/WizActions.cpp" line="108"/>
+        <location filename="../src/WizActions.cpp" line="110"/>
         <source>Enter Fullscreen</source>
         <translation>进入全屏</translation>
     </message>
     <message>
-        <location filename="../src/WizActions.cpp" line="106"/>
         <location filename="../src/WizActions.cpp" line="108"/>
+        <location filename="../src/WizActions.cpp" line="110"/>
         <source>Leave Fullscreen</source>
         <translation>退出全屏</translation>
     </message>
     <message>
-        <location filename="../src/WizActions.cpp" line="110"/>
+        <location filename="../src/WizActions.cpp" line="112"/>
         <source>Minimize</source>
         <translation>最小化</translation>
     </message>
     <message>
-        <location filename="../src/WizActions.cpp" line="111"/>
+        <location filename="../src/WizActions.cpp" line="113"/>
         <source>Zoom</source>
         <translation>缩放</translation>
     </message>
     <message>
-        <location filename="../src/WizActions.cpp" line="112"/>
+        <location filename="../src/WizActions.cpp" line="114"/>
         <source>Bring All to Front</source>
         <translation>前置所有窗口</translation>
     </message>
     <message>
-        <location filename="../src/WizActions.cpp" line="117"/>
+        <location filename="../src/WizActions.cpp" line="119"/>
         <source>QuickSearch</source>
         <translation>快速搜索</translation>
     </message>
     <message>
-        <location filename="../src/WizActions.cpp" line="118"/>
-        <location filename="../src/gui/categoryviewer/WizCategoryView.cpp" line="49"/>
+        <location filename="../src/WizActions.cpp" line="120"/>
+        <location filename="../src/gui/categoryviewer/WizCategoryView.cpp" line="50"/>
         <source>Folders</source>
         <translation>文件夹</translation>
     </message>
     <message>
-        <location filename="../src/WizActions.cpp" line="79"/>
+        <location filename="../src/WizActions.cpp" line="80"/>
         <source>PDF Page Margins...</source>
         <translation>PDF 页边距...</translation>
     </message>
@@ -308,167 +610,178 @@
         <translation>保存为Markdown...</translation>
     </message>
     <message>
-        <location filename="../src/WizActions.cpp" line="105"/>
+        <location filename="../src/WizActions.cpp" line="79"/>
+        <location filename="../src/gui/categoryviewer/WizCategoryView.cpp" line="60"/>
+        <source>Export Files...</source>
+        <translation>导出文件...</translation>
+    </message>
+    <message>
+        <location filename="../src/WizActions.cpp" line="87"/>
+        <source>Download Manager</source>
+        <translation>下载管理器</translation>
+    </message>
+    <message>
+        <location filename="../src/WizActions.cpp" line="107"/>
         <source>Enter Client Fullscreen</source>
         <translation>进入客户端全屏模式</translation>
     </message>
     <message>
-        <location filename="../src/WizActions.cpp" line="105"/>
+        <location filename="../src/WizActions.cpp" line="107"/>
         <source>Leave Client Fullscreen</source>
         <translation>离开客户端全屏模式</translation>
     </message>
     <message>
-        <location filename="../src/WizActions.cpp" line="120"/>
+        <location filename="../src/WizActions.cpp" line="122"/>
         <source>Biz Groups</source>
         <translation>企业群组</translation>
     </message>
     <message>
-        <location filename="../src/WizActions.cpp" line="121"/>
+        <location filename="../src/WizActions.cpp" line="123"/>
         <source>Personal Groups</source>
         <translation>个人群组</translation>
     </message>
     <message>
-        <location filename="../src/WizActions.cpp" line="122"/>
+        <location filename="../src/WizActions.cpp" line="124"/>
         <source>Thumbnail View</source>
         <translation>摘要视图</translation>
     </message>
     <message>
-        <location filename="../src/WizActions.cpp" line="123"/>
+        <location filename="../src/WizActions.cpp" line="125"/>
         <source>Two Line View</source>
         <translation>两行视图</translation>
     </message>
     <message>
-        <location filename="../src/WizActions.cpp" line="124"/>
+        <location filename="../src/WizActions.cpp" line="126"/>
         <source>One Line View</source>
         <translation>单行视图</translation>
     </message>
     <message>
-        <location filename="../src/WizActions.cpp" line="125"/>
+        <location filename="../src/WizActions.cpp" line="127"/>
         <source>Sort by Created Time</source>
         <translation>按创建时间排序</translation>
     </message>
     <message>
-        <location filename="../src/WizActions.cpp" line="126"/>
+        <location filename="../src/WizActions.cpp" line="128"/>
         <source>Sort by Updated Time</source>
         <translation>按更新时间排序</translation>
     </message>
     <message>
-        <location filename="../src/WizActions.cpp" line="127"/>
+        <location filename="../src/WizActions.cpp" line="129"/>
         <source>Sort by Access Time</source>
         <translation>按访问时间排序</translation>
     </message>
     <message>
-        <location filename="../src/WizActions.cpp" line="128"/>
+        <location filename="../src/WizActions.cpp" line="130"/>
         <source>Sort by Title</source>
         <translation>按标题排序</translation>
     </message>
     <message>
-        <location filename="../src/WizActions.cpp" line="129"/>
+        <location filename="../src/WizActions.cpp" line="131"/>
         <source>Sort by Folder</source>
         <translation>按文件夹排序</translation>
     </message>
     <message>
-        <location filename="../src/WizActions.cpp" line="130"/>
+        <location filename="../src/WizActions.cpp" line="132"/>
         <source>Sort by Size</source>
         <translation>按大小排序</translation>
     </message>
     <message>
-        <location filename="../src/WizActions.cpp" line="133"/>
+        <location filename="../src/WizActions.cpp" line="135"/>
         <source>Reload stylesheet</source>
         <translation>重载样式表</translation>
     </message>
     <message>
-        <location filename="../src/WizActions.cpp" line="136"/>
+        <location filename="../src/WizActions.cpp" line="138"/>
         <source>Justify Left</source>
         <translation>左对齐</translation>
     </message>
     <message>
-        <location filename="../src/WizActions.cpp" line="137"/>
+        <location filename="../src/WizActions.cpp" line="139"/>
         <source>Justify Right</source>
         <translation>右对齐</translation>
     </message>
     <message>
-        <location filename="../src/WizActions.cpp" line="138"/>
+        <location filename="../src/WizActions.cpp" line="140"/>
         <source>Justify Center</source>
         <translation>居中</translation>
     </message>
     <message>
-        <location filename="../src/WizActions.cpp" line="139"/>
+        <location filename="../src/WizActions.cpp" line="141"/>
         <source>Justify Both Side</source>
         <translation>两端对齐</translation>
     </message>
     <message>
-        <location filename="../src/WizActions.cpp" line="142"/>
+        <location filename="../src/WizActions.cpp" line="144"/>
         <source>Convert to Unoredered List</source>
         <translation>转为(无序)符号列表</translation>
     </message>
     <message>
-        <location filename="../src/WizActions.cpp" line="143"/>
+        <location filename="../src/WizActions.cpp" line="145"/>
         <source>Convert to Ordered List</source>
         <translation>转为(有序)编号列表</translation>
     </message>
     <message>
-        <location filename="../src/WizActions.cpp" line="148"/>
+        <location filename="../src/WizActions.cpp" line="150"/>
         <source>Strike Through</source>
         <translation>删除线</translation>
     </message>
     <message>
-        <location filename="../src/WizActions.cpp" line="149"/>
+        <location filename="../src/WizActions.cpp" line="151"/>
         <source>Subscript</source>
         <translation>下标</translation>
     </message>
     <message>
-        <location filename="../src/WizActions.cpp" line="150"/>
+        <location filename="../src/WizActions.cpp" line="152"/>
         <source>Superscript</source>
         <translation>上标</translation>
     </message>
     <message>
-        <location filename="../src/WizActions.cpp" line="151"/>
+        <location filename="../src/WizActions.cpp" line="153"/>
         <source>Insert Horizontal</source>
         <translation>插入水平标尺</translation>
     </message>
     <message>
-        <location filename="../src/WizActions.cpp" line="152"/>
+        <location filename="../src/WizActions.cpp" line="154"/>
         <source>Insert Date</source>
         <translation>插入日期</translation>
     </message>
     <message>
-        <location filename="../src/WizActions.cpp" line="153"/>
+        <location filename="../src/WizActions.cpp" line="155"/>
         <source>Insert Time</source>
         <translation>插入时间</translation>
     </message>
     <message>
-        <location filename="../src/WizActions.cpp" line="154"/>
+        <location filename="../src/WizActions.cpp" line="156"/>
         <source>Insert Check List</source>
         <translation>插入清单</translation>
     </message>
     <message>
-        <location filename="../src/WizActions.cpp" line="155"/>
+        <location filename="../src/WizActions.cpp" line="157"/>
         <source>Insert Code</source>
         <translation>插入代码</translation>
     </message>
     <message>
-        <location filename="../src/WizActions.cpp" line="156"/>
+        <location filename="../src/WizActions.cpp" line="158"/>
         <source>Insert Image</source>
         <translation>插入图片</translation>
     </message>
     <message>
-        <location filename="../src/WizActions.cpp" line="157"/>
+        <location filename="../src/WizActions.cpp" line="159"/>
         <source>Remove Format</source>
         <translation>清除样式</translation>
     </message>
     <message>
-        <location filename="../src/WizActions.cpp" line="158"/>
+        <location filename="../src/WizActions.cpp" line="160"/>
         <source>Screen Shot...</source>
         <translation>屏幕截图...</translation>
     </message>
     <message>
-        <location filename="../src/WizActions.cpp" line="140"/>
+        <location filename="../src/WizActions.cpp" line="142"/>
         <source>Indent</source>
         <translation>增加缩进级别</translation>
     </message>
     <message>
-        <location filename="../src/WizActions.cpp" line="141"/>
+        <location filename="../src/WizActions.cpp" line="143"/>
         <source>Outdent</source>
         <translation>减少缩进级别</translation>
     </message>
@@ -540,42 +853,42 @@
         <translation>帮助</translation>
     </message>
     <message>
-        <location filename="../src/WizActions.cpp" line="145"/>
+        <location filename="../src/WizActions.cpp" line="147"/>
         <source>Bold</source>
         <translation>粗体</translation>
     </message>
     <message>
-        <location filename="../src/WizActions.cpp" line="146"/>
+        <location filename="../src/WizActions.cpp" line="148"/>
         <source>Italic</source>
         <translation>斜体</translation>
     </message>
     <message>
-        <location filename="../src/WizActions.cpp" line="147"/>
+        <location filename="../src/WizActions.cpp" line="149"/>
         <source>Underline</source>
         <translation>下划线</translation>
     </message>
     <message>
-        <location filename="../src/WizActions.cpp" line="81"/>
+        <location filename="../src/WizActions.cpp" line="82"/>
         <source>Back</source>
         <translation>后退</translation>
     </message>
     <message>
-        <location filename="../src/WizActions.cpp" line="82"/>
+        <location filename="../src/WizActions.cpp" line="83"/>
         <source>Forward</source>
         <translation>前进</translation>
     </message>
     <message>
-        <location filename="../src/main.cpp" line="120"/>
+        <location filename="../src/main.cpp" line="146"/>
         <source>WizNotePlus</source>
         <translation>为知笔记 Plus</translation>
     </message>
     <message>
-        <location filename="../src/main.cpp" line="121"/>
+        <location filename="../src/main.cpp" line="147"/>
         <source>cn.wiz.wiznoteformac</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../src/main.cpp" line="302"/>
+        <location filename="../src/main.cpp" line="328"/>
         <source>Can not open database</source>
         <translation>无法打开数据库</translation>
     </message>
@@ -640,22 +953,22 @@
         <translation>未知状态</translation>
     </message>
     <message>
-        <location filename="../src/WizActions.cpp" line="98"/>
+        <location filename="../src/WizActions.cpp" line="100"/>
         <location filename="../src/WizAttachmentListWidget.cpp" line="37"/>
-        <location filename="../src/gui/categoryviewer/WizCategoryView.cpp" line="63"/>
-        <location filename="../src/gui/categoryviewer/WizCategoryView.cpp" line="66"/>
+        <location filename="../src/gui/categoryviewer/WizCategoryView.cpp" line="65"/>
+        <location filename="../src/gui/categoryviewer/WizCategoryView.cpp" line="68"/>
         <location filename="../src/gui/doclistviewer/WizDocumentListView.cpp" line="39"/>
         <source>Delete</source>
         <translation>删除</translation>
     </message>
     <message>
-        <location filename="../src/gui/categoryviewer/WizCategoryView.cpp" line="45"/>
+        <location filename="../src/gui/categoryviewer/WizCategoryView.cpp" line="46"/>
         <location filename="../src/gui/categoryviewer/WizCategoryViewItemBase.h" line="17"/>
         <source>General</source>
         <translation>常用</translation>
     </message>
     <message>
-        <location filename="../src/WizActions.cpp" line="115"/>
+        <location filename="../src/WizActions.cpp" line="117"/>
         <location filename="../src/gui/categoryviewer/WizCategoryView.h" line="18"/>
         <source>Message Center</source>
         <translation>消息中心</translation>
@@ -681,130 +994,130 @@
         <translation>我发出的消息</translation>
     </message>
     <message>
-        <location filename="../src/WizActions.cpp" line="116"/>
-        <location filename="../src/gui/categoryviewer/WizCategoryView.cpp" line="47"/>
+        <location filename="../src/WizActions.cpp" line="118"/>
+        <location filename="../src/gui/categoryviewer/WizCategoryView.cpp" line="48"/>
         <source>Shortcuts</source>
         <translation>快捷方式</translation>
     </message>
     <message>
-        <location filename="../src/WizActions.cpp" line="119"/>
-        <location filename="../src/gui/categoryviewer/WizCategoryView.cpp" line="50"/>
+        <location filename="../src/WizActions.cpp" line="121"/>
+        <location filename="../src/gui/categoryviewer/WizCategoryView.cpp" line="51"/>
         <source>Tags</source>
         <translation>标签</translation>
     </message>
     <message>
-        <location filename="../src/gui/categoryviewer/WizCategoryView.cpp" line="51"/>
+        <location filename="../src/gui/categoryviewer/WizCategoryView.cpp" line="52"/>
         <source>Styles</source>
         <translation>样式</translation>
     </message>
     <message>
-        <location filename="../src/gui/categoryviewer/WizCategoryView.cpp" line="48"/>
+        <location filename="../src/gui/categoryviewer/WizCategoryView.cpp" line="49"/>
         <source>Quick Search</source>
         <translation>快速搜索</translation>
     </message>
     <message>
-        <location filename="../src/gui/categoryviewer/WizCategoryView.cpp" line="46"/>
+        <location filename="../src/gui/categoryviewer/WizCategoryView.cpp" line="47"/>
         <location filename="../src/gui/categoryviewer/WizCategoryViewItemBase.h" line="19"/>
         <source>Team Notes</source>
         <translation>团队笔记</translation>
     </message>
     <message>
-        <location filename="../src/gui/categoryviewer/WizCategoryView.cpp" line="53"/>
+        <location filename="../src/gui/categoryviewer/WizCategoryView.cpp" line="54"/>
         <source>Search by Custom Param</source>
         <translation>通过自定义参数搜索</translation>
     </message>
     <message>
-        <location filename="../src/gui/categoryviewer/WizCategoryView.cpp" line="57"/>
+        <location filename="../src/gui/categoryviewer/WizCategoryView.cpp" line="58"/>
         <source>Load Note</source>
         <translation>导入笔记</translation>
     </message>
     <message>
-        <location filename="../src/gui/categoryviewer/WizCategoryView.cpp" line="58"/>
+        <location filename="../src/gui/categoryviewer/WizCategoryView.cpp" line="59"/>
         <source>Import File...</source>
         <translation>导入文件...</translation>
     </message>
     <message>
-        <location filename="../src/gui/categoryviewer/WizCategoryView.cpp" line="59"/>
+        <location filename="../src/gui/categoryviewer/WizCategoryView.cpp" line="61"/>
         <source>New Folder...</source>
         <translation>新建文件夹...</translation>
     </message>
     <message>
-        <location filename="../src/gui/categoryviewer/WizCategoryView.cpp" line="60"/>
+        <location filename="../src/gui/categoryviewer/WizCategoryView.cpp" line="62"/>
         <location filename="../src/gui/doclistviewer/WizDocumentListView.cpp" line="43"/>
         <source>Copy to...</source>
         <translation>复制到...</translation>
     </message>
     <message>
-        <location filename="../src/gui/categoryviewer/WizCategoryView.cpp" line="61"/>
+        <location filename="../src/gui/categoryviewer/WizCategoryView.cpp" line="63"/>
         <location filename="../src/gui/doclistviewer/WizDocumentListView.cpp" line="42"/>
         <source>Move to...</source>
         <translation>移动到...</translation>
     </message>
     <message>
-        <location filename="../src/gui/categoryviewer/WizCategoryView.cpp" line="62"/>
-        <location filename="../src/gui/categoryviewer/WizCategoryView.cpp" line="65"/>
+        <location filename="../src/gui/categoryviewer/WizCategoryView.cpp" line="64"/>
+        <location filename="../src/gui/categoryviewer/WizCategoryView.cpp" line="67"/>
         <location filename="../src/gui/doclistviewer/WizDocumentListView.cpp" line="44"/>
         <source>Rename...</source>
         <translation>重命名...</translation>
     </message>
     <message>
-        <location filename="../src/gui/categoryviewer/WizCategoryView.cpp" line="64"/>
+        <location filename="../src/gui/categoryviewer/WizCategoryView.cpp" line="66"/>
         <source>New Tag...</source>
         <translation>新建标签...</translation>
     </message>
     <message>
-        <location filename="../src/gui/categoryviewer/WizCategoryView.cpp" line="67"/>
+        <location filename="../src/gui/categoryviewer/WizCategoryView.cpp" line="69"/>
         <source>View Group Info...</source>
         <translation>群组信息...</translation>
     </message>
     <message>
-        <location filename="../src/gui/categoryviewer/WizCategoryView.cpp" line="68"/>
+        <location filename="../src/gui/categoryviewer/WizCategoryView.cpp" line="70"/>
         <source>View Team Info...</source>
         <translation>团队信息...</translation>
     </message>
     <message>
-        <location filename="../src/gui/categoryviewer/WizCategoryView.cpp" line="69"/>
+        <location filename="../src/gui/categoryviewer/WizCategoryView.cpp" line="71"/>
         <source>Mark All as Readed</source>
         <translation>标记为已读</translation>
     </message>
     <message>
-        <location filename="../src/gui/categoryviewer/WizCategoryView.cpp" line="70"/>
+        <location filename="../src/gui/categoryviewer/WizCategoryView.cpp" line="72"/>
         <source>Empty Deleted Items</source>
         <translation>清空回收站</translation>
     </message>
     <message>
-        <location filename="../src/gui/categoryviewer/WizCategoryView.cpp" line="71"/>
+        <location filename="../src/gui/categoryviewer/WizCategoryView.cpp" line="73"/>
         <source>Manage Group...</source>
         <translation>管理群组信息...</translation>
     </message>
     <message>
-        <location filename="../src/gui/categoryviewer/WizCategoryView.cpp" line="72"/>
+        <location filename="../src/gui/categoryviewer/WizCategoryView.cpp" line="74"/>
         <source>Manage Team...</source>
         <translation>管理团队信息...</translation>
     </message>
     <message>
-        <location filename="../src/gui/categoryviewer/WizCategoryView.cpp" line="73"/>
+        <location filename="../src/gui/categoryviewer/WizCategoryView.cpp" line="75"/>
         <source>Quit Troup</source>
         <translation>退出群组</translation>
     </message>
     <message>
-        <location filename="../src/gui/categoryviewer/WizCategoryView.cpp" line="74"/>
+        <location filename="../src/gui/categoryviewer/WizCategoryView.cpp" line="76"/>
         <source>Remove from Shortcuts</source>
         <translation>从快捷方式中移除</translation>
     </message>
     <message>
-        <location filename="../src/gui/categoryviewer/WizCategoryView.cpp" line="75"/>
+        <location filename="../src/gui/categoryviewer/WizCategoryView.cpp" line="77"/>
         <source>Recovery Deleted Notes...</source>
         <translation>恢复已删除笔记...</translation>
     </message>
     <message>
-        <location filename="../src/gui/categoryviewer/WizCategoryView.cpp" line="700"/>
+        <location filename="../src/gui/categoryviewer/WizCategoryView.cpp" line="702"/>
         <location filename="../src/sync/WizKMSync.h" line="153"/>
         <source>Syncing</source>
         <translation>正在同步</translation>
     </message>
     <message>
-        <location filename="../src/gui/categoryviewer/WizCategoryView.cpp" line="701"/>
+        <location filename="../src/gui/categoryviewer/WizCategoryView.cpp" line="703"/>
         <location filename="../src/sync/WizKMSync.h" line="154"/>
         <source>WizNote is synchronizing notes, please wait for the synchronization to complete before the operation.</source>
         <translation>笔记同步中，请等待同步完成后再操作。</translation>
@@ -978,26 +1291,26 @@
         <translation>转到笔记</translation>
     </message>
     <message>
-        <location filename="../src/WizActions.cpp" line="94"/>
-        <location filename="../src/gui/documentviewer/WizEditorToolBar.cpp" line="2061"/>
+        <location filename="../src/WizActions.cpp" line="96"/>
+        <location filename="../src/gui/documentviewer/WizDocumentWebView.cpp" line="2705"/>
         <source>Cut</source>
         <translation>剪切</translation>
     </message>
     <message>
-        <location filename="../src/WizActions.cpp" line="95"/>
-        <location filename="../src/gui/documentviewer/WizEditorToolBar.cpp" line="2062"/>
-        <location filename="../src/gui/documentviewer/WizEditorToolBar.cpp" line="2152"/>
+        <location filename="../src/WizActions.cpp" line="97"/>
+        <location filename="../src/gui/documentviewer/WizDocumentWebView.cpp" line="2706"/>
+        <location filename="../src/gui/documentviewer/WizDocumentWebView.cpp" line="2735"/>
         <source>Copy</source>
         <translation>拷贝</translation>
     </message>
     <message>
-        <location filename="../src/WizActions.cpp" line="96"/>
-        <location filename="../src/gui/documentviewer/WizEditorToolBar.cpp" line="2063"/>
+        <location filename="../src/WizActions.cpp" line="98"/>
+        <location filename="../src/gui/documentviewer/WizDocumentWebView.cpp" line="2707"/>
         <source>Paste</source>
         <translation>粘贴</translation>
     </message>
     <message>
-        <location filename="../src/gui/documentviewer/WizEditorToolBar.cpp" line="2058"/>
+        <location filename="../src/gui/documentviewer/WizDocumentWebView.cpp" line="2703"/>
         <source>Use &quot;Google&quot; search</source>
         <translation>使用 “Google&quot; 搜索</translation>
     </message>
@@ -1193,27 +1506,27 @@
         <translation>雅痞-简</translation>
     </message>
     <message>
-        <location filename="../src/gui/documentviewer/WizEditorToolBar.cpp" line="2059"/>
+        <location filename="../src/gui/documentviewer/WizDocumentWebView.cpp" line="2704"/>
         <source>Use &quot;Baidu&quot; search</source>
         <translation>使用 &quot;百度&quot; 搜索</translation>
     </message>
     <message>
-        <location filename="../src/gui/documentviewer/WizEditorToolBar.cpp" line="2064"/>
+        <location filename="../src/gui/documentviewer/WizDocumentWebView.cpp" line="2708"/>
         <source>Paste plain text</source>
         <translation>粘贴为纯文本</translation>
     </message>
     <message>
-        <location filename="../src/gui/documentviewer/WizEditorToolBar.cpp" line="2065"/>
+        <location filename="../src/gui/documentviewer/WizDocumentWebView.cpp" line="2709"/>
         <source>Remove link</source>
         <translation>删除链接</translation>
     </message>
     <message>
-        <location filename="../src/gui/documentviewer/WizEditorToolBar.cpp" line="2155"/>
+        <location filename="../src/gui/documentviewer/WizDocumentWebView.cpp" line="2738"/>
         <source>Unselect</source>
         <translation>取消选择</translation>
     </message>
     <message>
-        <location filename="../src/WizActions.cpp" line="144"/>
+        <location filename="../src/WizActions.cpp" line="146"/>
         <source>Insert Link</source>
         <translation>插入链接</translation>
     </message>
@@ -1473,12 +1786,12 @@
         <translation>下载附件 %1 ...</translation>
     </message>
     <message>
-        <location filename="../src/WizMainWindow.cpp" line="2369"/>
+        <location filename="../src/WizMainWindow.cpp" line="2378"/>
         <source>Your {p} business service has expired.</source>
         <translation>您的{p}企业服务已到期。</translation>
     </message>
     <message>
-        <location filename="../src/WizMainWindow.cpp" line="2371"/>
+        <location filename="../src/WizMainWindow.cpp" line="2380"/>
         <location filename="../src/sync/WizSync.cpp" line="18"/>
         <source>Group notes count limit exceeded!</source>
         <translation>群组笔记数目超出限制！</translation>
@@ -1641,7 +1954,7 @@
         <translation>%1 的团队服务已到期，暂时无法上传新创建或修改的笔记，请及时付费哦。</translation>
     </message>
     <message>
-        <location filename="../src/WizMainWindow.cpp" line="2366"/>
+        <location filename="../src/WizMainWindow.cpp" line="2375"/>
         <location filename="../src/sync/WizSync.cpp" line="676"/>
         <location filename="../src/sync/WizSync.cpp" line="845"/>
         <location filename="../src/sync/WizSync.cpp" line="1005"/>
@@ -1649,7 +1962,7 @@
         <translation>用户服务已到期，请升级到VIP。</translation>
     </message>
     <message>
-        <location filename="../src/WizMainWindow.cpp" line="2363"/>
+        <location filename="../src/WizMainWindow.cpp" line="2372"/>
         <location filename="../src/sync/WizSync.cpp" line="684"/>
         <location filename="../src/sync/WizSync.cpp" line="853"/>
         <location filename="../src/sync/WizSync.cpp" line="1011"/>
@@ -1911,24 +2224,30 @@
         <translation>大纲笔记</translation>
     </message>
     <message>
-        <location filename="../src/WizDocTemplateDialog.cpp" line="590"/>
+        <location filename="../src/WizDocTemplateDialog.cpp" line="560"/>
+        <location filename="../src/WizDocTemplateDialog.cpp" line="561"/>
+        <source>Collaboration Note</source>
+        <translation>协作笔记</translation>
+    </message>
+    <message>
+        <location filename="../src/WizDocTemplateDialog.cpp" line="600"/>
         <source>You can use this template after upgrading to VIP or buy it.</source>
         <translation>您需要升级 VIP 后才可使用该模板。</translation>
     </message>
     <message>
-        <location filename="../src/WizDocTemplateDialog.cpp" line="591"/>
+        <location filename="../src/WizDocTemplateDialog.cpp" line="601"/>
         <location filename="../src/share/WizMessageBox.cpp" line="76"/>
         <location filename="../src/widgets/WizUserServiceExprDialog.cpp" line="19"/>
         <source>Cancel</source>
         <translation>取消</translation>
     </message>
     <message>
-        <location filename="../src/WizDocTemplateDialog.cpp" line="593"/>
+        <location filename="../src/WizDocTemplateDialog.cpp" line="603"/>
         <source>Purchase</source>
         <translation>购买</translation>
     </message>
     <message>
-        <location filename="../src/WizDocTemplateDialog.cpp" line="595"/>
+        <location filename="../src/WizDocTemplateDialog.cpp" line="605"/>
         <source>Upgrade to VIP</source>
         <translation>现在升级</translation>
     </message>
@@ -2035,7 +2354,7 @@
         <translation>完成群组: %1</translation>
     </message>
     <message>
-        <location filename="../src/WizDocTemplateDialog.cpp" line="589"/>
+        <location filename="../src/WizDocTemplateDialog.cpp" line="599"/>
         <location filename="../src/share/WizObjectOperator.cpp" line="788"/>
         <location filename="../src/share/WizObjectOperator.cpp" line="801"/>
         <location filename="../src/share/WizObjectOperator.cpp" line="830"/>
@@ -2069,12 +2388,12 @@
         <translation>[ 置顶 ]</translation>
     </message>
     <message>
-        <location filename="../src/gui/documentviewer/WizTitleBar.cpp" line="57"/>
+        <location filename="../src/gui/documentviewer/WizTitleBar.cpp" line="60"/>
         <source>Share by Link</source>
         <translation>分享链接</translation>
     </message>
     <message>
-        <location filename="../src/gui/documentviewer/WizTitleBar.cpp" line="58"/>
+        <location filename="../src/gui/documentviewer/WizTitleBar.cpp" line="61"/>
         <source>Share by Email</source>
         <translation>发送邮件</translation>
     </message>
@@ -2100,26 +2419,26 @@
         <translation>日</translation>
     </message>
     <message>
-        <location filename="../src/gui/documentviewer/WizDocumentWebView.cpp" line="931"/>
+        <location filename="../src/gui/documentviewer/WizDocumentWebView.cpp" line="922"/>
         <source>Saving comments...</source>
         <translation>正在保存备注...</translation>
     </message>
     <message>
-        <location filename="../src/database/WizDatabase.cpp" line="4578"/>
+        <location filename="../src/database/WizDatabase.cpp" line="4638"/>
         <source>Please enter the password of team cert: %1
 Password hint: %2</source>
         <translation>请输入团队证书密码：%1
 密码提示:%2</translation>
     </message>
     <message>
-        <location filename="../src/database/WizDatabase.cpp" line="4582"/>
+        <location filename="../src/database/WizDatabase.cpp" line="4642"/>
         <source>Please enter the password of cert:
 Password hint: %1</source>
         <translation>请输入证书密码
 密码提示%1</translation>
     </message>
     <message>
-        <location filename="../src/database/WizDatabase.cpp" line="4585"/>
+        <location filename="../src/database/WizDatabase.cpp" line="4645"/>
         <source>Cert Password</source>
         <translation>证书密码</translation>
     </message>
@@ -2196,6 +2515,14 @@ Password hint: %1</source>
         <location filename="../src/gui/tabbrowser/WebEngineWindow.cpp" line="26"/>
         <source>Untitled</source>
         <translation>无标题</translation>
+    </message>
+</context>
+<context>
+    <name>WebPageZoomWidget</name>
+    <message>
+        <location filename="../src/share/WizWebEngineView.cpp" line="880"/>
+        <source>Reset</source>
+        <translation>重置</translation>
     </message>
 </context>
 <context>
@@ -2377,12 +2704,12 @@ Password hint: %1</source>
 <context>
     <name>WizCategoryBaseView</name>
     <message>
-        <location filename="../src/gui/categoryviewer/WizCategoryView.cpp" line="690"/>
+        <location filename="../src/gui/categoryviewer/WizCategoryView.cpp" line="692"/>
         <source>Confirm</source>
         <translation>确认</translation>
     </message>
     <message>
-        <location filename="../src/gui/categoryviewer/WizCategoryView.cpp" line="690"/>
+        <location filename="../src/gui/categoryviewer/WizCategoryView.cpp" line="692"/>
         <source>Do you want to move &quot;%1&quot; into &quot;%2&quot; ?</source>
         <translation>你想将 %1 移动到 %2 吗？</translation>
     </message>
@@ -2390,364 +2717,364 @@ Password hint: %1</source>
 <context>
     <name>WizCategoryView</name>
     <message>
-        <location filename="../src/gui/categoryviewer/WizCategoryView.cpp" line="2054"/>
-        <location filename="../src/gui/categoryviewer/WizCategoryView.cpp" line="2223"/>
-        <location filename="../src/gui/categoryviewer/WizCategoryView.cpp" line="2599"/>
+        <location filename="../src/gui/categoryviewer/WizCategoryView.cpp" line="2077"/>
+        <location filename="../src/gui/categoryviewer/WizCategoryView.cpp" line="2246"/>
+        <location filename="../src/gui/categoryviewer/WizCategoryView.cpp" line="2622"/>
         <source>Please input folder name: </source>
         <translation>请输入文件夹名称： </translation>
     </message>
     <message>
-        <location filename="../src/gui/categoryviewer/WizCategoryView.cpp" line="2131"/>
+        <location filename="../src/gui/categoryviewer/WizCategoryView.cpp" line="2154"/>
         <source>New tag</source>
         <translation>新建标签</translation>
     </message>
     <message>
-        <location filename="../src/gui/categoryviewer/WizCategoryView.cpp" line="2132"/>
-        <location filename="../src/gui/categoryviewer/WizCategoryView.cpp" line="2562"/>
+        <location filename="../src/gui/categoryviewer/WizCategoryView.cpp" line="2155"/>
+        <location filename="../src/gui/categoryviewer/WizCategoryView.cpp" line="2585"/>
         <source>Please input tag name: </source>
         <translation>请输入标签名称： </translation>
     </message>
     <message>
-        <location filename="../src/gui/categoryviewer/WizCategoryView.cpp" line="2222"/>
+        <location filename="../src/gui/categoryviewer/WizCategoryView.cpp" line="2245"/>
         <source>New group folder</source>
         <translation>新建群组文件夹</translation>
     </message>
     <message>
-        <location filename="../src/gui/categoryviewer/WizCategoryView.cpp" line="2419"/>
+        <location filename="../src/gui/categoryviewer/WizCategoryView.cpp" line="2442"/>
         <source>Copy folder</source>
         <translation>复制文件夹</translation>
     </message>
     <message>
-        <location filename="../src/gui/categoryviewer/WizCategoryView.cpp" line="2561"/>
+        <location filename="../src/gui/categoryviewer/WizCategoryView.cpp" line="2584"/>
         <source>Rename tag</source>
         <translation>重命名标签</translation>
     </message>
     <message>
-        <location filename="../src/gui/categoryviewer/WizCategoryView.cpp" line="2598"/>
+        <location filename="../src/gui/categoryviewer/WizCategoryView.cpp" line="2621"/>
         <source>Rename group folder</source>
         <translation>重命名群组文件夹</translation>
     </message>
     <message>
-        <location filename="../src/gui/categoryviewer/WizCategoryView.cpp" line="2662"/>
-        <location filename="../src/gui/categoryviewer/WizCategoryView.cpp" line="2702"/>
-        <location filename="../src/gui/categoryviewer/WizCategoryView.cpp" line="2742"/>
+        <location filename="../src/gui/categoryviewer/WizCategoryView.cpp" line="2685"/>
+        <location filename="../src/gui/categoryviewer/WizCategoryView.cpp" line="2725"/>
+        <location filename="../src/gui/categoryviewer/WizCategoryView.cpp" line="2765"/>
         <source>Cancel</source>
         <translation>取消</translation>
     </message>
     <message>
-        <location filename="../src/gui/categoryviewer/WizCategoryView.cpp" line="2663"/>
-        <location filename="../src/gui/categoryviewer/WizCategoryView.cpp" line="2703"/>
-        <location filename="../src/gui/categoryviewer/WizCategoryView.cpp" line="2743"/>
+        <location filename="../src/gui/categoryviewer/WizCategoryView.cpp" line="2686"/>
+        <location filename="../src/gui/categoryviewer/WizCategoryView.cpp" line="2726"/>
+        <location filename="../src/gui/categoryviewer/WizCategoryView.cpp" line="2766"/>
         <source>OK</source>
         <translation>确定</translation>
     </message>
     <message>
-        <location filename="../src/gui/categoryviewer/WizCategoryView.cpp" line="2700"/>
+        <location filename="../src/gui/categoryviewer/WizCategoryView.cpp" line="2723"/>
         <source>Delete tag</source>
         <translation>删除标签</translation>
     </message>
     <message>
-        <location filename="../src/gui/categoryviewer/WizCategoryView.cpp" line="2706"/>
+        <location filename="../src/gui/categoryviewer/WizCategoryView.cpp" line="2729"/>
         <source>Do you really want to delete tag: %1 ? (include child tags if any)</source>
         <translation>确定要删除标签 %1 吗？（如果存在子标签也将被删除）</translation>
     </message>
     <message>
-        <location filename="../src/gui/categoryviewer/WizCategoryView.cpp" line="2740"/>
+        <location filename="../src/gui/categoryviewer/WizCategoryView.cpp" line="2763"/>
         <source>Delete group folder</source>
         <translation>删除群组文件夹</translation>
     </message>
     <message>
-        <location filename="../src/gui/categoryviewer/WizCategoryView.cpp" line="2780"/>
+        <location filename="../src/gui/categoryviewer/WizCategoryView.cpp" line="2803"/>
         <source>Recovery notes</source>
         <translation>恢复笔记</translation>
     </message>
     <message>
-        <location filename="../src/gui/categoryviewer/WizCategoryView.cpp" line="1021"/>
-        <location filename="../src/gui/categoryviewer/WizCategoryView.cpp" line="1050"/>
-        <location filename="../src/gui/categoryviewer/WizCategoryView.cpp" line="1194"/>
-        <location filename="../src/gui/categoryviewer/WizCategoryView.cpp" line="1220"/>
-        <location filename="../src/gui/categoryviewer/WizCategoryView.cpp" line="3091"/>
-        <location filename="../src/gui/categoryviewer/WizCategoryView.cpp" line="4028"/>
-        <location filename="../src/gui/categoryviewer/WizCategoryView.cpp" line="5726"/>
+        <location filename="../src/gui/categoryviewer/WizCategoryView.cpp" line="1023"/>
+        <location filename="../src/gui/categoryviewer/WizCategoryView.cpp" line="1052"/>
+        <location filename="../src/gui/categoryviewer/WizCategoryView.cpp" line="1196"/>
+        <location filename="../src/gui/categoryviewer/WizCategoryView.cpp" line="1222"/>
+        <location filename="../src/gui/categoryviewer/WizCategoryView.cpp" line="3114"/>
+        <location filename="../src/gui/categoryviewer/WizCategoryView.cpp" line="4050"/>
+        <location filename="../src/gui/categoryviewer/WizCategoryView.cpp" line="5748"/>
         <source>Info</source>
         <translation>提示</translation>
     </message>
     <message>
-        <location filename="../src/gui/categoryviewer/WizCategoryView.cpp" line="1021"/>
-        <location filename="../src/gui/categoryviewer/WizCategoryView.cpp" line="1050"/>
-        <location filename="../src/gui/categoryviewer/WizCategoryView.cpp" line="1194"/>
-        <location filename="../src/gui/categoryviewer/WizCategoryView.cpp" line="1220"/>
-        <location filename="../src/gui/categoryviewer/WizCategoryView.cpp" line="4028"/>
+        <location filename="../src/gui/categoryviewer/WizCategoryView.cpp" line="1023"/>
+        <location filename="../src/gui/categoryviewer/WizCategoryView.cpp" line="1052"/>
+        <location filename="../src/gui/categoryviewer/WizCategoryView.cpp" line="1196"/>
+        <location filename="../src/gui/categoryviewer/WizCategoryView.cpp" line="1222"/>
+        <location filename="../src/gui/categoryviewer/WizCategoryView.cpp" line="4050"/>
         <source>Folder &apos;%1&apos; already exists, combine these folders?</source>
         <translation>文件夹 &apos;%1&apos; 已存在，是否合并？</translation>
     </message>
     <message>
-        <location filename="../src/gui/categoryviewer/WizCategoryView.cpp" line="1420"/>
+        <location filename="../src/gui/categoryviewer/WizCategoryView.cpp" line="1428"/>
         <source>Add to Shortcuts</source>
         <translation>添加到快捷方式</translation>
     </message>
     <message>
-        <location filename="../src/gui/categoryviewer/WizCategoryView.cpp" line="2666"/>
+        <location filename="../src/gui/categoryviewer/WizCategoryView.cpp" line="2689"/>
         <source>Do you really want to delete all notes inside folder: %1 ? (All notes will deleted in local and removed to trash from cloud server)</source>
         <translation>确认删除 %1 下的所有笔记 ? (笔记会在本地删除并存入服务器的回收站中)</translation>
     </message>
     <message>
-        <location filename="../src/gui/categoryviewer/WizCategoryView.cpp" line="2746"/>
+        <location filename="../src/gui/categoryviewer/WizCategoryView.cpp" line="2769"/>
         <source>Do you really want to delete folder: %1? (All notes will deleted in local and removed to trash from cloud server)</source>
         <translation>确认删除文件夹 %1 ? (所有笔记会在本地删除并存入服务器的回收站中)</translation>
     </message>
     <message>
-        <location filename="../src/gui/categoryviewer/WizCategoryView.cpp" line="2999"/>
+        <location filename="../src/gui/categoryviewer/WizCategoryView.cpp" line="3022"/>
         <source>All Notes</source>
         <translation>全部笔记</translation>
     </message>
     <message>
-        <location filename="../src/gui/categoryviewer/WizCategoryView.cpp" line="3091"/>
+        <location filename="../src/gui/categoryviewer/WizCategoryView.cpp" line="3114"/>
         <source>Your enterprise services has expired, could not manage members. Please purchase services or apply for an extension.</source>
         <translation>您的企业服务已到期，将无法进行成员管理。请购买服务或申请延期。</translation>
     </message>
     <message>
-        <location filename="../src/gui/categoryviewer/WizCategoryView.cpp" line="3214"/>
-        <location filename="../src/gui/categoryviewer/WizCategoryView.cpp" line="3223"/>
+        <location filename="../src/gui/categoryviewer/WizCategoryView.cpp" line="3236"/>
+        <location filename="../src/gui/categoryviewer/WizCategoryView.cpp" line="3245"/>
         <source>View group info</source>
         <translation>群组信息</translation>
     </message>
     <message>
-        <location filename="../src/gui/categoryviewer/WizCategoryView.cpp" line="3232"/>
-        <location filename="../src/gui/categoryviewer/WizCategoryView.cpp" line="3241"/>
+        <location filename="../src/gui/categoryviewer/WizCategoryView.cpp" line="3254"/>
+        <location filename="../src/gui/categoryviewer/WizCategoryView.cpp" line="3263"/>
         <source>Manage group</source>
         <translation>管理群组信息</translation>
     </message>
     <message>
-        <location filename="../src/gui/categoryviewer/WizCategoryView.cpp" line="3252"/>
+        <location filename="../src/gui/categoryviewer/WizCategoryView.cpp" line="3274"/>
         <source>Storage Limit Info</source>
         <translation>容量限制信息</translation>
     </message>
     <message>
-        <location filename="../src/gui/categoryviewer/WizCategoryView.cpp" line="3256"/>
+        <location filename="../src/gui/categoryviewer/WizCategoryView.cpp" line="3278"/>
         <source>Traffic Limit Info</source>
         <translation>流量限制信息</translation>
     </message>
     <message>
-        <location filename="../src/gui/categoryviewer/WizCategoryView.cpp" line="3260"/>
+        <location filename="../src/gui/categoryviewer/WizCategoryView.cpp" line="3282"/>
         <source>Note Count Limit Info</source>
         <translation>笔记数目限制信息</translation>
     </message>
     <message>
-        <location filename="../src/gui/categoryviewer/WizCategoryView.cpp" line="3260"/>
+        <location filename="../src/gui/categoryviewer/WizCategoryView.cpp" line="3282"/>
         <source>Group notes count limit exceeded!</source>
         <translation>群组笔记数目超出限制！</translation>
     </message>
     <message>
-        <location filename="../src/gui/categoryviewer/WizCategoryView.cpp" line="3331"/>
+        <location filename="../src/gui/categoryviewer/WizCategoryView.cpp" line="3353"/>
         <source>View team info</source>
         <translation>团队信息</translation>
     </message>
     <message>
-        <location filename="../src/gui/categoryviewer/WizCategoryView.cpp" line="3345"/>
+        <location filename="../src/gui/categoryviewer/WizCategoryView.cpp" line="3367"/>
         <source>Manage team</source>
         <translation>管理团队信息</translation>
     </message>
     <message>
-        <location filename="../src/gui/categoryviewer/WizCategoryView.cpp" line="3659"/>
+        <location filename="../src/gui/categoryviewer/WizCategoryView.cpp" line="3681"/>
         <source>loading...</source>
         <translation>正在导入...</translation>
     </message>
     <message>
-        <location filename="../src/gui/categoryviewer/WizCategoryView.cpp" line="3660"/>
+        <location filename="../src/gui/categoryviewer/WizCategoryView.cpp" line="3682"/>
         <source>%1 files to import.</source>
         <translation>导入 %1 文件。</translation>
     </message>
     <message>
-        <location filename="../src/gui/categoryviewer/WizCategoryView.cpp" line="3682"/>
+        <location filename="../src/gui/categoryviewer/WizCategoryView.cpp" line="3704"/>
         <source>Untitled</source>
         <translation>无标题</translation>
     </message>
     <message>
-        <location filename="../src/gui/categoryviewer/WizCategoryView.cpp" line="3205"/>
+        <location filename="../src/gui/categoryviewer/WizCategoryView.cpp" line="3227"/>
         <source>Create Team for Free</source>
         <translation>免费开通团队服务</translation>
     </message>
     <message>
-        <location filename="../src/gui/categoryviewer/WizCategoryView.cpp" line="2070"/>
+        <location filename="../src/gui/categoryviewer/WizCategoryView.cpp" line="2093"/>
         <source>Invalid folder name</source>
         <translation>无效的文件夹名称</translation>
     </message>
     <message>
-        <location filename="../src/gui/categoryviewer/WizCategoryView.cpp" line="2088"/>
-        <location filename="../src/gui/categoryviewer/WizCategoryView.cpp" line="2304"/>
+        <location filename="../src/gui/categoryviewer/WizCategoryView.cpp" line="2111"/>
+        <location filename="../src/gui/categoryviewer/WizCategoryView.cpp" line="2327"/>
         <source>Folder has already exists</source>
         <translation>文件夹已经存在</translation>
     </message>
     <message>
-        <location filename="../src/gui/categoryviewer/WizCategoryView.cpp" line="2205"/>
+        <location filename="../src/gui/categoryviewer/WizCategoryView.cpp" line="2228"/>
         <source>Tag has already exists</source>
         <translation>标签已经存在</translation>
     </message>
     <message>
-        <location filename="../src/gui/categoryviewer/WizCategoryView.cpp" line="4650"/>
+        <location filename="../src/gui/categoryviewer/WizCategoryView.cpp" line="4672"/>
         <source>Create Team for Free...</source>
         <translation>免费开通团队服务...</translation>
     </message>
     <message>
-        <location filename="../src/gui/categoryviewer/WizCategoryView.cpp" line="4742"/>
+        <location filename="../src/gui/categoryviewer/WizCategoryView.cpp" line="4764"/>
         <source>Search by Date Created</source>
         <translation>通过创建日期</translation>
     </message>
     <message>
-        <location filename="../src/gui/categoryviewer/WizCategoryView.cpp" line="4743"/>
+        <location filename="../src/gui/categoryviewer/WizCategoryView.cpp" line="4765"/>
         <source>Search by Date Modified</source>
         <translation>通过修改日期</translation>
     </message>
     <message>
-        <location filename="../src/gui/categoryviewer/WizCategoryView.cpp" line="4744"/>
+        <location filename="../src/gui/categoryviewer/WizCategoryView.cpp" line="4766"/>
         <source>Search by Date Accessed</source>
         <translation>通过访问日期</translation>
     </message>
     <message>
-        <location filename="../src/gui/categoryviewer/WizCategoryView.cpp" line="4751"/>
+        <location filename="../src/gui/categoryviewer/WizCategoryView.cpp" line="4773"/>
         <source>Created since Today</source>
         <translation>今日</translation>
     </message>
     <message>
-        <location filename="../src/gui/categoryviewer/WizCategoryView.cpp" line="4752"/>
+        <location filename="../src/gui/categoryviewer/WizCategoryView.cpp" line="4774"/>
         <source>Created since Yestoday</source>
         <translation>昨天至今</translation>
     </message>
     <message>
-        <location filename="../src/gui/categoryviewer/WizCategoryView.cpp" line="4753"/>
+        <location filename="../src/gui/categoryviewer/WizCategoryView.cpp" line="4775"/>
         <source>Created since the day before yestoday</source>
         <translation>前天至今</translation>
     </message>
     <message>
-        <location filename="../src/gui/categoryviewer/WizCategoryView.cpp" line="4754"/>
+        <location filename="../src/gui/categoryviewer/WizCategoryView.cpp" line="4776"/>
         <source>Created since one week</source>
         <translation>一周内</translation>
     </message>
     <message>
-        <location filename="../src/gui/categoryviewer/WizCategoryView.cpp" line="4755"/>
+        <location filename="../src/gui/categoryviewer/WizCategoryView.cpp" line="4777"/>
         <source>Created since one month</source>
         <translation>一月内</translation>
     </message>
     <message>
-        <location filename="../src/gui/categoryviewer/WizCategoryView.cpp" line="4762"/>
+        <location filename="../src/gui/categoryviewer/WizCategoryView.cpp" line="4784"/>
         <source>Modified since Today</source>
         <translation>今日</translation>
     </message>
     <message>
-        <location filename="../src/gui/categoryviewer/WizCategoryView.cpp" line="4763"/>
+        <location filename="../src/gui/categoryviewer/WizCategoryView.cpp" line="4785"/>
         <source>Modified since Yestoday</source>
         <translation>昨天至今</translation>
     </message>
     <message>
-        <location filename="../src/gui/categoryviewer/WizCategoryView.cpp" line="4764"/>
+        <location filename="../src/gui/categoryviewer/WizCategoryView.cpp" line="4786"/>
         <source>Modified since the day before yestoday</source>
         <translation>前天至今</translation>
     </message>
     <message>
-        <location filename="../src/gui/categoryviewer/WizCategoryView.cpp" line="4765"/>
+        <location filename="../src/gui/categoryviewer/WizCategoryView.cpp" line="4787"/>
         <source>Modified since one week</source>
         <translation>一周内</translation>
     </message>
     <message>
-        <location filename="../src/gui/categoryviewer/WizCategoryView.cpp" line="4766"/>
+        <location filename="../src/gui/categoryviewer/WizCategoryView.cpp" line="4788"/>
         <source>Modified since one month</source>
         <translation>一月内</translation>
     </message>
     <message>
-        <location filename="../src/gui/categoryviewer/WizCategoryView.cpp" line="4773"/>
+        <location filename="../src/gui/categoryviewer/WizCategoryView.cpp" line="4795"/>
         <source>Accessed since Today</source>
         <translation>今日</translation>
     </message>
     <message>
-        <location filename="../src/gui/categoryviewer/WizCategoryView.cpp" line="4774"/>
+        <location filename="../src/gui/categoryviewer/WizCategoryView.cpp" line="4796"/>
         <source>Accessed since Yestoday</source>
         <translation>昨天至今</translation>
     </message>
     <message>
-        <location filename="../src/gui/categoryviewer/WizCategoryView.cpp" line="4775"/>
+        <location filename="../src/gui/categoryviewer/WizCategoryView.cpp" line="4797"/>
         <source>Accessed since the day before yestoday</source>
         <translation>前天至今</translation>
     </message>
     <message>
-        <location filename="../src/gui/categoryviewer/WizCategoryView.cpp" line="4776"/>
+        <location filename="../src/gui/categoryviewer/WizCategoryView.cpp" line="4798"/>
         <source>Accessed since one week</source>
         <translation>一周内</translation>
     </message>
     <message>
-        <location filename="../src/gui/categoryviewer/WizCategoryView.cpp" line="4777"/>
+        <location filename="../src/gui/categoryviewer/WizCategoryView.cpp" line="4799"/>
         <source>Accessed since one month</source>
         <translation>一月内</translation>
     </message>
     <message>
-        <location filename="../src/gui/categoryviewer/WizCategoryView.cpp" line="6252"/>
+        <location filename="../src/gui/categoryviewer/WizCategoryView.cpp" line="6274"/>
         <source>Moving folder...</source>
         <translation>正在移动文件夹...</translation>
     </message>
     <message>
-        <location filename="../src/gui/categoryviewer/WizCategoryView.cpp" line="2997"/>
+        <location filename="../src/gui/categoryviewer/WizCategoryView.cpp" line="3020"/>
         <source>Recent meesages</source>
         <translation>最近消息</translation>
     </message>
     <message>
-        <location filename="../src/gui/categoryviewer/WizCategoryView.cpp" line="1432"/>
+        <location filename="../src/gui/categoryviewer/WizCategoryView.cpp" line="1440"/>
         <source>Add custom search</source>
         <translation>添加自定义搜索</translation>
     </message>
     <message>
-        <location filename="../src/gui/categoryviewer/WizCategoryView.cpp" line="1437"/>
+        <location filename="../src/gui/categoryviewer/WizCategoryView.cpp" line="1445"/>
         <source>Edit custom search</source>
         <translation>编辑</translation>
     </message>
     <message>
-        <location filename="../src/gui/categoryviewer/WizCategoryView.cpp" line="1442"/>
+        <location filename="../src/gui/categoryviewer/WizCategoryView.cpp" line="1450"/>
         <source>Remove custom search</source>
         <translation>删除</translation>
     </message>
     <message>
-        <location filename="../src/gui/categoryviewer/WizCategoryView.cpp" line="2022"/>
+        <location filename="../src/gui/categoryviewer/WizCategoryView.cpp" line="2035"/>
         <source>Select one or more files to open</source>
         <translation>选择文件</translation>
     </message>
     <message>
-        <location filename="../src/gui/categoryviewer/WizCategoryView.cpp" line="2398"/>
-        <location filename="../src/gui/categoryviewer/WizCategoryView.cpp" line="2549"/>
+        <location filename="../src/gui/categoryviewer/WizCategoryView.cpp" line="2421"/>
+        <location filename="../src/gui/categoryviewer/WizCategoryView.cpp" line="2572"/>
         <source>Moving note %1 ...</source>
         <translation>移动笔记 %1 ...</translation>
     </message>
     <message>
-        <location filename="../src/gui/categoryviewer/WizCategoryView.cpp" line="2399"/>
-        <location filename="../src/gui/categoryviewer/WizCategoryView.cpp" line="2550"/>
+        <location filename="../src/gui/categoryviewer/WizCategoryView.cpp" line="2422"/>
+        <location filename="../src/gui/categoryviewer/WizCategoryView.cpp" line="2573"/>
         <source>Move notes from %1 to %2</source>
         <translation>从 %1 移动到 %2</translation>
     </message>
     <message>
-        <location filename="../src/gui/categoryviewer/WizCategoryView.cpp" line="3001"/>
+        <location filename="../src/gui/categoryviewer/WizCategoryView.cpp" line="3024"/>
         <source>No tag notes</source>
         <translation>无标签笔记</translation>
     </message>
     <message>
-        <location filename="../src/gui/categoryviewer/WizCategoryView.cpp" line="2053"/>
+        <location filename="../src/gui/categoryviewer/WizCategoryView.cpp" line="2076"/>
         <source>New folder</source>
         <translation>新建文件夹</translation>
     </message>
     <message>
-        <location filename="../src/gui/categoryviewer/WizCategoryView.cpp" line="2333"/>
+        <location filename="../src/gui/categoryviewer/WizCategoryView.cpp" line="2356"/>
         <source>Move folder</source>
         <translation>移动文件夹</translation>
     </message>
     <message>
-        <location filename="../src/gui/categoryviewer/WizCategoryView.cpp" line="2496"/>
+        <location filename="../src/gui/categoryviewer/WizCategoryView.cpp" line="2519"/>
         <source>Please input new folder name: </source>
         <translation>请输入新的文件夹名： </translation>
     </message>
     <message>
-        <location filename="../src/gui/categoryviewer/WizCategoryView.cpp" line="2495"/>
+        <location filename="../src/gui/categoryviewer/WizCategoryView.cpp" line="2518"/>
         <source>Rename folder</source>
         <translation>重命名文件夹</translation>
     </message>
     <message>
-        <location filename="../src/gui/categoryviewer/WizCategoryView.cpp" line="2660"/>
+        <location filename="../src/gui/categoryviewer/WizCategoryView.cpp" line="2683"/>
         <source>Delete Folder</source>
         <translation>删除文件夹</translation>
     </message>
@@ -2952,69 +3279,69 @@ Password hint: %1</source>
 <context>
     <name>WizDatabase</name>
     <message>
-        <location filename="../src/database/WizDatabase.cpp" line="3921"/>
+        <location filename="../src/database/WizDatabase.cpp" line="3930"/>
         <source>Downloading cert...</source>
         <translation>正在下载证书...</translation>
     </message>
     <message>
-        <location filename="../src/database/WizDatabase.cpp" line="4428"/>
+        <location filename="../src/database/WizDatabase.cpp" line="4488"/>
         <source>My Notes</source>
         <translation>我的笔记</translation>
     </message>
     <message>
-        <location filename="../src/database/WizDatabase.cpp" line="4430"/>
+        <location filename="../src/database/WizDatabase.cpp" line="4490"/>
         <source>My Journals</source>
         <translation>我的日记</translation>
     </message>
     <message>
-        <location filename="../src/database/WizDatabase.cpp" line="4432"/>
+        <location filename="../src/database/WizDatabase.cpp" line="4492"/>
         <source>My Contacts</source>
         <translation>我的联系人</translation>
     </message>
     <message>
-        <location filename="../src/database/WizDatabase.cpp" line="4434"/>
+        <location filename="../src/database/WizDatabase.cpp" line="4494"/>
         <source>My Events</source>
         <translation>我的事件</translation>
     </message>
     <message>
-        <location filename="../src/database/WizDatabase.cpp" line="4436"/>
+        <location filename="../src/database/WizDatabase.cpp" line="4496"/>
         <source>My Sticky Notes</source>
         <translation>我的桌面便笺</translation>
     </message>
     <message>
-        <location filename="../src/database/WizDatabase.cpp" line="4438"/>
+        <location filename="../src/database/WizDatabase.cpp" line="4498"/>
         <source>My Emails</source>
         <translation>我的邮件</translation>
     </message>
     <message>
-        <location filename="../src/database/WizDatabase.cpp" line="4440"/>
+        <location filename="../src/database/WizDatabase.cpp" line="4500"/>
         <source>My Drafts</source>
         <translation>我的草稿</translation>
     </message>
     <message>
-        <location filename="../src/database/WizDatabase.cpp" line="4442"/>
+        <location filename="../src/database/WizDatabase.cpp" line="4502"/>
         <source>My Tasks</source>
         <translation>我的任务</translation>
     </message>
     <message>
-        <location filename="../src/database/WizDatabase.cpp" line="4446"/>
+        <location filename="../src/database/WizDatabase.cpp" line="4506"/>
         <source>Inbox</source>
         <translation>收集箱</translation>
     </message>
     <message>
-        <location filename="../src/database/WizDatabase.cpp" line="4448"/>
+        <location filename="../src/database/WizDatabase.cpp" line="4508"/>
         <source>Completed</source>
         <translation>已完成</translation>
     </message>
     <message>
-        <location filename="../src/database/WizDatabase.cpp" line="4591"/>
+        <location filename="../src/database/WizDatabase.cpp" line="4651"/>
         <source>Invalid password.</source>
         <translation>密码错误。</translation>
     </message>
     <message>
         <location filename="../src/database/WizDatabase.cpp" line="1332"/>
         <location filename="../src/database/WizDatabase.cpp" line="1340"/>
-        <location filename="../src/database/WizDatabase.cpp" line="4970"/>
+        <location filename="../src/database/WizDatabase.cpp" line="5037"/>
         <source>Info</source>
         <translation>提示</translation>
     </message>
@@ -3025,7 +3352,7 @@ Password hint: %1</source>
         <translation>未发现加密证书，请从Windows客户端创建加密证书。</translation>
     </message>
     <message>
-        <location filename="../src/database/WizDatabase.cpp" line="4970"/>
+        <location filename="../src/database/WizDatabase.cpp" line="5037"/>
         <source>password error!</source>
         <translation>密码错误！</translation>
     </message>
@@ -3184,57 +3511,47 @@ Go to create a note</source>
 <context>
     <name>WizDocumentView</name>
     <message>
-        <location filename="../src/gui/documentviewer/WizDocumentView.cpp" line="216"/>
-        <source>Locate this document in category</source>
-        <translation>笔记定位</translation>
-    </message>
-    <message>
-        <location filename="../src/gui/documentviewer/WizDocumentView.cpp" line="226"/>
-        <source>Copy internal link</source>
-        <translation>复制笔记内链</translation>
-    </message>
-    <message>
-        <location filename="../src/gui/documentviewer/WizDocumentView.cpp" line="472"/>
+        <location filename="../src/gui/documentviewer/WizDocumentView.cpp" line="511"/>
         <source>Encrypted group password</source>
         <translation>绝密群组密码</translation>
     </message>
     <message>
-        <location filename="../src/gui/documentviewer/WizDocumentView.cpp" line="474"/>
+        <location filename="../src/gui/documentviewer/WizDocumentView.cpp" line="513"/>
         <source>Personal notes certificate password</source>
         <translation>个人笔记证书密码</translation>
     </message>
     <message>
-        <location filename="../src/gui/documentviewer/WizDocumentView.cpp" line="665"/>
+        <location filename="../src/gui/documentviewer/WizDocumentView.cpp" line="709"/>
         <source>You have occupied this note by clicking checklist !  Switch to other notes to free this note.</source>
         <translation>您点击了阅读状态的清单项，当前笔记正被您占用！如需解除，请切换到其他笔记。</translation>
     </message>
     <message>
-        <location filename="../src/gui/documentviewer/WizDocumentView.cpp" line="860"/>
+        <location filename="../src/gui/documentviewer/WizDocumentView.cpp" line="905"/>
         <source>WizNote</source>
         <translation>为知笔记</translation>
     </message>
     <message>
-        <location filename="../src/gui/documentviewer/WizDocumentView.cpp" line="860"/>
+        <location filename="../src/gui/documentviewer/WizDocumentView.cpp" line="905"/>
         <source>Invalid password.</source>
         <translation>密码错误。</translation>
     </message>
     <message>
-        <location filename="../src/gui/documentviewer/WizDocumentView.cpp" line="956"/>
+        <location filename="../src/gui/documentviewer/WizDocumentView.cpp" line="1001"/>
         <source>%1 is currently editing this note. Note has been locked.</source>
         <translation>当前笔记正在被 %1 编辑，笔记已处于锁定状态。</translation>
     </message>
     <message>
-        <location filename="../src/gui/documentviewer/WizDocumentView.cpp" line="960"/>
+        <location filename="../src/gui/documentviewer/WizDocumentView.cpp" line="1005"/>
         <source>%1 is currently editing this note.</source>
         <translation>当前笔记正在被 %1 编辑。</translation>
     </message>
     <message>
-        <location filename="../src/gui/documentviewer/WizDocumentView.cpp" line="984"/>
+        <location filename="../src/gui/documentviewer/WizDocumentView.cpp" line="1029"/>
         <source>The current network in poor condition, you are &lt;b&gt; offline editing mode &lt;/b&gt;.</source>
         <translation>当前网络状况不佳，您正处于 &lt;b&gt; 离线编辑模式 &lt;/b&gt;。</translation>
     </message>
     <message>
-        <location filename="../src/gui/documentviewer/WizDocumentView.cpp" line="999"/>
+        <location filename="../src/gui/documentviewer/WizDocumentView.cpp" line="1044"/>
         <source>New version on server avalible. &lt;a href=&apos;%1&apos;&gt;Click to download new version.&lt;a&gt;</source>
         <translation>服务器上有新版本 &lt;a href=&apos;%1&apos;&gt;点击下载新版本&lt;a&gt;</translation>
     </message>
@@ -3242,85 +3559,72 @@ Go to create a note</source>
 <context>
     <name>WizDocumentWebView</name>
     <message>
-        <location filename="../src/gui/documentviewer/WizDocumentWebView.cpp" line="219"/>
+        <location filename="../src/gui/documentviewer/WizDocumentWebView.cpp" line="212"/>
         <source>Save Note</source>
         <translation>保存笔记</translation>
     </message>
     <message>
-        <location filename="../src/gui/documentviewer/WizDocumentWebView.cpp" line="606"/>
-        <location filename="../src/gui/documentviewer/WizDocumentWebView.cpp" line="611"/>
-        <location filename="../src/gui/documentviewer/WizDocumentWebView.cpp" line="904"/>
+        <location filename="../src/gui/documentviewer/WizDocumentWebView.cpp" line="594"/>
+        <location filename="../src/gui/documentviewer/WizDocumentWebView.cpp" line="599"/>
+        <location filename="../src/gui/documentviewer/WizDocumentWebView.cpp" line="895"/>
         <source>Info</source>
         <translation>提示</translation>
     </message>
     <message>
-        <location filename="../src/gui/documentviewer/WizDocumentWebView.cpp" line="606"/>
+        <location filename="../src/gui/documentviewer/WizDocumentWebView.cpp" line="594"/>
         <source>Can not add a 0 bit size file as attachment! File name : &apos; %1 &apos;</source>
         <translation>不能添加0字节的文件作为附件！文件名：&apos; %1 &apos;</translation>
     </message>
     <message>
-        <location filename="../src/gui/documentviewer/WizDocumentWebView.cpp" line="611"/>
+        <location filename="../src/gui/documentviewer/WizDocumentWebView.cpp" line="599"/>
         <source>Can not add a bundle file as attachment! File name : &apos; %1 &apos;</source>
         <translation>不能添加包文件作为附件！文件名：&apos; %1 &apos;</translation>
     </message>
     <message>
-        <location filename="../src/gui/documentviewer/WizDocumentWebView.cpp" line="904"/>
+        <location filename="../src/gui/documentviewer/WizDocumentWebView.cpp" line="895"/>
         <source>Do not support insert comment into markdown note.</source>
         <translation>暂不支持插入评论到Markdown笔记中。</translation>
     </message>
     <message>
-        <location filename="../src/gui/documentviewer/WizDocumentWebView.cpp" line="1345"/>
+        <location filename="../src/gui/documentviewer/WizDocumentWebView.cpp" line="1274"/>
         <source>Failed to save note.</source>
         <translation>保存笔记失败。</translation>
     </message>
     <message>
-        <location filename="../src/gui/documentviewer/WizDocumentWebView.cpp" line="1346"/>
-        <location filename="../src/gui/documentviewer/WizDocumentWebView.cpp" line="1403"/>
+        <location filename="../src/gui/documentviewer/WizDocumentWebView.cpp" line="1275"/>
+        <location filename="../src/gui/documentviewer/WizDocumentWebView.cpp" line="1332"/>
         <source>Error</source>
         <translation>错误</translation>
     </message>
     <message>
-        <location filename="../src/gui/documentviewer/WizDocumentWebView.cpp" line="1403"/>
+        <location filename="../src/gui/documentviewer/WizDocumentWebView.cpp" line="1332"/>
         <source>Can&apos;t copy style files</source>
         <translation>不能复制样式文件</translation>
     </message>
     <message>
-        <location filename="../src/gui/documentviewer/WizDocumentWebView.cpp" line="2102"/>
+        <location filename="../src/gui/documentviewer/WizDocumentWebView.cpp" line="2034"/>
         <source>Image File</source>
         <translation>图片文件</translation>
     </message>
     <message>
-        <location filename="../src/gui/documentviewer/WizDocumentWebView.cpp" line="2102"/>
+        <location filename="../src/gui/documentviewer/WizDocumentWebView.cpp" line="2034"/>
         <source>Images (*.png *.bmp *.gif *.jpg)</source>
         <translation>图片 (*.png *.bmp *.gif *.jpg)</translation>
     </message>
     <message>
-        <location filename="../src/gui/documentviewer/WizDocumentWebView.cpp" line="2283"/>
+        <location filename="../src/gui/documentviewer/WizDocumentWebView.cpp" line="2215"/>
         <source>PDF Files (*.pdf)</source>
         <translation>PDF 文件 (*.pdf)</translation>
     </message>
     <message>
-        <location filename="../src/gui/documentviewer/WizDocumentWebView.cpp" line="2424"/>
+        <location filename="../src/gui/documentviewer/WizDocumentWebView.cpp" line="2356"/>
         <source>Html Files (*.html)</source>
         <translation>Html文件(*.html)</translation>
     </message>
     <message>
-        <location filename="../src/gui/documentviewer/WizDocumentWebView.cpp" line="2317"/>
+        <location filename="../src/gui/documentviewer/WizDocumentWebView.cpp" line="2249"/>
         <source>Markdown Files (*.md)</source>
         <translation>Markdown文件(*.md)</translation>
-    </message>
-</context>
-<context>
-    <name>WizDocumentWebViewLoaderThread</name>
-    <message>
-        <location filename="../src/gui/documentviewer/WizDocumentWebView.cpp" line="2816"/>
-        <source>Error</source>
-        <translation>错误</translation>
-    </message>
-    <message>
-        <location filename="../src/gui/documentviewer/WizDocumentWebView.cpp" line="2816"/>
-        <source>Can&apos;t view note: (Can&apos;t unzip note data)</source>
-        <translation>无法查看笔记：（不能解压缩笔记数据）</translation>
     </message>
 </context>
 <context>
@@ -3567,28 +3871,28 @@ Go to create a note</source>
         <translation>返回文本编辑器</translation>
     </message>
     <message>
-        <location filename="../src/gui/documentviewer/WizEditorToolBar.cpp" line="2378"/>
-        <location filename="../src/gui/documentviewer/WizEditorToolBar.cpp" line="2381"/>
+        <location filename="../src/gui/documentviewer/WizEditorToolBar.cpp" line="2226"/>
+        <location filename="../src/gui/documentviewer/WizEditorToolBar.cpp" line="2229"/>
         <source>show more colors...</source>
         <translation>显示更多颜色...</translation>
     </message>
     <message>
-        <location filename="../src/gui/documentviewer/WizEditorToolBar.cpp" line="2900"/>
+        <location filename="../src/gui/documentviewer/WizEditorToolBar.cpp" line="2748"/>
         <source>More tool items</source>
         <translation>更多工具</translation>
     </message>
     <message>
-        <location filename="../src/gui/documentviewer/WizEditorToolBar.cpp" line="2900"/>
+        <location filename="../src/gui/documentviewer/WizEditorToolBar.cpp" line="2748"/>
         <source>Use to show or hide extra tool items.</source>
         <translation>可以显示或收起更多编辑工具。</translation>
     </message>
     <message>
-        <location filename="../src/gui/documentviewer/WizEditorToolBar.cpp" line="3026"/>
+        <location filename="../src/gui/documentviewer/WizEditorToolBar.cpp" line="2874"/>
         <source>Save as...</source>
         <translation>另存为...</translation>
     </message>
     <message>
-        <location filename="../src/gui/documentviewer/WizEditorToolBar.cpp" line="3027"/>
+        <location filename="../src/gui/documentviewer/WizEditorToolBar.cpp" line="2875"/>
         <source>Image Files (*.%1)</source>
         <translation>图片文件 (*.%1)</translation>
     </message>
@@ -4366,183 +4670,189 @@ Go to create a note</source>
 <context>
     <name>WizMainWindow</name>
     <message>
-        <location filename="../src/WizMainWindow.cpp" line="1446"/>
+        <location filename="../src/WizMainWindow.cpp" line="1457"/>
         <source>WizNote</source>
         <translation>为知笔记</translation>
     </message>
     <message>
-        <location filename="../src/WizMainWindow.cpp" line="595"/>
-        <location filename="../src/WizMainWindow.cpp" line="608"/>
-        <location filename="../src/WizMainWindow.cpp" line="612"/>
-        <location filename="../src/WizMainWindow.cpp" line="1310"/>
-        <location filename="../src/WizMainWindow.cpp" line="1316"/>
-        <location filename="../src/WizMainWindow.cpp" line="1336"/>
-        <location filename="../src/WizMainWindow.cpp" line="2348"/>
-        <location filename="../src/WizMainWindow.cpp" line="2404"/>
-        <location filename="../src/WizMainWindow.cpp" line="2407"/>
-        <location filename="../src/WizMainWindow.cpp" line="2410"/>
-        <location filename="../src/WizMainWindow.cpp" line="4071"/>
+        <location filename="../src/WizMainWindow.cpp" line="616"/>
+        <location filename="../src/WizMainWindow.cpp" line="629"/>
+        <location filename="../src/WizMainWindow.cpp" line="633"/>
+        <location filename="../src/WizMainWindow.cpp" line="1321"/>
+        <location filename="../src/WizMainWindow.cpp" line="1327"/>
+        <location filename="../src/WizMainWindow.cpp" line="1347"/>
+        <location filename="../src/WizMainWindow.cpp" line="2357"/>
+        <location filename="../src/WizMainWindow.cpp" line="2413"/>
+        <location filename="../src/WizMainWindow.cpp" line="2416"/>
+        <location filename="../src/WizMainWindow.cpp" line="2419"/>
+        <location filename="../src/WizMainWindow.cpp" line="4120"/>
         <source>Info</source>
         <translation>提示</translation>
     </message>
     <message>
-        <location filename="../src/WizMainWindow.cpp" line="218"/>
+        <location filename="../src/WizMainWindow.cpp" line="226"/>
         <source>WizNotePlus</source>
         <translation>为知笔记 Plus</translation>
     </message>
     <message>
-        <location filename="../src/WizMainWindow.cpp" line="595"/>
+        <location filename="../src/WizMainWindow.cpp" line="616"/>
         <source>Connection is not available, please check your network connection.</source>
         <translation>网络连接不可用,请检查网络连接.</translation>
     </message>
     <message>
-        <location filename="../src/WizMainWindow.cpp" line="612"/>
+        <location filename="../src/WizMainWindow.cpp" line="633"/>
         <source>Username / password error. Please login again.</source>
         <translation>用户名 / 密码错误，请重新登录。</translation>
     </message>
     <message>
-        <location filename="../src/WizMainWindow.cpp" line="728"/>
+        <location filename="../src/WizMainWindow.cpp" line="747"/>
         <source>Can&apos;t find note %1 , may be it has been deleted.</source>
         <translation>找不到笔记 %1 , 该篇笔记可能已被删除。</translation>
     </message>
     <message>
-        <location filename="../src/WizMainWindow.cpp" line="728"/>
+        <location filename="../src/WizMainWindow.cpp" line="747"/>
         <source>Warning</source>
         <translation>警告</translation>
     </message>
     <message>
-        <location filename="../src/WizMainWindow.cpp" line="1150"/>
+        <location filename="../src/WizMainWindow.cpp" line="1171"/>
         <source>Downloading template...</source>
         <translation>正在下载模版...</translation>
     </message>
     <message>
-        <location filename="../src/WizMainWindow.cpp" line="1162"/>
+        <location filename="../src/WizMainWindow.cpp" line="1178"/>
+        <location filename="../src/WizMainWindow.cpp" line="3664"/>
         <source>Error</source>
         <translation>错误</translation>
     </message>
     <message>
-        <location filename="../src/WizMainWindow.cpp" line="1162"/>
+        <location filename="../src/WizMainWindow.cpp" line="1178"/>
         <source>Can&apos;t download template from server. Please try again later.</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../src/WizMainWindow.cpp" line="1310"/>
+        <location filename="../src/WizMainWindow.cpp" line="1321"/>
         <source>Your permission is insufficient, super member or group administrators can share notes.</source>
         <translation>您的权限不足，超级成员或群组管理员才可分享笔记。</translation>
     </message>
     <message>
-        <location filename="../src/WizMainWindow.cpp" line="1316"/>
+        <location filename="../src/WizMainWindow.cpp" line="1327"/>
         <source>You are using the free version of the service, upgrade now, you can share notes.</source>
         <translation>您使用的是免费版服务，现在升级，即可分享笔记。</translation>
     </message>
     <message>
-        <location filename="../src/WizMainWindow.cpp" line="1336"/>
+        <location filename="../src/WizMainWindow.cpp" line="1347"/>
         <source>Can not share encrpyted notes.</source>
         <translation>加密笔记不能创建公开链接。</translation>
     </message>
     <message>
-        <location filename="../src/WizMainWindow.cpp" line="1356"/>
+        <location filename="../src/WizMainWindow.cpp" line="1367"/>
         <source>Upgrading to VIP</source>
         <translation>升级VIP</translation>
     </message>
     <message>
-        <location filename="../src/WizMainWindow.cpp" line="1358"/>
+        <location filename="../src/WizMainWindow.cpp" line="1369"/>
         <source>Only VIP user can create link, please retry after upgrading to VIP and syncing to server.</source>
         <translation>仅 VIP 用户能创建链接，请升级 VIP 并同步后重试。</translation>
     </message>
     <message>
-        <location filename="../src/WizMainWindow.cpp" line="1359"/>
+        <location filename="../src/WizMainWindow.cpp" line="1370"/>
         <source>Cancel</source>
         <translation>取消</translation>
     </message>
     <message>
-        <location filename="../src/WizMainWindow.cpp" line="1360"/>
+        <location filename="../src/WizMainWindow.cpp" line="1371"/>
         <source>Upgrade now</source>
         <translation>立即升级</translation>
     </message>
     <message>
-        <location filename="../src/WizMainWindow.cpp" line="1538"/>
+        <location filename="../src/WizMainWindow.cpp" line="1549"/>
         <source>Account settings</source>
         <translation>帐户设置</translation>
     </message>
     <message>
-        <location filename="../src/WizMainWindow.cpp" line="4157"/>
+        <location filename="../src/WizMainWindow.cpp" line="3664"/>
+        <source>Can&apos;t view note: (Can&apos;t unzip note data)</source>
+        <translation>无法查看笔记：（不能解压缩笔记数据）</translation>
+    </message>
+    <message>
+        <location filename="../src/WizMainWindow.cpp" line="4206"/>
         <source>New Note</source>
         <translation>新建笔记</translation>
     </message>
     <message>
-        <location filename="../src/WizMainWindow.cpp" line="2066"/>
+        <location filename="../src/WizMainWindow.cpp" line="2075"/>
         <source>Unread documents</source>
         <translation>未读笔记</translation>
     </message>
     <message>
-        <location filename="../src/WizMainWindow.cpp" line="2082"/>
+        <location filename="../src/WizMainWindow.cpp" line="2091"/>
         <source>Mark all documents read</source>
         <translation>将所有未读笔记标记为已读</translation>
     </message>
     <message>
-        <location filename="../src/WizMainWindow.cpp" line="2357"/>
-        <location filename="../src/WizMainWindow.cpp" line="2374"/>
+        <location filename="../src/WizMainWindow.cpp" line="2366"/>
+        <location filename="../src/WizMainWindow.cpp" line="2383"/>
         <source>Sync failed</source>
         <translation>同步失败</translation>
     </message>
     <message>
-        <location filename="../src/WizMainWindow.cpp" line="2357"/>
+        <location filename="../src/WizMainWindow.cpp" line="2366"/>
         <source>Bad network connection, can not sync now. Please try again later. (code: %1)</source>
         <translation>网络错误，现在无法同步。请稍后重试：(错误码：%1)</translation>
     </message>
     <message>
-        <location filename="../src/WizMainWindow.cpp" line="2361"/>
+        <location filename="../src/WizMainWindow.cpp" line="2370"/>
         <source>There is something wrong with sync service. Please try again later. (code: %1)</source>
         <translation>服务端返回错误：同步异常，请稍后重试。（错误码：%1）</translation>
     </message>
     <message>
-        <location filename="../src/WizMainWindow.cpp" line="2865"/>
+        <location filename="../src/WizMainWindow.cpp" line="2874"/>
         <source>Mark all as readed</source>
         <translation>标记为已读</translation>
     </message>
     <message>
-        <location filename="../src/WizMainWindow.cpp" line="2865"/>
+        <location filename="../src/WizMainWindow.cpp" line="2874"/>
         <source>Mark all documents as readed.</source>
         <translation>将所有未读笔记标记为已读。</translation>
     </message>
     <message>
-        <location filename="../src/WizMainWindow.cpp" line="3238"/>
+        <location filename="../src/WizMainWindow.cpp" line="3259"/>
         <source>Searching...</source>
         <translation>正在搜索...</translation>
     </message>
     <message>
-        <location filename="../src/WizMainWindow.cpp" line="4072"/>
+        <location filename="../src/WizMainWindow.cpp" line="4121"/>
         <source>Can&apos;t find the specified attachment, may be it has been deleted.</source>
         <translation>找不到指定附件，该附件可能已被删除.</translation>
     </message>
     <message>
-        <location filename="../src/WizMainWindow.cpp" line="4154"/>
+        <location filename="../src/WizMainWindow.cpp" line="4203"/>
         <source>Show/Hide MainWindow</source>
         <translation>显示/隐藏主窗口</translation>
     </message>
     <message>
-        <location filename="../src/WizMainWindow.cpp" line="4162"/>
+        <location filename="../src/WizMainWindow.cpp" line="4211"/>
         <source>Hide TrayIcon</source>
         <translation>隐藏托盘图标</translation>
     </message>
     <message>
-        <location filename="../src/WizMainWindow.cpp" line="4166"/>
+        <location filename="../src/WizMainWindow.cpp" line="4215"/>
         <source>Logout</source>
         <translation>注销</translation>
     </message>
     <message>
-        <location filename="../src/WizMainWindow.cpp" line="4168"/>
+        <location filename="../src/WizMainWindow.cpp" line="4217"/>
         <source>Exit</source>
         <translation>退出</translation>
     </message>
     <message>
-        <location filename="../src/WizMainWindow.cpp" line="4522"/>
+        <location filename="../src/WizMainWindow.cpp" line="4571"/>
         <source>Downloading attachment file  %1 ...</source>
         <translation>下载附件 %1 ...</translation>
     </message>
     <message>
-        <location filename="../src/WizMainWindow.cpp" line="4523"/>
+        <location filename="../src/WizMainWindow.cpp" line="4572"/>
         <source>Downloading</source>
         <translation>正在下载</translation>
     </message>
@@ -5427,6 +5737,24 @@ w: %3  h: %4</translation>
         <source>Replace All</source>
         <translation>全部替换</translation>
     </message>
+    <message>
+        <location filename="../src/ui/WizSearchReplaceWidget.ui" line="81"/>
+        <source>Close</source>
+        <translation>关闭</translation>
+    </message>
+</context>
+<context>
+    <name>WizSingleDocumentViewManager</name>
+    <message>
+        <location filename="../src/gui/documentviewer/WizSingleDocumentView.cpp" line="240"/>
+        <source>Error</source>
+        <translation>错误</translation>
+    </message>
+    <message>
+        <location filename="../src/gui/documentviewer/WizSingleDocumentView.cpp" line="240"/>
+        <source>Can&apos;t view note: (Can&apos;t unzip note data)</source>
+        <translation>无法查看笔记：（不能解压缩笔记数据）</translation>
+    </message>
 </context>
 <context>
     <name>WizSortingPopupButton</name>
@@ -5684,83 +6012,88 @@ w: %3  h: %4</translation>
 <context>
     <name>WizTitleBar</name>
     <message>
-        <location filename="../src/gui/documentviewer/WizTitleBar.cpp" line="114"/>
+        <location filename="../src/gui/documentviewer/WizTitleBar.cpp" line="111"/>
         <source>Edit</source>
         <translation>编辑</translation>
     </message>
     <message>
-        <location filename="../src/gui/documentviewer/WizTitleBar.cpp" line="116"/>
+        <location filename="../src/gui/documentviewer/WizTitleBar.cpp" line="113"/>
         <source>Read</source>
         <translation>阅读</translation>
     </message>
     <message>
-        <location filename="../src/gui/documentviewer/WizTitleBar.cpp" line="114"/>
+        <location filename="../src/gui/documentviewer/WizTitleBar.cpp" line="111"/>
         <source>Switch to Editing View  %1</source>
         <translation>切换到编辑视图  %1</translation>
     </message>
     <message>
-        <location filename="../src/gui/documentviewer/WizTitleBar.cpp" line="116"/>
+        <location filename="../src/gui/documentviewer/WizTitleBar.cpp" line="113"/>
         <source>Switch to Reading View  %1</source>
         <translation>切换到阅读视图  %1</translation>
     </message>
     <message>
-        <location filename="../src/gui/documentviewer/WizTitleBar.cpp" line="129"/>
+        <location filename="../src/gui/documentviewer/WizTitleBar.cpp" line="126"/>
         <source>View mindmap</source>
         <translation>查看思维导图</translation>
     </message>
     <message>
-        <location filename="../src/gui/documentviewer/WizTitleBar.cpp" line="138"/>
+        <location filename="../src/gui/documentviewer/WizTitleBar.cpp" line="135"/>
         <source>View note in seperate window  %1</source>
         <translation>在单独窗口打开笔记  %1</translation>
     </message>
     <message>
-        <location filename="../src/gui/documentviewer/WizTitleBar.cpp" line="148"/>
+        <location filename="../src/gui/documentviewer/WizTitleBar.cpp" line="145"/>
         <source>View and add tags  %1</source>
         <translation>查看并添加标签  %1</translation>
     </message>
     <message>
-        <location filename="../src/gui/documentviewer/WizTitleBar.cpp" line="160"/>
+        <location filename="../src/gui/documentviewer/WizTitleBar.cpp" line="157"/>
         <source>Share note  %1</source>
         <translation>分享笔记  %1</translation>
     </message>
     <message>
-        <location filename="../src/gui/documentviewer/WizTitleBar.cpp" line="191"/>
+        <location filename="../src/gui/documentviewer/WizTitleBar.cpp" line="188"/>
         <source>View and modify note&apos;s info  %1</source>
         <translation>查看并修改笔记属性  %1</translation>
     </message>
     <message>
-        <location filename="../src/gui/documentviewer/WizTitleBar.cpp" line="201"/>
+        <location filename="../src/gui/documentviewer/WizTitleBar.cpp" line="198"/>
         <source>Add attachments  %1</source>
         <translation>添加附件  %1</translation>
     </message>
     <message>
-        <location filename="../src/gui/documentviewer/WizTitleBar.cpp" line="211"/>
+        <location filename="../src/gui/documentviewer/WizTitleBar.cpp" line="208"/>
         <source>Add comments  %1</source>
         <translation>浏览并添加评论  %1</translation>
     </message>
     <message>
-        <location filename="../src/gui/documentviewer/WizTitleBar.cpp" line="371"/>
-        <location filename="../src/gui/documentviewer/WizTitleBar.cpp" line="743"/>
+        <location filename="../src/gui/documentviewer/WizTitleBar.cpp" line="217"/>
+        <source>Show page zoom widget</source>
+        <translation>显示页面缩放工具</translation>
+    </message>
+    <message>
+        <location filename="../src/gui/documentviewer/WizTitleBar.cpp" line="413"/>
+        <location filename="../src/gui/documentviewer/WizTitleBar.cpp" line="733"/>
         <source>Discard changes</source>
         <translation>丢弃修改</translation>
     </message>
     <message>
-        <location filename="../src/gui/documentviewer/WizTitleBar.cpp" line="375"/>
+        <location filename="../src/gui/documentviewer/WizTitleBar.cpp" line="417"/>
         <source>Editor Options</source>
         <translation>编辑器选项</translation>
     </message>
     <message>
-        <location filename="../src/gui/documentviewer/WizTitleBar.cpp" line="644"/>
+        <location filename="../src/gui/documentviewer/WizTitleBar.cpp" line="634"/>
         <source>Switch to reading mode</source>
         <translation>切换到阅读模式</translation>
     </message>
     <message>
-        <location filename="../src/gui/documentviewer/WizTitleBar.cpp" line="644"/>
+        <location filename="../src/gui/documentviewer/WizTitleBar.cpp" line="634"/>
         <source>In reading mode, the note can not be edited and markdown note can be redered.</source>
         <translation>在阅读模式下，不能编辑笔记。Markdown笔记会在阅读模式下进行渲染。</translation>
     </message>
     <message>
-        <location filename="../src/gui/documentviewer/WizTitleBar.cpp" line="743"/>
+        <location filename="../src/gui/documentviewer/WizTitleBar.cpp" line="733"/>
         <source>Do you really want to discard changes ?</source>
         <translation>你真的想要丢弃修改吗？</translation>
     </message>
@@ -6049,29 +6382,46 @@ w: %3  h: %4</translation>
 <context>
     <name>WizWebEngineView</name>
     <message>
-        <location filename="../src/share/WizWebEngineView.cpp" line="342"/>
+        <location filename="../src/share/WizWebEngineView.cpp" line="236"/>
+        <source>Render process normal exit</source>
+        <translation>渲染进程正常退出</translation>
+    </message>
+    <message>
+        <location filename="../src/share/WizWebEngineView.cpp" line="239"/>
+        <source>Render process abnormal exit</source>
+        <translation>渲染进程不正常退出</translation>
+    </message>
+    <message>
+        <location filename="../src/share/WizWebEngineView.cpp" line="242"/>
+        <source>Render process crashed</source>
+        <translation>渲染进程崩溃</translation>
+    </message>
+    <message>
+        <location filename="../src/share/WizWebEngineView.cpp" line="245"/>
+        <source>Render process killed</source>
+        <translation>渲染进程终止</translation>
+    </message>
+    <message>
+        <location filename="../src/share/WizWebEngineView.cpp" line="249"/>
+        <source>Render process exited with code: %1
+Do you want to reload the page ?</source>
+        <translation>渲染进程退出代码：%1
+你想要重载页面吗？</translation>
+    </message>
+    <message>
+        <location filename="../src/share/WizWebEngineView.cpp" line="504"/>
         <source>Open DevTools</source>
         <translation>打开页面开发者工具</translation>
     </message>
     <message>
-        <location filename="../src/share/WizWebEngineView.cpp" line="345"/>
+        <location filename="../src/share/WizWebEngineView.cpp" line="507"/>
         <source>Open temporary file&apos;s location</source>
         <translation>打开临时文件位置</translation>
     </message>
     <message>
-        <location filename="../src/share/WizWebEngineView.cpp" line="418"/>
+        <location filename="../src/share/WizWebEngineView.cpp" line="577"/>
         <source>Inspect element</source>
         <translation>审查元素</translation>
-    </message>
-    <message>
-        <location filename="../src/share/WizWebEngineView.cpp" line="499"/>
-        <source>Save Page</source>
-        <translation>保存页面</translation>
-    </message>
-    <message>
-        <location filename="../src/share/WizWebEngineView.cpp" line="501"/>
-        <source>MIME HTML (*.mht *.mhtml)</source>
-        <translation></translation>
     </message>
 </context>
 </TS>

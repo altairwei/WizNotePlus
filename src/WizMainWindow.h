@@ -70,7 +70,8 @@ class WizMessageSelector;
 class WizMessageListTitleBar;
 
 class WizDocumentView;
-class WizDocumentWebViewSaverThread;
+class WizDocumentSaverThread;
+class WizDocumentLoaderThread;
 class WizSingleDocumentViewManager;
 class QWebEngineView;
 
@@ -204,6 +205,9 @@ private:
     PublicAPIsServer *m_publicAPIsServer;
     ExternalEditorLauncher *m_externalEditorLauncher;
 
+    WizDocumentSaverThread *m_docSaver;
+    WizDocumentLoaderThread *m_docLoader;
+
 private:
     void initQuitHandler();
     void initSearcher();
@@ -265,6 +269,8 @@ public:
     void createNoteByTemplateCore(const TemplateData& tmplData);
 
     WizMainTabBrowser* mainTabView();
+    WizDocumentSaverThread *docSaver() { return m_docSaver; }
+    WizDocumentLoaderThread *docLoader() { return m_docLoader; }
 
 signals:
     void documentsViewTypeChanged(int);
@@ -286,11 +292,13 @@ public Q_SLOTS:
     void on_actionManual_triggered();
     void on_actionSearch_triggered();
     void on_actionResetSearch_triggered();
+    void on_actionDownloadManager_triggered();
     void on_actionFindReplace_triggered();
     void on_actionSaveAsPDF_triggered();
     void on_actionSaveAsHtml_triggered();
     void on_actionSaveAsMarkdown_triggered();
     void on_actionImportFile_triggered();
+    void on_actionExportFile_triggered();
     void on_actionPrintMargin_triggered();
 
     // menu editing

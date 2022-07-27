@@ -64,6 +64,9 @@ html,
 .wiz-editor-body .CodeMirror pre {
   margin: 0;
 }
+.wiz-editor-body .CodeMirror-scroll {
+  margin-right: 0px; /* Fix issue #216*/
+}
 .wiz-editor-body a {
   word-wrap: break-word;
   text-decoration-skip-ink: none;

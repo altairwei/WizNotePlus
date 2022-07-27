@@ -8,6 +8,7 @@
 #include "share/WizObject.h"
 #include "utils/ExternalEditorLauncher.h"
 #include "gui/tabbrowser/AbstractTabPage.h"
+#include "AbstractDocumentView.h"
 
 class QScrollArea;
 class QLineEdit;
@@ -35,9 +36,11 @@ class WizDocumentTransitionView;
 
 class WizTitleBar;
 class WizEditorToolBar;
+class WizInfoBar;
 class WizTagBar;
+class JSPluginDocSidebar;
 
-class WizDocumentView : public AbstractTabPage
+class WizDocumentView : public AbstractDocumentView
 {
     Q_OBJECT
 
@@ -45,7 +48,7 @@ public:
     WizDocumentView(WizExplorerApp& app, QWidget* parent = nullptr);
     ~WizDocumentView();
 
-    virtual QSize sizeHint() const;
+    virtual QSize sizeHint() const override;
     void setSizeHint(QSize size);
 
     QWidget* client() const { return m_stack; }
@@ -56,7 +59,6 @@ public:
     WizTitleBar* titleBar() { return m_title; }
 
     QString Title() override { return m_note.strTitle; }
-    QList<QAction *> TabContextMenuActions() override;
 
     void waitForDone();
     void waitForSave();
@@ -71,12 +73,10 @@ protected:
     WizDocumentTransitionView* m_transitionView;
 
     QStackedWidget* m_stack;
-    QWidget* m_msgWidget;
-    QLabel* m_msgLabel;
-
     QWidget* m_docView;
     WizDocumentWebView* m_web;
     WizWebEngineView* m_comments;
+    JSPluginDocSidebar* m_pluginSidebar;
     WizLocalProgressWebView* m_commentWidget;
     WizSplitter* m_splitter;
     WizTitleBar* m_title;
@@ -98,14 +98,14 @@ private:
     //
     int m_editStatus;  // document edit or version status
     QSize m_sizeHint;
-    QAction *m_locateAction;
-    QAction *m_copyInternalLinkAction;
+    WizEditorToolBar* m_editorBar;
+    WizInfoBar* m_infoBar;
 
 public:
-    const WIZDOCUMENTDATAEX& note() const { return m_note; }
+    const WIZDOCUMENTDATAEX& note() const override { return m_note; }
     bool isLocked() const { return m_bLocked; }
     bool isEditing() const { return m_editorMode == modeEditor; }
-    WizEditorMode editorMode() const { return m_editorMode; }
+    WizEditorMode editorMode() const override { return m_editorMode; }
 
     bool reload();
     void reloadNote();
@@ -122,19 +122,20 @@ public:
     void settingsChanged();
     void sendDocumentSavedSignal(const QString& strGUID, const QString& strKbGUID);
     void resetTitle(const QString& strTitle);
-    void promptMessage(const QString& strMsg);
     bool checkListClickable();
     void setStatusToEditingByCheckList();
     //
     void showCoachingTips();
     //
     void wordCount(std::function<void(const QString&)> callback);
+    WizEditorToolBar *editorToolBar() { return m_editorBar; }
 
 signals:
     void documentSaved(const QString& strGUID, WizDocumentView* viewer);
     void checkDocumentEditStatusRequest(const QString& strKbGUID, const QString& strGUID);
     void stopCheckDocumentEditStatusRequest(const QString& strKbGUID, const QString& strGUID);
     void viewNoteInExternalEditorRequest(const WizExternalEditorData &editorData, const WIZDOCUMENTDATAEX &noteData);
+    void shareDocumentByLinkRequest(const QString& strKbGUID, const QString& strGUID);
 
 public Q_SLOTS:
     void onViewNoteRequested(WizDocumentView* view, const WIZDOCUMENTDATAEX& doc, bool forceEditing);
@@ -171,7 +172,14 @@ public Q_SLOTS:
     void on_viewNoteInExternalEditor_request(QString& Name, QString& ProgramFile,
                                                 QString& Arguments, int TextEditor, int UTF8Encoding);
     void handleDiscardChangesRequest();
-    void handleWindowCloseRequested();
+    void handleWindowCloseRequest();
+    void handlePluginSidebarRequest(QAction *ac, bool checked);
+    void shareNoteByEmail();
+    void shareNoteByLink();
+    void onEditorFocusIn();
+    void onEditorFocusOut();
+    void onTitleReturnPressed();
+    void onTitleEditingFinished(const QString &newTitle);
 
 private:
     void loadNote(const WIZDOCUMENTDATAEX &doc);
@@ -183,6 +191,9 @@ private:
     bool checkDocumentEditable(bool checklist);
     //
     void stopCheckDocumentAnimations();
+    void getMailSender(std::function<void(QString)> callback);
+    void showInfoBar();
+    void showEditorBar();
 };
 
 

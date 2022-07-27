@@ -15,6 +15,8 @@
 #include <QClipboard>
 #include <QFileDialog>
 #include <QTimer>
+#include <QMessageBox>
+#include <QMargins>
 
 #ifdef Q_OS_MAC
 #include "mac/WizMacHelper.h"
@@ -23,12 +25,15 @@
 #endif
 
 #include "WizMisc.h"
-#include "utils/WizPathResolve.h"
 #include "WizMainWindow.h"
-#include "gui/tabbrowser/WizMainTabBrowser.h"
 #include "WizDevToolsDialog.h"
+#include "utils/WizPathResolve.h"
+#include "utils/WizStyleHelper.h"
+#include "gui/tabbrowser/WizMainTabBrowser.h"
 #include "gui/documentviewer/WizDocumentView.h"
 #include "share/WizSettings.h"
+#include "share/WizMisc.h"
+#include "widgets/DownloadManagerWidget.h"
 
 
 WizWebEngineAsyncMethodResultObject::WizWebEngineAsyncMethodResultObject(QObject* parent)
@@ -48,21 +53,32 @@ void WizWebEngineAsyncMethodResultObject::setResult(const QVariant& result)
     emit resultAcquired(m_result);
 }
 
+/*!
+    \brief Create a Web Engine Profile object
 
+    Exposing C++ APIs in this way makes it impossible for JavaScript code to
+    predict when APIs \a objects will be created. Therefore we prefer to let
+    the JavaScript code create the APIs objects itself. This function is only
+    used to run some of the WizNote web services.
+*/
 QWebEngineProfile* createWebEngineProfile(const WizWebEngineInjectObjectCollection& objects, QObject* parent)
 {
     if (objects.empty())
         return nullptr;
+
     // Create a new profile
     QWebEngineProfile *profile = new QWebEngineProfile("WizNoteWebEngineProfile", parent);
-    // Read qtwebchannel library
+
+    // Load qtwebchannel library
     QString jsWebChannelFileName = Utils::WizPathResolve::resourcesPath() + "files/webengine/wizwebchannel.js";
     QString jsWebChannel;
     WizLoadUnicodeTextFromFile(jsWebChannelFileName, jsWebChannel);
-    // Read javascript initialization script
+
+    // Load javascript initialization script
     QString initFileName = Utils::WizPathResolve::resourcesPath() + "files/webengine/wizwebengineviewinit.js";
     QString jsInit;
     WizLoadUnicodeTextFromFile(initFileName, jsInit);
+
     // Get all names of published objects
     CWizStdStringArray names;
     WizWebEngineInjectObjectCollection::const_iterator inject = objects.constBegin();
@@ -70,13 +86,15 @@ QWebEngineProfile* createWebEngineProfile(const WizWebEngineInjectObjectCollecti
         names.push_back("\"" + inject.key() + "\"");
         ++inject;
     }
-    // 
+
+    // Generate js scripts for these objects
     CString objectNames;
     WizStringArrayToText(names, objectNames, ", ");
     jsInit.replace("__objectNames__", objectNames);
+
     // Combine scripts
     QString jsAll = jsWebChannel + "\n" + jsInit;
-    //
+
     {
         QWebEngineScript script;
         script.setSourceCode(jsAll);
@@ -86,8 +104,47 @@ QWebEngineProfile* createWebEngineProfile(const WizWebEngineInjectObjectCollecti
         script.setRunsOnSubFrames(false); // if set True, it will cause some error in javascript.
         profile->scripts()->insert(script);
     }
-    //
+
+    insertScrollbarStyleSheet(profile);
+
+    QObject::connect(profile, &QWebEngineProfile::downloadRequested,
+                     &DownloadManagerWidget::instance(), &DownloadManagerWidget::downloadRequested);
+
     return profile;
+}
+
+void insertStyleSheet(QWebEngineProfile *profile, const QString &name, const QString &source)
+{
+      QWebEngineScript script;
+      QString s = QString::fromLatin1("(function() {"\
+                                      "    css = document.createElement('style');"\
+                                      "    css.type = 'text/css';"\
+                                      "    css.id = '%1';"\
+                                      "    document.head.appendChild(css);"\
+                                      "    css.innerText = '%2';"\
+                                      "})()").arg(name).arg(source.simplified());
+
+      script.setName(name);
+      script.setSourceCode(s);
+      script.setInjectionPoint(QWebEngineScript::DocumentReady);
+      script.setRunsOnSubFrames(true);
+      script.setWorldId(QWebEngineScript::ApplicationWorld);
+      profile->scripts()->insert(script);
+}
+
+void insertScrollbarStyleSheet(QWebEngineProfile *profile)
+{
+    QString strTheme = Utils::WizStyleHelper::themeName();
+    QDir skinFolder = WizGetSkinResourcePath(strTheme);
+    if (skinFolder.exists("webkit_scrollbar.css")) {
+        QString source;
+        bool ok = WizLoadUnicodeTextFromFile(
+            skinFolder.absoluteFilePath("webkit_scrollbar.css"),
+            source, "UTF-8");
+        if (ok)
+            insertStyleSheet(profile, "webkit_scrollbar", source);
+    }
+
 }
 
 WizWebEnginePage::WizWebEnginePage(const WizWebEngineInjectObjectCollection& objects, QWebEngineProfile *profile, QObject* parent)
@@ -170,6 +227,30 @@ WizWebEngineView::WizWebEngineView(const WizWebEngineInjectObjectCollection& obj
     memset(m_viewActions, 0, sizeof(m_viewActions));
 
     setupPage(new WizWebEnginePage(objects, this));
+
+    connect(this, &QWebEngineView::renderProcessTerminated,
+            [this](QWebEnginePage::RenderProcessTerminationStatus termStatus, int statusCode) {
+        QString status;
+        switch (termStatus) {
+        case QWebEnginePage::NormalTerminationStatus:
+            status = tr("Render process normal exit");
+            break;
+        case QWebEnginePage::AbnormalTerminationStatus:
+            status = tr("Render process abnormal exit");
+            break;
+        case QWebEnginePage::CrashedTerminationStatus:
+            status = tr("Render process crashed");
+            break;
+        case QWebEnginePage::KilledTerminationStatus:
+            status = tr("Render process killed");
+            break;
+        }
+        QMessageBox::StandardButton btn = QMessageBox::question(window(), status,
+                                                   tr("Render process exited with code: %1\n"
+                                                      "Do you want to reload the page ?").arg(statusCode));
+        if (btn == QMessageBox::Yes)
+            QTimer::singleShot(0, [this] { reload(); });
+    });
 }
 
 WizWebEngineView::~WizWebEngineView()
@@ -296,6 +377,7 @@ void WizWebEngineView::SetZoom(int percent)
         return;
     qreal factor = static_cast<qreal>(percent) / 100;
     setZoomFactor(factor);
+    Q_EMIT zoomFactorChanged(factor);
 }
 
 /*!
@@ -316,6 +398,9 @@ double WizWebEngineView::scaleUp()
     factor = (factor > 5.0) ? 5.0 : factor;
     setZoomFactor(factor);
 
+    displayZoomWidget();
+    Q_EMIT zoomFactorChanged(factor);
+
     return zoomFactor();
 }
 
@@ -327,7 +412,84 @@ double WizWebEngineView::scaleDown()
     factor = (factor < 0.5) ? 0.5 : factor;
     setZoomFactor(factor);
 
+    displayZoomWidget();
+    Q_EMIT zoomFactorChanged(factor);
+
     return zoomFactor();
+}
+
+void WizWebEngineView::hideEvent(QHideEvent *event)
+{
+    if (m_zoomWgt)
+        m_zoomWgt->close();
+    QWebEngineView::hideEvent(event);
+}
+
+void WizWebEngineView::createZoomWidget()
+{
+    m_zoomWgt = new WebPageZoomWidget(this);
+    connect(this, &WizWebEngineView::zoomFactorChanged,
+            m_zoomWgt, &WebPageZoomWidget::onZoomFactorChanged);
+    connect(m_zoomWgt, &WebPageZoomWidget::scaleUpRequested,
+            this, &WizWebEngineView::scaleUp);
+    connect(m_zoomWgt, &WebPageZoomWidget::scaleDownRequested,
+            this, &WizWebEngineView::scaleDown);
+    connect(m_zoomWgt, &WebPageZoomWidget::resetZoomFactorRequested,
+            this, [&] { SetZoom(100); });
+    connect(m_zoomWgt, &WebPageZoomWidget::zoomFinished,
+            this, &WizWebEngineView::zoomWidgetFinished);
+}
+
+void WizWebEngineView::displayZoomWidget()
+{
+    if (!m_zoomWgt) {
+        createZoomWidget();
+        QPoint leftTop = this->pos();
+        if (parentWidget())
+            leftTop = parentWidget()->mapToGlobal(leftTop);
+        QRect loc(leftTop, size());
+        QMargins margin = m_zoomWgt->layout()->contentsMargins();
+        loc.moveTop(loc.top() - margin.top() + 4);
+        m_zoomWgt->setGeometry(
+            QStyle::alignedRect(
+                Qt::LeftToRight,
+                Qt::AlignHCenter | Qt::AlignTop,
+                m_zoomWgt->sizeHint(),
+                loc
+            )
+        );
+        m_zoomWgt->show();
+    }
+}
+
+void WizWebEngineView::handleShowZoomWidgetRequest(bool show, const QRect &btnLocation)
+{
+    if (show) {
+        if (!m_zoomWgt)
+            createZoomWidget();
+
+        m_zoomWgt->clearTimer();
+        m_zoomWgt->setTimeOut(0);
+
+        QRect loc = btnLocation;
+        loc.moveTop(loc.top() + loc.height());
+        QMargins margin = m_zoomWgt->layout()->contentsMargins();
+        loc.moveRight(loc.right() + margin.right());
+        loc.moveTop(loc.top() - margin.top());
+        m_zoomWgt->setGeometry(
+            QStyle::alignedRect(
+                Qt::LeftToRight,
+                Qt::AlignRight | Qt::AlignTop,
+                m_zoomWgt->sizeHint(),
+                loc
+            )
+        );
+        m_zoomWgt->show();
+
+    } else {
+        if (m_zoomWgt)
+            m_zoomWgt->close();
+    }
 }
 
 QAction *WizWebEngineView::viewAction(ViewAction action) const
@@ -385,9 +547,6 @@ void WizWebEngineView::setupWebActions()
             this, &WizWebEngineView::openDevTools);
 #endif
 
-    // save page action
-    connect(pageAction(QWebEnginePage::SavePage), &QAction::triggered, 
-            this, &WizWebEngineView::handleSavePageTriggered);
 }
 
 /*!
@@ -482,7 +641,7 @@ void WizWebEngineView::openDevTools()
                 Qt::LeftToRight,
                 Qt::AlignCenter,
                 QSize(800, 500),
-                qApp->desktop()->availableGeometry()
+                this->screen()->availableGeometry()
             )
         );
     }
@@ -494,19 +653,6 @@ void WizWebEngineView::openDevTools()
 }
 #endif
 
-void WizWebEngineView::handleSavePageTriggered()
-{
-    QString fileName = QFileDialog::getSaveFileName(this, tr("Save Page"),
-        QDir::home().absoluteFilePath(documentTitle() + ".mhtml"),
-        tr("MIME HTML (*.mht *.mhtml)"));
-    if (!fileName.isEmpty())
-        page()->save(fileName);
-}
-
-/**
- * @brief WizWebEngineView::getPage
- * @return
- */
 WizWebEnginePage* WizWebEngineView::getPage() {
     return qobject_cast<WizWebEnginePage*>(page());
 }
@@ -560,24 +706,33 @@ void WizWebEngineView::childEvent(QChildEvent *ev)
 bool WizWebEngineView::eventFilter(QObject *obj, QEvent *ev)
 {
     // work around QTBUG-43602
+
+#ifndef Q_OS_MAC
     if (ev->type() == QEvent::KeyPress) {
         QKeyEvent *keyEvent = static_cast<QKeyEvent *>(ev);
         if (keyEvent->modifiers() && keyEvent->key()) {
             if (keyEvent->modifiers() & Qt::ControlModifier
                     && keyEvent->key() == Qt::Key_Up) {
                 scaleUp();
+                return true;
             } else if (keyEvent->modifiers() & Qt::ControlModifier
                             && keyEvent->key() == Qt::Key_Down) {
                 scaleDown();
+                return true;
             }
         }
-    } else if (ev->type() == QEvent::Wheel) {
+    }
+#endif // Q_OS_MAC
+
+    if (ev->type() == QEvent::Wheel) {
         QWheelEvent *whellEvent = static_cast<QWheelEvent *>(ev);
         if (whellEvent->modifiers() == Qt::ControlModifier) {
             if (whellEvent->delta() > 0) {
                 scaleUp();
+                return true;
             } else {
                 scaleDown();
+                return true;
             }
         }
     }
@@ -698,3 +853,55 @@ void WizNavigationForwarderPage::setWebWindowType(QWebEnginePage::WebWindowType 
 {
     m_windowType = type;
 }
+
+
+WebPageZoomWidget::WebPageZoomWidget(QWidget *parent)
+    : ShadowWidget(parent)
+    , m_resetBtn(new QPushButton)
+    , m_scaleUpBtn(new QPushButton)
+    , m_scaleDownBtn(new QPushButton)
+    , m_factorLabel(new QLabel)
+{
+    m_scaleUpBtn->setObjectName("scaleUpBtn");
+    m_scaleDownBtn->setObjectName("scaleDownBtn");
+    m_resetBtn->setObjectName("resetBtn");
+    m_factorLabel->setObjectName("factorLabel");
+
+    auto layout = new QHBoxLayout;
+    layout->addWidget(m_factorLabel);
+    layout->addStretch();
+    layout->addWidget(m_scaleDownBtn);
+    layout->addWidget(m_scaleUpBtn);
+    layout->addWidget(m_resetBtn);
+    widget()->setLayout(layout);
+
+    QString strTheme = Utils::WizStyleHelper::themeName();
+    m_factorLabel->setText("100%");
+    m_resetBtn->setText(tr("Reset"));
+    m_scaleDownBtn->setIcon(WizLoadSkinIcon(strTheme, "scaleDown"));
+    m_scaleUpBtn->setIcon(WizLoadSkinIcon(strTheme, "scaleUp"));
+
+    setTimeOut(2000);
+
+    connect(m_scaleUpBtn, &QPushButton::clicked,
+            this, &WebPageZoomWidget::scaleUpRequested);
+    connect(m_scaleDownBtn, &QPushButton::clicked,
+            this, &WebPageZoomWidget::scaleDownRequested);
+    connect(m_resetBtn, &QPushButton::clicked,
+            this, &WebPageZoomWidget::resetZoomFactorRequested);
+}
+
+void WebPageZoomWidget::closeEvent(QCloseEvent *event)
+{
+    Q_EMIT zoomFinished();
+    ShadowWidget::closeEvent(event);
+}
+
+void WebPageZoomWidget::onZoomFactorChanged(qreal factor)
+{
+    int fa = static_cast<int>( qRound(factor * 100) );
+    m_factorLabel->setText(QString("%1%").arg(fa, 3, 10));
+    resetTimer();
+}
+
+

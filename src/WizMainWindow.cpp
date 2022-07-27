@@ -61,6 +61,7 @@
 #include "widgets/WizLocalProgressWebView.h"
 #include "widgets/WizTemplatePurchaseDialog.h"
 #include "widgets/WizCodeEditorDialog.h"
+#include "widgets/DownloadManagerWidget.h"
 
 #include "WizNoteStyle.h"
 #include "WizDocumentHistory.h"
@@ -70,9 +71,8 @@
 #include "WizDocumentSelectionView.h"
 #include "WizDocumentTransitionView.h"
 #include "WizMessageListView.h"
-
 #include "WizPopupButton.h"
-#include "widgets/WizUserInfoWidget.h"
+
 #include "sync/WizApiEntry.h"
 #include "sync/WizKMSync.h"
 #include "sync/WizAvatarHost.h"
@@ -85,15 +85,18 @@
 #include "share/WizAnalyzer.h"
 #include "share/WizTranslater.h"
 #include "share/WizThreads.h"
-#include "widgets/WizShareLinkDialog.h"
 
+#include "widgets/WizUserInfoWidget.h"
+#include "widgets/WizShareLinkDialog.h"
 #include "widgets/WizCustomToolBar.h"
 #include "widgets/WizTipsWidget.h"
+#include "widgets/WizExecutingActionDialog.h"
+#include "widgets/WizUserServiceExprDialog.h"
+#include "widgets/FileExportWizard.h"
+
 #include "WizPositionDelegate.h"
 #include "core/WizAccountManager.h"
 #include "share/WizWebEngineView.h"
-#include "widgets/WizExecutingActionDialog.h"
-#include "widgets/WizUserServiceExprDialog.h"
 #include "share/jsoncpp/json/json.h"
 #include "WizCellButton.h"
 #include "WizFileImporter.h"
@@ -113,6 +116,8 @@
 #include "gui/documentviewer/WizDocumentWebView.h"
 #include "gui/documentviewer/WizEditorToolBar.h"
 #include "gui/documentviewer/WizSvgEditorDialog.h"
+#include "gui/documentviewer/CollaborationDocView.h"
+#include "gui/documentviewer/DocumentLoaderSaver.h"
 
 #define MAINWINDOW  "MainWindow"
 
@@ -172,6 +177,9 @@ WizMainWindow::WizMainWindow(WizDatabaseManager& dbMgr, QWidget *parent)
     WizGlobal::setMainWindow(this);
     windowInstance = this;
     qRegisterMetaType<WIZGROUPDATA>("WIZGROUPDATA");
+
+    m_publicAPIsServer = new PublicAPIsServer(
+        {{"WizExplorerApp", m_IWizExplorerApp}}, this);
 
     initSyncQuick();
 
@@ -257,11 +265,15 @@ WizMainWindow::WizMainWindow(WizDatabaseManager& dbMgr, QWidget *parent)
         syncMessageTimer->start(3 * 1000 * 60);
     }
 
-    m_publicAPIsServer = new PublicAPIsServer(
-        {{"WizExplorerApp", m_IWizExplorerApp}}, this);
-
     connect(Utils::WizLogger::logger(), &Utils::WizLogger::notifyRequested,
             this, &WizMainWindow::showBubbleNotification);
+
+    m_docSaver = new WizDocumentSaverThread(dbMgr, this);
+    m_docLoader = new WizDocumentLoaderThread(dbMgr, this);
+
+    insertScrollbarStyleSheet(QWebEngineProfile::defaultProfile());
+    connect(QWebEngineProfile::defaultProfile(), &QWebEngineProfile::downloadRequested,
+            &DownloadManagerWidget::instance(), &DownloadManagerWidget::downloadRequested);
 }
 
 
@@ -343,6 +355,15 @@ void WizMainWindow::cleanOnQuit()
     quick->waitForDone();
 
     m_searcher->waitForDone();
+
+    if (m_docLoader) {
+        m_docLoader->waitForDone();
+        m_docLoader = nullptr;
+    }
+    if (m_docSaver) {
+        m_docSaver->waitForDone();
+        m_docSaver = nullptr;
+    }
 
     // 处理所有标签
     processAllDocumentViews([=](WizDocumentView* docView){
@@ -723,8 +744,6 @@ void WizMainWindow::on_viewMessage_request(const WIZMESSAGEDATA& msg)
             && !m_dbMgr.db(msg.kbGUID).documentFromGuid(msg.documentGUID, doc)
             )
     {
-        //FIXME: 在当前文档视图弹出消息，但如果新标签是网页呢？
-        //m_doc->promptMessage(tr("Can't find note %1 , may be it has been deleted.").arg(msg.title));
         QMessageBox::information(this, tr("Warning"), tr("Can't find note %1 , may be it has been deleted.").arg(msg.title));
         return;
     }
@@ -1136,6 +1155,9 @@ void WizMainWindow::on_editor_statusChanged(const QString& currentStyle)
 {
 }
 
+/*!
+    Download templates data if necessary
+ */
 void WizMainWindow::createNoteByTemplate(const TemplateData& tmplData)
 {
     QFileInfo info(tmplData.strFileName);
@@ -1146,78 +1168,63 @@ void WizMainWindow::createNoteByTemplate(const TemplateData& tmplData)
     else
     {
         qDebug() << "template file not exists : " << tmplData.strFileName;
-        //
         WizExecutingActionDialog::executeAction(tr("Downloading template..."), WIZ_THREAD_DEFAULT, [=]{
-            //
             bool ret = WizNoteManager::downloadTemplateBlocked(tmplData);
-            //
             ::WizExecuteOnThread(WIZ_THREAD_MAIN, [=]{
-
-                if (ret)
-                {
+                if (ret) {
                     createNoteByTemplateCore(tmplData);
-                }
-                else
-                {
-                    QMessageBox::warning(this, tr("Error"), tr("Can't download template from server. Please try again later."));
+                } else {
+                    QMessageBox::warning(this,
+                        tr("Error"), tr("Can't download template from server. Please try again later."));
                 }
             });
         });
     }
 }
 
-/**
- * @brief Create document from template.
- * @param tmplData Template information.
+/*!
+    Create document from template \a tmplData.
  */
 void WizMainWindow::createNoteByTemplateCore(const TemplateData& tmplData)
 {
     QFileInfo info(tmplData.strFileName);
-    //
     initVariableBeforCreateNote();
-    //
+
     QString kbGUID;
     WIZTAGDATA currTag;
     QString currLocation;
     m_category->getAvailableNewNoteTagAndLocation(kbGUID, currTag, currLocation);
-    //
+
     if (currLocation.isEmpty())
-    {
         currLocation = m_dbMgr.db(kbGUID).getDefaultNoteLocation();
-    }
-    //
-    WIZDOCUMENTDATA data;
+
+    WIZDOCUMENTDATAEX data;
     data.strKbGUID = kbGUID;
     data.strType = tmplData.buildInName;
-    //
     data.strTitle = tmplData.strTitle.isEmpty() ? info.completeBaseName() : tmplData.strTitle;
-    //  Journal {date}({week})
-    if (tmplData.strTitle.isEmpty())
-    {
+
+    // Journal {date}({week})
+    if (tmplData.strTitle.isEmpty()) {
         data.strTitle = tmplData.strName;
-    }
-    else
-    {
+    } else {
         WizOleDateTime dt;
         data.strTitle.replace("{date}", dt.toLocalLongDate());
         data.strTitle.replace("{date_time}", dt.toLocalLongDate() + " " + dt.toString("hh:mm:ss"));
         QLocale local;
         data.strTitle.replace("{week}", local.toString(dt.toLocalTime(), "ddd"));
     }
-    //
-    if (kbGUID.isEmpty())   //personal
-    {
+
+    // Personal
+    if (kbGUID.isEmpty()) {
+        data.strKbGUID = m_dbMgr.db().kbGUID();
         data.strLocation = tmplData.strFolder;
 
-        if (data.strLocation.isEmpty())
-        {
+        if (data.strLocation.isEmpty()) {
             data.strLocation = currLocation;
-        }
-        else
-        {
+        } else {
             data.strLocation.replace("{year}", QDate::currentDate().toString("yyyy"));
             data.strLocation.replace("{month}", QDate::currentDate().toString("MM"));
-            //
+
             if (WizCategoryViewFolderItem* folder = m_category->findFolder(data.strLocation, true, false))
             {
                 if (m_category->currentItem() != folder)
@@ -1226,19 +1233,23 @@ void WizMainWindow::createNoteByTemplateCore(const TemplateData& tmplData)
                 }
             }
         }
-    }
-    else        
-    {
+    } else {
         data.strLocation = currLocation;
     }
-    //
-    WizNoteManager noteManager(m_dbMgr);
-    if (!noteManager.createNoteByTemplate(data, currTag, tmplData.strFileName))
-        return;
 
-    bool isHandwriting = false;
+    // Actually create the note
+    WizNoteManager noteManager(m_dbMgr);
+    if (data.strType == "collaboration") {
+        CollaborationDocView *newView = new CollaborationDocView(data, *this, this);
+        newView->createDocument(currTag);
+        m_mainTabBrowser->createTab(newView);
+        return;
+    } else {
+        if (!noteManager.createNoteByTemplate(data, currTag, tmplData.strFileName))
+            return;
+    }
+
     if (data.strType == "svgpainter") {
-        isHandwriting = true;
         createHandwritingNote(m_dbMgr, data, this);
     }
 
@@ -1589,8 +1600,8 @@ void WizMainWindow::prepareNewNoteMenu()
 }
 
 
-/**
- * @brief 根据新建笔记菜单的选项来从模板创建笔记
+/*!
+    Decode templates data from action
  */
 void WizMainWindow::on_newNoteByExtraMenu_request()
 {
@@ -1865,7 +1876,7 @@ void WizMainWindow::initToolBar()
     buttonSync->setAction(m_actions->actionFromName(WIZACTION_GLOBAL_SYNC));
     m_toolBar->addWidget(buttonSync);
 
-    m_spacerForToolButtonAdjust = new WizFixedSpacer(QSize(20, 1), m_toolBar);
+    m_spacerForToolButtonAdjust = new WizFixedSpacer(QSize(10, 1), m_toolBar);
     m_toolBar->addWidget(m_spacerForToolButtonAdjust);
 
     // 搜索栏，值得注意搜索栏的长度随着笔记列表宽度而变化
@@ -1874,7 +1885,7 @@ void WizMainWindow::initToolBar()
     m_searchWidget->setFixedWidth(200);
     m_toolBar->addWidget(m_searchWidget);
 
-    m_toolBar->addWidget(new WizFixedSpacer(QSize(20, 1), m_toolBar));
+    m_toolBar->addWidget(new WizFixedSpacer(QSize(10, 1), m_toolBar));
 
     /*
     // 前一篇文档
@@ -1888,8 +1899,6 @@ void WizMainWindow::initToolBar()
     buttonForward->setAction(m_actions->actionFromName(WIZACTION_GLOBAL_GOFORWARD));
     m_toolBar->addWidget(buttonForward);
     */
-
-    m_toolBar->addWidget(new WizFixedSpacer(QSize(20, 1), m_toolBar));
 
     // 新建笔记[+]菜单
     prepareNewNoteMenu();
@@ -1940,13 +1949,13 @@ void WizMainWindow::initClient()
 {
 
     setCentralWidget(rootWidget());
-    //
+
     QWidget* main = clientWidget();
-    //
+
     m_clienWgt = new QWidget(main);
     clientLayout()->addWidget(m_clienWgt);
 
-    m_clienWgt->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Minimum);
+    m_clienWgt->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Preferred);
 
     QPalette pal = m_clienWgt->palette();
     pal.setColor(QPalette::Window, QColor(Qt::transparent));
@@ -2021,7 +2030,7 @@ void WizMainWindow::initClient()
 QWidget* WizMainWindow::createNoteListView()
 {
     m_noteListWidget = new QWidget(this);
-    m_noteListWidget->setMinimumWidth(100);
+    //m_noteListWidget->setMinimumWidth(100);
 
     QVBoxLayout* layoutList = new QVBoxLayout();
     layoutList->setContentsMargins(0, 0, 0, 0);
@@ -2096,7 +2105,7 @@ QWidget* WizMainWindow::createNoteListView()
 QWidget* WizMainWindow::createMessageListView()
 {
     m_msgListWidget = new QWidget(this);
-    m_msgListWidget->setMinimumWidth(100);
+    //m_msgListWidget->setMinimumWidth(100);
     QVBoxLayout* layoutList = new QVBoxLayout();
     layoutList->setContentsMargins(0, 0, 0, 0);
     layoutList->setSpacing(0);
@@ -3131,6 +3140,11 @@ void WizMainWindow::resetSearchStatus()
     m_category->restoreSelection();
 }
 
+void WizMainWindow::on_actionDownloadManager_triggered()
+{
+    DownloadManagerWidget::instance().show();
+}
+
 void WizMainWindow::on_actionResetSearch_triggered()
 {
     resetSearchStatus();
@@ -3183,6 +3197,13 @@ void WizMainWindow::on_actionImportFile_triggered()
         m_category->on_action_importFile();
     }
     WizGetAnalyzer().logAction("MenuBarImportFile");
+}
+
+void WizMainWindow::on_actionExportFile_triggered()
+{
+    FileExportWizard dialog(*this, this);
+    dialog.exec();
+    WizGetAnalyzer().logAction("MenuBarExportFile");
 }
 
 void WizMainWindow::on_actionPrintMargin_triggered()
@@ -3632,12 +3653,22 @@ WizDocumentView* WizMainWindow::createDocumentView()
 {
     //FIXME: This function will take about 1200 milliseconds.
     WizDocumentView* newDocView = new WizDocumentView(*this);
+    auto newWebView = newDocView->web();
 
     // Binding signals
     //-------------------------------------------------------------------
 
-    connect(newDocView->web(), SIGNAL(shareDocumentByLinkRequest(QString,QString)),
-            SLOT(on_shareDocumentByLink_request(QString,QString)));
+    connect(newWebView, &WizDocumentWebView::loadDocumentRequested, m_docLoader, &WizDocumentLoaderThread::load);
+    connect(m_docLoader, &WizDocumentLoaderThread::loaded, newWebView, &WizDocumentWebView::onDocumentReady, Qt::QueuedConnection);
+    connect(m_docLoader, &WizDocumentLoaderThread::loadFailed, [this] {
+        QMessageBox::critical(this, tr("Error"), tr("Can't view note: (Can't unzip note data)"));
+    });
+
+    connect(newWebView, &WizDocumentWebView::saveDocumentRequested, m_docSaver, &WizDocumentSaverThread::save);
+    connect(m_docSaver, &WizDocumentSaverThread::saved, newWebView, &WizDocumentWebView::onDocumentSaved, Qt::QueuedConnection);
+
+    connect(newDocView, &WizDocumentView::shareDocumentByLinkRequest,
+            this, &WizMainWindow::on_shareDocumentByLink_request);
     connect(newDocView, SIGNAL(documentSaved(QString,WizDocumentView*)),
             m_singleViewMgr, SIGNAL(documentChanged(QString,WizDocumentView*)));
     connect(m_singleViewMgr, SIGNAL(documentChanged(QString,WizDocumentView*)),
@@ -3653,8 +3684,8 @@ WizDocumentView* WizMainWindow::createDocumentView()
     //-------------------------------------------------------------------
 
     newDocView->web()->setInSeperateWindow(false);
-    newDocView->commentWidget()->setMinimumWidth(195);
-    newDocView->web()->setMinimumWidth(576);
+    //newDocView->commentWidget()->setMinimumWidth(195);
+    //newDocView->web()->setMinimumWidth(576);
 
     return newDocView;
 }
@@ -3704,6 +3735,7 @@ void WizMainWindow::viewDocument(const WIZDOCUMENTDATAEX& data, bool addToHistor
 void WizMainWindow::viewDocument(const WIZDOCUMENTDATAEX& data)
 {
     Q_ASSERT(!data.strGUID.isEmpty());
+
     // 遍历tab，查找已经打开的标签中是否有该文档
     for (int i = 0; i < m_mainTabBrowser->count(); ++i) {
         WizDocumentView* docView = qobject_cast<WizDocumentView*>(m_mainTabBrowser->widget(i));
@@ -3717,23 +3749,40 @@ void WizMainWindow::viewDocument(const WIZDOCUMENTDATAEX& data)
         }
 
     }
+
     // 重置许可
     resetPermission(data.strKbGUID, data.strOwner);
-    //
+
     bool forceEditing = false;
     if (data.strGUID == m_documentForEditing.strGUID)
     {
         forceEditing = true;
         m_documentForEditing = WIZDOCUMENTDATA();
     }
-    WizDocumentView* newDocView = createDocumentView();
-    int index = m_mainTabBrowser->createTab(newDocView);
-    m_mainTabBrowser->setTabText(index, data.strTitle);
-    //TODO: directly invoke newDocView->viewNote() instead of signaling.
-    WizGlobal::emitViewNoteRequested(newDocView, data, forceEditing);
-    setCurrentDocumentView(newDocView); //FIXME: do not keep m_doc
-    //
+
+    AbstractDocumentView *view = nullptr;
+    if (data.strType == "collaboration") {
+        CollaborationDocView *newView = new CollaborationDocView(data, *this, this);
+        newView->setEditorMode(modeReader);
+        newView->loadDocument();
+        int index = m_mainTabBrowser->createTab(newView);
+        m_mainTabBrowser->setTabText(index, data.strTitle);
+        view = newView;
+    } else  {
+        WizDocumentView* newDocView = createDocumentView();
+        int index = m_mainTabBrowser->createTab(newDocView);
+        m_mainTabBrowser->setTabText(index, data.strTitle);
+        //TODO: directly invoke newDocView->viewNote() instead of signaling.
+        WizGlobal::emitViewNoteRequested(newDocView, data, forceEditing);
+        setCurrentDocumentView(newDocView); //FIXME: do not keep m_doc
+        view = newDocView;
+    }
+
+    connect(view, &AbstractDocumentView::locateDocumentRequest,
+            this, QOverload<const WIZDOCUMENTDATA&>::of(&WizMainWindow::locateDocument));
+
     m_actions->actionFromName(WIZACTION_GLOBAL_SAVE_AS_MARKDOWN)->setEnabled(WizIsMarkdownNote(data));
+
     return;
 }
 

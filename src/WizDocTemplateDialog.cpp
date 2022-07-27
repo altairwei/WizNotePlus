@@ -536,7 +536,7 @@ bool getTemplateListFroNewNoteMenu(QList<TemplateData>& tmplList)
     // 内置的handwriting模板
     TemplateData tmplHandwriting;
     tmplHandwriting.type = BuildInTemplate;
-    tmplHandwriting.strFileName = Utils::WizPathResolve::resourcesPath() + "templates/generic/handwriting.ziw";;
+    tmplHandwriting.strFileName = Utils::WizPathResolve::resourcesPath() + "templates/generic/handwriting.ziw";
     tmplHandwriting.strName = QObject::tr("Handwriting Note");
     tmplHandwriting.strTitle = QObject::tr("Handwriting Note");
     tmplHandwriting.buildInName = "svgpainter";
@@ -546,12 +546,22 @@ bool getTemplateListFroNewNoteMenu(QList<TemplateData>& tmplList)
     // 内置的outline模板
     TemplateData tmplOutlone;
     tmplOutlone.type = BuildInTemplate;
-    tmplOutlone.strFileName = Utils::WizPathResolve::resourcesPath() + "templates/generic/newnote.ziw";;
+    tmplOutlone.strFileName = Utils::WizPathResolve::resourcesPath() + "templates/generic/newnote.ziw";
     tmplOutlone.strName = QObject::tr("Outline Note");
     tmplOutlone.strTitle = QObject::tr("Outline Note");
     tmplOutlone.buildInName = "outline";
     tmplOutlone.isFree = true;
     tmplList.append(tmplOutlone);
+
+    // 协作笔记
+    TemplateData tmplCollaboration;
+    tmplCollaboration.type = BuildInTemplate;
+    tmplCollaboration.strFileName = Utils::WizPathResolve::resourcesPath() + "templates/generic/collaboration.ziw";
+    tmplCollaboration.strName = QObject::tr("Collaboration Note");
+    tmplCollaboration.strTitle = QObject::tr("Collaboration Note");
+    tmplCollaboration.buildInName = "collaboration";
+    tmplCollaboration.isFree = true;
+    tmplList.append(tmplCollaboration);
 
     // sep
     TemplateData tmplSep;

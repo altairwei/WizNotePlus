@@ -275,6 +275,7 @@ private:
     QMutex m_mutexCache;
     CWizGroupDataArray m_cachedGroups;
     CWizBizDataArray m_cachedBizs;
+
 public:
     WizDatabase();
 
@@ -553,6 +554,7 @@ public:
     void clearUnusedImages(const QString& strHtml, const QString& strFilePath);
 
     bool updateDocumentAbstract(const QString& strDocumentGUID);
+    bool updateDocumentAbstract(const QString &strDocGUID, const QString &strAbstract);
 
     virtual bool updateDocumentDataMD5(WIZDOCUMENTDATA& data, const CString& strZipFileName, bool notifyDataModify = true);
 
@@ -714,6 +716,7 @@ private:
     bool getAllBizInfoCore(const CWizGroupDataArray& arrayGroup, CWizBizDataArray& arrayBiz);
     bool setAllBizInfoCore(const CWizBizDataArray& arrayBiz);
     QVariantList packDocumentsToList(const CWizDocumentDataArray &docDataArray);
+    bool emptyProtectedAbstract(const QString &docGuid);
 };
 
 

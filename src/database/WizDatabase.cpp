@@ -1036,7 +1036,7 @@ bool WizDatabase::onDownloadTagList(const CWizTagDataArray& arrayData)
         WIZTAGDATA dataTemp;
         if (tagFromGuid(data.strGUID, dataTemp))
         {
-            data.nPostion = dataTemp.nPostion;
+            data.nPosition = dataTemp.nPosition;
         }
         arrayTag.push_back(data);
     }
@@ -2042,7 +2042,7 @@ QString WizDatabase::getGroupTagsPos()
          it++)
     {
         WIZTAGDATA tag = *it;
-        strTagPos.append(tag.strGUID + ":" + QString::number(tag.nPostion) + "*");
+        strTagPos.append(tag.strGUID + ":" + QString::number(tag.nPosition) + "*");
     }
     strTagPos.remove(strTagPos.length() - 1, 1);
     return strTagPos;
@@ -2153,9 +2153,9 @@ void WizDatabase::setGroupTagsPos(const QString& tagsPos, qint64 nVersion)
         int nPos = posList.last().toInt();
         //
         WIZTAGDATA tagData = tags[strGUID];
-        if (!tagData.strGUID.isEmpty() && tagData.nPostion != nPos)
+        if (!tagData.strGUID.isEmpty() && tagData.nPosition != nPos)
         {
-            tagData.nPostion = nPos;
+            tagData.nPosition = nPos;
             modifyTagPosition(tagData);
             bPositionChanged = true;
         }
@@ -3789,6 +3789,10 @@ CString WizDatabase::getObjectFileName(const WIZOBJECTDATA& data)
     }
 }
 
+/*!
+    Extract root parts of location strings in \a arrayAllLocation, and store
+    the unique set in \a arrayLocation.
+*/
 bool WizDatabase::getAllRootLocations(const CWizStdStringArray& arrayAllLocation, \
                                        CWizStdStringArray& arrayLocation)
 {
@@ -3804,25 +3808,30 @@ bool WizDatabase::getAllRootLocations(const CWizStdStringArray& arrayAllLocation
     return true;
 }
 
+/*!
+    Find direct child locations of \a strParentLocation from \a arrayAllLocation,
+    then store unique set in \a arrayLocation. If \a strParentLocation is empty,
+    then the unique root locations of \a arrayAllLocation is returned.
+ */
 bool WizDatabase::getChildLocations(const CWizStdStringArray& arrayAllLocation, \
-                                     const QString& strLocation, \
+                                     const QString& strParentLocation, \
                                      CWizStdStringArray& arrayLocation)
 {
-    if (strLocation.isEmpty())
+    if (strParentLocation.isEmpty())
         return getAllRootLocations(arrayAllLocation, arrayLocation);
 
     std::set<QString> setLocation;
 
     CWizStdStringArray::const_iterator it;
     for (it = arrayAllLocation.begin(); it != arrayAllLocation.end(); it++) {
-        const QString& str = *it;
+        const QString& location = *it;
 
-        if (str.length() > strLocation.length() && str.startsWith(strLocation))
+        if (location.length() > strParentLocation.length() && location.startsWith(strParentLocation))
         {
-            int index = str.indexOf('/', strLocation.length() + 1);
+            int index = location.indexOf('/', strParentLocation.length() + 1);
             if (index > 0)
             {
-                QString strChild = str.left(index + 1);
+                QString strChild = location.left(index + 1);
                 setLocation.insert(strChild);
             }
         }
@@ -4270,6 +4279,41 @@ bool WizDatabase::saveCompressedAttachmentData(const CString& strGUID, const QBy
     return true;
 }
 
+bool WizDatabase::emptyProtectedAbstract(const QString &docGuid)
+{
+    WIZDOCUMENTDATA data;
+    if (!documentFromGuid(docGuid, data)) {
+        qDebug() << "[emptyProtectedAbstract]invalide guid: " << docGuid;
+        return false;
+    }
+
+    if (!data.nProtected)
+        return false;
+
+    //check if note abstract is empty
+    WIZABSTRACT abstract;
+    padAbstractFromGuid(data.strGUID, abstract);
+    if (abstract.image.isNull() && abstract.text.isEmpty())
+    {
+        return false;
+    }
+    else
+    {
+        WIZABSTRACT emptyAbstract;
+        emptyAbstract.guid = data.strGUID;
+        bool ret = updatePadAbstract(emptyAbstract);
+        if (!ret) {
+            Q_EMIT updateError("Failed to update note abstract!");
+        }
+        Q_EMIT documentAbstractModified(data);
+
+        return ret;
+    }
+}
+
+/*!
+    Update document abstract from local cache.
+ */
 bool WizDatabase::updateDocumentAbstract(const QString& strDocumentGUID)
 {
     CString strFileName = getDocumentFileName(strDocumentGUID);
@@ -4283,27 +4327,8 @@ bool WizDatabase::updateDocumentAbstract(const QString& strDocumentGUID)
         return false;
     }
 
-    if (data.nProtected) {
-        //check if note abstract is empty
-        WIZABSTRACT abstract;
-        padAbstractFromGuid(data.strGUID, abstract);
-        if (abstract.image.isNull() && abstract.text.isEmpty())
-        {
-            return false;
-        }
-        else
-        {
-            WIZABSTRACT emptyAbstract;
-            emptyAbstract.guid = data.strGUID;
-            bool ret = updatePadAbstract(emptyAbstract);
-            if (!ret) {
-                Q_EMIT updateError("Failed to update note abstract!");
-            }
-            Q_EMIT documentAbstractModified(data);
-
-            return ret;
-        }
-    }
+    if (data.nProtected)
+        emptyProtectedAbstract(strDocumentGUID);
 
     QString strTempFolder = Utils::WizPathResolve::tempPath() + data.strGUID + "-thumb/";
     // delete folder to clear unused images.
@@ -4388,6 +4413,41 @@ bool WizDatabase::updateDocumentAbstract(const QString& strDocumentGUID)
     return ret;
 }
 
+/*!
+    Update document abstract with given content.
+ */
+bool WizDatabase::updateDocumentAbstract(const QString &strDocGUID, const QString &strAbstract)
+{
+    WIZDOCUMENTDATA data;
+    if (!documentFromGuid(strDocGUID, data)) {
+        qDebug() << "[updateDocumentAbstract]invalide guid: " << strDocGUID;
+        return false;
+    }
+
+    // Protected document should have empty abstract
+    if (data.nProtected)
+        emptyProtectedAbstract(strDocGUID);
+
+    QString content = strAbstract;
+    content.replace(QChar('\n'), QChar(' '));
+    content.replace(QChar::ObjectReplacementCharacter, QChar(' '));
+
+    WIZABSTRACT abstract;
+    padAbstractFromGuid(data.strGUID, abstract);
+    abstract.text = content;
+
+    bool ret = updatePadAbstract(abstract);
+    if (!ret)
+        Q_EMIT updateError("Failed to update note abstract!");
+
+    Q_EMIT documentAbstractModified(data);
+
+    return ret;
+}
+
+/*!
+    Given a slash-separated path-like location string \a strLocation, return it's first part.
+*/
 CString WizDatabase::getRootLocation(const CString& strLocation)
 {
     //FIXME:容错处理，如果路径的结尾不是 '/'，则增加该结尾符号
@@ -4599,6 +4659,10 @@ bool WizDatabase::QueryCertPassword()
     return false;
 }
 
+/*!
+    Unzip \a document to a temporary folder, and write path of "index.html" to
+    \a strFullPathFileName variable.
+*/
 bool WizDatabase::documentToTempHtmlFile(const WIZDOCUMENTDATA& document,
                                           QString& strFullPathFileName)
 {
@@ -4612,6 +4676,9 @@ bool WizDatabase::documentToTempHtmlFile(const WIZDOCUMENTDATA& document,
     return WizPathFileExists(strFullPathFileName);
 }
 
+/*!
+    Unzip \a document to a given folder of \a strPath.
+*/
 bool WizDatabase::documentToHtmlFile(const WIZDOCUMENTDATA& document,
                                           const QString& strPath)
 {

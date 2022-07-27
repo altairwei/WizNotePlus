@@ -76,6 +76,7 @@ WIZACTION* WizActions::actionsData()
         {WIZACTION_GLOBAL_SAVE_AS_HTML,         QObject::tr("Save as Html..."),             "",                                     QKeySequence()},
         {WIZACTION_GLOBAL_SAVE_AS_MARKDOWN,     QObject::tr("Save as Markdown..."),         "",                                     QKeySequence()},
         {WIZACTION_GLOBAL_IMPORT_FILE,          QObject::tr("Import Files..."),             "",                                     QKeySequence()},
+        {WIZACTION_GLOBAL_EXPORT_FILE,          QObject::tr("Export Files..."),             "",                                     QKeySequence()},
         {WIZACTION_GLOBAL_PRINT_MARGIN,         QObject::tr("PDF Page Margins..."),         "",                                     QKeySequence()},
         //{WIZACTION_GLOBAL_VIEW_MESSAGES,      QObject::tr("View messages"),               "",                                     QKeySequence()},
         {WIZACTION_GLOBAL_GOBACK,               QObject::tr("Back"),                        "",                                     QKeySequence()},
@@ -83,6 +84,7 @@ WIZACTION* WizActions::actionsData()
         {"actionConsole",                       QObject::tr("Console..."),                  "",                                     QKeySequence()},
         {"actionSearch",                        QObject::tr("Search Note"),                 "",                                     QKeySequence("Ctrl+Alt+F")},
         {"actionResetSearch",                   QObject::tr("Reset Search"),                "",                                     QKeySequence("Ctrl+R")},
+        {"actionDownloadManager",                        QObject::tr("Download Manager"),            "",                                     QKeySequence()},
         {"actionFeedback",                      QObject::tr("User Feedback..."),            "",                                     QKeySequence()},
         {"actionSupport",                       QObject::tr("User Support..."),             "",                                     QKeySequence()},
         {"actionManual",                        QObject::tr("User Manual..."),              "",                                     QKeySequence()},
@@ -130,7 +132,7 @@ WIZACTION* WizActions::actionsData()
         {WIZDOCUMENT_SORTBY_SIZE,               QObject::tr("Sort by Size"),                QObject::tr(""),                        QKeySequence()},
 
         // skin
-        {WIZSKIN_RELOAD_STYLESHEET,             QObject::tr("Reload stylesheet"),           QObject::tr(""),                        QKeySequence()},
+        {WIZSKIN_RELOAD_STYLESHEET,             QObject::tr("Reload stylesheet"),           QObject::tr(""),                        QKeySequence("Ctrl+F5")},
 
         // format
         {WIZACTION_FORMAT_JUSTIFYLEFT,          QObject::tr("Justify Left"),                "",                                     QKeySequence("Ctrl+[")},

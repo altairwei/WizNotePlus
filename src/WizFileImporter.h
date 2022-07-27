@@ -8,8 +8,9 @@ struct WIZTAGDATA;
 class WizFileImporter : public QObject
 {
     Q_OBJECT
+
 public:
-    explicit WizFileImporter(WizDatabaseManager& dbMgr,QObject *parent = nullptr);
+    explicit WizFileImporter(WizDatabaseManager& dbMgr, QObject *parent = nullptr);
 
     void importFiles(const QStringList& strFiles, const QString& strTargetFolderLocation);
     void importFiles(const QStringList& strFiles, const QString& strKbGUID, const WIZTAGDATA& tag);
@@ -20,7 +21,7 @@ public:
     QString loadTextFileToHtml(const QString& strFileName);
     static QString loadTextFileToHtml(const QString& strFileName, const char *encoding);
     QString loadImageFileToHtml(const QString& strFileName);
-    //
+
 signals:
     void importFinished(bool ok, const QString& text, const QString& kbGuid);
     void importProgress(int total,int loaded);

@@ -13,20 +13,23 @@
 #include <QVariant>
 #include <QMap>
 #include <QShortcut>
+#include <QPushButton>
 
 #include "share/jsoncpp/json/json.h"
 
 #include "widgets/WizTagBar.h"
-#include "gui/documentviewer/WizTitleEdit.h"
+
 #include "WizCellButton.h"
 #include "WizInfoBar.h"
 #include "WizNotifyBar.h"
+#include "gui/documentviewer/WizTitleEdit.h"
 #include "gui/documentviewer/WizEditorToolBar.h"
 #include "gui/documentviewer/WizDocumentView.h"
-#include "WizTagListWidget.h"
-#include "WizAttachmentListWidget.h"
 #include "gui/documentviewer/WizDocumentWebView.h"
 #include "gui/documentviewer/WizNoteInfoForm.h"
+#include "gui/documentviewer/AbstractDocumentView.h"
+#include "WizTagListWidget.h"
+#include "WizAttachmentListWidget.h"
 #include "WizNoteStyle.h"
 #include "share/WizMisc.h"
 #include "database/WizDatabase.h"
@@ -72,9 +75,7 @@ WizTitleBar::WizTitleBar(WizExplorerApp& app, QWidget *parent)
     , m_documentToolBar(new QToolBar(this))
     , m_editTitle(new WizTitleEdit(this))
     , m_tagBar(new WizTagBar(app, this))
-    , m_infoBar(new WizInfoBar(app, this))
     , m_notifyBar(new WizNotifyBar(this))
-    , m_editorBar(new WizEditorToolBar(app, this))
     , m_editor(nullptr)
     , m_tags(nullptr)
     , m_info(nullptr)
@@ -91,15 +92,11 @@ WizTitleBar::WizTitleBar(WizExplorerApp& app, QWidget *parent)
     m_editTitle->setAlignment(Qt::AlignVCenter);
     m_editTitle->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Preferred);
 
-    // 编辑器工具栏
-//    m_editorBar->setFixedHeight(nEditToolBarHeight);
-    m_editorBar->layout()->setAlignment(Qt::AlignVCenter);
-
     QString strTheme = Utils::WizStyleHelper::themeName();
 
     // 添加垂直布局<工具栏+状态栏？>
     QVBoxLayout* layout = new QVBoxLayout;
-    layout->setContentsMargins(0, 0, 0, 6);
+    layout->setContentsMargins(0, 0, 0, 0);
     layout->setSpacing(0);
     setLayout(layout);
 
@@ -213,6 +210,14 @@ WizTitleBar::WizTitleBar(WizExplorerApp& app, QWidget *parent)
     connect(WizGlobal::instance(), SIGNAL(viewNoteLoaded(WizDocumentView*,const WIZDOCUMENTDATAEX&,bool)),
             SLOT(onViewNoteLoaded(WizDocumentView*,const WIZDOCUMENTDATAEX&,bool)));
 
+    m_pageZoomBtn = new WizToolButton(this, WizToolButton::ImageOnly);
+    m_pageZoomBtn->setFixedHeight(nTitleHeight);
+    m_pageZoomBtn->setCheckable(true);
+    m_pageZoomBtn->setIcon(::WizLoadSkinIcon(strTheme, "document_zoom", iconSize));
+    m_pageZoomBtn->setToolTip(tr("Show page zoom widget"));
+    connect(m_pageZoomBtn, &QToolButton::toggled,
+            this, &WizTitleBar::onPageZoomButtonToggled);
+
     // 标题工具栏
     m_documentToolBar->setIconSize(iconSize);
     m_documentToolBar->setContextMenuPolicy(Qt::PreventContextMenu);
@@ -227,6 +232,8 @@ WizTitleBar::WizTitleBar(WizExplorerApp& app, QWidget *parent)
     m_documentToolBar->addWidget(m_infoBtn);
     m_documentToolBar->addWidget(m_attachBtn);
     m_documentToolBar->addWidget(m_commentsBtn);
+    m_documentToolBar->addWidget(m_pageZoomBtn);
+
     // 标题工具栏布局
     /*
     QHBoxLayout* layoutInfo2 = new QHBoxLayout();
@@ -251,15 +258,12 @@ WizTitleBar::WizTitleBar(WizExplorerApp& app, QWidget *parent)
 
     // 笔记状态信息布局
     QVBoxLayout* layoutInfo1 = new QVBoxLayout();
-    layoutInfo1->setContentsMargins(Utils::WizStyleHelper::editorBarMargins());
+    layoutInfo1->setContentsMargins(0, 0, 0, 0);
     layoutInfo1->setSpacing(0);
     //layoutInfo1->addLayout(layoutInfo2); // 将标题工具栏放入整体布局中
     layoutInfo1->addWidget(m_documentToolBar);
     layoutInfo1->addWidget(m_tagBar);
-    layoutInfo1->addWidget(m_infoBar);
-    layoutInfo1->addWidget(m_editorBar);
     layoutInfo1->addWidget(m_notifyBar);
-    m_editorBar->hide();
 
     layout->addLayout(layoutInfo1);
     //layout->addLayout(layoutInfo4);
@@ -274,37 +278,80 @@ WizTitleBar::WizTitleBar(WizExplorerApp& app, QWidget *parent)
             SLOT(on_commentCountAcquired(QString,int)));
 }
 
-/**
- * @brief Init plugins' tool button on document tool bar.
- */
+/*!
+    Init plugins' tool button on document tool bar.
+*/
 void WizTitleBar::initPlugins()
 {
     int nTitleHeight = Utils::WizStyleHelper::titleEditorHeight();
     JSPluginManager &jsPluginMgr = JSPluginManager::instance();
-    QList<JSPluginModule *> modules = jsPluginMgr.modulesByKeyValue("ModuleType", "Action");
-    for (auto moduleData : modules) {
-        if (moduleData->spec()->buttonLocation() != "Document")
-            continue;
-        QAction *ac = jsPluginMgr.createPluginAction(m_documentToolBar, moduleData);
-        connect(ac, &QAction::triggered, 
-            &jsPluginMgr, &JSPluginManager::handlePluginActionTriggered);
 
-        m_documentToolBar->addAction(ac);
-        if (auto acWgt = qobject_cast<QToolButton *>(m_documentToolBar->widgetForAction(ac))) {
-            acWgt->setFixedHeight(nTitleHeight);
+    auto menus = jsPluginMgr.modulesByModuleType("Menu");
+    foreach (auto menuData, menus) {
+        if (menuData->spec()->buttonLocation() != "Document")
+            continue;
+        auto btn = new WizToolButton(this, WizToolButton::ImageOnly | WizToolButton::WithMenu);
+        btn->setFixedHeight(nTitleHeight);
+        btn->setPopupMode(QToolButton::MenuButtonPopup);
+        QMenu *m = new QMenu(btn);
+        foreach (int i, menuData->spec()->actionIndexes()) {
+            auto parent = menuData->parentPlugin();
+            auto acm = parent->module(i);
+            QAction *ac = jsPluginMgr.createPluginAction(btn, acm);
+            m->addAction(ac);
+            if (acm->spec()->slotType() == "DocumentSidebar") {
+                ac->setCheckable(true);
+                connect(ac, &QAction::triggered, this, [this, ac] (bool checked) {
+                    Q_EMIT pluginSidebarRequest(ac, checked);
+                });
+            } else {
+                connect(ac, &QAction::triggered, this,
+                    [this, btn, ac] (bool checked) {
+                        QRect rc = btn->rect();
+                        QPoint pt = btn->mapToGlobal(QPoint(rc.width()/2, rc.height()));
+                        Q_EMIT pluginPopupRequest(ac, pt);
+                    }
+                );
+            }
+
+        }
+
+        btn->setMenu(m);
+        auto acs = m->actions();
+        if (!acs.isEmpty()) {
+            btn->setDefaultAction(acs.first());
+            m_documentToolBar->addWidget(btn);
         }
     }
 
-    connect(this, &WizTitleBar::launchPluginEditorRequest, 
-        &jsPluginMgr, &JSPluginManager::handlePluginEditorRequest);
+    QList<JSPluginModule *> modules = jsPluginMgr.modulesByKeyValue("ModuleType", "Action");
+    foreach (auto moduleData, modules) {
+        if (moduleData->spec()->buttonLocation() != "Document")
+            continue;
+        auto btn = new WizToolButton(this, WizToolButton::ImageOnly);
+        QAction *ac = m_documentToolBar->addWidget(btn);
+        JSPluginManager::initPluginAction(ac, moduleData);
+        btn->setDefaultAction(ac);
+        btn->setFixedHeight(nTitleHeight);
+        QString slotType = moduleData->spec()->slotType();
+        if (slotType == "DocumentSidebar") {
+            ac->setCheckable(true);
+            connect(ac, &QAction::triggered, this, [this, ac] (bool checked) {
+                Q_EMIT pluginSidebarRequest(ac, checked);
+            });
+
+        } else if (slotType == "SelectorWindow") {
+            connect(btn, &QToolButton::triggered, this, &WizTitleBar::handlePluginPopup);
+        }
+    }
+
+    connect(this, &WizTitleBar::pluginPopupRequest,
+            &jsPluginMgr, &JSPluginManager::handlePluginPopupRequest);
+    connect(this, &WizTitleBar::launchPluginEditorRequest,
+            &jsPluginMgr, &JSPluginManager::handlePluginEditorRequest);
 }
 
-/**
- * @brief 从部件父组件中搜寻并返回文档视图
- *
- * TODO: 这种获取方式太粗暴了，不值得提倡
- * @return
- */
+// FIXME: urgly impl
 WizDocumentView* WizTitleBar::noteView()
 {
     QWidget* pParent = parentWidget();
@@ -318,11 +365,6 @@ WizDocumentView* WizTitleBar::noteView()
 
     Q_ASSERT(0);
     return 0;
-}
-
-WizEditorToolBar*WizTitleBar::editorToolBar()
-{
-    return m_editorBar;
 }
 
 void WizTitleBar::setLocked(bool bReadOnly, int nReason, bool bIsGroup)
@@ -430,17 +472,9 @@ void WizTitleBar::handlePluginEditorActionTriggered()
     emit launchPluginEditorRequest(doc, moduleGuid);
 }
 
-void WizTitleBar::setEditor(WizDocumentWebView* editor)
+void WizTitleBar::setEditor(AbstractDocumentEditor* editor)
 {
     Q_ASSERT(!m_editor);
-
-    m_editorBar->setDelegate(editor);
-
-    connect(editor, SIGNAL(focusIn()), SLOT(onEditorFocusIn()));
-    connect(editor, SIGNAL(focusOut()), SLOT(onEditorFocusOut()));
-
-    connect(m_editTitle, SIGNAL(titleEdited(QString)), editor, SLOT(onTitleEdited(QString)));
-
     m_editor = editor;
 }
 
@@ -449,25 +483,6 @@ void WizTitleBar::setBackgroundColor(QColor color)
     QPalette pal = m_editTitle->palette();
     pal.setColor(QPalette::Window, color);
     m_editTitle->setPalette(pal);
-
-    //m_editTitle->setStyleSheet("QLineEdit{background:#F5F5F5; border: 1px solid red;}");
-
-//    pal = m_infoBar->palette();
-//    pal.setColor(QPalette::Window, color);
-//    m_infoBar->setPalette(pal);
-}
-
-
-void WizTitleBar::onEditorFocusIn()
-{
-    showEditorBar();
-}
-
-void WizTitleBar::onEditorFocusOut()
-{
-    showEditorBar();
-    if (!m_editorBar->hasFocus())
-        showInfoBar();
 }
 
 void WizTitleBar::updateTagButtonStatus()
@@ -509,19 +524,6 @@ void WizTitleBar::updateCommentsButtonStatus()
 void WizTitleBar::onTitleEditFinished()
 {
     m_editTitle->onTitleEditingFinished();
-}
-
-void WizTitleBar::showInfoBar()
-{
-    m_editorBar->hide();
-    m_infoBar->show();
-}
-
-void WizTitleBar::showEditorBar()
-{
-    m_infoBar->hide();
-    m_editorBar->show();
-    m_editorBar->adjustButtonPosition();
 }
 
 void WizTitleBar::loadErrorPage()
@@ -567,7 +569,6 @@ void WizTitleBar::setNote(const WIZDOCUMENTDATA& data, WizEditorMode editorMode,
 
 void WizTitleBar::updateInfo(const WIZDOCUMENTDATA& doc)
 {
-    m_infoBar->setDocument(doc);
     m_editTitle->setText(doc.strTitle);
     m_attachBtn->setCount(doc.nAttachmentCount);
 }
@@ -580,17 +581,6 @@ void WizTitleBar::setEditorMode(WizEditorMode editorMode)
     m_editBtn->menu()->deleteLater();
     QMenu* extEditorMenu = createEditorMenu();
     m_editBtn->setMenu(extEditorMenu);
-    //
-    if (editorMode == modeReader)
-    {
-        showInfoBar();
-        m_editorBar->switchToNormalMode();
-    }
-    else
-    {
-        m_editorBar->switchToNormalMode();
-        showEditorBar();
-    }
 }
 
 void WizTitleBar::setEditButtonEnabled(bool enable)
@@ -644,7 +634,7 @@ void WizTitleBar::showCoachingTips()
         widget->setText(tr("Switch to reading mode"), tr("In reading mode, the note can not be "
                                                          "edited and markdown note can be redered."));
         widget->setSizeHint(QSize(290, 82));
-        widget->setButtonVisible(false);       
+        widget->setButtonVisible(false);
         widget->bindCloseFunction([](){
             if (WizMainWindow* mainWindow = WizMainWindow::instance())
             {
@@ -739,7 +729,7 @@ void WizTitleBar::onExternalEditorMenuSelected()
 void WizTitleBar::handleDiscardChanges()
 {
     // Confirm
-    QMessageBox::StandardButton res = QMessageBox::question(this, 
+    QMessageBox::StandardButton res = QMessageBox::question(this,
         tr("Discard changes"), tr("Do you really want to discard changes ?"));
     if (res == QMessageBox::Yes) {
         emit discardChangesRequest();
@@ -770,6 +760,16 @@ void WizTitleBar::onViewMindMapClicked()
     m_mindmapBtn->setState(on ? WizCellButton::Checked : WizCellButton::Normal);
 }
 
+void WizTitleBar::handlePluginPopup(QAction* ac)
+{
+    QWidget *btn = m_documentToolBar->widgetForAction(ac);
+
+    QRect rc = btn->rect();
+    QPoint pt = btn->mapToGlobal(QPoint(rc.width()/2, rc.height()));
+
+    Q_EMIT pluginPopupRequest(ac, pt);
+}
+
 QAction* actionFromMenu(QMenu* menu, const QString& text)
 {
     QList<QAction*> actionList = menu->actions();
@@ -779,6 +779,23 @@ QAction* actionFromMenu(QMenu* menu, const QString& text)
             return action;
     }
     return nullptr;
+}
+
+void WizTitleBar::onPageZoomButtonToggled(bool checked)
+{
+    QToolButton* btn = qobject_cast<QToolButton *>(sender());
+    if (!btn) return;
+
+    QPoint topLeft = mapToGlobal(btn->pos());
+    QRect location(topLeft, btn->size());
+
+    Q_EMIT showPageZoomWidgetRequested(checked, location);
+}
+
+void WizTitleBar::onPageZoomWidgetClosed()
+{
+    m_pageZoomBtn->setChecked(false);
+    m_pageZoomBtn->setState(WizToolButton::Normal);
 }
 
 void WizTitleBar::onShareButtonClicked()
@@ -811,14 +828,14 @@ void WizTitleBar::onEmailActionClicked()
 {
     WizGetAnalyzer().logAction("shareByEmail");
 
-    m_editor->shareNoteByEmail();
+    Q_EMIT shareNoteByEmailRequest();
 }
 
 void WizTitleBar::onShareActionClicked()
 {
     WizGetAnalyzer().logAction("shareByLink");
 
-    m_editor->shareNoteByLink();
+    Q_EMIT shareNoteByLinkRequest();
 }
 
 void WizTitleBar::onAttachButtonClicked()
@@ -954,11 +971,11 @@ void WizTitleBar::onCommentPageLoaded(bool ok)
 void WizTitleBar::onViewNoteLoaded(WizDocumentView* view, const WIZDOCUMENTDATAEX& note, bool bOk)
 {
     if (!bOk)
-        return;    
+        return;
 
     if (view != noteView()) {
         return;
-    }    
+    }
 
     m_commentsBtn->setCount(0);
     m_commentManager->queryCommentCount(note.strKbGUID, note.strGUID, true);
@@ -1027,3 +1044,72 @@ WizTitleEdit* WizTitleBar::getTitleEdit()
 {
     return m_editTitle;
 }
+
+//////////////////////////////////////////////////////////////////
+
+CollaborationTitleBar::CollaborationTitleBar(WizExplorerApp& app, QWidget *parent)
+    : QWidget(parent)
+    , m_app(app)
+    , m_documentToolBar(new QToolBar(this))
+    , m_editButtonAnimation(nullptr)
+{
+    setObjectName("collaboration-title-bar");
+
+    int nTitleHeight = Utils::WizStyleHelper::titleEditorHeight();
+    QString strTheme = Utils::WizStyleHelper::themeName();
+
+    // Edit button
+    QSize iconSize = QSize(Utils::WizStyleHelper::titleIconHeight(), Utils::WizStyleHelper::titleIconHeight());
+    m_editBtn = new WizEditButton(this);
+    m_editBtn->setFixedHeight(nTitleHeight);
+    QString shortcut = ::WizGetShortcut("EditNote", "Alt+R");
+    m_editBtn->setStatefulIcon(::WizLoadSkinIcon(strTheme, "document_lock", iconSize), WizToolButton::Normal);
+    m_editBtn->setStatefulText(tr("Edit"), tr("Switch to Editing View  %1").arg(shortcut), WizToolButton::Normal);
+    m_editBtn->setStatefulIcon(::WizLoadSkinIcon(strTheme, "document_unlock", iconSize), WizToolButton::Checked);
+    m_editBtn->setStatefulText(tr("Read") , tr("Switch to Reading View  %1").arg(shortcut), WizToolButton::Checked);
+    connect(m_editBtn, &WizToolButton::clicked, this, &CollaborationTitleBar::editButtonClicked);
+    m_editBtn->setState(WizToolButton::Normal);
+
+    //m_editBtn->setShortcut(QKeySequence::fromString(shortcut));
+    // Title bar toolbar
+    m_documentToolBar->setIconSize(iconSize);
+    m_documentToolBar->setContextMenuPolicy(Qt::PreventContextMenu);
+    m_documentToolBar->setMovable(false);
+    QWidget* spacer = new QWidget;
+    spacer->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
+    m_documentToolBar->addWidget(spacer);
+    m_documentToolBar->addWidget(m_editBtn);
+    m_documentToolBar->addWidget(new WizFixedSpacer(QSize(10, 1)));
+
+    QVBoxLayout* layout = new QVBoxLayout;
+    layout->setContentsMargins(0, 0, 0, 0);
+    layout->setSpacing(0);
+    setLayout(layout);
+    layout->addWidget(m_documentToolBar);
+
+}
+
+void CollaborationTitleBar::startEditButtonAnimation()
+{
+    if (!m_editButtonAnimation)
+    {
+        m_editButtonAnimation = new WizAnimateAction(this);
+        m_editButtonAnimation->setToolButton(m_editBtn);
+        m_editButtonAnimation->setSingleIcons("editButtonProcessing");
+    }
+    m_editButtonAnimation->startPlay();
+}
+
+
+void CollaborationTitleBar::stopEditButtonAnimation()
+{
+    if (!m_editButtonAnimation)
+        return;
+    if (m_editButtonAnimation->isPlaying())
+    {
+        m_editButtonAnimation->stopPlay();
+    }
+}
+
+
+

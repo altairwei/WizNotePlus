@@ -8,13 +8,13 @@
 class QString;
 class QMenu;
 class QToolBar;
-
+class QPushButton;
 struct WIZDOCUMENTDATA;
 class WizDatabase;
 class WizTagListWidget;
 class WizNoteInfoForm;
 class WizDocumentWebEngine;
-class WizDocumentWebView;
+class AbstractDocumentEditor;
 class WizAttachmentListWidget;
 class WizAnimateAction;
 class WizExplorerApp;
@@ -45,7 +45,7 @@ public:
     void setLocked(bool bReadOnly, int nReason, bool bIsGroup);
     void showMessageTips(Qt::TextFormat format, const QString& strInfo);
     void hideMessageTips(bool useAnimation);
-    void setEditor(WizDocumentWebView* editor);
+    void setEditor(AbstractDocumentEditor* editor);
 
     void setBackgroundColor(QColor color);
 
@@ -77,6 +77,9 @@ public Q_SLOTS:
     void onHistoryButtonClicked();
     void onInfoButtonClicked();
     void onViewMindMapClicked();
+    void onPageZoomButtonToggled(bool checked);
+    void onPageZoomWidgetClosed();
+    void handlePluginPopup(QAction*);
 
     void onEmailActionClicked();
     void onShareActionClicked();
@@ -89,8 +92,6 @@ public Q_SLOTS:
     void on_commentCountAcquired(QString GUID, int count);
 
     void onEditorChanged();
-    void onEditorFocusIn();
-    void onEditorFocusOut();
 
     //
     void updateTagButtonStatus();
@@ -105,7 +106,7 @@ public Q_SLOTS:
     void loadErrorPage();
 
     void handlePluginEditorActionTriggered();
-    
+
 signals:
     void notifyBar_link_clicked(const QString& link);
     void loadComment_request(const QString& url);
@@ -115,23 +116,24 @@ signals:
                                 QString& Arguments, int TextEditor, int UTF8Encoding);
     void discardChangesRequest();
     void launchPluginEditorRequest(const WIZDOCUMENTDATA &doc, const QString &guid);
+    void pluginPopupRequest(QAction *ac, const QPoint &pos);
+    void pluginSidebarRequest(QAction *ac, bool checked);
+    void shareNoteByEmailRequest();
+    void shareNoteByLinkRequest();
+    void showPageZoomWidgetRequested(bool show, const QRect &btnLocation);
 
 private:
-    void showInfoBar();
-    void showEditorBar();
     void setTagBarVisible(bool visible);
     void initPlugins();
     QMenu* createEditorMenu();
-    //
-    WizDocumentWebView* m_editor;
+
+    AbstractDocumentEditor* m_editor;
     WizExplorerApp& m_app;
 
     QToolBar* m_documentToolBar;
     WizTitleEdit* m_editTitle;
     WizTagBar* m_tagBar;
-    WizInfoBar* m_infoBar;
     WizNotifyBar* m_notifyBar;
-    WizEditorToolBar* m_editorBar;
 
     WizEditButton* m_editBtn;
     WizToolButton* m_mindmapBtn;
@@ -147,6 +149,7 @@ private:
     QMenu* m_shareMenu;
 
     WizToolButton* m_commentsBtn;
+    WizToolButton* m_pageZoomBtn;
 
     WizCommentManager* m_commentManager;
 
@@ -158,5 +161,25 @@ private:
     WizAnimateAction* m_editButtonAnimation;
 };
 
+class CollaborationTitleBar : public QWidget
+{
+    Q_OBJECT
+
+public:
+    explicit CollaborationTitleBar(WizExplorerApp& app, QWidget *parent = nullptr);
+    WizEditButton* editButton() { return m_editBtn; }
+
+    void startEditButtonAnimation();
+    void stopEditButtonAnimation();
+
+Q_SIGNALS:
+    void editButtonClicked();
+
+private:
+    WizExplorerApp& m_app;
+    QToolBar* m_documentToolBar;
+    WizEditButton* m_editBtn;
+    WizAnimateAction* m_editButtonAnimation;
+};
 
 #endif // CORE_TITLEBAR_H

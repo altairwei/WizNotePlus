@@ -12,7 +12,6 @@
 #include <QAction>
 
 #include "share/WizGlobal.h"
-
 #include "share/WizObjectDataDownloader.h"
 #include "database/WizDatabaseManager.h"
 #include "share/WizSettings.h"
@@ -24,23 +23,28 @@
 #include "widgets/WizLocalProgressWebView.h"
 #include "widgets/WizSegmentedButton.h"
 #include "widgets/WizTipsWidget.h"
-#include "gui/documentviewer/WizDocumentWebView.h"
-#include "gui/documentviewer/WizEditorToolBar.h"
+#include "widgets/WizEmailShareDialog.h"
 #include "WizNoteStyle.h"
 #include "WizDocumentTransitionView.h"
 #include "gui/documentviewer/WizDocumentWebView.h"
 #include "WizButton.h"
 #include "WizUserCipherForm.h"
-#include "gui/documentviewer/WizDocumentEditStatus.h"
 #include "WizNotifyBar.h"
 #include "WizMainWindow.h"
-
+#include "gui/documentviewer/WizEditorToolBar.h"
+#include "gui/documentviewer/WizDocumentWebView.h"
+#include "gui/documentviewer/WizDocumentEditStatus.h"
 #include "gui/documentviewer/WizTitleBar.h"
-
 #include "share/WizThreads.h"
 #include "share/WizWebEngineView.h"
 #include "share/WizEnc.h"
 #include "share/WizMisc.h"
+#include "jsplugin/JSPluginWidgets.h"
+#include "jsplugin/JSPluginManager.h"
+#include "jsplugin/JSPlugin.h"
+#include "utils/WizPathResolve.h"
+#include "WizInfoBar.h"
+#include "WizTitleEdit.h"
 
 
 #define DOCUMENT_STATUS_NOSTATUS            0x0000
@@ -54,7 +58,7 @@
 #define DOCUMENT_STATUS_ON_CHECKLIST       0x0080
 
 WizDocumentView::WizDocumentView(WizExplorerApp& app, QWidget* parent)
-    : AbstractTabPage(parent)
+    : AbstractDocumentView(parent)
     , m_app(app)
     , m_dbMgr(app.databaseManager())
     , m_userSettings(app.userSettings())
@@ -70,6 +74,9 @@ WizDocumentView::WizDocumentView(WizExplorerApp& app, QWidget* parent)
     , m_editStatus(0)
     , m_sizeHint(QSize(200, 1))
     , m_comments(nullptr)
+    , m_pluginSidebar(nullptr)
+    , m_editorBar(new WizEditorToolBar(app, this))
+    , m_infoBar(new WizInfoBar(app, this))
 {
     // docView is the widget to view/edit document actually.
     QVBoxLayout* layoutDoc = new QVBoxLayout();
@@ -78,29 +85,21 @@ WizDocumentView::WizDocumentView(WizExplorerApp& app, QWidget* parent)
     m_docView = new QWidget(this);
     m_docView->setLayout(layoutDoc);
 
-    // 创建堆叠部件
+    // Control different page via stack widget
     m_stack = new QStackedWidget(this);
-    // 设置密码视图
-    m_passwordView->setGeometry(this->geometry());
+
+    // This page will ask password to view encrypted note
     connect(m_passwordView, SIGNAL(cipherCheckRequest()), SLOT(onCipherCheckRequest()));
-    // 创建消息部件
-    m_msgWidget = new QWidget(this);
-    QVBoxLayout* layoutMsg = new QVBoxLayout();
-    m_msgWidget->setLayout(layoutMsg);
-    m_msgLabel = new QLabel(m_msgWidget);
-    m_msgLabel->setAlignment(Qt::AlignCenter);
-    m_msgLabel->setWordWrap(true);
-    layoutMsg->addWidget(m_msgLabel);
-    // 创建空白视图
+
     m_blankView = new QWidget(this);
-    // 添加不同视图到堆叠部件
+
     m_stack->addWidget(m_docView);
     m_stack->addWidget(m_passwordView);
-    m_stack->addWidget(m_msgWidget);
     m_stack->addWidget(m_transitionView);
     m_stack->addWidget(m_blankView);
     m_stack->setCurrentWidget(m_blankView);
     m_stack->setBackgroundRole(QPalette::HighlightedText);
+
     // Setup comment widget
     m_comments = m_commentWidget->web();
     WizWebEngineInjectObjectCollection objects = {{"WizExplorerApp", WizGlobal::mainWindow()->publicAPIsObject()}};
@@ -110,45 +109,51 @@ WizDocumentView::WizDocumentView(WizExplorerApp& app, QWidget* parent)
     m_comments->settings()->setAttribute(QWebEngineSettings::LocalStorageEnabled, true);
     m_comments->setAcceptDrops(false);
     connect(m_comments, SIGNAL(loadFinishedEx(bool)), m_title, SLOT(onCommentPageLoaded(bool)));
-    //m_comments->addObjectToJavaScriptClient("WizExplorerApp", WizGlobal::mainWindow()->publicAPIsObject());
-    //
     connect(m_commentWidget, SIGNAL(widgetStatusChanged()), SLOT(on_commentWidget_statusChanged()));
-
     m_commentWidget->hide();
-    // 创建编辑器组件
+
+    // Editor Components
     QWidget* wgtEditor = new QWidget(m_docView);
     wgtEditor->setObjectName("editor-container");
-    // 创建文档页面视图
     m_web = new WizDocumentWebView(app, wgtEditor);
-    //m_web->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
     m_title->setEditor(m_web);
-    // 创建评论文档页面
-    QWebEnginePage* commentsPage = m_comments->page();
-    connect(commentsPage, SIGNAL(linkClicked(QUrl, QWebEnginePage::NavigationType, bool, WizWebEnginePage*)), 
-        m_web, SLOT(onEditorLinkClicked(QUrl, QWebEnginePage::NavigationType, bool, WizWebEnginePage*)));
+    m_editorBar->layout()->setAlignment(Qt::AlignVCenter);
+    m_editorBar->setDelegate(m_web);
+    connect(m_web, &WizDocumentWebView::focusIn, this, &WizDocumentView::onEditorFocusIn);
+    connect(m_web, &WizDocumentWebView::focusOut, this, &WizDocumentView::onEditorFocusOut);
+    connect(m_comments->getPage(), &WizWebEnginePage::linkClicked,
+            m_web, &WizDocumentWebView::onEditorLinkClicked);
 
     QVBoxLayout* layoutEditor = new QVBoxLayout(wgtEditor);
     layoutEditor->setSpacing(0);
     layoutEditor->setContentsMargins(0, 5, 0, 0);
-    layoutEditor->addWidget(m_title);
-    layoutEditor->addWidget(m_web);
-    layoutEditor->setStretchFactor(m_title, 0);
-    layoutEditor->setStretchFactor(m_web, 1);
 
-    //
+    QVBoxLayout* layoutTitle = new QVBoxLayout;
+    layoutTitle->setContentsMargins(14, 0, 14, 6);
+    layoutTitle->setSpacing(0);
+    layoutTitle->addWidget(m_title);
+    layoutTitle->addWidget(m_infoBar);
+    layoutTitle->addWidget(m_editorBar);
+    layoutTitle->addStretch();
+
+    layoutEditor->addLayout(layoutTitle);
+    layoutEditor->addWidget(m_web);
+    layoutEditor->setStretchFactor(layoutTitle, 0);
+    layoutEditor->setStretchFactor(m_web, 1);
+    m_editorBar->hide();
+
     m_splitter = new WizSplitter(this);
     m_splitter->addWidget(wgtEditor);
     m_splitter->addWidget(m_commentWidget);
     m_splitter->setOrientation(Qt::Horizontal);
 
     layoutDoc->addWidget(m_splitter);
-//    layoutDoc->setStretchFactor(m_title, 0);
-//    layoutDoc->setStretchFactor(m_splitter, 1);
 
     QVBoxLayout* layoutMain = new QVBoxLayout(this);
     layoutMain->setContentsMargins(0, 0, 0, 0);
     setLayout(layoutMain);
     layoutMain->addWidget(m_stack);
+
     // 设置下载器
     WizMainWindow* mainWindow = qobject_cast<WizMainWindow *>(m_app.mainWindow());
     m_downloaderHost = mainWindow->downloaderHost();
@@ -183,12 +188,27 @@ WizDocumentView::WizDocumentView(WizExplorerApp& app, QWidget* parent)
             SLOT(onCloseNoteRequested(WizDocumentView*)));
 
     connect(m_web, SIGNAL(focusIn()), SLOT(on_webView_focus_changed()));
-    connect(m_web->page(), &QWebEnginePage::windowCloseRequested, this, &WizDocumentView::handleWindowCloseRequested);
+    connect(m_web->page(), &QWebEnginePage::windowCloseRequested, this, &WizDocumentView::handleWindowCloseRequest);
 
     connect(m_title, SIGNAL(notifyBar_link_clicked(QString)), SLOT(on_notifyBar_link_clicked(QString)));
     connect(m_title, SIGNAL(loadComment_request(QString)), SLOT(on_loadComment_request(QString)), Qt::QueuedConnection);
     connect(m_title, SIGNAL(viewNoteInExternalEditor_request(QString&,QString&,QString&,int,int)), SLOT(on_viewNoteInExternalEditor_request(QString&,QString&,QString&,int,int)));
-    connect(m_title, &WizTitleBar::discardChangesRequest, this, &WizDocumentView::handleDiscardChangesRequest);
+    connect(m_title, &WizTitleBar::discardChangesRequest,
+            this, &WizDocumentView::handleDiscardChangesRequest);
+    connect(m_title, &WizTitleBar::pluginSidebarRequest,
+            this, &WizDocumentView::handlePluginSidebarRequest);
+    connect(m_title, &WizTitleBar::shareNoteByEmailRequest,
+            this, &WizDocumentView::shareNoteByEmail);
+    connect(m_title, &WizTitleBar::shareNoteByLinkRequest,
+            this, &WizDocumentView::shareNoteByLink);
+    connect(m_title->getTitleEdit(), &WizTitleEdit::returnPressed,
+            this, &WizDocumentView::onTitleReturnPressed);
+    connect(m_title->getTitleEdit(), &WizTitleEdit::newTitleRequest,
+            this, &WizDocumentView::onTitleEditingFinished);
+    connect(m_title, &WizTitleBar::showPageZoomWidgetRequested,
+            m_web, &WizWebEngineView::handleShowZoomWidgetRequest);
+    connect(m_web, &WizDocumentWebView::zoomWidgetFinished,
+            m_title, &WizTitleBar::onPageZoomWidgetClosed);
 
     // 编辑状态同步线程
     m_editStatusSyncThread->start(QThread::IdlePriority);
@@ -213,20 +233,6 @@ WizDocumentView::WizDocumentView(WizExplorerApp& app, QWidget* parent)
     m_editStatusChecker->moveToThread(checkThread);
     checkThread->start();
 
-    m_locateAction = new QAction(tr("Locate this document in category"), this);
-    connect(m_locateAction, &QAction::triggered, [this] {
-        WizMainWindow *mainWindow = WizMainWindow::instance();
-        if (mainWindow)
-        {
-            mainWindow->locateDocument(
-                this->note().strKbGUID, this->note().strGUID);
-        }
-    });
-
-    m_copyInternalLinkAction = new QAction(tr("Copy internal link"), this);
-    connect(m_copyInternalLinkAction, &QAction::triggered, [this] {
-        WizCopyNoteAsInternalLink(this->note());
-    });
 }
 
 WizDocumentView::~WizDocumentView()
@@ -252,7 +258,6 @@ void WizDocumentView::waitForDone()
 
     bool done = false;
     m_web->trySaveDocument(m_note, false, [=, &done](const QVariant& ret){
-        m_web->waitForDone();
         done = true;
     });
 
@@ -279,14 +284,13 @@ void WizDocumentView::waitForThread()
 {
     m_editStatusChecker->thread()->quit();
     m_editStatusSyncThread->waitForDone();
-    m_web->waitForDone();
 }
 
 void WizDocumentView::RequestClose(bool force /*= false*/)
 {
     if (force) {
         // Force to close when Chromium process no response.
-        handleWindowCloseRequested();
+        handleWindowCloseRequest();
     } else {
         // We can not runJavaScript after RequestClose.
         waitForSave();
@@ -294,20 +298,54 @@ void WizDocumentView::RequestClose(bool force /*= false*/)
     }
 }
 
-QList<QAction *> WizDocumentView::TabContextMenuActions()
-{
-    QList<QAction *> actions;
-    actions.append(m_locateAction);
-    actions.append(m_copyInternalLinkAction);
-
-    return actions;
-}
-
-void WizDocumentView::handleWindowCloseRequested()
+void WizDocumentView::handleWindowCloseRequest()
 {
     // We Should exit all thread after user confirmed to close page.
     waitForThread();
     emit pageCloseRequested();
+}
+
+void WizDocumentView::handlePluginSidebarRequest(QAction *ac, bool checked)
+{
+    QString moduleGuid = ac->data().toString();
+    if (moduleGuid.isEmpty())
+        return;
+
+    JSPluginManager &jsPluginMgr = JSPluginManager::instance();
+    JSPluginModule *moduleData = jsPluginMgr.moduleByGUID(moduleGuid);
+    if (!moduleData)
+        return;
+
+    static QPointer<QAction> lastAc = nullptr;
+    if (m_pluginSidebar) {
+        auto old = m_pluginSidebar->module()->spec()->guid();
+        if (moduleData->spec()->guid() != old) {
+            m_pluginSidebar->deleteLater();
+            m_pluginSidebar = nullptr;
+            if (lastAc) lastAc->setChecked(false);
+        }
+    }
+
+    if (!m_pluginSidebar) {
+        m_pluginSidebar = new JSPluginDocSidebar(m_app, moduleData, this);
+        if (moduleData->spec()->sidebarLocation() == "Left")
+            m_splitter->insertWidget(0, m_pluginSidebar);
+        else
+            m_splitter->addWidget(m_pluginSidebar);
+        connect(m_web, &WizDocumentWebView::currentHtmlChanged,
+                m_pluginSidebar, &JSPluginDocSidebar::documentHtmlChanged);
+        connect(m_web, &WizDocumentWebView::loadFinishedEx,
+                m_pluginSidebar, &JSPluginDocSidebar::editorLoadFinished);
+    }
+
+    if (checked) {
+        moduleData->emitShowEvent();
+        m_pluginSidebar->setVisible(true);
+    } else {
+        m_pluginSidebar->setVisible(false);
+    }
+
+    lastAc = ac;
 }
 
 WizWebEngineView*WizDocumentView::commentView() const
@@ -325,7 +363,7 @@ void WizDocumentView::resizeEvent(QResizeEvent* ev)
     QWidget::resizeEvent(ev);
     qDebug() << "oldSize: " << ev->oldSize() << ", newSize: " << ev->size();
 
-    m_title->editorToolBar()->adjustButtonPosition();
+    m_editorBar->adjustButtonPosition();
 }
 
 /**
@@ -359,6 +397,7 @@ bool WizDocumentView::reload()
 {
     bool ret = m_dbMgr.db(m_note.strKbGUID).documentFromGuid(m_note.strGUID, m_note);
     m_title->updateInfo(note());
+    m_infoBar->setDocument(note());
     emit titleChanged(m_note.strTitle);
 
     return ret;
@@ -576,6 +615,18 @@ void WizDocumentView::setEditorMode(WizEditorMode mode)
         m_title->onTitleEditFinished();
         m_title->hideMessageTips(false);
     }
+
+    if (mode == modeReader)
+    {
+        showInfoBar();
+        m_editorBar->switchToNormalMode();
+    }
+    else
+    {
+        m_editorBar->switchToNormalMode();
+        showEditorBar();
+    }
+
     m_title->setEditorMode(mode);
 
     m_web->setEditorMode(mode);
@@ -639,13 +690,6 @@ void WizDocumentView::resetTitle(const QString& strTitle)
     m_title->resetTitle(strTitle);
 }
 
-void WizDocumentView::promptMessage(const QString &strMsg)
-{
-    m_stack->setCurrentWidget(m_msgWidget);
-
-    m_msgLabel->setText(strMsg);
-}
-
 bool WizDocumentView::checkListClickable()
 {
     WizDatabase& db = m_dbMgr.db(m_note.strKbGUID);
@@ -668,7 +712,7 @@ void WizDocumentView::setStatusToEditingByCheckList()
 
 void WizDocumentView::showCoachingTips()
 {
-    if (WizTipsWidget* tipWidget = m_title->editorToolBar()->showCoachingTips())
+    if (WizTipsWidget* tipWidget = m_editorBar->showCoachingTips())
     {
         connect(tipWidget, SIGNAL(finished()), m_title, SLOT(showCoachingTips()));
     }
@@ -740,6 +784,7 @@ void WizDocumentView::loadNote(const WIZDOCUMENTDATAEX& doc)
 {
     m_web->viewDocument(doc, m_editorMode);
     m_title->setNote(doc, m_editorMode, m_bLocked);
+    m_infoBar->setDocument(doc);
 
     // save last
     m_note = doc;
@@ -1072,6 +1117,17 @@ void WizDocumentView::handleDiscardChangesRequest()
     m_editStatus = DOCUMENT_STATUS_NOSTATUS;
     m_title->setEditorMode(modeReader);
 
+    if (m_editorMode == modeReader)
+    {
+        showInfoBar();
+        m_editorBar->switchToNormalMode();
+    }
+    else
+    {
+        m_editorBar->switchToNormalMode();
+        showEditorBar();
+    }
+
     // Discard changes
     m_web->discardChanges();
 
@@ -1118,8 +1174,98 @@ void WizDocumentView::on_commentWidget_statusChanged()
 
     }
 
-    m_title->editorToolBar()->adjustButtonPosition();
+    m_editorBar->adjustButtonPosition();
+}
+
+void WizDocumentView::shareNoteByEmail()
+{
+    getMailSender([=](QString sendTo){
+        WizEmailShareDialog dlg(m_app);
+        dlg.setNote(note(), sendTo);
+        connect(&dlg, &WizEmailShareDialog::insertCommentToNoteRequest,
+                m_web, &WizDocumentWebView::on_insertCommentToNote_request);
+        dlg.exec();
+    });
+}
+
+void WizDocumentView::getMailSender(std::function<void(QString)> callback)
+{
+    QString scriptFileName = Utils::WizPathResolve::resourcesPath() + "files/scripts/GetMailSender.js";
+    QString code;
+    ::WizLoadUnicodeTextFromFile(scriptFileName, code);
+
+    m_web->page()->runJavaScript(code, [=](const QVariant& vRet){
+        QString mailSender = vRet.toString();
+
+        if (mailSender.isEmpty())
+        {
+            QRegExp rxlen("\\b[A-Z0-9._%+-]+@[A-Z0-9.-]+\\.[A-Z]{2,4}\\b");
+            rxlen.setCaseSensitivity(Qt::CaseInsensitive);
+            rxlen.setPatternSyntax(QRegExp::RegExp);
+            QString strTitle = note().strTitle;
+            int pos = rxlen.indexIn(strTitle);
+            if (pos > -1) {
+                mailSender = rxlen.cap(0);
+            }
+        }
+
+        callback(mailSender);
+    });
+}
+
+void WizDocumentView::shareNoteByLink()
+{
+    auto &doc = note();
+    emit shareDocumentByLinkRequest(doc.strKbGUID, doc.strGUID);
 }
 
 
+void WizDocumentView::onEditorFocusIn()
+{
+    showEditorBar();
+}
 
+void WizDocumentView::onEditorFocusOut()
+{
+    showEditorBar();
+    if (!m_editorBar->hasFocus())
+        showInfoBar();
+}
+
+void WizDocumentView::onTitleReturnPressed()
+{
+    setEditorFocus();
+    web()->setFocus(Qt::MouseFocusReason);
+    web()->editorFocus();
+}
+
+void WizDocumentView::onTitleEditingFinished(const QString &newTitle)
+{
+    WIZDOCUMENTDATA data;
+    WizDatabase& db = WizDatabaseManager::instance()->db(note().strKbGUID);
+    if (db.documentFromGuid(note().strGUID, data)) {
+        if (!db.canEditDocument(data))
+            return;
+
+        if (newTitle != data.strTitle) {
+            data.strTitle = newTitle;
+            data.tDataModified = WizGetCurrentTime();
+            db.modifyDocumentInfo(data);
+
+            m_web->onTitleEdited(newTitle);
+        }
+    }
+}
+
+void WizDocumentView::showInfoBar()
+{
+    m_editorBar->hide();
+    m_infoBar->show();
+}
+
+void WizDocumentView::showEditorBar()
+{
+    m_infoBar->hide();
+    m_editorBar->show();
+    m_editorBar->adjustButtonPosition();
+}

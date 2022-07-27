@@ -246,7 +246,7 @@ void WizAttachmentListView::openAttachment(WizAttachmentListViewItem* item)
     bool bIsLocal = db.isObjectDataDownloaded(attachment.strGUID, "attachment");
     QString strFileName = db.getAttachmentFileName(item->attachment().strGUID);
     bool bExists = WizPathFileExists(strFileName);
-    if (!bIsLocal || !bExists) {        
+    if (!bIsLocal || !bExists) {
         item->setIsDownloading(true);
         forceRepaint();
 

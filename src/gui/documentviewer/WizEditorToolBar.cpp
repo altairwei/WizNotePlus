@@ -1212,7 +1212,7 @@ WizEditorToolBar::WizEditorToolBar(WizExplorerApp& app, QWidget *parent)
     QString skin = Utils::WizStyleHelper::themeName();
 
     m_comboParagraph = new CWizToolComboBox(this);    
-    m_comboParagraph->setFixedWidth(90);
+    m_comboParagraph->setMaximumWidth(90);
 
 
     WizComboboxStyledItem* paraItems = ParagraphItems();    
@@ -1229,7 +1229,7 @@ WizEditorToolBar::WizEditorToolBar(WizExplorerApp& app, QWidget *parent)
     m_comboFontFamily->setFixedWidth(122);
 
     m_comboFontSize = new CWizToolComboBox(this);
-    m_comboFontSize->setFixedWidth(48);
+    m_comboFontSize->setMaximumWidth(48);
     WizComboboxStyledItem* fontItems = FontSizes();
 #ifdef Q_OS_MAC
     m_comboParagraph->setStyleSheet("QComboBox QListView{min-width:95px;background:#F6F6F6;}"
@@ -1546,7 +1546,7 @@ WizEditorToolBar::WizEditorToolBar(WizExplorerApp& app, QWidget *parent)
     connect(m_btnPencil, SIGNAL(clicked()), SLOT(on_btnPencil_clicked()));
     CWizToolLineWidthComboBox* pencilSize = new CWizToolLineWidthComboBox(this);
     pencilSize->setPosition(ButtonPosition::Right);
-    pencilSize->setFixedWidth(60);
+    pencilSize->setMaximumWidth(60);
     pencilSize->setFixedHeight(Utils::WizStyleHelper::editorButtonHeight());
     pencilSize->addItem("2");
     pencilSize->addItem("3");
@@ -1568,7 +1568,7 @@ WizEditorToolBar::WizEditorToolBar(WizExplorerApp& app, QWidget *parent)
     connect(m_btnHighlighter, SIGNAL(clicked()), SLOT(on_btnHighlighter_clicked()));
     CWizToolLineWidthComboBox* highlighterSize = new CWizToolLineWidthComboBox(this);
     highlighterSize->setPosition(ButtonPosition::Right);
-    highlighterSize->setFixedWidth(60);
+    highlighterSize->setMaximumWidth(60);
     highlighterSize->setFixedHeight(Utils::WizStyleHelper::editorButtonHeight());
     highlighterSize->addItem("10");
     highlighterSize->addItem("20");
@@ -1588,7 +1588,7 @@ WizEditorToolBar::WizEditorToolBar(WizExplorerApp& app, QWidget *parent)
     connect(m_btnEraser, SIGNAL(clicked()), SLOT(on_btnEraser_clicked()));
     CWizToolLineWidthComboBox* eraserSize = new CWizToolLineWidthComboBox(this);
     eraserSize->setPosition(ButtonPosition::Right);
-    eraserSize->setFixedWidth(48);
+    eraserSize->setMaximumWidth(48);
     eraserSize->setFixedHeight(Utils::WizStyleHelper::editorButtonHeight());
     eraserSize->addItem("10");
     eraserSize->addItem("20");
@@ -1608,7 +1608,7 @@ WizEditorToolBar::WizEditorToolBar(WizExplorerApp& app, QWidget *parent)
     connect(m_btnShape, SIGNAL(clicked()), SLOT(on_btnShape_clicked()));
     CWizToolLineWidthComboBox* shapeSize = new CWizToolLineWidthComboBox(this);
     shapeSize->setPosition(ButtonPosition::Right);
-    shapeSize->setFixedWidth(56);
+    shapeSize->setMaximumWidth(56);
     shapeSize->setFixedHeight(Utils::WizStyleHelper::editorButtonHeight());
     shapeSize->addItem("2");
     shapeSize->addItem("3");
@@ -1796,7 +1796,7 @@ WizEditorToolBar::WizEditorToolBar(WizExplorerApp& app, QWidget *parent)
     layout->addWidget(buttonContainer1);
     setAvaliableInToolbar(buttonContainer1, TOOLBARTYPE_NORMAL);
 
-    setMinimumWidth(firstLineWidth() - 20);
+    //setMinimumWidth(firstLineWidth() - 20);
 
     QWidget*  moveableButtonContainer1 = createMoveAbleWidget(this);
     moveableButtonContainer1->layout()->addWidget(m_btnJustify);
@@ -1826,7 +1826,7 @@ WizEditorToolBar::WizEditorToolBar(WizExplorerApp& app, QWidget *parent)
     QHBoxLayout* hLayout = new QHBoxLayout(m_secondLineButtonContainer);
     hLayout->setContentsMargins(0, 1, 0, 1);
     hLayout->setSpacing(0);
-    setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
+    setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Expanding);
 
     QWidget*  moveableButtonContainer3 = createMoveAbleWidget(this);
     QHBoxLayout* moveableLayout3 = qobject_cast<QHBoxLayout*>(moveableButtonContainer3->layout());
@@ -2053,26 +2053,11 @@ void WizEditorToolBar::resetToolbar(const QString& currentStyle)
     m_btnInsertLink->setEnabled(canSetLink);
 }
 
-
-
-#define WIZEDITOR_ACTION_GOOGLE         QObject::tr("Use \"Google\" search")
-#define WIZEDITOR_ACTION_BAIDU           QObject::tr("Use \"Baidu\" search")
-
-#define WIZEDITOR_ACTION_CUT            QObject::tr("Cut")
-#define WIZEDITOR_ACTION_COPY           QObject::tr("Copy")
-#define WIZEDITOR_ACTION_PASTE          QObject::tr("Paste")
-#define WIZEDITOR_ACTION_PASTE_PLAIN    QObject::tr("Paste plain text")
-#define WIZEDITOR_ACTION_REMOVE_LINK    QObject::tr("Remove link")
-
-
 void WizEditorToolBar::setDelegate(WizDocumentWebView* editor)
 {
     Q_ASSERT(editor);
 
     m_editor = editor;
-
-    connect(m_editor, SIGNAL(showContextMenuRequest(QPoint)),
-            SLOT(on_delegate_showContextMenuRequest(QPoint)), Qt::QueuedConnection);
 
     connect(m_editor, SIGNAL(statusChanged(const QString&)),
             SLOT(on_delegate_selectionChanged(const QString&)));
@@ -2084,143 +2069,6 @@ void WizEditorToolBar::setDelegate(WizDocumentWebView* editor)
             SLOT(on_delegate_markerInitiated(const QString&)));
 }
 
-static std::map<QString, QWebEnginePage::WebAction> g_webActions;
-//
-void initWebActions(QWebEnginePage* page)
-{
-    if (!g_webActions.empty())
-        return;
-    //
-    for (int action = QWebEnginePage::NoWebAction + 1;
-         action < QWebEnginePage::WebActionCount;
-         action++)
-    {
-        QWebEnginePage::WebAction a = (QWebEnginePage::WebAction)action;
-        QAction* actionObj = page->action(a);
-        //
-        QString text = actionObj->text();
-        g_webActions[text] = a;
-        //
-        text = text.replace("&", "");
-        g_webActions[text] = a;
-    }
-}
-//
-QWebEnginePage::WebAction menuText2WebAction(QWebEnginePage* page, QString text)
-{
-    initWebActions(page);
-    //
-    text = text.replace("&", "");
-    auto it = g_webActions.find(text);
-    if (it == g_webActions.end())
-        return QWebEnginePage::NoWebAction;
-    //
-    return it->second;
-}
-
-/**
- * @brief 笔记编辑器视图下网页右键弹出菜单
- * @param pos
- */
-void WizEditorToolBar::on_delegate_showContextMenuRequest(const QPoint& pos)
-{
-    if (!m_editor)
-        return;
-    //
-    QWebEnginePage* page = m_editor->page();
-    if (!page)
-        return;
-    // create default context menu
-    //QMenu *menu = page->createStandardContextMenu();
-    QMenu *menu = m_editor->createStandardContextMenu();
-    if (!menu)
-        return;
-    //
-    bool editing = m_editor->isEditing();
-    //
-    bool hasPasteMenu = false;
-    bool hasLinkMenu = false;
-    // get all actions of menu
-    // FIXME: 不要使用这种遍历方法，速度有点慢，参考Qt浏览器实现示例
-    QList<QAction*> actions = menu->actions();
-    for (QAction* action : actions)
-    {
-        QWebEnginePage::WebAction a = menuText2WebAction(page, action->iconText());
-        switch (a)
-        {
-        case QWebEnginePage::Copy:
-            action->setText(QObject::tr("Copy"));
-            break;
-        case QWebEnginePage::Unselect:
-            action->setText(QObject::tr("Unselect"));
-            break;
-        case QWebEnginePage::Back:
-        case QWebEnginePage::Forward:
-        case QWebEnginePage::Stop:
-        case QWebEnginePage::Reload:
-#if QT_VERSION >= 0x050600
-        case QWebEnginePage::DownloadImageToDisk:
-#endif
-#if QT_VERSION >= 0x050800
-        case QWebEnginePage::ViewSource:
-#endif
-            menu->removeAction(action);
-            break;
-            //
-        case QWebEnginePage::Paste:
-            hasPasteMenu = true;
-            break;
-        case QWebEnginePage::OpenLinkInThisWindow:
-        case QWebEnginePage::OpenLinkInNewWindow:
-        case QWebEnginePage::OpenLinkInNewTab:
-        case QWebEnginePage::DownloadLinkToDisk:
-            menu->removeAction(action);
-            hasLinkMenu = true;
-            break;
-        case QWebEnginePage::CopyLinkToClipboard:
-            hasLinkMenu = true;
-            break;
-        default:
-            break;
-        }
-    }
-    //
-    if (!m_editor->selectedText().isEmpty())
-    {
-        if (!menu->actions().isEmpty())
-        {
-            menu->addSeparator();
-        }
-        menu->addAction(WIZEDITOR_ACTION_GOOGLE, this, SLOT(on_editor_google_triggered()));
-        menu->addAction(WIZEDITOR_ACTION_BAIDU, this, SLOT(on_editor_baidu_triggered()));
-    }
-    //
-    if (editing)
-    {
-        if (!hasPasteMenu)
-        {
-            if (!menu->actions().isEmpty())
-            {
-                menu->addSeparator();
-            }
-
-            menu->addAction(WIZEDITOR_ACTION_PASTE, this, SLOT(on_editor_paste_triggered()));
-            menu->addAction(WIZEDITOR_ACTION_PASTE_PLAIN, this, SLOT(on_editor_pastePlain_triggered()));
-        }
-        //
-        if (hasLinkMenu)
-        {
-            menu->addAction(WIZEDITOR_ACTION_REMOVE_LINK, this, SLOT(on_editor_removeLink_triggered()));
-        }
-    }
-    //
-    if (menu->actions().isEmpty())
-        return;
-    //
-    menu->popup(pos);
-
-    WizGetAnalyzer().logAction("editorContextMenu");
-}
 
 /*
  * 此处对slectionChanged引起的刷新做延迟和屏蔽处理。在输入中文的时候频繁的刷新会引起输入卡顿的问题

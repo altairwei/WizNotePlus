@@ -40,7 +40,7 @@ def parse_version():
     """
     Generate build version from local git repository.
     """
-    wiznoteplus_version = "2.10.0-stable.0"
+    wiznoteplus_version = "2.11.0-stable.0"
     if os.path.exists(".git"):
         wiznoteplus_version = subprocess.check_output(
             ["git", "describe", "--tags"]).decode("utf-8").strip()
@@ -64,13 +64,10 @@ class WizNotePlusConan(ConanFile):
     settings = "os", "compiler", "build_type", "arch"
     generators = "cmake_find_package", "cmake_paths", "cmake"
     requires = (
-        "cryptopp/5.6.5@bincrafters/stable",
+        "cryptopp/8.5.0",
         "zlib/1.2.11",
         "quazip/0.7.6@altairwei/testing",
         "Gumbo/0.10.1@altairwei/testing"
-    )
-    build_requires = (
-        "cmake/3.16.9"
     )
     keep_imports = True
     options = {
@@ -127,7 +124,7 @@ class WizNotePlusConan(ConanFile):
         if qt_version < Version("5.12"):
             self.requires("openssl/1.0.2u")
         else:
-            self.requires("openssl/1.1.1l")
+            self.requires("openssl/[~1.1.1m]")
 
 
     def build_requirements(self):
@@ -385,8 +382,8 @@ class WizNotePlusConan(ConanFile):
         fram_dir = os.path.join(app_dir, "Contents", "Frameworks")
         # Copy libs to bundle
         shutil.copy(
-            os.path.join(self.package_folder, "bin", "libcryptopp.5.6.dylib"),
-            os.path.join(fram_dir, "libcryptopp.5.6.dylib")
+            os.path.join(self.package_folder, "bin", "libcryptopp.8.3.dylib"),
+            os.path.join(fram_dir, "libcryptopp.8.3.dylib")
         )
         shutil.copy(
             os.path.join(self.package_folder, "bin", "libz.1.dylib"),
@@ -394,13 +391,13 @@ class WizNotePlusConan(ConanFile):
         )
         # Change install name
         self._fix_install_name([
-            os.path.join(fram_dir, "libcryptopp.5.6.dylib"),
+            os.path.join(fram_dir, "libcryptopp.8.3.dylib"),
             os.path.join(fram_dir, "libz.1.dylib")
         ])
         # Change dependencis list
         self._fix_dependencies_name(
             os.path.join(app_dir, "Contents", "MacOS", "WizNotePlus"), 
-            ["libcryptopp.5.6.dylib"])
+            ["libcryptopp.8.3.dylib"])
         self._fix_dependencies_name(
             os.path.join(fram_dir, "libquazip5.1.dylib"), 
             ["libz.1.dylib"])

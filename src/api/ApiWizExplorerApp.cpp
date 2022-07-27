@@ -71,6 +71,11 @@ QObject* ApiWizExplorerApp::GetGroupDatabase(const QString &kbGUID)
     return m_database->GetGroupDatabase(kbGUID);
 }
 
+void ApiWizExplorerApp::ShowBubbleNotification(const QString &strTitle, const QString &strInfo)
+{
+    m_mainWindow->showBubbleNotification(strTitle, strInfo);
+}
+
 QString ApiWizExplorerApp::TranslateString(const QString& string)
 {
     return m_mainWindow->TranslateString(string);

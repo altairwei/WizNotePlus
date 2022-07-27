@@ -974,11 +974,14 @@ void WizKMDatabaseServer::onDocumentObjectDownloadProgress(QUrl url, qint64 down
     emit downloadProgress(m_objectsTotalSize, totalDownloadedSize);
 }
 
-
+/*!
+    Download document data with given GUID \a strDocumentGUID. Document data and
+    resources will be compressed to a zip file then loaded to object \a ret.
+ */
 bool WizKMDatabaseServer::document_downloadDataNew(const QString& strDocumentGUID, WIZDOCUMENTDATAEX& ret, const QString& oldFileName)
 {
     QString url = buildUrl("/ks/note/download/" + m_userInfo.strKbGUID + "/" + strDocumentGUID + "?downloadData=1");
-    //
+
     Json::Value doc;
     WIZSTANDARDRESULT jsonRet = WizRequest::execStandardJsonRequest(url, doc);
     m_lastJsonResult = jsonRet;
@@ -988,7 +991,7 @@ bool WizKMDatabaseServer::document_downloadDataNew(const QString& strDocumentGUI
         TOLOG1("Failed to download document data: %1", ret.strTitle);
         return false;
     }
-    //
+
     Json::Value urlValue = doc["url"];
     if (!urlValue.isNull())
     {
@@ -998,22 +1001,22 @@ bool WizKMDatabaseServer::document_downloadDataNew(const QString& strDocumentGUI
             TOLOG1("Failed to download document data: %1", ret.strTitle);
             return false;
         }
-        //
+
         return true;
     }
-    //
+
     QString html = QString::fromUtf8(doc["html"].asString().c_str());
     if (html.isEmpty())
         return false;
-    //
+
     Json::Value resourcesObj = doc["resources"];
-    //
+
     struct RESDATA : public WIZZIPENTRYDATA
     {
         QString url;
     };
 
-    //
+    // List related resources of the document
     std::vector<RESDATA> serverResources;
     if (resourcesObj.isArray())
     {
@@ -1029,7 +1032,7 @@ bool WizKMDatabaseServer::document_downloadDataNew(const QString& strDocumentGUI
             serverResources.push_back(data);
         }
     }
-    //
+
     WizTempFileGuard tempFile;
     WizZipFile newZip;
     if (!newZip.open(tempFile.fileName()))
@@ -1037,7 +1040,8 @@ bool WizKMDatabaseServer::document_downloadDataNew(const QString& strDocumentGUI
         TOLOG1("Failed to create temp file: %1", tempFile.fileName());
         return false;
     }
-    //
+
+    // Compress updated index.html to new zip file
     QByteArray htmlData;
     WizSaveUnicodeTextToData(htmlData, html, true);
     if (!newZip.compressFile(htmlData, "index.html"))
@@ -1045,7 +1049,7 @@ bool WizKMDatabaseServer::document_downloadDataNew(const QString& strDocumentGUI
         TOLOG("Failed to add index.html to zip file");
         return false;
     }
-    //
+
     WizUnzipFile oldZip;
     bool hasOldZip = false;
     if (WizPathFileExists(oldFileName))
@@ -1059,7 +1063,9 @@ bool WizKMDatabaseServer::document_downloadDataNew(const QString& strDocumentGUI
             hasOldZip = true;
         }
     }
-    //
+
+    // Transfer resources from old zip file to new one. This means old resources
+    // won't be re-downloaded from server.
     for (intptr_t i = serverResources.size() - 1; i >= 0; i--)
     {
         auto res = serverResources[i];
@@ -1081,35 +1087,36 @@ bool WizKMDatabaseServer::document_downloadDataNew(const QString& strDocumentGUI
             }
         }
     }
-    //
+
     QMutex mutex;
-    //
+
     int totalWaitForDownload = (int)serverResources.size();
     int totalDownloaded = 0;
     int totalFailed = 0;
-    //
+
     int totalDownloadSize = 0;
     for (auto res : serverResources)
     {
         totalDownloadSize += res.size;
     }
-    //
+
     m_objectsTotalSize = totalDownloadSize;
-    //
+
+    // Download new resources
     for (auto res : serverResources)
     {
         QString resName = "index_files/" + res.name;
-        //
+
 #ifdef QT_DEBUG
         qDebug() << res.url;
 #endif
         ::WizExecuteOnThread(WIZ_THREAD_DOWNLOAD_RESOURCES, [=, &mutex, &totalFailed, &totalDownloaded, &newZip] {
-            //
+
             QByteArray data;
             qDebug() << "downloading " << resName;
             bool ret = WizURLDownloadToData(res.url, data, this, SLOT(onDocumentObjectDownloadProgress(QUrl, qint64, qint64)));
             qDebug() << "downloaded " << resName;
-            //
+
             QMutexLocker locker(&mutex);
             if (!ret)
             {
@@ -1117,20 +1124,20 @@ bool WizKMDatabaseServer::document_downloadDataNew(const QString& strDocumentGUI
                 totalFailed++;
                 return;
             }
-            //
+
             if (!newZip.compressFile(data, resName))
             {
                 TOLOG("Failed to add data to zip file");
                 totalFailed++;
                 return;
-                //
             }
-            //
+
             totalDownloaded++;
 
         });
     }
-    //
+
+    // Wait for all resources to be downloaded.
     if (totalWaitForDownload > 0)
     {
         while (true)
@@ -1139,29 +1146,29 @@ bool WizKMDatabaseServer::document_downloadDataNew(const QString& strDocumentGUI
             {
                 if (totalFailed == 0)
                     break;
-                //
+
                 return false;
             }
-            //
+
             QEventLoop loop;
             loop.processEvents();
-            //
+
             QThread::msleep(300);
         }
     }
-    //
+
     if (!newZip.close())
     {
         TOLOG("Failed to close zip file");
         return false;
     }
-    //
+
     if (!WizLoadDataFromFile(tempFile.fileName(), ret.arrayData))
     {
         TOLOG1("Failed to load data from file: %1", tempFile.fileName());
         return false;
     }
-    //
+
     return true;
 }
 
@@ -1438,12 +1445,8 @@ bool WizKMDatabaseServer::attachment_postDataNew(WIZDOCUMENTATTACHMENTDATAEX& da
     return true;
 }
 
-/**
- * @brief 上传新数据
- * @param dataTemp 笔记数据
- * @param withData
- * @param nServerVersion
- * @return
+/*!
+    Post document information \a dataTemp or data (via \a withData argument) to server side.
  */
 bool WizKMDatabaseServer::document_postDataNew(const WIZDOCUMENTDATAEX& dataTemp, bool withData, __int64& nServerVersion)
 {
@@ -1687,7 +1690,6 @@ bool WizKMDatabaseServer::document_postData(const WIZDOCUMENTDATAEX& data, bool 
 {
     return document_postDataNew(data, bWithDocumentData, nServerVersion);
 }
-
 
 
 bool WizKMDatabaseServer::attachment_postData(WIZDOCUMENTATTACHMENTDATAEX& data, bool withData, __int64& nServerVersion)
