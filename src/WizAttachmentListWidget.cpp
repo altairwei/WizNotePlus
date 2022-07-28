@@ -699,7 +699,7 @@ WizAttachmentListWidget::WizAttachmentListWidget(QWidget* parent)
     layoutHeader->addWidget(m_btnAddAttachment);
 
     QVBoxLayout* layoutMain = new QVBoxLayout();
-    layoutMain->setContentsMargins(0, 10, 0, 0);
+    layoutMain->setContentsMargins(0, 4, 0, 0);
     layoutMain->setSpacing(5);
     setLayout(layoutMain);
 

@@ -237,8 +237,22 @@ bool WizDocumentWebView::onPasteCommand()
     if (isEditing())
     {
         const QMimeData *mimeData = clip->mimeData();
-        if (mimeData->hasImage())
-        {
+        qDebug() << "Clipboard MIME Data has formats: " << mimeData->formats();
+        // On MacOS: copying files will result in "text/uri-list", "text/plain", "application/x-qt-image" formats.
+        // So, we should test `hasUrls()` before `hasImage()`.
+        if (mimeData->hasUrls()) {
+            int nAccepted = 0;
+
+            QList<QUrl> urls = mimeData->urls();
+            QList<QUrl>::const_iterator it;
+            for (it = urls.constBegin(); it != urls.constEnd(); it++) {
+                QUrl url = *it;
+                if (acceptUrlAsAttachment(url))
+                    nAccepted++;
+            }
+
+            return nAccepted > 0;
+        } else if (mimeData->hasImage()) {
             // save clipboard image to
             QString strImagePath = noteResourcesPath();
             CString strFileName = strImagePath + WizIntToStr(WizGetTickCount()) + ".png";
@@ -254,18 +268,6 @@ bool WizDocumentWebView::onPasteCommand()
             editorCommandExecuteInsertHtml(strHtml, true);
 
             return true;
-        } else if (mimeData->hasUrls()) {
-            int nAccepted = 0;
-
-            QList<QUrl> urls = mimeData->urls();
-            QList<QUrl>::const_iterator it;
-            for (it = urls.constBegin(); it != urls.constEnd(); it++) {
-                QUrl url = *it;
-                if (acceptUrlAsAttachment(url))
-                    nAccepted++;
-            }
-
-            return nAccepted > 0;
         }
 
     }
