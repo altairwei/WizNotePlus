@@ -1134,63 +1134,61 @@ bool mime2Notes(const QString& mime, WizDatabaseManager& dbMgr, CWizDocumentData
     }
     return !arrayDocument.empty();
 }
+
 QPixmap CreateDocumentDragBadget(const CWizDocumentDataArray& arrayDocument)
 {
     const int nImageWidth = 150;
     const int nItemHeight = 22;
 
-
     int nItemCount = arrayDocument.size() > 10 ? 10 : arrayDocument.size();
 
-    QPixmap pix(nImageWidth, nItemHeight* (nItemCount + 2) + 8);
+    QPixmap pix(nImageWidth, nItemHeight * (nItemCount + 2) + 8);
     pix.fill(Qt::transparent);
-
 
     QPainter pt(&pix);
     QRect rc = pix.rect();
-    //draw number
-    QRect rcNumber(rc.x() + 12, rc.y(), 18, 18);
+
+    // draw number (height = 14 + 2 + 2 + 4)
+    QRect rcNumber(rc.x() + 12, rc.y() + 2, 18, 14);
     QFont font = pt.font();
     font.setPixelSize(12);
     QFontMetrics fm(font);
-    int textWidth = fm.width(QString::number(arrayDocument.size()));
+    int textWidth = fm.horizontalAdvance(QString::number(arrayDocument.size()));
     if (rcNumber.width() < (textWidth + 8))
-    {
         rcNumber.setWidth(textWidth + 8);
-    }
-    pt.setPen(QColor("#FF6052"));
-    pt.setBrush(QColor("#FF6052"));
+    pt.setPen(QColor(0xFF, 0x60, 0x52));
+    pt.setBrush(QColor(0xFF, 0x60, 0x52));
     pt.setRenderHint(QPainter::Antialiasing);
-    pt.drawEllipse(rcNumber);
-
-    pt.setPen(QColor("#FFFFFF"));
+    pt.drawRoundedRect(rcNumber, 8, 6);
+    pt.setPen(QColor(0xFF, 0xFF, 0xFF));
     pt.drawText(rcNumber, Qt::AlignCenter, QString::number(arrayDocument.size()));
 
-    QRect rcItem(rc.left(), rcNumber.bottom() + 4, rc.width(), nItemHeight - 4);
-    //draw doc item
-    const int nIconHeight = 14;
+    //draw doc item (height = 18 + 4)
+    QRect rcItem(rc.left(), rcNumber.bottom() + 6, rc.width(), nItemHeight - 4);
+    const int nIconHeight = 16;
     for (int i = 0; i < nItemCount; i++)
     {
         const WIZDOCUMENTDATAEX& doc = arrayDocument.at(i);
 
+        // draw doc icon
         QRect rcIcon(rcItem.left(), rcItem.top() + (rcItem.height() - nIconHeight)/2,
                      nIconHeight, nIconHeight);
         QPixmap pixIcon(Utils::WizStyleHelper::skinResourceFileName(
-                            doc.nProtected == 1 ? "document_badge_encrypted" : "document_badge", true));
+                            doc.nProtected == 1 ? "document_badge_encrypted" : "document_badge", false));
         pt.drawPixmap(rcIcon, pixIcon);
 
-        //
+        // draw doc title
         QRect rcTitle(rcIcon.right() + 4, rcItem.top(), rcItem.right() - rcIcon.right() - 4, rcItem.height());
         QString text = fm.elidedText(doc.strTitle, Qt::ElideMiddle, rcTitle.width() - 14);
-        rcTitle.setWidth(fm.width(text) + 14);
+        rcTitle.setWidth(fm.horizontalAdvance(text) + 14);
         int leftSpace = nImageWidth - rcIcon.width() - 4;
         rcTitle.setWidth(rcTitle.width() > leftSpace ? leftSpace : rcTitle.width());
-        pt.setPen(QColor("#3177EE"));
-        pt.setBrush(QColor("#3177EE"));
+        pt.setPen(QColor(0x31, 0x77, 0xEE));
+        pt.setBrush(QColor(0x31, 0x77, 0xEE));
         pt.drawRoundedRect(rcTitle, 8, 6);
 
         rcTitle.adjust(4, 0, -4, 0);
-        pt.setPen(QColor("#FFFFFF"));
+        pt.setPen(QColor(0xFF, 0xFF, 0xFF));
         pt.drawText(rcTitle, Qt::AlignVCenter | Qt::AlignLeft, text);
         rcItem = QRect(rc.left(), rcItem.bottom() + 4, rc.width(), nItemHeight - 4);
     }
@@ -1199,12 +1197,12 @@ QPixmap CreateDocumentDragBadget(const CWizDocumentDataArray& arrayDocument)
     if (nItemCount < arrayDocument.size())
     {
         rcItem.adjust(0, -nItemHeight / 2, 0, -nItemHeight / 2);
-        QPen pen(QColor("#3177EE"));
+        QPen pen(QColor(0x31, 0x77, 0xEE));
         pen.setWidth(2);
         pt.setPen(pen);
         font.setPixelSize(20);
         pt.setFont(font);
-        pt.drawText(rcItem, Qt::AlignLeft | Qt::AlignTop, "......");
+        pt.drawText(rcItem, Qt::AlignVCenter | Qt::AlignLeft, "......");
     }
 
     return pix;
