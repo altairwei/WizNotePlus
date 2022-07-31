@@ -80,7 +80,7 @@ WizUserInfoWidget::WizUserInfoWidget(WizExplorerApp& app, QWidget *parent)
     // }
     m_menuMain->addSeparator();
     m_menuMain->addAction(actionLogout);
-    //
+
     setMenu(m_menuMain);
 }
 
@@ -251,20 +251,18 @@ QPixmap WizUserInfoWidget::getCircleAvatar(int width, int height)
 {
     if (width <= 0 || height <= 0)
         return QPixmap();
-    //
+
     if (!m_circleAvatar.isNull())
     {
         if (QSize(width, height) == m_circleAvatar.size())
             return m_circleAvatar;
-        //
+
         m_circleAvatar = QPixmap();
     }
 
-    QPixmap org = WizAvatarHost::orgAvatar(userId());
-    if (org.isNull())
-        return org;
-    //
-    m_circleAvatar = WizAvatarHost::circleImage(org, width, height);
+    QString avatarFile = WizAvatarHost::avatarFileName(userId());
+    m_circleAvatar = WizAvatarHost::circleImage(avatarFile, width, height);
+
     return m_circleAvatar;
 }
 
