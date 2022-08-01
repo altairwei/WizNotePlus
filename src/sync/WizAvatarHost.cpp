@@ -533,7 +533,7 @@ QPixmap WizAvatarHost::corpImage(const QPixmap& org)
  */
 QPixmap WizAvatarHost::circleImage(const QString& fileName, int width, int height)
 {
-    // Load image and convert to 32-bit ARGB (adds an alpha channel):
+    // Load image
     QImage image(fileName);
 
     if (image.isNull()) {
@@ -541,6 +541,7 @@ QPixmap WizAvatarHost::circleImage(const QString& fileName, int width, int heigh
         return QPixmap();
     }
 
+    // Convert to 32-bit ARGB (adds an alpha channel):
     image.convertToFormat(QImage::Format_ARGB32);
 
     // Crop image to a square:
@@ -571,7 +572,6 @@ QPixmap WizAvatarHost::circleImage(const QString& fileName, int width, int heigh
 
     // Convert the image to a pixmap and rescale it.  Take pixel ratio into
     // account to get a sharp image on retina displays:
-
     auto pr = qApp->devicePixelRatio();
     auto pm = QPixmap::fromImage(out_img);
     pm.setDevicePixelRatio(pr);

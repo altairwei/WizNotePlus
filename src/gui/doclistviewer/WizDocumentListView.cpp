@@ -5,6 +5,7 @@
 #include <QMenu>
 #include <QSet>
 #include <QInputDialog>
+#include <QApplication>
 
 #include "utils/WizStyleHelper.h"
 #include "utils/WizLogger.h"
@@ -1142,7 +1143,12 @@ QPixmap CreateDocumentDragBadget(const CWizDocumentDataArray& arrayDocument)
 
     int nItemCount = arrayDocument.size() > 10 ? 10 : arrayDocument.size();
 
-    QPixmap pix(nImageWidth, nItemHeight * (nItemCount + 2) + 8);
+    int width = nImageWidth;
+    int height = nItemHeight * (nItemCount + 2) + 8;
+
+    auto pr = qApp->devicePixelRatio();
+    QPixmap pix(width * pr, height * pr);
+    pix.setDevicePixelRatio(pr);
     pix.fill(Qt::transparent);
 
     QPainter pt(&pix);
@@ -1174,12 +1180,12 @@ QPixmap CreateDocumentDragBadget(const CWizDocumentDataArray& arrayDocument)
         QRect rcIcon(rcItem.left(), rcItem.top() + (rcItem.height() - nIconHeight)/2,
                      nIconHeight, nIconHeight);
         QPixmap pixIcon(Utils::WizStyleHelper::skinResourceFileName(
-                            doc.nProtected == 1 ? "document_badge_encrypted" : "document_badge", false));
+                         doc.nProtected == 1 ? "document_badge_encrypted" : "document_badge", false));
         pt.drawPixmap(rcIcon, pixIcon);
 
         // draw doc title
         QRect rcTitle(rcIcon.right() + 4, rcItem.top(), rcItem.right() - rcIcon.right() - 4, rcItem.height());
-        QString text = fm.elidedText(doc.strTitle, Qt::ElideMiddle, rcTitle.width() - 14);
+        QString text = fm.elidedText(doc.strTitle, Qt::ElideMiddle, rcTitle.width() / pr - 14);
         rcTitle.setWidth(fm.horizontalAdvance(text) + 14);
         int leftSpace = nImageWidth - rcIcon.width() - 4;
         rcTitle.setWidth(rcTitle.width() > leftSpace ? leftSpace : rcTitle.width());
