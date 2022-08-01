@@ -1179,9 +1179,9 @@ QPixmap CreateDocumentDragBadget(const CWizDocumentDataArray& arrayDocument)
         // draw doc icon
         QRect rcIcon(rcItem.left(), rcItem.top() + (rcItem.height() - nIconHeight)/2,
                      nIconHeight, nIconHeight);
-        QPixmap pixIcon(Utils::WizStyleHelper::skinResourceFileName(
-                         doc.nProtected == 1 ? "document_badge_encrypted" : "document_badge", false));
-        pt.drawPixmap(rcIcon, pixIcon);
+        QIcon pixIcon = WizLoadSkinIcon(Utils::WizStyleHelper::themeName(),
+                            doc.nProtected == 1 ? "document_badge_encrypted" : "document_badge");
+        pt.drawPixmap(rcIcon, pixIcon.pixmap(nIconHeight, nIconHeight));
 
         // draw doc title
         QRect rcTitle(rcIcon.right() + 4, rcItem.top(), rcItem.right() - rcIcon.right() - 4, rcItem.height());
