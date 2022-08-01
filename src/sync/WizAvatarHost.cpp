@@ -17,6 +17,7 @@
 #include <QPainterPath>
 #include <QBitmap>
 #include <QApplication>
+#include <algorithm>
 
 #include "WizApiEntry.h"
 #include "../utils/WizPathResolve.h"
@@ -543,7 +544,7 @@ QPixmap WizAvatarHost::circleImage(const QString& fileName, int width, int heigh
     image.convertToFormat(QImage::Format_ARGB32);
 
     // Crop image to a square:
-    int imgsize = min(image.width(), image.height());
+    int imgsize = std::min(image.width(), image.height());
     QRect rect = QRect(
         (image.width() - imgsize) / 2,
         (image.height() - imgsize) / 2,
