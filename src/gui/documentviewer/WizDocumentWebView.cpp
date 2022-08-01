@@ -1002,12 +1002,13 @@ void WizDocumentWebView::insertImage(const QString& strFileName)
 void WizDocumentWebView::addAttachmentThumbnail(const QString strFile, const QString& strGuid)
 {
     QImage img;
-    ::WizCreateThumbnailForAttachment(img, strFile, QSize(32, 32));
+    qreal scale = 2;
+    ::WizCreateThumbnailForAttachment(img, strFile, QSize(32, 32), scale);
     QString strDestFile = Utils::WizPathResolve::tempPath() + WizGenGUIDLowerCaseLetterOnly() + ".png";
     img.save(strDestFile, "PNG");
     QString strLink = QString("wiz://open_attachment?guid=%1").arg(strGuid);
     QSize szImg = img.size();
-    QString strHtml = WizGetImageHtmlLabelWithLink(strDestFile, szImg, strLink);
+    QString strHtml = WizGetImageHtmlLabelWithLink(strDestFile, szImg / scale, strLink);
     editorCommandExecuteInsertHtml(strHtml, true);
 }
 

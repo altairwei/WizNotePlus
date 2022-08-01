@@ -622,13 +622,14 @@ void WizAttachmentListView::copyThumbnail(const QString &fileName, const QString
 {
     QImage img;
     QFileInfo attachInfo(fileName);
+    qreal scale = 2;
     if (WizCreateThumbnailForAttachment(img, attachInfo, QSize(32, 32),
-                                        attachInfo.fileName().remove(0, 38))) {
+                                        scale, attachInfo.fileName().remove(0, 38))) {
         QClipboard* clip = QApplication::clipboard();
         QString strDestFile = Utils::WizPathResolve::tempPath() + WizGenGUIDLowerCaseLetterOnly() + ".png";
         img.save(strDestFile, "PNG");
         QString strLink = QString("wiz://open_attachment?guid=%1").arg(attachGuid);
-        QString strHtml = WizGetImageHtmlLabelWithLink(strDestFile, img.size(), strLink);
+        QString strHtml = WizGetImageHtmlLabelWithLink(strDestFile, img.size() / scale, strLink);
         auto data = new QMimeData;
         data->setHtml(strHtml);
         clip->setMimeData(data);

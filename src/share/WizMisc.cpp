@@ -2666,8 +2666,9 @@ static QString formatFileSize(qint64 size)
 }
 
 bool WizCreateThumbnailForAttachment(
-        QImage& img, const QFileInfo& info,
-        const QSize& iconSize, const QString fileTitle)
+        QImage& output, const QFileInfo& info,
+        const QSize& iconSize, qreal scaleFactor,
+        const QString fileTitle)
 {
     // get info text and calculate width of image
     int nIconMargin = 14;
@@ -2686,7 +2687,9 @@ bool WizCreateThumbnailForAttachment(
     // draw border and background
     int nBgWidth = nWidth;
     int nBgHeight = nHeight;
-    img = QImage(nBgWidth, nBgHeight, QImage::Format_RGB32);
+    QImage img(nBgWidth * scaleFactor, nBgHeight * scaleFactor, QImage::Format_ARGB32);
+    img.setDevicePixelRatio(scaleFactor);
+
     QPainter p(&img);
     QRectF rcd = QRectF(0, 0, nBgWidth, nBgHeight);
     p.fillRect(rcd, QBrush(QColor(0xF7, 0xF7, 0xF7)));
@@ -2734,17 +2737,21 @@ bool WizCreateThumbnailForAttachment(
     infoRect.adjust(8, 0, 0, 0);
     p.drawText(infoRect, fileSize);
 
+    output = img;
+
     return true;
 }
 
-bool WizCreateThumbnailForAttachment(QImage& img, const QString& attachFileName,
-                                     const QSize& iconSize, const QString fileTitle)
+bool WizCreateThumbnailForAttachment(
+        QImage& img, const QString& attachFileName,
+        const QSize& iconSize, qreal scaleFactor,
+        const QString fileTitle)
 {
     QFileInfo info(attachFileName);
     if (!info.exists())
         return false;
 
-    return WizCreateThumbnailForAttachment(img, info, iconSize, fileTitle);
+    return WizCreateThumbnailForAttachment(img, info, iconSize, scaleFactor, fileTitle);
 }
 
 WizOleDateTime WizIniReadDateTimeDef(const CString& strFile, const CString& strSection, const CString& strKey, WizOleDateTime defaultData)

@@ -160,10 +160,10 @@ void WizScaleIconSizeForRetina(QSize& size);
 
 bool WizCreateThumbnailForAttachment(
         QImage& img, const QString& attachFileName,
-        const QSize& iconSize, const QString fileTitle = "");
+        const QSize& iconSize, qreal scaleFactor = 1, const QString fileTitle = "");
 bool WizCreateThumbnailForAttachment(
         QImage& img, const QFileInfo& attachFileInfo,
-        const QSize& iconSize, const QString fileTitle = "");
+        const QSize& iconSize, qreal scaleFactor = 1, const QString fileTitle = "");
 
 QString WizGetHtmlBodyContent(const QString& strHtml);
 bool WizGetBodyContentFromHtml(QString& strHtml, bool bNeedTextParse);
