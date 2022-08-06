@@ -319,6 +319,7 @@ bool WizKMApiServerBase::getValueVersion(const QString& strMethodPrefix, const Q
     WIZSTANDARDRESULT jsonRet = WithResult::execStandardJsonRequest<__int64>(*this, urlPath, nVersion);
     return jsonRet;
 }
+
 bool WizKMApiServerBase::getValue(const QString& strMethodPrefix, const QString& strGuid, const QString& strKey, QString& strValue, __int64& nVersion)
 {
     struct KEYVALUEDATA
@@ -399,6 +400,7 @@ void WizKMAccountsServer::setUserInfo(const WIZUSERINFO& userInfo)
     m_bLogin = TRUE;
     m_userInfo = userInfo;
 }
+
 bool WizKMAccountsServer::initAllKbInfos()
 {
     std::deque<WIZKBINFO> infos;
@@ -937,10 +939,12 @@ bool WizKMDatabaseServer::getValueVersion(const QString& strKey, __int64& nVersi
     //
     return WizKMApiServerBase::getValueVersion("ks", getKbGuid(), strKey, nVersion);
 }
+
 bool WizKMDatabaseServer::getValue(const QString& strKey, QString& strValue, __int64& nVersion)
 {
     return WizKMApiServerBase::getValue("ks", getKbGuid(), strKey, strValue, nVersion);
 }
+
 bool WizKMDatabaseServer::setValue(const QString& strKey, const QString& strValue, __int64& nRetVersion)
 {
     return WizKMApiServerBase::setValue("ks", getKbGuid(), strKey, strValue, nRetVersion);
@@ -1243,7 +1247,7 @@ bool uploadResources(WizKMDatabaseServer& server, const QString& url, const QStr
     multiPart->setParent(reply); // delete the multiPart with the reply
     //
     WizAutoTimeOutEventLoop loop(reply);
-    loop.setTimeoutWaitSeconds(60 * 60);
+    loop.setTimeoutWaitSeconds(TIMEOUT_WAIT_SECONDS);
     loop.exec();
     //
     QNetworkReply::NetworkError err = loop.error();
@@ -1351,7 +1355,7 @@ bool uploadObject(WizKMDatabaseServer& server, const QString& url, const QString
         multiPart->setParent(reply); // delete the multiPart with the reply
         //
         WizAutoTimeOutEventLoop loop(reply);
-        loop.setTimeoutWaitSeconds(60 * 60);
+        loop.setTimeoutWaitSeconds(TIMEOUT_WAIT_SECONDS);
         loop.exec();
         // 检查错误
         QNetworkReply::NetworkError err = loop.error();

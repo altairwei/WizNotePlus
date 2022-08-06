@@ -5,6 +5,8 @@
 #include <QNetworkReply>
 #include <QTimer>
 
+extern const int TIMEOUT_WAIT_SECONDS;
+
 /**
  * NOTE: CWizAutoTimeOutEventLoop would delete network reply at destruct,
  * should not delete network reply again
@@ -37,6 +39,7 @@ public Q_SLOTS:
 
 Q_SIGNALS:
     void downloadProgress(QUrl url, qint64 bytesReceived, qint64 bytesTotal);
+
 protected:
     virtual void doFinished(QNetworkReply* reply);
     virtual void doError(QNetworkReply::NetworkError error);

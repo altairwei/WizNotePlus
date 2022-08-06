@@ -38,13 +38,14 @@ QNetworkReply::NetworkError WizAutoTimeOutEventLoop::error() const
 {
     if (m_error != QNetworkReply::NoError)
         return m_error;
-    //
+
     if (!m_finished) {
         return QNetworkReply::OperationCanceledError;
     }
-    //
+
     return m_error;
 }
+
 QString WizAutoTimeOutEventLoop::errorString() const
 {
     return m_errorString;
@@ -87,9 +88,9 @@ int WizAutoTimeOutEventLoop::exec(QEventLoop::ProcessEventsFlags flags)
 void WizAutoTimeOutEventLoop::on_replyFinished()
 {
     m_timer.stop();
-    //
+
     doFinished(m_reply);
-    //
+
     quit();
 }
 
@@ -97,7 +98,7 @@ void WizAutoTimeOutEventLoop::on_replyError(QNetworkReply::NetworkError error)
 {
     m_timer.stop();
     doError(error);
-    //
+
     quit();
 }
 
@@ -121,7 +122,7 @@ void WizAutoTimeOutEventLoop::on_timeOut()
         qWarning() << "[sync]Xml rpc event loop time out";
         m_timer.stop();
         m_reply->abort();
-        //
+
         quit();
     }
 }
@@ -129,12 +130,10 @@ void WizAutoTimeOutEventLoop::on_timeOut()
 void WizAutoTimeOutEventLoop::on_downloadProgress(qint64 bytesReceived, qint64 bytesTotal)
 {
     m_downloadBytes = bytesReceived;
-//    qDebug() << "download progress changed  " << bytesReceived << "  totoal  : " << bytesTotal;
     emit downloadProgress(m_url, bytesReceived, bytesTotal);
 }
 
 void WizAutoTimeOutEventLoop::on_uploadProgress(qint64 bytesSent, qint64 bytesTotal)
 {
     m_uploadBytes = bytesSent;
-//    qDebug() << "upload progress changed  " << bytesSent << "  totoal  : " << bytesTotal;
 }

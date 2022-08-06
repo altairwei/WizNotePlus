@@ -977,7 +977,7 @@ void WizMainWindow::initSyncFull()
 void WizMainWindow::initSyncQuick()
 {
     WizKMSyncThread::setQuickThread(m_syncQuick);
-    //
+
     connect(m_syncQuick, SIGNAL(promptFreeServiceExpr(WIZGROUPDATA)), SLOT(on_promptFreeServiceExpr(WIZGROUPDATA)));
     connect(m_syncQuick, SIGNAL(promptVipServiceExpr(WIZGROUPDATA)), SLOT(on_promptVipServiceExpr(WIZGROUPDATA)));
 }
@@ -2323,7 +2323,7 @@ void WizMainWindow::on_syncStarted(bool syncAll)
     {
         m_animateSync->startPlay();
     }
-    //
+
     if (syncAll)
     {
         qDebug() << "[Sync] Syncing all notes...";

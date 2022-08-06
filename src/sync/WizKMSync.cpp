@@ -76,6 +76,7 @@ void WizKMSyncEvents::onBizNoteCountLimit(IWizSyncableDatabase* pDatabase)
     // FIXME
     Q_UNUSED(pDatabase);
 }
+
 void WizKMSyncEvents::onFreeServiceExpr(WIZGROUPDATA group)
 {
     emit promptFreeServiceExpr(group);
@@ -115,21 +116,21 @@ void WizKMSyncEvents::onEndKb(const QString& strKbGUID)
 
 WizKMSyncThread::WizKMSyncThread(WizDatabase& db, bool quickOnly, QObject* parent)
     : QThread(parent)
+    , m_bBackground(true)
     , m_db(db)
+    , m_pEvents(NULL)
     , m_bNeedSyncAll(false)
     , m_bNeedDownloadMessages(false)
-    , m_pEvents(NULL)
-    , m_bBackground(true)
+    , m_bNeedResetGroups(false)
     , m_nFullSyncSecondsInterval(DEFAULT_FULL_SYNC_SECONDS_INTERVAL)
     , m_bBusy(false)
     , m_bPause(false)
-    , m_bNeedResetGroups(false)
     , m_quickOnly(quickOnly)
 {
     m_tLastSyncAll = QDateTime::currentDateTime();
-    //
+
     m_pEvents = new WizKMSyncEvents();
-    //
+
     connect(m_pEvents, SIGNAL(messageReady(const QString&)), SIGNAL(processLog(const QString&)));
     connect(m_pEvents, SIGNAL(promptMessageRequest(int, QString, QString)), SIGNAL(promptMessageRequest(int, QString, QString)));
     connect(m_pEvents, SIGNAL(bubbleNotificationRequest(const QVariant&)), SIGNAL(bubbleNotificationRequest(const QVariant&)));
@@ -141,6 +142,7 @@ WizKMSyncThread::WizKMSyncThread(WizDatabase& db, bool quickOnly, QObject* paren
     connect(this, SIGNAL(stopTimer()), &m_timer, SLOT(stop()));
     connect(&m_timer, SIGNAL(timeout()), SLOT(on_timerOut()));
 }
+
 WizKMSyncThread::~WizKMSyncThread()
 {
 }
@@ -157,10 +159,10 @@ void WizKMSyncThread::run()
         {
             return;
         }
-        //
+
         if (m_bPause)
             continue;
-        //
+
         m_bBusy = true;
         doSync();
         m_bBusy = false;
@@ -205,12 +207,14 @@ bool WizKMSyncThread::prepareToken()
     QString token = WizToken::token();
     if (token.isEmpty())
     {
-        Q_EMIT syncFinished(WizToken::lastErrorCode(), WizToken::lastIsNetworkError(), WizToken::lastErrorMessage(), isBackground());
+        Q_EMIT syncFinished(
+            WizToken::lastErrorCode(), WizToken::lastIsNetworkError(),
+            WizToken::lastErrorMessage(), isBackground());
         return false;
     }
-    //
+
     m_info = WizToken::userInfo();
-    //
+
     return true;
 }
 
@@ -235,7 +239,7 @@ bool WizKMSyncThread::doSync()
     else if (needQuickSync())
     {
         qDebug() << "[Sync] quick syncing started, thread:" << QThread::currentThreadId();
-        //
+
         m_bBackground = true;
         quickSync();
         return true;
@@ -243,11 +247,11 @@ bool WizKMSyncThread::doSync()
     else if (needDownloadMessage())
     {
         qDebug() <<  "[Sync] quick download messages started, thread:" << QThread::currentThreadId();
-        //
+
         downloadMesages();
         return true;
     }
-    //
+
     return false;
 }
 
@@ -261,7 +265,7 @@ bool WizKMSyncThread::clearCurrentToken()
 void WizKMSyncThread::waitForDone()
 {
     stopSync();
-    //
+
     ::WizWaitForThread(this);
 }
 
@@ -269,7 +273,7 @@ bool WizKMSyncThread::needSyncAll()
 {
     if (m_quickOnly)
         return false;
-    //
+
     if (m_bNeedSyncAll)
         return true;
 
@@ -311,12 +315,12 @@ public:
 bool WizKMSyncThread::syncAll()
 {
     TOLOG2("client version: %1(%2)", WIZ_CLIENT_TYPE, WIZ_CLIENT_VERSION);
-    //
+
     m_bNeedSyncAll = false;
-    //
+
     CWizKMSyncThreadHelper helper(this, true);
     Q_UNUSED(helper);
-    //
+
     m_pEvents->setLastErrorCode(0);
     if (!prepareToken())
         return false;
@@ -334,9 +338,8 @@ bool WizKMSyncThread::syncAll()
 bool WizKMSyncThread::quickSync()
 {
     CWizKMSyncThreadHelper helper(this, false);
-    //
     Q_UNUSED(helper);
-    //
+
     QString kbGuid;
     while (peekQuickSyncKb(kbGuid))
     {
@@ -345,8 +348,8 @@ bool WizKMSyncThread::quickSync()
 
         if (kbGuid.isEmpty() || m_db.kbGUID() == kbGuid)
         {
-            WizKMSync syncPrivate(&m_db, m_info, WIZKBINFO(), WIZKBVALUEVERSIONS(), m_pEvents, FALSE, TRUE, NULL);
-            //
+            WizKMSync syncPrivate(&m_db, m_info, WIZKBINFO(),WIZKBVALUEVERSIONS(),
+                                  m_pEvents, FALSE, TRUE, NULL);
             if (syncPrivate.sync())
             {
                 m_db.saveLastSyncTime();
@@ -358,22 +361,20 @@ bool WizKMSyncThread::quickSync()
             if (m_db.getGroupData(kbGuid, group))
             {
                 IWizSyncableDatabase* pGroupDatabase = m_db.getGroupDatabase(group);
-                //
                 WIZUSERINFO userInfo(m_info, group);
-                //
-                WizKMSync syncGroup(pGroupDatabase, userInfo, WIZKBINFO(), WIZKBVALUEVERSIONS(), m_pEvents, TRUE, TRUE, NULL);
-                //
+                WizKMSync syncGroup(pGroupDatabase, userInfo, WIZKBINFO(), WIZKBVALUEVERSIONS(),
+                                    m_pEvents, TRUE, TRUE, NULL);
+
                 if (syncGroup.sync())
                 {
                     pGroupDatabase->saveLastSyncTime();
                 }
-                //
+
                 m_db.closeGroupDatabase(pGroupDatabase);
             }
         }
     }
-    //
-    //
+
     return true;
 }
 
@@ -394,23 +395,23 @@ bool WizKMSyncThread::resetGroups()
 {
     if (!prepareToken())
         return false;
-    //
+
     WizKMAccountsServer server;
     server.setUserInfo(m_info);
     server.setEvents(m_pEvents);
-    //
+
     CWizBizDataArray bizs;
     if (!server.getBizList(bizs))
         return false;
-    //
+
     m_db.onDownloadBizs(bizs);
-    //
+
     CWizGroupDataArray groups;
     if (!server.getGroupList(groups))
         return false;
-    //
+
     m_db.onDownloadGroups(groups);
-    //
+
     return true;
 }
 
@@ -419,12 +420,13 @@ bool WizKMSyncThread::needQuickSync()
 {
     QMutexLocker locker(&m_mutex);
     Q_UNUSED(locker);
-    //
+
     if (m_setQuickSyncKb.empty())
         return false;
-    //
+
     return true;
 }
+
 bool WizKMSyncThread::needResetGroups()
 {
     return m_bNeedResetGroups;
@@ -434,10 +436,10 @@ bool WizKMSyncThread::needDownloadMessage()
 {
     if (m_quickOnly)
         return false;
-    //
+
     QMutexLocker locker(&m_mutex);
     Q_UNUSED(locker);
-    //
+
     if (m_bNeedDownloadMessages)
     {
         m_bNeedDownloadMessages = false;
@@ -467,9 +469,9 @@ void WizKMSyncThread::addQuickSyncKb(const QString& kbGuid)
 {
     QMutexLocker locker(&m_mutex);
     Q_UNUSED(locker);
-    //
+
     m_setQuickSyncKb.insert(kbGuid);
-    //
+
     m_tLastKbModified = QDateTime::currentDateTime();
 
     QTimer::singleShot(DEFAULT_QUICK_SYNC_MILLISECONDS_INTERVAL + 1, this, SLOT(on_timerOut()));
@@ -493,10 +495,10 @@ bool WizKMSyncThread::peekQuickSyncKb(QString& kbGuid)
 {
     QMutexLocker locker(&m_mutex);
     Q_UNUSED(locker);
-    //
+
     if (m_setQuickSyncKb.empty())
         return false;
-    //
+
     kbGuid = *m_setQuickSyncKb.begin();
     m_setQuickSyncKb.erase(m_setQuickSyncKb.begin());
     return true;
@@ -522,7 +524,7 @@ void WizKMSyncThread::waitUntilIdleAndPause()
     {
         QThread::sleep(1);
     }
-    //
+
     setPause(true);
 }
 
@@ -530,6 +532,6 @@ void WizKMSyncThread::setPause(bool pause)
 {
     if (!g_quickThread)
         return;
-    //
+
     g_quickThread->m_bPause = pause;
 }
