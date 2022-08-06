@@ -349,6 +349,8 @@ void WizMainWindow::cleanOnQuit()
     m_quitProgress->setCancelButtonText(tr("Quit"));
     m_quitProgress->setWindowModality(Qt::WindowModal);
     m_quitProgress->setFixedWidth(400);
+    m_quitProgress->setMinimum(0);
+    m_quitProgress->setMaximum(11);
     m_quitProgress->setValue(0);
 
     connect(m_quitProgress, &QProgressDialog::canceled, [this] {
