@@ -1247,7 +1247,7 @@ bool uploadResources(WizKMDatabaseServer& server, const QString& url, const QStr
     multiPart->setParent(reply); // delete the multiPart with the reply
     //
     WizAutoTimeOutEventLoop loop(reply);
-    loop.setTimeoutWaitSeconds(TIMEOUT_WAIT_SECONDS);
+    loop.setTimeoutWaitSeconds(NETWORK_TIMEOUT_SECS);
     loop.exec();
     //
     QNetworkReply::NetworkError err = loop.error();
@@ -1355,7 +1355,7 @@ bool uploadObject(WizKMDatabaseServer& server, const QString& url, const QString
         multiPart->setParent(reply); // delete the multiPart with the reply
         //
         WizAutoTimeOutEventLoop loop(reply);
-        loop.setTimeoutWaitSeconds(TIMEOUT_WAIT_SECONDS);
+        loop.setTimeoutWaitSeconds(NETWORK_TIMEOUT_SECS);
         loop.exec();
         // 检查错误
         QNetworkReply::NetworkError err = loop.error();

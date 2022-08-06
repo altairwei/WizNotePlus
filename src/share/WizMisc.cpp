@@ -3037,7 +3037,7 @@ bool WizURLDownloadToFile(const QString& url, const QString& fileName, bool isIm
         //
         reply = netCtrl.get(request);
         WizAutoTimeOutEventLoop loop(reply);
-        loop.setTimeoutWaitSeconds(TIMEOUT_WAIT_SECONDS);
+        loop.setTimeoutWaitSeconds(NETWORK_TIMEOUT_SECS);
         loop.exec();
 
         if (loop.error() != QNetworkReply::NoError)
@@ -3093,7 +3093,7 @@ bool WizURLDownloadToData(const QString& url, QByteArray& data)
         //
         reply = netCtrl.get(request);
         WizAutoTimeOutEventLoop loop(reply);
-        loop.setTimeoutWaitSeconds(TIMEOUT_WAIT_SECONDS);
+        loop.setTimeoutWaitSeconds(NETWORK_TIMEOUT_SECS);
         loop.exec();
 
         if (loop.error() != QNetworkReply::NoError)
@@ -3134,7 +3134,7 @@ bool WizURLDownloadToData(const QString& url, QByteArray& data, QObject* receive
         //
         QObject::connect(&loop, SIGNAL(downloadProgress(QUrl, qint64, qint64)), receiver, member);
         //
-        loop.setTimeoutWaitSeconds(TIMEOUT_WAIT_SECONDS);
+        loop.setTimeoutWaitSeconds(NETWORK_TIMEOUT_SECS);
         loop.exec();
 
         if (loop.error() != QNetworkReply::NoError)

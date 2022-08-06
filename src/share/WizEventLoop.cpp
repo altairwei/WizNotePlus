@@ -3,17 +3,17 @@
 #include <QTimer>
 #include <QDebug>
 
-const int TIMEOUT_WAIT_SECONDS = 120;
+const int NETWORK_TIMEOUT_SECS = 60;
 
 WizAutoTimeOutEventLoop::WizAutoTimeOutEventLoop(QNetworkReply* pReply, QObject *parent /*= 0*/)
     : QEventLoop(parent)
     , m_error(QNetworkReply::NoError)
     , m_timeOut(false)
-    , m_timeOutSeconds(TIMEOUT_WAIT_SECONDS)
+    , m_timeOutSeconds(NETWORK_TIMEOUT_SECS)
     , m_downloadBytes(0)
-    , m_lastDownloadBytes(-1)
+    , m_lastDownloadBytes(0)
     , m_uploadBytes(0)
-    , m_lastUploadBytes(-1)
+    , m_lastUploadBytes(0)
     , m_reply(pReply)
     , m_finished(false)
 {

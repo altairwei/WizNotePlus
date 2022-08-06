@@ -74,6 +74,7 @@ class WizDocumentSaverThread;
 class WizDocumentLoaderThread;
 class WizSingleDocumentViewManager;
 class QWebEngineView;
+class QProgressDialog;
 
 class ApiWizExplorerApp;
 class PublicAPIsServer;
@@ -207,6 +208,8 @@ private:
 
     WizDocumentSaverThread *m_docSaver;
     WizDocumentLoaderThread *m_docLoader;
+
+    QProgressDialog *m_quitProgress;
 
 private:
     void initQuitHandler();

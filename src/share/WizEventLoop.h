@@ -5,7 +5,7 @@
 #include <QNetworkReply>
 #include <QTimer>
 
-extern const int TIMEOUT_WAIT_SECONDS;
+extern const int NETWORK_TIMEOUT_SECS;
 
 /**
  * NOTE: CWizAutoTimeOutEventLoop would delete network reply at destruct,

@@ -18,6 +18,7 @@
 #include <QPrintDialog>
 #include <QPrinter>
 #include <QCheckBox>
+#include <QProgressDialog>
 
 #ifdef Q_OS_MAC
 #include <Carbon/Carbon.h>
@@ -340,44 +341,78 @@ void WizMainWindow::cleanOnQuit()
 {
     m_quiting = true;
 
-    WizObjectDownloaderHost::instance()->waitForDone();
-    WizKMSyncThread::setQuickThread(nullptr);
+    m_quiting = true;
 
+    int i = 0;
+    m_quitProgress = new QProgressDialog(this);
+    m_quitProgress->setWindowTitle(tr("Cleaning on Quit"));
+    m_quitProgress->setCancelButtonText(tr("Quit"));
+    m_quitProgress->setWindowModality(Qt::WindowModal);
+    m_quitProgress->setFixedWidth(400);
+    m_quitProgress->setValue(0);
+
+    connect(m_quitProgress, &QProgressDialog::canceled, [this] {
+        m_syncQuick->quit();
+        m_syncFull->quit();
+    });
+
+    // 处理所有标签
+    m_quitProgress->setLabelText(tr("Closing opened documents..."));
+    processAllDocumentViews([=](WizDocumentView* docView){
+        docView->waitForDone();
+    });
+    m_quitProgress->setValue(++i);
+
+    m_quitProgress->setLabelText(tr("Shutting object downloader host..."));
+    WizObjectDownloaderHost::instance()->waitForDone();
+    m_quitProgress->setValue(++i);
+
+    m_quitProgress->setLabelText(tr("Saving category tree expand state..."));
     m_category->saveExpandState();
     saveStatus();
+    m_quitProgress->setValue(++i);
 
-    auto full = m_syncFull;
-    m_syncFull = nullptr;
-    full->waitForDone();
+    m_quitProgress->setLabelText(tr("Shutting full sync thread..."));
+    m_syncFull->waitForDone();
+    m_quitProgress->setValue(++i);
 
-    auto quick = m_syncQuick;
-    m_syncQuick = nullptr;
-    quick->waitForDone();
+    m_quitProgress->setLabelText(tr("Shutting quick sync thread..."));
+    WizKMSyncThread::setQuickThread(nullptr);
+    m_syncQuick->waitForDone();
+    m_quitProgress->setValue(++i);
 
+    m_quitProgress->setLabelText(tr("Shutting search thread..."));
     m_searcher->waitForDone();
+    m_quitProgress->setValue(++i);
 
+    m_quitProgress->setLabelText(tr("Shutting doc loader thread..."));
     if (m_docLoader) {
         m_docLoader->waitForDone();
         m_docLoader = nullptr;
     }
+    m_quitProgress->setValue(++i);
+
+    m_quitProgress->setLabelText(tr("Shutting doc saver thread..."));
     if (m_docSaver) {
         m_docSaver->waitForDone();
         m_docSaver = nullptr;
     }
+    m_quitProgress->setValue(++i);
 
-    // 处理所有标签
-    processAllDocumentViews([=](WizDocumentView* docView){
-        docView->waitForDone();
-    });
-
+    m_quitProgress->setLabelText(tr("Shutting external editor launcher thread..."));
     m_externalEditorLauncher->waitForDone();
+    m_quitProgress->setValue(++i);
 
+    m_quitProgress->setLabelText(tr("Shutting mobile file receiver thread..."));
     if (m_mobileFileReceiver)
     {
         m_mobileFileReceiver->waitForDone();
     }
+    m_quitProgress->setValue(++i);
 
+    m_quitProgress->setLabelText(tr("Clearing thread pool..."));
     WizQueuedThreadsShutdown();
+    m_quitProgress->setValue(++i);
 }
 
 /**
