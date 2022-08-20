@@ -104,6 +104,7 @@ private:
     QDateTime m_tLastKbModified;
 
     bool doSync();
+    bool isOnline();
 
     bool prepareToken();
     bool needSyncAll();

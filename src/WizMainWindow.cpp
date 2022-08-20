@@ -861,7 +861,6 @@ void WizMainWindow::handleTrayIconActived(QSystemTrayIcon::ActivationReason reas
 
 void WizMainWindow::shiftVisableStatus()
 {
-    qDebug() << "windowState: " + QString::number(windowState(), 8);
     switch(windowState()) {
         case Qt::WindowNoState:
             // Normal window, but de-activated
@@ -883,8 +882,6 @@ void WizMainWindow::shiftVisableStatus()
             showNormal();
             break;
     }
-
-    qDebug() << "windowState: " + QString::number(windowState(), 8);
 
     if (isVisible()) {
         // Actovate main window
@@ -2374,9 +2371,7 @@ void WizMainWindow::on_syncStarted(bool syncAll)
 void WizMainWindow::on_syncDone(int nErrorCode, bool isNetworkError, const QString& strErrorMsg, bool isBackground)
 {
     m_animateSync->stopPlay();
-    //
 
-    //
     if (isXMLRpcErrorCodeRelatedWithUserAccount(nErrorCode))
     {
         qDebug() << "sync done reconnectServer";
@@ -2403,7 +2398,6 @@ void WizMainWindow::on_syncDone(int nErrorCode, bool isNetworkError, const QStri
             m_tray->showMessage(tr("Sync failed"), tr("Bad network connection, can not sync now. Please try again later. (code: %1)").arg(nErrorCode), icon, delay, param);
             return;
         } else {
-            //
             QString message = tr("There is something wrong with sync service. Please try again later. (code: %1)").arg(nErrorCode);
             if (WIZKM_XMLRPC_ERROR_VIP_SERVICE_EXPR == nErrorCode) {
                 message = QObject::tr("VIP service of has expired, please renew to VIP.");
@@ -2416,12 +2410,11 @@ void WizMainWindow::on_syncDone(int nErrorCode, bool isNetworkError, const QStri
             } else if (WIZKM_XMLRPC_ERROR_NOTE_COUNT_LIMIT == nErrorCode) {
                 message = WizFormatString0(QObject::tr("Group notes count limit exceeded!"));
             }
-            //
+
             m_tray->showMessage(tr("Sync failed"), message, icon, delay, param);
             return;
         }
     }
-    //
 
     m_documents->viewport()->update();
     m_category->updateGroupsData();
@@ -4653,7 +4646,7 @@ void WizMainWindow::setNeedResetGroups()
 {
     if (!m_syncQuick || !m_syncFull)
         return;
-    //
+
     m_syncQuick->setNeedResetGroups();
     m_syncFull->setNeedResetGroups();
 }

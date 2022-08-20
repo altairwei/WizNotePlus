@@ -2,11 +2,13 @@
 
 #include <QDebug>
 #include <QApplication>
+#include <QUrl>
+#include <QTcpSocket>
 
-#include "WizApiEntry.h"
 #include "WizToken.h"
 
-#include "../database/WizDatabase.h"
+#include "database/WizDatabase.h"
+#include "WizApiEntry.h"
 #include "WizKMSync_p.h"
 
 
@@ -218,6 +220,27 @@ bool WizKMSyncThread::prepareToken()
     return true;
 }
 
+bool WizKMSyncThread::isOnline()
+{
+    QString server = WizCommonApiEntry::server();
+    if (server.isEmpty())
+        return false;
+
+    QUrl serverUrl(server);
+    QTcpSocket sock;
+    sock.connectToHost(serverUrl.host(), serverUrl.port(80));
+
+    bool connected = sock.waitForConnected();
+    if (!connected)
+    {
+        sock.abort();
+        return false;
+    }
+    sock.close();
+
+    return true;
+}
+
 bool WizKMSyncThread::doSync()
 {
     if (needResetGroups())
@@ -228,9 +251,21 @@ bool WizKMSyncThread::doSync()
     }
     else if (needSyncAll())
     {
-        qDebug() << "[Sync] syncing all started, thread:" << QThread::currentThreadId();
+        static bool lastSyncAllOnline = true;
+        if (isOnline()) {
+            qDebug() << "[Sync] syncing all started, thread:" << QThread::currentThreadId();
+            syncAll();
+            lastSyncAllOnline = true;
+        } else {
+            if (lastSyncAllOnline)
+                Q_EMIT syncFinished(
+                    -1, true, "Network is not available.", isBackground());
+            else
+                qWarning() << "[Sync] Can't connect to server, skipping full sync.";
 
-        syncAll();
+            lastSyncAllOnline = false;
+        }
+
         m_bNeedSyncAll = false;
         m_tLastSyncAll = QDateTime::currentDateTime();
         emit startTimer(m_nFullSyncSecondsInterval * 1000 + 1);
@@ -246,9 +281,13 @@ bool WizKMSyncThread::doSync()
     }
     else if (needDownloadMessage())
     {
-        qDebug() <<  "[Sync] quick download messages started, thread:" << QThread::currentThreadId();
+        if (isOnline()) {
+            qDebug() <<  "[Sync] quick download messages started, thread:" << QThread::currentThreadId();
+            downloadMesages();
+        } else {
+            qWarning() << "[Sync] Can't connect to server, skipping download message.";
+        }
 
-        downloadMesages();
         return true;
     }
 
