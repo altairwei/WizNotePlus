@@ -899,9 +899,8 @@ void WizDocumentListView::resetPermission()
     bool bCanEdit = isDocumentsAllCanDelete(arrayDocument);
     bool bAlwaysOnTop = isDocumentsAlwaysOnTop(arrayDocument);
     bool bMulti = arrayDocument.size() > 1;
-    bool bCollaboration = std::any_of(
-                arrayDocument.cbegin(), arrayDocument.cend(),
-                [](const auto &doc) { return doc.strType == "collaboration"; });
+    bool bCollaboration = std::any_of(arrayDocument.cbegin(), arrayDocument.cend(),
+                [](const WIZDOCUMENTDATAEX &doc) { return doc.strType == "collaboration"; });
 
     // if group documents or deleted documents selected
     if (bGroup || bDeleted) {
