@@ -6,6 +6,7 @@
 #include <QSet>
 #include <QInputDialog>
 #include <QApplication>
+#include <algorithm>
 
 #include "utils/WizStyleHelper.h"
 #include "utils/WizLogger.h"
@@ -36,6 +37,8 @@
 
 
 // Document actions
+#define WIZACTION_LIST_OPEN_NEW_TAB QObject::tr("Open in new Tab")
+#define WIZACTION_LIST_OPEN_NEW_WINDOW QObject::tr("Open in new Window")
 #define WIZACTION_LIST_LOCATE   QObject::tr("Locate")
 #define WIZACTION_LIST_DELETE   QObject::tr("Delete")
 #define WIZACTION_LIST_TAGS     QObject::tr("Tags...")
@@ -50,7 +53,6 @@
 #define WIZACTION_LIST_ENCRYPT_DOCUMENT QObject::tr("Encrypt Note")
 #define WIZACTION_LIST_CANCEL_ENCRYPTION  QObject::tr("Cancel Note Encryption")
 #define WIZACTION_LIST_ALWAYS_ON_TOP  QObject::tr("Always On Top")
-//#define WIZACTION_LIST_CANCEL_ON_TOP  QObject::tr("Cancel always on top")
 
 
 enum DocSize {
@@ -185,9 +187,9 @@ WizDocumentListView::WizDocumentListView(WizExplorerApp& app, QWidget *parent /*
 
     // document context menu
     m_menuDocument = new QMenu(this);
-    m_menuDocument->addAction(tr("Open in new Tab"), this,
+    m_menuDocument->addAction(WIZACTION_LIST_OPEN_NEW_TAB, this,
                               SLOT(on_action_showDocumentInNewTab()));
-    m_menuDocument->addAction(tr("Open in new Window"), this,
+    m_menuDocument->addAction(WIZACTION_LIST_OPEN_NEW_WINDOW, this,
                               SLOT(on_action_showDocumentInFloatWindow()));
     m_menuDocument->addSeparator();
     //
@@ -888,7 +890,7 @@ void WizDocumentListView::resetPermission()
     //QList<QListWidgetItem*> items = selectedItems();
     foreach (WizDocumentListViewDocumentItem* item, m_rightButtonFocusedItems) {
         arrayDocument.push_back(item->document());
-    }        
+    }
 
     findAction(WIZACTION_LIST_LOCATE)->setVisible(m_accpetAllSearchItems);
 
@@ -897,6 +899,9 @@ void WizDocumentListView::resetPermission()
     bool bCanEdit = isDocumentsAllCanDelete(arrayDocument);
     bool bAlwaysOnTop = isDocumentsAlwaysOnTop(arrayDocument);
     bool bMulti = arrayDocument.size() > 1;
+    bool bCollaboration = std::any_of(
+                arrayDocument.cbegin(), arrayDocument.cend(),
+                [](const auto &doc) { return doc.strType == "collaboration"; });
 
     // if group documents or deleted documents selected
     if (bGroup || bDeleted) {
@@ -917,13 +922,14 @@ void WizDocumentListView::resetPermission()
 
     findAction(WIZACTION_LIST_ALWAYS_ON_TOP)->setEnabled(bCanEdit);
     findAction(WIZACTION_LIST_ALWAYS_ON_TOP)->setChecked(bAlwaysOnTop);
+    findAction(WIZACTION_LIST_OPEN_NEW_WINDOW)->setEnabled(!bCollaboration);
 
     findAction(WIZACTION_LIST_SHARE_DOCUMENT_BY_LINK)->setVisible(true);
     // disable note history if selection is not only one
     if (m_rightButtonFocusedItems.count() != 1)
     {
         findAction(WIZACTION_LIST_DOCUMENT_HISTORY)->setEnabled(false);
-        //
+
         int num = numOfEncryptedDocuments(arrayDocument);
         if (num == arrayDocument.size())
         {
@@ -1030,7 +1036,7 @@ void WizDocumentListView::mousePressEvent(QMouseEvent* event)
     else if (event->button() == Qt::RightButton)
     {
         m_rightButtonFocusedItems.clear();
-        //
+
         WizDocumentListViewDocumentItem* pItem = dynamic_cast<WizDocumentListViewDocumentItem*>(itemAt(event->pos()));
         if (!pItem)
             return;
@@ -1054,7 +1060,7 @@ void WizDocumentListView::mousePressEvent(QMouseEvent* event)
             m_rightButtonFocusedItems.append(pItem);
             pItem->setSpecialFocused(true);
         }
-        //
+
         resetPermission();
         m_menuDocument->popup(event->globalPos());
     }

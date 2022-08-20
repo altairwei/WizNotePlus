@@ -341,8 +341,6 @@ void WizMainWindow::cleanOnQuit()
 {
     m_quiting = true;
 
-    m_quiting = true;
-
     int i = 0;
     m_quitProgress = new QProgressDialog(this);
     m_quitProgress->setWindowTitle(tr("Cleaning on Quit"));
@@ -3517,8 +3515,9 @@ void WizMainWindow::on_documents_itemDoubleClicked(QListWidgetItem* item)
     if (pItem)
     {
         WIZDOCUMENTDATA doc = pItem->document();
-        if (m_dbMgr.db(doc.strKbGUID).isDocumentDownloaded(doc.strGUID))
-        {
+        if (doc.strType == "collaboration") {
+            viewDocument(doc);
+        } else if (m_dbMgr.db(doc.strKbGUID).isDocumentDownloaded(doc.strGUID)) {
             viewNoteInSeparateWindow(doc);
             resortDocListAfterViewDocument(doc);
         }
@@ -3768,7 +3767,7 @@ void WizMainWindow::viewDocument(const WIZDOCUMENTDATAEX& data)
 
     // 遍历tab，查找已经打开的标签中是否有该文档
     for (int i = 0; i < m_mainTabBrowser->count(); ++i) {
-        WizDocumentView* docView = qobject_cast<WizDocumentView*>(m_mainTabBrowser->widget(i));
+        AbstractDocumentView* docView = qobject_cast<AbstractDocumentView*>(m_mainTabBrowser->widget(i));
         if ( docView == nullptr ) {
             continue;
         } else {
@@ -3780,7 +3779,6 @@ void WizMainWindow::viewDocument(const WIZDOCUMENTDATAEX& data)
 
     }
 
-    // 重置许可
     resetPermission(data.strKbGUID, data.strOwner);
 
     bool forceEditing = false;
