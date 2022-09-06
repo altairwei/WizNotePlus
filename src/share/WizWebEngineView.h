@@ -60,6 +60,9 @@ protected:
     virtual void javaScriptConsoleMessage(JavaScriptConsoleMessageLevel level, const QString& message, int lineNumber, const QString& sourceID);
     virtual bool acceptNavigationRequest(const QUrl &url, QWebEnginePage::NavigationType type, bool isMainFrame);
     virtual void triggerAction(WebAction action, bool checked = false);
+    virtual void javaScriptAlert(const QUrl &securityOrigin, const QString& msg);
+    virtual bool javaScriptConfirm(const QUrl &securityOrigin, const QString& msg);
+    virtual bool javaScriptPrompt(const QUrl &securityOrigin, const QString& msg, const QString& defaultValue, QString* result);
 
 Q_SIGNALS:
     void linkClicked(QUrl url, QWebEnginePage::NavigationType type, bool isMainFrame, WizWebEnginePage* page);

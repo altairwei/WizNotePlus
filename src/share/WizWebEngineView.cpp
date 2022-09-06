@@ -17,6 +17,7 @@
 #include <QTimer>
 #include <QMessageBox>
 #include <QMargins>
+#include <QInputDialog>
 
 #ifdef Q_OS_MAC
 #include "mac/WizMacHelper.h"
@@ -217,6 +218,28 @@ void WizWebEnginePage::processCopiedData()
         clipboard->setMimeData(newData);
     });
 #endif
+}
+
+void WizWebEnginePage::javaScriptAlert(const QUrl &securityOrigin, const QString& msg)
+{
+    QMessageBox::information(view(), QStringLiteral("Javascript Alert"), msg);
+}
+
+bool WizWebEnginePage::javaScriptConfirm(const QUrl &securityOrigin, const QString& msg)
+{
+    auto ret = QMessageBox::information(view(), QStringLiteral("Javascript Confirm"), msg,
+                                        QMessageBox::Ok, QMessageBox::Cancel);
+    return ret == QMessageBox::Ok;
+}
+
+bool WizWebEnginePage::javaScriptPrompt(const QUrl &securityOrigin, const QString& msg,
+                                        const QString& defaultValue, QString* result)
+{
+    bool ret = false;
+    if (result)
+        *result = QInputDialog::getText(view(), QStringLiteral("Javascript Prompt"), msg,
+                                        QLineEdit::Normal, defaultValue, &ret);
+    return ret;
 }
 
 
