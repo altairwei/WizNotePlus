@@ -31,6 +31,8 @@ bool WizFileExporter::exportNote(
     const QString &destFolder,
     const ExportFormat format,
     bool compress /*= false*/,
+    bool exportMetaInfo /*= true*/,
+    bool noTitleFolderIfPossible /*= false*/,
     QString *errorMsg /*= nullptr*/)
 {
     WizDatabase& db = m_dbMgr.db(doc.strKbGUID);
@@ -53,11 +55,13 @@ bool WizFileExporter::exportNote(
     docFolder.cd(folder);
 
     // Write meta info
-    if (!writeDocumentInfoToJsonFile(doc, docFolder.filePath("metainfo.json"))) {
-        if (errorMsg)
-            *errorMsg =  "Can't save meta info to json file: " +
-                docFolder.filePath("metainfo.json");
-        return false;
+    if (exportMetaInfo) {
+        if (!writeDocumentInfoToJsonFile(doc, docFolder.filePath("metainfo.json"))) {
+            if (errorMsg)
+                *errorMsg =  "Can't save meta info to json file: " +
+                    docFolder.filePath("metainfo.json");
+            return false;
+        }
     }
 
     // Export attachments, download if neccessary
@@ -109,6 +113,29 @@ bool WizFileExporter::exportNote(
         if (!compressDocumentFolder(docFolder.absolutePath())) {
             if (errorMsg) *errorMsg = "Can't remove folder after compress";
         }
+    }
+
+    if (!compress && noTitleFolderIfPossible) {
+        QFileInfoList entries = docFolder.entryInfoList(QDir::AllEntries | QDir::NoDotAndDotDot);
+        if (entries.length() != 1)
+            return true;
+
+        QDir dest = docFolder;
+        dest.cdUp();
+
+        QFileInfo &indexFile = entries.first();
+        QString suffix = indexFile.suffix();
+        QString destFileName = folder.endsWith(suffix) ? folder : folder + "." + suffix;
+
+        if (errorMsg) *errorMsg = "Error for noTitleFolderIfPossible";
+        if (!QFile::rename(indexFile.absoluteFilePath(),
+                           dest.absoluteFilePath(indexFile.fileName())))
+            return false;
+        if (!docFolder.removeRecursively())
+            return false;
+        if (!dest.rename(indexFile.fileName(), destFileName))
+            return false;
+        if (errorMsg) errorMsg->clear();
     }
 
     return true;

@@ -95,6 +95,8 @@ private:
     DirLineEdit *m_outputFolder;
     QCheckBox *m_keepFolder;
     QCheckBox *m_compress;
+    QCheckBox *m_exportMetainfo;
+    QCheckBox *m_noTitleFolderIfPossible;
 };
 
 class FileExportPageExport : public QWizardPage

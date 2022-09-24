@@ -451,10 +451,27 @@ FileExportPageOptions::FileExportPageOptions(QWidget *parent)
                               "resources together"));
     registerField("compress", m_compress);
 
+    m_exportMetainfo = new QCheckBox;
+    m_exportMetainfo->setChecked(true);
+    m_exportMetainfo->setText(tr("Export meta information"));
+    m_exportMetainfo->setToolTip(tr("Export meta information of notes in JSON format"));
+    registerField("metainformation", m_exportMetainfo);
+
+    m_noTitleFolderIfPossible = new QCheckBox;
+    m_noTitleFolderIfPossible->setText(tr("Don't create title folder if possible"));
+    m_noTitleFolderIfPossible->setToolTip(tr(
+        "Generally, notes are associated with many resource files, such "
+        "as images, CSS files, and attachments, which are referenced in "
+        "the text of the note. So it is necessary to create a title folder "
+        "to place these closely related files together."));
+    registerField("noTitleFolderIfPossible", m_noTitleFolderIfPossible);
+
     QVBoxLayout *layout = new QVBoxLayout;
     layout->addWidget(m_outputFolder);
     layout->addWidget(m_keepFolder);
     layout->addWidget(m_compress);
+    layout->addWidget(m_exportMetainfo);
+    layout->addWidget(m_noTitleFolderIfPossible);
     setLayout(layout);
 }
 
@@ -518,6 +535,8 @@ void FileExportPageExport::handleExportFile()
     QString outputFolder = field("outputFolder").toString();
     bool keepFolder = field("keepFolder").toBool();
     bool compress = field("compress").toBool();
+    bool metainfo = field("metainformation").toBool();
+    bool noTitleFolderIfPossible = field("noTitleFolderIfPossible").toBool();
 
     if (notes.size() > 1) {
         m_progress->setRange(1, notes.size());
@@ -584,7 +603,8 @@ void FileExportPageExport::handleExportFile()
             format = WizFileExporter::Markdown;
 
         bool ok = m_exporter->exportNote(
-            data, destFolder, format, compress, &error);
+            data, destFolder, format, compress, metainfo,
+            noTitleFolderIfPossible, &error);
         if (!ok) {
             ASKCONTINUE(
                 tr("Do you want to continue?"),

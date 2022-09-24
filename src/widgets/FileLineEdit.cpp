@@ -13,6 +13,7 @@ FileLineEdit::FileLineEdit(const QString &labelText, QWidget *parent)
 {
     m_label = new QLabel;
     m_label->setText(labelText);
+    m_label->setAlignment(Qt::AlignVCenter);
     m_lineEdit = new QLineEdit;
     m_btn = new QPushButton;
     m_btn->setText(tr("Open..."));

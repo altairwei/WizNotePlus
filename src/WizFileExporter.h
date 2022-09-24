@@ -29,6 +29,8 @@ public:
                     const QString &destFolder,
                     const ExportFormat format,
                     bool compress = false,
+                    bool exportMetaInfo = true,
+                    bool noTitleFolderIfPossible = false,
                     QString *errorMsg = nullptr);
 
     bool exportAttachment(const WIZDOCUMENTATTACHMENTDATAEX &att,
