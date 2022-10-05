@@ -88,7 +88,8 @@ WizPreferenceWindow::WizPreferenceWindow(WizExplorerApp& app, QWidget* parent)
 
     ui->openLinkWithDesktopBrowser->setChecked(userSettings().isEnableOpenLinkWithDesktopBrowser());
     connect(ui->openLinkWithDesktopBrowser, SIGNAL(toggled(bool)), this, SLOT(on_enableOpenLinkWithDesktopBrowser(bool)));
-
+    if (qEnvironmentVariableIsSet("QTWEBENGINE_DISABLE_SANDBOX"))
+        ui->openLinkWithDesktopBrowser->setDisabled(true);
 
     // syncing tab
     int nInterval = userSettings().syncInterval();

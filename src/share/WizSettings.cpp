@@ -417,6 +417,9 @@ void WizUserSettings::setEnableSpellCheck(bool b)
 
 bool WizUserSettings::isEnableOpenLinkWithDesktopBrowser() const
 {
+    if (qEnvironmentVariableIsSet("QTWEBENGINE_DISABLE_SANDBOX"))
+        return true;
+
     QString strOpenLinkWithDesktopBrowser = get("OpenLinkWithDesktopBrowser");
     if (!strOpenLinkWithDesktopBrowser.isEmpty()) {
         return strOpenLinkWithDesktopBrowser.toInt() ? true : false;

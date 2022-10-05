@@ -1018,6 +1018,7 @@ bool UploadList(const WIZKBINFO& kbInfo, IWizKMSyncEvents* pEvents, IWizSyncable
 
     return TRUE;
 }
+
 bool WizKMSync::uploadDocumentList()
 {
     if (m_bGroup)
@@ -1028,6 +1029,7 @@ bool WizKMSync::uploadDocumentList()
 
     return UploadList<WIZDOCUMENTDATAEX, true>(m_server.kbInfo(), m_pEvents, m_pDatabase, m_server, "document", syncUploadDocumentList);
 }
+
 bool WizKMSync::uploadAttachmentList()
 {
     if (m_bGroup)
