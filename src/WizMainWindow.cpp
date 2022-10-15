@@ -2022,7 +2022,6 @@ void WizMainWindow::initClient()
     // WizMainTab
     layoutDocument->addWidget(m_mainTabBrowser); // 将主标签栏放在文档板布局上
     connect(m_mainTabBrowser, SIGNAL(currentChanged(int)), SLOT(on_mainTabWidget_currentChanged(int)));
-    //m_mainTabBrowser->createTab(QUrl::fromUserInput("https://www.wiz.cn")); // 默认打开Wiz主页
     showHomePage();
     //
     layoutDocument->addWidget(m_documentSelection);
@@ -2728,6 +2727,11 @@ void WizMainWindow::on_actionBringFront_triggered()
 //    {
 //        wgt->setVisible(true);
 //    }
+}
+
+void WizMainWindow::on_actionOpenWelcomePage_triggered()
+{
+    showHomePage();
 }
 
 void WizMainWindow::on_actionCategoryMessageCenter_triggered()

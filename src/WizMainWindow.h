@@ -325,6 +325,7 @@ public Q_SLOTS:
     void on_actionViewMinimize_triggered();
     void on_actionZoom_triggered();
     void on_actionBringFront_triggered();
+    void on_actionOpenWelcomePage_triggered();
 
     void on_actionCategoryMessageCenter_triggered();
     void on_actionCategoryShortcuts_triggered();
