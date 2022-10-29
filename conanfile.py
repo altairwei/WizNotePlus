@@ -66,7 +66,6 @@ class WizNotePlusConan(ConanFile):
     requires = (
         "cryptopp/8.5.0",
         "zlib/1.2.11",
-        "quazip/0.7.6@altairwei/testing",
         "Gumbo/0.10.1@altairwei/testing"
     )
     keep_imports = True
@@ -78,7 +77,10 @@ class WizNotePlusConan(ConanFile):
         "openssl:shared": True,
         "cryptopp:shared": True,
         "zlib:shared": True,
+        "qt:shared": True,
+        "qt:gui": True,
         "qt:qtsvg": True,
+        "qt:qtlocation": True,
         "qt:qtwebsockets": True,
         "qt:qtwebchannel": True,
         "qt:qtdeclarative": True,
@@ -88,10 +90,6 @@ class WizNotePlusConan(ConanFile):
         "qt:qttranslations": True,
         "qt:qtimageformats": True,
         "qt:qtgraphicaleffects": True,
-        "qt:qtx11extras": True,
-        "qt:qtmacextras": True,
-        "qt:qtwinextras": True,
-
     }
     exports_sources = (
         "CMakeLists.txt",
@@ -115,11 +113,12 @@ class WizNotePlusConan(ConanFile):
         else:
             #TODO: Current conan-qt was not ready for building QtWebEngine module
             # QtWebEngine requires python >= 2.7.5 & < 3.0.0
-            #self.requires("qt/5.14.1@bincrafters/stable")
-            if tools.which("qmake"):
-                qt_version = get_qt_version()
-            else:
-                raise ConanInvalidConfiguration("Qt library is required!")
+            self.requires("qt/5.15.6")
+            qt_version = "5.15.6"
+            # if tools.which("qmake"):
+            #     qt_version = get_qt_version()
+            # else:
+            #     raise ConanInvalidConfiguration("Qt library is required!")
         # Different Qt was built against different OpenSSL
         if qt_version < Version("5.12"):
             self.requires("openssl/1.0.2u")
@@ -138,18 +137,26 @@ class WizNotePlusConan(ConanFile):
             
 
     def config_options(self):
-        # This is a workaround of solving Error LNK2001: 
-        #   WizEnc.obj : error LNK2001: unresolved external symbol 
-        #   "class CryptoPP::NameValuePairs const & const CryptoPP::g_nullNameValuePairs"
+
         if self.settings.os == "Windows":
+            # This is a workaround of solving Error LNK2001: 
+            #   WizEnc.obj : error LNK2001: unresolved external symbol 
+            #   "class CryptoPP::NameValuePairs const & const CryptoPP::g_nullNameValuePairs"
             self.options["cryptopp"].shared = False
+            self.options["qt"].qtwinextras = True
+        elif self.settings.os == "Linux":
+            self.options["qt"].qtx11extras = True
+        elif self.settings.os == "Macos":
+            self.options["qt"].qtmacextras = True
+
         if not self.options.qtdir:
             if "QTDIR" in os.environ and os.environ["QTDIR"]:
                 self.options.qtdir = os.environ["QTDIR"]
             elif tools.which("qmake"):
                 self.options.qtdir = get_qt_dir()
-            else:
-                raise ConanInvalidConfiguration("Qt library is required!")
+            # else:
+            #     raise ConanInvalidConfiguration("Qt library is required!")
+
         # QuaZIP should depend on the same Qt library with WizNotePlus
         if self.options.qtdir:
             self.options["quazip"].qtdir = self.options.qtdir

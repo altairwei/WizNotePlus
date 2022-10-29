@@ -1,3 +1,6 @@
 [submodule "src/libs/3rdparty/framelesshelper"]
 	path = src/libs/3rdparty/framelesshelper
 	url = https://github.com/wangwenx190/framelesshelper.git
+[submodule "src/libs/3rdparty/quazip"]
+	path = src/libs/3rdparty/quazip
+	url = https://github.com/stachenov/quazip.git
