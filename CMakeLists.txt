@@ -98,7 +98,6 @@ set(CMAKE_MODULE_PATH ${CMAKE_BINARY_DIR} ${CMAKE_MODULE_PATH})
 
 # setup 3rd-party package
 find_package(cryptopp REQUIRED)
-find_package(quazip REQUIRED)
 find_package(ZLIB REQUIRED)
 find_package(Gumbo REQUIRED)
 find_package(OpenSSL)
@@ -172,12 +171,6 @@ if(APPLE)
     endif(PLCrashReporter)
     add_definitions(-DUSECOCOATOOLBAR=TRUE)
 endif(APPLE)
-
-# when including QuaZip sources directly into a project, QUAZIP_STATIC should
-# be defined explicitly to avoid possible troubles with unnecessary importing/exporting.
-if (WIN32)
-    add_definitions(-DQUAZIP_STATIC)
-endif()
 
 if (USE_CUSTOM_SCROLLBAR)
     add_definitions(-DWIZNOTE_CUSTOM_SCROLLBAR)
