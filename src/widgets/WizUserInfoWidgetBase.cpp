@@ -45,7 +45,7 @@ void WizUserInfoWidgetBase::paintEvent(QPaintEvent *event)
     float factor = qt_mac_get_scalefactor(0);
     nAvatarWidth *= factor;
 #endif
-    //
+
     QPixmap pixmap = getAvatar(nAvatarWidth, nAvatarWidth);
     Utils::WizStyleHelper::drawPixmapWithScreenScaleFactor(&p, rectIcon, pixmap);    
 
@@ -113,8 +113,9 @@ bool WizUserInfoWidgetBase::hitButton(const QPoint& pos) const
 
 int WizUserInfoWidgetBase::textWidth() const
 {
-    return fontMetrics().width(text());
+    return fontMetrics().horizontalAdvance(text());
 }
+
 void WizUserInfoWidgetBase::updateUI()
 {
     update();

@@ -18,6 +18,7 @@
 #include <QPrintDialog>
 #include <QPrinter>
 #include <QCheckBox>
+#include <QProgressDialog>
 
 #ifdef Q_OS_MAC
 #include <Carbon/Carbon.h>
@@ -340,44 +341,78 @@ void WizMainWindow::cleanOnQuit()
 {
     m_quiting = true;
 
-    WizObjectDownloaderHost::instance()->waitForDone();
-    WizKMSyncThread::setQuickThread(nullptr);
+    int i = 0;
+    m_quitProgress = new QProgressDialog(this);
+    m_quitProgress->setWindowTitle(tr("Cleaning on Quit"));
+    m_quitProgress->setCancelButtonText(tr("Quit"));
+    m_quitProgress->setWindowModality(Qt::WindowModal);
+    m_quitProgress->setFixedWidth(400);
+    m_quitProgress->setMinimum(0);
+    m_quitProgress->setMaximum(11);
+    m_quitProgress->setValue(0);
 
+    connect(m_quitProgress, &QProgressDialog::canceled, [this] {
+        m_syncQuick->quit();
+        m_syncFull->quit();
+    });
+
+    // 处理所有标签
+    m_quitProgress->setLabelText(tr("Closing opened documents..."));
+    processAllDocumentViews([=](WizDocumentView* docView){
+        docView->waitForDone();
+    });
+    m_quitProgress->setValue(++i);
+
+    m_quitProgress->setLabelText(tr("Shutting object downloader host..."));
+    WizObjectDownloaderHost::instance()->waitForDone();
+    m_quitProgress->setValue(++i);
+
+    m_quitProgress->setLabelText(tr("Saving category tree expand state..."));
     m_category->saveExpandState();
     saveStatus();
+    m_quitProgress->setValue(++i);
 
-    auto full = m_syncFull;
-    m_syncFull = nullptr;
-    full->waitForDone();
+    m_quitProgress->setLabelText(tr("Shutting full sync thread..."));
+    m_syncFull->waitForDone();
+    m_quitProgress->setValue(++i);
 
-    auto quick = m_syncQuick;
-    m_syncQuick = nullptr;
-    quick->waitForDone();
+    m_quitProgress->setLabelText(tr("Shutting quick sync thread..."));
+    WizKMSyncThread::setQuickThread(nullptr);
+    m_syncQuick->waitForDone();
+    m_quitProgress->setValue(++i);
 
+    m_quitProgress->setLabelText(tr("Shutting search thread..."));
     m_searcher->waitForDone();
+    m_quitProgress->setValue(++i);
 
+    m_quitProgress->setLabelText(tr("Shutting doc loader thread..."));
     if (m_docLoader) {
         m_docLoader->waitForDone();
         m_docLoader = nullptr;
     }
+    m_quitProgress->setValue(++i);
+
+    m_quitProgress->setLabelText(tr("Shutting doc saver thread..."));
     if (m_docSaver) {
         m_docSaver->waitForDone();
         m_docSaver = nullptr;
     }
+    m_quitProgress->setValue(++i);
 
-    // 处理所有标签
-    processAllDocumentViews([=](WizDocumentView* docView){
-        docView->waitForDone();
-    });
-
+    m_quitProgress->setLabelText(tr("Shutting external editor launcher thread..."));
     m_externalEditorLauncher->waitForDone();
+    m_quitProgress->setValue(++i);
 
+    m_quitProgress->setLabelText(tr("Shutting mobile file receiver thread..."));
     if (m_mobileFileReceiver)
     {
         m_mobileFileReceiver->waitForDone();
     }
+    m_quitProgress->setValue(++i);
 
+    m_quitProgress->setLabelText(tr("Clearing thread pool..."));
     WizQueuedThreadsShutdown();
+    m_quitProgress->setValue(++i);
 }
 
 /**
@@ -824,7 +859,6 @@ void WizMainWindow::handleTrayIconActived(QSystemTrayIcon::ActivationReason reas
 
 void WizMainWindow::shiftVisableStatus()
 {
-    qDebug() << "windowState: " + QString::number(windowState(), 8);
     switch(windowState()) {
         case Qt::WindowNoState:
             // Normal window, but de-activated
@@ -846,8 +880,6 @@ void WizMainWindow::shiftVisableStatus()
             showNormal();
             break;
     }
-
-    qDebug() << "windowState: " + QString::number(windowState(), 8);
 
     if (isVisible()) {
         // Actovate main window
@@ -977,7 +1009,7 @@ void WizMainWindow::initSyncFull()
 void WizMainWindow::initSyncQuick()
 {
     WizKMSyncThread::setQuickThread(m_syncQuick);
-    //
+
     connect(m_syncQuick, SIGNAL(promptFreeServiceExpr(WIZGROUPDATA)), SLOT(on_promptFreeServiceExpr(WIZGROUPDATA)));
     connect(m_syncQuick, SIGNAL(promptVipServiceExpr(WIZGROUPDATA)), SLOT(on_promptVipServiceExpr(WIZGROUPDATA)));
 }
@@ -1990,7 +2022,6 @@ void WizMainWindow::initClient()
     // WizMainTab
     layoutDocument->addWidget(m_mainTabBrowser); // 将主标签栏放在文档板布局上
     connect(m_mainTabBrowser, SIGNAL(currentChanged(int)), SLOT(on_mainTabWidget_currentChanged(int)));
-    //m_mainTabBrowser->createTab(QUrl::fromUserInput("https://www.wiz.cn")); // 默认打开Wiz主页
     showHomePage();
     //
     layoutDocument->addWidget(m_documentSelection);
@@ -2323,7 +2354,7 @@ void WizMainWindow::on_syncStarted(bool syncAll)
     {
         m_animateSync->startPlay();
     }
-    //
+
     if (syncAll)
     {
         qDebug() << "[Sync] Syncing all notes...";
@@ -2337,9 +2368,7 @@ void WizMainWindow::on_syncStarted(bool syncAll)
 void WizMainWindow::on_syncDone(int nErrorCode, bool isNetworkError, const QString& strErrorMsg, bool isBackground)
 {
     m_animateSync->stopPlay();
-    //
 
-    //
     if (isXMLRpcErrorCodeRelatedWithUserAccount(nErrorCode))
     {
         qDebug() << "sync done reconnectServer";
@@ -2366,7 +2395,6 @@ void WizMainWindow::on_syncDone(int nErrorCode, bool isNetworkError, const QStri
             m_tray->showMessage(tr("Sync failed"), tr("Bad network connection, can not sync now. Please try again later. (code: %1)").arg(nErrorCode), icon, delay, param);
             return;
         } else {
-            //
             QString message = tr("There is something wrong with sync service. Please try again later. (code: %1)").arg(nErrorCode);
             if (WIZKM_XMLRPC_ERROR_VIP_SERVICE_EXPR == nErrorCode) {
                 message = QObject::tr("VIP service of has expired, please renew to VIP.");
@@ -2379,12 +2407,11 @@ void WizMainWindow::on_syncDone(int nErrorCode, bool isNetworkError, const QStri
             } else if (WIZKM_XMLRPC_ERROR_NOTE_COUNT_LIMIT == nErrorCode) {
                 message = WizFormatString0(QObject::tr("Group notes count limit exceeded!"));
             }
-            //
+
             m_tray->showMessage(tr("Sync failed"), message, icon, delay, param);
             return;
         }
     }
-    //
 
     m_documents->viewport()->update();
     m_category->updateGroupsData();
@@ -2700,6 +2727,11 @@ void WizMainWindow::on_actionBringFront_triggered()
 //    {
 //        wgt->setVisible(true);
 //    }
+}
+
+void WizMainWindow::on_actionOpenWelcomePage_triggered()
+{
+    showHomePage();
 }
 
 void WizMainWindow::on_actionCategoryMessageCenter_triggered()
@@ -3487,8 +3519,9 @@ void WizMainWindow::on_documents_itemDoubleClicked(QListWidgetItem* item)
     if (pItem)
     {
         WIZDOCUMENTDATA doc = pItem->document();
-        if (m_dbMgr.db(doc.strKbGUID).isDocumentDownloaded(doc.strGUID))
-        {
+        if (doc.strType == "collaboration") {
+            viewDocument(doc);
+        } else if (m_dbMgr.db(doc.strKbGUID).isDocumentDownloaded(doc.strGUID)) {
             viewNoteInSeparateWindow(doc);
             resortDocListAfterViewDocument(doc);
         }
@@ -3738,7 +3771,7 @@ void WizMainWindow::viewDocument(const WIZDOCUMENTDATAEX& data)
 
     // 遍历tab，查找已经打开的标签中是否有该文档
     for (int i = 0; i < m_mainTabBrowser->count(); ++i) {
-        WizDocumentView* docView = qobject_cast<WizDocumentView*>(m_mainTabBrowser->widget(i));
+        AbstractDocumentView* docView = qobject_cast<AbstractDocumentView*>(m_mainTabBrowser->widget(i));
         if ( docView == nullptr ) {
             continue;
         } else {
@@ -3750,7 +3783,6 @@ void WizMainWindow::viewDocument(const WIZDOCUMENTDATAEX& data)
 
     }
 
-    // 重置许可
     resetPermission(data.strKbGUID, data.strOwner);
 
     bool forceEditing = false;
@@ -4616,7 +4648,7 @@ void WizMainWindow::setNeedResetGroups()
 {
     if (!m_syncQuick || !m_syncFull)
         return;
-    //
+
     m_syncQuick->setNeedResetGroups();
     m_syncFull->setNeedResetGroups();
 }

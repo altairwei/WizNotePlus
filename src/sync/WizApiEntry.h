@@ -47,6 +47,7 @@ public:
     static QString appstoreParam(bool useAndSymbol = true);
 
     static QString newAsServerUrl();
+    static QString server() { return m_server; }
 
 private:
     static QString requestUrl(const QString& strCommand);

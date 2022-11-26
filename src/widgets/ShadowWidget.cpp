@@ -23,9 +23,6 @@ ShadowWidget::ShadowWidget(QWidget *parent)
 
     setWindowFlags(Qt::FramelessWindowHint | Qt::Tool | Qt::WindowStaysOnTopHint);
 
-    // If you want to make it work like a popup, you should use these flags.
-    //setWindowFlags(Qt::FramelessWindowHint | Qt::NoDropShadowWindowHint | Qt::Popup | Qt::WindowStaysOnTopHint)
-
     setAttribute(Qt::WA_TranslucentBackground, true);
     setAttribute(Qt::WA_DeleteOnClose);
 
@@ -101,4 +98,14 @@ void ShadowWidget::mouseMoveEvent(QMouseEvent *event)
     }
 
     QWidget::mouseMoveEvent(event);
+}
+
+void ShadowWidget::setPopup(bool pop)
+{
+    if (pop)
+        setWindowFlags(
+            Qt::FramelessWindowHint | Qt::NoDropShadowWindowHint
+                    | Qt::Popup | Qt::WindowStaysOnTopHint);
+    else
+        setWindowFlags(Qt::FramelessWindowHint | Qt::Tool | Qt::WindowStaysOnTopHint);
 }

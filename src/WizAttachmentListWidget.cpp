@@ -8,6 +8,7 @@
 #include <QLabel>
 #include <QDebug>
 #include <QEventLoop>
+#include <QApplication>
 
 #include "share/WizGlobal.h"
 
@@ -30,12 +31,13 @@
 const int nAttachmentListViewItemHeight  = 40;
 
 
-#define WIZACTION_ATTACHMENT_ADD    QObject::tr("Add...")
-//#define WIZACTION_ATTACHMENT_DOWNLOAD    QObject::tr("Download")
-#define WIZACTION_ATTACHMENT_SAVEAS QObject::tr("Save as...")
-#define WIZACTION_ATTACHMENT_OPEN   QObject::tr("Open...")
-#define WIZACTION_ATTACHMENT_DELETE QObject::tr("Delete")
-#define WIZACTION_ATTACHMENT_HISTORY QObject::tr("History...")
+#define WIZACTION_ATTACHMENT_ADD            QObject::tr("Add...")
+#define WIZACTION_ATTACHMENT_DOWNLOAD       QObject::tr("Download")
+#define WIZACTION_ATTACHMENT_SAVEAS         QObject::tr("Save as...")
+#define WIZACTION_ATTACHMENT_OPEN           QObject::tr("Open...")
+#define WIZACTION_ATTACHMENT_DELETE         QObject::tr("Delete")
+#define WIZACTION_ATTACHMENT_HISTORY        QObject::tr("History...")
+#define WIZACTION_ATTACHMENT_THUMBNAIL      QObject::tr("Copy thumbnail...")
 
 WizAttachmentListView::WizAttachmentListView(QWidget* parent)
     : WizMultiLineListWidget(2, parent)
@@ -61,10 +63,11 @@ WizAttachmentListView::WizAttachmentListView(QWidget* parent)
     m_menu->addSeparator();
     m_menu->addAction(WIZACTION_ATTACHMENT_OPEN, this, SLOT(on_action_openAttachment()));
     m_menu->addAction(WIZACTION_ATTACHMENT_SAVEAS, this, SLOT(on_action_saveAttachmentAs()));
-//    m_menu->addAction(WIZACTION_ATTACHMENT_DOWNLOAD, this, SLOT(on_action_downloadAttachment()));
+    m_menu->addAction(WIZACTION_ATTACHMENT_DOWNLOAD, this, SLOT(on_action_downloadAttachment()));
     m_menu->addSeparator();
     m_menu->addAction(WIZACTION_ATTACHMENT_DELETE, this, SLOT(on_action_deleteAttachment()));
     m_menu->addSeparator();
+    m_menu->addAction(WIZACTION_ATTACHMENT_THUMBNAIL, this, SLOT(on_action_copyThumbnail()));
     m_menu->addAction(WIZACTION_ATTACHMENT_HISTORY, this, SLOT(on_action_attachmentHistory()));
 }
 
@@ -169,7 +172,6 @@ void WizAttachmentListView::resetAttachments()
     CWizDocumentAttachmentDataArray arrayAttachment;
     m_dbMgr.db(m_document.strKbGUID).getDocumentAttachments(m_document.strGUID, arrayAttachment);
 
-//    CWizDocumentAttachmentDataArray::const_iterator it;
     for (auto it = arrayAttachment.begin(); it != arrayAttachment.end(); it++) {
         addItem(newAttachmentItem(*it));
 
@@ -416,7 +418,6 @@ void WizAttachmentListView::updateAttachmentInfo(const WIZDOCUMENTATTACHMENTDATA
             qDebug() << "file modified, but md5 keep same";
             return;
         }
-        //
 
         WIZDOCUMENTATTACHMENTDATAEX newData = attachment;
         newData.tDataModified = info.lastModified();
@@ -430,16 +431,16 @@ void WizAttachmentListView::on_action_addAttachment()
     addAttachments();
 }
 
-//void CWizAttachmentListView::on_action_downloadAttachment()
-//{
-//    foreach (QListWidgetItem* it, selectedItems())
-//    {
-//        if (CWizAttachmentListViewItem* item = dynamic_cast<CWizAttachmentListViewItem*>(it))
-//        {
-//            downloadAttachment(item);
-//        }
-//    }
-//}
+void WizAttachmentListView::on_action_downloadAttachment()
+{
+    foreach (QListWidgetItem* it, selectedItems())
+    {
+        if (WizAttachmentListViewItem* item = dynamic_cast<WizAttachmentListViewItem*>(it))
+        {
+            downloadAttachment(item);
+        }
+    }
+}
 
 void WizAttachmentListView::on_action_saveAttachmentAs()
 {
@@ -617,6 +618,52 @@ void WizAttachmentListView::on_action_attachmentHistory()
 
 }
 
+void WizAttachmentListView::copyThumbnail(const QString &fileName, const QString &attachGuid)
+{
+    QImage img;
+    QFileInfo attachInfo(fileName);
+    qreal scale = 2;
+    if (WizCreateThumbnailForAttachment(img, attachInfo, QSize(32, 32),
+                                        scale, attachInfo.fileName().remove(0, 38))) {
+        QClipboard* clip = QApplication::clipboard();
+        QString strDestFile = Utils::WizPathResolve::tempPath() + WizGenGUIDLowerCaseLetterOnly() + ".png";
+        img.save(strDestFile, "PNG");
+        QString strLink = QString("wiz://open_attachment?guid=%1").arg(attachGuid);
+        QString strHtml = WizGetImageHtmlLabelWithLink(strDestFile, img.size() / scale, strLink);
+        auto data = new QMimeData;
+        data->setHtml(strHtml);
+        clip->setMimeData(data);
+        QMessageBox::information(nullptr,
+            WIZACTION_ATTACHMENT_THUMBNAIL,
+            tr("Attachment thumbnail has been copied."));
+    }
+}
+
+void WizAttachmentListView::on_action_copyThumbnail()
+{
+    if (WizAttachmentListViewItem* item = dynamic_cast<
+            WizAttachmentListViewItem*>(currentItem()))
+    {
+        WIZDOCUMENTATTACHMENTDATA attachment = item->attachment();
+        WizDatabase& db = m_dbMgr.db(attachment.strKbGUID);
+        bool bIsLocal = db.isObjectDataDownloaded(attachment.strGUID, "attachment");
+        QString strFileName = db.getAttachmentFileName(item->attachment().strGUID);
+        bool bExists = WizPathFileExists(strFileName);
+
+        if (!bIsLocal || !bExists) {
+            item->setIsDownloading(true);
+            forceRepaint();
+            m_downloaderHost->downloadData(item->attachment(), [=] {
+                WizExecuteOnThread(WIZ_THREAD_MAIN, [=]{
+                    copyThumbnail(strFileName, attachment.strGUID);
+                });
+            });
+        } else {
+            copyThumbnail(strFileName, attachment.strGUID);
+        }
+    }
+}
+
 void WizAttachmentListView::on_list_itemDoubleClicked(QListWidgetItem* it)
 {
     if (WizAttachmentListViewItem* item = dynamic_cast<WizAttachmentListViewItem*>(it))
@@ -639,10 +686,6 @@ WizAttachmentListWidget::WizAttachmentListWidget(QWidget* parent)
     , m_list(new WizAttachmentListView(this))
 {
     QString strTheme = Utils::WizStyleHelper::themeName();
-    setContentsMargins(0, 13, 0, 0);
-
-    setFixedWidth(sizeHint().width());
-
     QIcon iconAddAttachment = ::WizLoadSkinIcon(strTheme, "document_add_attachment");
     QAction* actionAddAttach = new QAction(iconAddAttachment, tr("Add attachments"), this);
     connect(actionAddAttach, SIGNAL(triggered()), SLOT(on_addAttachment_clicked()));
@@ -657,7 +700,7 @@ WizAttachmentListWidget::WizAttachmentListWidget(QWidget* parent)
     layoutHeader->addWidget(m_btnAddAttachment);
 
     QVBoxLayout* layoutMain = new QVBoxLayout();
-    layoutMain->setContentsMargins(0, 0, 0, 0);
+    layoutMain->setContentsMargins(0, 4, 0, 0);
     layoutMain->setSpacing(5);
     setLayout(layoutMain);
 

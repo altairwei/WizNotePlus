@@ -3,17 +3,17 @@
 #include <QTimer>
 #include <QDebug>
 
-const int TIMEOUT_WAIT_SECONDS = 120;
+const int NETWORK_TIMEOUT_SECS = 60;
 
 WizAutoTimeOutEventLoop::WizAutoTimeOutEventLoop(QNetworkReply* pReply, QObject *parent /*= 0*/)
     : QEventLoop(parent)
     , m_error(QNetworkReply::NoError)
     , m_timeOut(false)
-    , m_timeOutSeconds(TIMEOUT_WAIT_SECONDS)
+    , m_timeOutSeconds(NETWORK_TIMEOUT_SECS)
     , m_downloadBytes(0)
-    , m_lastDownloadBytes(-1)
+    , m_lastDownloadBytes(0)
     , m_uploadBytes(0)
-    , m_lastUploadBytes(-1)
+    , m_lastUploadBytes(0)
     , m_reply(pReply)
     , m_finished(false)
 {
@@ -38,13 +38,14 @@ QNetworkReply::NetworkError WizAutoTimeOutEventLoop::error() const
 {
     if (m_error != QNetworkReply::NoError)
         return m_error;
-    //
+
     if (!m_finished) {
         return QNetworkReply::OperationCanceledError;
     }
-    //
+
     return m_error;
 }
+
 QString WizAutoTimeOutEventLoop::errorString() const
 {
     return m_errorString;
@@ -87,9 +88,9 @@ int WizAutoTimeOutEventLoop::exec(QEventLoop::ProcessEventsFlags flags)
 void WizAutoTimeOutEventLoop::on_replyFinished()
 {
     m_timer.stop();
-    //
+
     doFinished(m_reply);
-    //
+
     quit();
 }
 
@@ -97,7 +98,7 @@ void WizAutoTimeOutEventLoop::on_replyError(QNetworkReply::NetworkError error)
 {
     m_timer.stop();
     doError(error);
-    //
+
     quit();
 }
 
@@ -121,7 +122,7 @@ void WizAutoTimeOutEventLoop::on_timeOut()
         qWarning() << "[sync]Xml rpc event loop time out";
         m_timer.stop();
         m_reply->abort();
-        //
+
         quit();
     }
 }
@@ -129,12 +130,10 @@ void WizAutoTimeOutEventLoop::on_timeOut()
 void WizAutoTimeOutEventLoop::on_downloadProgress(qint64 bytesReceived, qint64 bytesTotal)
 {
     m_downloadBytes = bytesReceived;
-//    qDebug() << "download progress changed  " << bytesReceived << "  totoal  : " << bytesTotal;
     emit downloadProgress(m_url, bytesReceived, bytesTotal);
 }
 
 void WizAutoTimeOutEventLoop::on_uploadProgress(qint64 bytesSent, qint64 bytesTotal)
 {
     m_uploadBytes = bytesSent;
-//    qDebug() << "upload progress changed  " << bytesSent << "  totoal  : " << bytesTotal;
 }

@@ -74,6 +74,7 @@ class WizDocumentSaverThread;
 class WizDocumentLoaderThread;
 class WizSingleDocumentViewManager;
 class QWebEngineView;
+class QProgressDialog;
 
 class ApiWizExplorerApp;
 class PublicAPIsServer;
@@ -208,6 +209,8 @@ private:
     WizDocumentSaverThread *m_docSaver;
     WizDocumentLoaderThread *m_docLoader;
 
+    QProgressDialog *m_quitProgress;
+
 private:
     void initQuitHandler();
     void initSearcher();
@@ -322,6 +325,7 @@ public Q_SLOTS:
     void on_actionViewMinimize_triggered();
     void on_actionZoom_triggered();
     void on_actionBringFront_triggered();
+    void on_actionOpenWelcomePage_triggered();
 
     void on_actionCategoryMessageCenter_triggered();
     void on_actionCategoryShortcuts_triggered();

@@ -24,6 +24,7 @@
 #include <QNetworkAccessManager>
 #include <QNetworkRequest>
 #include <QNetworkReply>
+#include <QLocale>
 
 #include "utils/WizLogger.h"
 #include "utils/WizPathResolve.h"
@@ -2658,78 +2659,100 @@ QString WizStr2Title(const QString& str)
     return str.left(idx);
 }
 
-bool WizCreateThumbnailForAttachment(QImage& img, const QString& attachFileName, const QSize& iconSize)
+static QString formatFileSize(qint64 size)
 {
-    QFileInfo info(attachFileName);
-    if (!info.exists())
-        return false;
+    QLocale locale(QLocale::English);
+    return locale.formattedDataSize(size, 1);
+}
 
+bool WizCreateThumbnailForAttachment(
+        QImage& output, const QFileInfo& info,
+        const QSize& iconSize, qreal scaleFactor,
+        const QString fileTitle)
+{
     // get info text and calculate width of image
-    const int nMb = 1024 * 1024;
     int nIconMargin = 14;
-    QString fileSize = info.size() > 1024 ? (info.size() > nMb ? QString(QString::number(qCeil(info.size() / (double)nMb)) + " MB")
-                                                         : QString(QString::number(qCeil(info.size() / (double)1024)) + " KB")) :
-                                      QString(QString::number(info.size()) + " B");
+    int nTextMargin = 10;
+    QString fileSize = formatFileSize(info.size());
     QString dateInfo = QDate::currentDate().toString(Qt::ISODate) + " " + QTime::currentTime().toString();
 
-    const int FONTSIZE = 12;
-    bool isHighPix = WizIsHighPixel();    
+    const int FONTSIZE = 14;
     QFont font;
     font.setPixelSize(FONTSIZE);
     QFontMetrics fm(font);
-    int nTextWidth = fm.width(dateInfo + fileSize);
+    int nTextWidth = fm.horizontalAdvance(dateInfo + fileSize);
     int nWidth = nTextWidth + nIconMargin * 4 - 4 + iconSize.width();
     int nHeight = iconSize.height() + nIconMargin * 2;
 
-    // draw icon and text on image
-    int nBgWidth = isHighPix ? 2 * nWidth : nWidth;
-    int nBgHeight = isHighPix ? 2 * nHeight : nHeight;
-    img = QImage(nBgWidth, nBgHeight, QImage::Format_RGB888);
+    // draw border and background
+    int nBgWidth = nWidth;
+    int nBgHeight = nHeight;
+    QImage img(nBgWidth * scaleFactor, nBgHeight * scaleFactor, QImage::Format_ARGB32);
+    img.setDevicePixelRatio(scaleFactor);
+
     QPainter p(&img);
-    QRect rcd = QRect(0, 0, nBgWidth, nBgHeight);
-    p.fillRect(rcd, QBrush(QColor(Qt::white)));
-    p.setPen(QPen(QColor("#E7E7E7")));
+    QRectF rcd = QRectF(0, 0, nBgWidth, nBgHeight);
+    p.fillRect(rcd, QBrush(QColor(0xF7, 0xF7, 0xF7)));
+    p.setPen(QPen(QColor(0xCE, 0xCE, 0xCE)));
     p.setRenderHint(QPainter::Antialiasing);
-    p.drawRoundedRect(rcd.adjusted(1, 1, -2, -2), 8, 10);
+    p.setRenderHint(QPainter::SmoothPixmapTransform);
+    p.drawRect(rcd.adjusted(1, 1, -2, -2));
 
-    QFont f = p.font();
-    f.setPixelSize(FONTSIZE);
-    p.setFont(f);
-
-    if (isHighPix)
-    {
-        // 如果是高分辨率的屏幕，则将坐标放大二倍进行绘制，使用时进行缩放，否则会造成图片模糊。
-        Utils::WizStyleHelper::initPainterByDevice(&p);
-    }
+    // draw file icon
     QFileIconProvider ip;
     QIcon icon = ip.icon(info);
     QPixmap pixIcon = icon.pixmap(iconSize);
-    p.drawPixmap(nIconMargin, (nHeight - iconSize.height()) / 2, pixIcon);
+    p.drawPixmap(nIconMargin, nIconMargin, pixIcon);
 
-    //    
-    p.setPen(QPen(QColor("#535353")));
-    QRect titleRect(QPoint(nIconMargin * 2 - 3 + iconSize.width(), nIconMargin), QPoint(nWidth, nHeight / 2));
-    QString strTitle = fm.elidedText(info.fileName(), Qt::ElideMiddle, titleRect.width() - nIconMargin * 2);
-    p.drawText(titleRect, strTitle);
-    //
-    QRect infoRect(QPoint(nIconMargin * 2 - 3 + iconSize.width(), nHeight / 2 + 2),
-                      QPoint(nWidth, nHeight));
-    p.setPen(QColor("#888888"));
-    p.drawText(infoRect, dateInfo);
+    // draw filename
+    QFont f = p.font();
+    f.setPixelSize(FONTSIZE);
+    p.setFont(f);
+    p.setPen(QPen(QColor(0x53, 0x53, 0x53)));
+    int textPosX = nIconMargin * 2 - 3 + iconSize.width();
+    QRect titleRect(
+        QPoint(textPosX, nTextMargin),
+        QPoint(nWidth, nHeight / 2 - 2));
+    QString strTitle = fm.elidedText(
+        fileTitle.isEmpty() ? info.fileName() : fileTitle,
+        Qt::ElideMiddle, titleRect.width() - nIconMargin * 2);
+    p.drawText(titleRect, Qt::AlignVCenter, strTitle);
 
-    int dateWidth = fm.width(dateInfo);
+    // draw attachment creation date
+    QRect infoRect(
+        QPoint(textPosX, nHeight / 2 + 2),
+        QPoint(nWidth, nHeight - nTextMargin));
+    p.setPen(QColor(0x88, 0x88, 0x88));
+    p.drawText(infoRect, Qt::AlignVCenter, dateInfo);
+
+    // draw separator
+    int dateWidth = fm.horizontalAdvance(dateInfo);
     infoRect.adjust(dateWidth + 4, 0, 0, 0);
     QPixmap pixGreyPoint(Utils::WizStyleHelper::skinResourceFileName("document_grey_point", true));
     QRect rcPix = infoRect.adjusted(0, 6, 0, 0);
     rcPix.setSize(QSize(4, 4));
     p.drawPixmap(rcPix, pixGreyPoint);
 
+    // draw file size
     infoRect.adjust(8, 0, 0, 0);
     p.drawText(infoRect, fileSize);
+
+    output = img;
 
     return true;
 }
 
+bool WizCreateThumbnailForAttachment(
+        QImage& img, const QString& attachFileName,
+        const QSize& iconSize, qreal scaleFactor,
+        const QString fileTitle)
+{
+    QFileInfo info(attachFileName);
+    if (!info.exists())
+        return false;
+
+    return WizCreateThumbnailForAttachment(img, info, iconSize, scaleFactor, fileTitle);
+}
 
 WizOleDateTime WizIniReadDateTimeDef(const CString& strFile, const CString& strSection, const CString& strKey, WizOleDateTime defaultData)
 {
@@ -3014,7 +3037,7 @@ bool WizURLDownloadToFile(const QString& url, const QString& fileName, bool isIm
         //
         reply = netCtrl.get(request);
         WizAutoTimeOutEventLoop loop(reply);
-        loop.setTimeoutWaitSeconds(60 * 60);
+        loop.setTimeoutWaitSeconds(NETWORK_TIMEOUT_SECS);
         loop.exec();
 
         if (loop.error() != QNetworkReply::NoError)
@@ -3070,7 +3093,7 @@ bool WizURLDownloadToData(const QString& url, QByteArray& data)
         //
         reply = netCtrl.get(request);
         WizAutoTimeOutEventLoop loop(reply);
-        loop.setTimeoutWaitSeconds(60 * 60);
+        loop.setTimeoutWaitSeconds(NETWORK_TIMEOUT_SECS);
         loop.exec();
 
         if (loop.error() != QNetworkReply::NoError)
@@ -3111,7 +3134,7 @@ bool WizURLDownloadToData(const QString& url, QByteArray& data, QObject* receive
         //
         QObject::connect(&loop, SIGNAL(downloadProgress(QUrl, qint64, qint64)), receiver, member);
         //
-        loop.setTimeoutWaitSeconds(60 * 60);
+        loop.setTimeoutWaitSeconds(NETWORK_TIMEOUT_SECS);
         loop.exec();
 
         if (loop.error() != QNetworkReply::NoError)

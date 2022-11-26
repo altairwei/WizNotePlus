@@ -15,6 +15,9 @@
 #include <QDateTime>
 #include <QPainter>
 #include <QPainterPath>
+#include <QBitmap>
+#include <QApplication>
+#include <algorithm>
 
 #include "WizApiEntry.h"
 #include "../utils/WizPathResolve.h"
@@ -156,11 +159,11 @@ bool WizAvatarHostPrivate::loadCache(const QString& strUserID)
 QPixmap WizAvatarHostPrivate::loadOrg(const QString& strUserID)
 {
     QString strFilePath = Utils::WizPathResolve::avatarPath() + strUserID + ".png";
-    //
+
     QPixmap ret(strFilePath);
     if (!ret.isNull())
         return ret;
-    //
+
     QString defaultFilePath = Utils::WizPathResolve::skinResourcesPath("default") + "avatar_default.png";
     return QPixmap(defaultFilePath);
 }
@@ -193,17 +196,17 @@ void WizAvatarHostPrivate::loadCacheDefault()
 
 bool WizAvatarHostPrivate::loadCacheFromFile(const QString& key, const QString& strFilePath)
 {
-    QPixmap pixmap(strFilePath);
+    QFileInfo imageFile(strFilePath);
 
-    if(pixmap.isNull()) {
-        qDebug() << "[AvatarHost]failed to load cache: " << strFilePath;
+    if(!imageFile.exists()) {
+        qDebug() << "[AvatarHost]file does not exist: " << strFilePath;
         return false;
     }
 
-    //
+
     QSize sz = Utils::WizStyleHelper::avatarSize();
-    pixmap = WizAvatarHost::circleImage(pixmap, sz.width(), sz.height());
-    //
+    QPixmap pixmap = WizAvatarHost::circleImage(strFilePath, sz.width(), sz.height());
+
     if (pixmap.isNull())
         return false;
 
@@ -290,6 +293,17 @@ QPixmap WizAvatarHostPrivate::orgAvatar(const QString& strUserID)
 {
 //    return loadOrg(strUserID, false);
     return loadOrg(strUserID);
+}
+
+QString WizAvatarHostPrivate::avatarFileName(const QString& strUserID)
+{
+    QString strFilePath = Utils::WizPathResolve::avatarPath() + strUserID + ".png";
+    QFileInfo ret(strFilePath);
+    if (ret.exists())
+        return ret.absoluteFilePath();
+
+    QString defaultFilePath = Utils::WizPathResolve::skinResourcesPath("default") + "avatar_default.png";
+    return defaultFilePath;
 }
 
 
@@ -444,10 +458,17 @@ bool WizAvatarHost::deleteAvatar(const QString& strUserID)
 {
     return d->deleteAvatar(strUserID);
 }
+
 QPixmap WizAvatarHost::orgAvatar(const QString& strUserID)
 {
     return d->orgAvatar(strUserID);
 }
+
+QString WizAvatarHost::avatarFileName(const QString& strUserID)
+{
+    return d->avatarFileName(strUserID);
+}
+
 bool WizAvatarHost::isLoaded(const QString& strUserID)
 {
     return d->isLoaded(strUserID);
@@ -475,19 +496,22 @@ bool WizAvatarHost::customSizeAvatar(const QString& strUserID, int width, int he
     return d->customSizeAvatar(strUserID, width, height, strFileName);
 }
 
+/*!
+    Cut the image into a square
+ */
 QPixmap WizAvatarHost::corpImage(const QPixmap& org)
 {
     // 将头像裁剪成正方形
     if (org.isNull())
         return org;
-    //
+
     QSize sz = org.size();
-    //
+
     int width = sz.width();
     int height = sz.height();
     if (width == height)
         return org;
-    //
+
     if (width > height)
     {
         int xOffset = (width - height) / 2;
@@ -500,25 +524,61 @@ QPixmap WizAvatarHost::corpImage(const QPixmap& org)
     }
 }
 
-QPixmap WizAvatarHost::circleImage(const QPixmap& src, int width, int height)
+/*!
+    Crop the image \a src into a circle.
+
+    Copied from \l {https://stefan.sofa-rockers.org
+        /2018/05/04/how-to-mask-an-image-with-a-smooth-circle-in-pyqt5/}
+    {How to mask an image with a smooth circle in PyQt5}
+ */
+QPixmap WizAvatarHost::circleImage(const QString& fileName, int width, int height)
 {
-    QPixmap org = corpImage(src);
-    //
-    int largeWidth = width * 8;
-    int largeHeight = height * 8;
-    //
-    QPixmap orgResized = org.scaled(QSize(largeWidth, largeHeight), Qt::IgnoreAspectRatio, Qt::SmoothTransformation);
-    //
-    QPixmap largePixmap(QSize(largeWidth, largeHeight));
-    largePixmap.fill(QColor(Qt::transparent));
-    //
-    QPainter painter(&largePixmap);
-    //
-    painter.setRenderHint(QPainter::HighQualityAntialiasing, true);
-    QPainterPath path;
-    path.addEllipse(0, 0, largeWidth, largeHeight);
-    painter.setClipPath(path);
-    painter.drawPixmap(0, 0, orgResized);
-    //
-    return largePixmap.scaled(QSize(width, height), Qt::IgnoreAspectRatio, Qt::SmoothTransformation);
+    // Load image
+    QImage image(fileName);
+
+    if (image.isNull()) {
+        qDebug() << "[AvatarHost]failed to load image: " << fileName;
+        return QPixmap();
+    }
+
+    // Convert to 32-bit ARGB (adds an alpha channel):
+    image.convertToFormat(QImage::Format_ARGB32);
+
+    // Crop image to a square:
+    int imgsize = std::min(image.width(), image.height());
+    QRect rect = QRect(
+        (image.width() - imgsize) / 2,
+        (image.height() - imgsize) / 2,
+        imgsize, imgsize
+    );
+    image = image.copy(rect);
+
+    // Create the output image with the same dimensions and an alpha channel
+    // and make it completely transparent:
+    QImage out_img(imgsize, imgsize, QImage::Format_ARGB32);
+    out_img.fill(Qt::transparent);
+
+    // Create a texture brush and paint a circle with the original image onto
+    // the output image:
+    QBrush brush(image);                // Create texture brush
+    QPainter painter(&out_img);         // Paint the output image
+    painter.setBrush(brush);            // Use the image texture brush
+    painter.setPen(Qt::NoPen);          // Don't draw an outline
+    painter.setRenderHint(
+        QPainter::Antialiasing, true);  // Use AA
+    painter.drawEllipse(
+        0, 0, imgsize, imgsize);        // Actually draw the circle
+    painter.end();                      // We are done (segfault if you forget this)
+
+    // Convert the image to a pixmap and rescale it.  Take pixel ratio into
+    // account to get a sharp image on retina displays:
+    auto pr = qApp->devicePixelRatio();
+    auto pm = QPixmap::fromImage(out_img);
+    pm.setDevicePixelRatio(pr);
+    width *= pr;
+    height *= pr;
+    pm = pm.scaled(width, height, Qt::KeepAspectRatio, Qt::SmoothTransformation);
+
+    return pm;
 }
+

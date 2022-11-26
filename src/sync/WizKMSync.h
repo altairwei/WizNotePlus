@@ -54,13 +54,13 @@ public:
     bool isBackground() const;
     void stopSync();
     void setNeedResetGroups() { m_bNeedResetGroups = true; }
-    //
+
     void setFullSyncInterval(int nMinutes);
-    //
+
     void addQuickSyncKb(const QString& kbGuid);
-    //
+
     bool clearCurrentToken();
-    //
+
     void waitForDone();
 
 public slots:
@@ -97,7 +97,6 @@ private:
     bool m_bPause;
     bool m_quickOnly;
 
-    //
     QMutex m_mutex;
     QWaitCondition m_wait;
     QTimer m_timer;
@@ -105,6 +104,7 @@ private:
     QDateTime m_tLastKbModified;
 
     bool doSync();
+    bool isOnline();
 
     bool prepareToken();
     bool needSyncAll();
@@ -117,7 +117,7 @@ private:
     bool resetGroups();
 
     bool peekQuickSyncKb(QString& kbGuid);
-    //
+
     friend class CWizKMSyncThreadHelper;
 
 Q_SIGNALS:

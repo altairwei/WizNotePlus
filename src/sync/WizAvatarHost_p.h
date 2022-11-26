@@ -50,6 +50,7 @@ public:
     bool avatar(const QString& strUserID, QPixmap* pixmap);
     bool systemAvatar(const QString& avatarName, QPixmap* pixmap);
     QPixmap orgAvatar(const QString& strUserID);
+    QString avatarFileName(const QString& strUserID);
     bool customSizeAvatar(const QString& strUserID, int width, int height, QString& strFilePath);
 
     bool isLoaded(const QString& strUserID);

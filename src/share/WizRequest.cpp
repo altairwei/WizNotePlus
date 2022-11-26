@@ -73,7 +73,7 @@ bool WizRequest::execJsonRequest(const QString& url, QString method, const QByte
     }
 
     WizAutoTimeOutEventLoop loop(reply);
-    loop.setTimeoutWaitSeconds(60 * 60);
+    loop.setTimeoutWaitSeconds(NETWORK_TIMEOUT_SECS);
     loop.exec();
     //
     QNetworkReply::NetworkError err = loop.error();

@@ -17,6 +17,7 @@
 #include <QTimer>
 #include <QMessageBox>
 #include <QMargins>
+#include <QInputDialog>
 
 #ifdef Q_OS_MAC
 #include "mac/WizMacHelper.h"
@@ -217,6 +218,28 @@ void WizWebEnginePage::processCopiedData()
         clipboard->setMimeData(newData);
     });
 #endif
+}
+
+void WizWebEnginePage::javaScriptAlert(const QUrl &securityOrigin, const QString& msg)
+{
+    QMessageBox::information(view(), QStringLiteral("Javascript Alert"), msg);
+}
+
+bool WizWebEnginePage::javaScriptConfirm(const QUrl &securityOrigin, const QString& msg)
+{
+    auto ret = QMessageBox::information(view(), QStringLiteral("Javascript Confirm"), msg,
+                                        QMessageBox::Ok, QMessageBox::Cancel);
+    return ret == QMessageBox::Ok;
+}
+
+bool WizWebEnginePage::javaScriptPrompt(const QUrl &securityOrigin, const QString& msg,
+                                        const QString& defaultValue, QString* result)
+{
+    bool ret = false;
+    if (result)
+        *result = QInputDialog::getText(view(), QStringLiteral("Javascript Prompt"), msg,
+                                        QLineEdit::Normal, defaultValue, &ret);
+    return ret;
 }
 
 
@@ -427,7 +450,7 @@ void WizWebEngineView::hideEvent(QHideEvent *event)
 
 void WizWebEngineView::createZoomWidget()
 {
-    m_zoomWgt = new WebPageZoomWidget(this);
+    m_zoomWgt = new WebPageZoomWidget(zoomFactor(), this);
     connect(this, &WizWebEngineView::zoomFactorChanged,
             m_zoomWgt, &WebPageZoomWidget::onZoomFactorChanged);
     connect(m_zoomWgt, &WebPageZoomWidget::scaleUpRequested,
@@ -470,6 +493,7 @@ void WizWebEngineView::handleShowZoomWidgetRequest(bool show, const QRect &btnLo
 
         m_zoomWgt->clearTimer();
         m_zoomWgt->setTimeOut(0);
+        m_zoomWgt->setPopup(true);
 
         QRect loc = btnLocation;
         loc.moveTop(loc.top() + loc.height());
@@ -855,7 +879,7 @@ void WizNavigationForwarderPage::setWebWindowType(QWebEnginePage::WebWindowType 
 }
 
 
-WebPageZoomWidget::WebPageZoomWidget(QWidget *parent)
+WebPageZoomWidget::WebPageZoomWidget(qreal factor, QWidget *parent)
     : ShadowWidget(parent)
     , m_resetBtn(new QPushButton)
     , m_scaleUpBtn(new QPushButton)
@@ -876,11 +900,11 @@ WebPageZoomWidget::WebPageZoomWidget(QWidget *parent)
     widget()->setLayout(layout);
 
     QString strTheme = Utils::WizStyleHelper::themeName();
-    m_factorLabel->setText("100%");
     m_resetBtn->setText(tr("Reset"));
     m_scaleDownBtn->setIcon(WizLoadSkinIcon(strTheme, "scaleDown"));
     m_scaleUpBtn->setIcon(WizLoadSkinIcon(strTheme, "scaleUp"));
 
+    setZoomFactor(factor);
     setTimeOut(2000);
 
     connect(m_scaleUpBtn, &QPushButton::clicked,
@@ -897,10 +921,15 @@ void WebPageZoomWidget::closeEvent(QCloseEvent *event)
     ShadowWidget::closeEvent(event);
 }
 
-void WebPageZoomWidget::onZoomFactorChanged(qreal factor)
+void WebPageZoomWidget::setZoomFactor(qreal factor)
 {
     int fa = static_cast<int>( qRound(factor * 100) );
     m_factorLabel->setText(QString("%1%").arg(fa, 3, 10));
+}
+
+void WebPageZoomWidget::onZoomFactorChanged(qreal factor)
+{
+    setZoomFactor(factor);
     resetTimer();
 }
 

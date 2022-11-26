@@ -18,6 +18,7 @@ public:
     void resetTimer();
     void clearTimer();
     void setMovable(bool movable) { m_movable = movable; }
+    void setPopup(bool pop);
 
 protected:
     void showEvent(QShowEvent *event) override;

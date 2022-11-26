@@ -5,6 +5,8 @@
 #include <QMenu>
 #include <QSet>
 #include <QInputDialog>
+#include <QApplication>
+#include <algorithm>
 
 #include "utils/WizStyleHelper.h"
 #include "utils/WizLogger.h"
@@ -35,6 +37,8 @@
 
 
 // Document actions
+#define WIZACTION_LIST_OPEN_NEW_TAB QObject::tr("Open in new Tab")
+#define WIZACTION_LIST_OPEN_NEW_WINDOW QObject::tr("Open in new Window")
 #define WIZACTION_LIST_LOCATE   QObject::tr("Locate")
 #define WIZACTION_LIST_DELETE   QObject::tr("Delete")
 #define WIZACTION_LIST_TAGS     QObject::tr("Tags...")
@@ -49,7 +53,6 @@
 #define WIZACTION_LIST_ENCRYPT_DOCUMENT QObject::tr("Encrypt Note")
 #define WIZACTION_LIST_CANCEL_ENCRYPTION  QObject::tr("Cancel Note Encryption")
 #define WIZACTION_LIST_ALWAYS_ON_TOP  QObject::tr("Always On Top")
-//#define WIZACTION_LIST_CANCEL_ON_TOP  QObject::tr("Cancel always on top")
 
 
 enum DocSize {
@@ -184,9 +187,9 @@ WizDocumentListView::WizDocumentListView(WizExplorerApp& app, QWidget *parent /*
 
     // document context menu
     m_menuDocument = new QMenu(this);
-    m_menuDocument->addAction(tr("Open in new Tab"), this,
+    m_menuDocument->addAction(WIZACTION_LIST_OPEN_NEW_TAB, this,
                               SLOT(on_action_showDocumentInNewTab()));
-    m_menuDocument->addAction(tr("Open in new Window"), this,
+    m_menuDocument->addAction(WIZACTION_LIST_OPEN_NEW_WINDOW, this,
                               SLOT(on_action_showDocumentInFloatWindow()));
     m_menuDocument->addSeparator();
     //
@@ -887,7 +890,7 @@ void WizDocumentListView::resetPermission()
     //QList<QListWidgetItem*> items = selectedItems();
     foreach (WizDocumentListViewDocumentItem* item, m_rightButtonFocusedItems) {
         arrayDocument.push_back(item->document());
-    }        
+    }
 
     findAction(WIZACTION_LIST_LOCATE)->setVisible(m_accpetAllSearchItems);
 
@@ -896,6 +899,8 @@ void WizDocumentListView::resetPermission()
     bool bCanEdit = isDocumentsAllCanDelete(arrayDocument);
     bool bAlwaysOnTop = isDocumentsAlwaysOnTop(arrayDocument);
     bool bMulti = arrayDocument.size() > 1;
+    bool bCollaboration = std::any_of(arrayDocument.cbegin(), arrayDocument.cend(),
+                [](const WIZDOCUMENTDATAEX &doc) { return doc.strType == "collaboration"; });
 
     // if group documents or deleted documents selected
     if (bGroup || bDeleted) {
@@ -916,13 +921,14 @@ void WizDocumentListView::resetPermission()
 
     findAction(WIZACTION_LIST_ALWAYS_ON_TOP)->setEnabled(bCanEdit);
     findAction(WIZACTION_LIST_ALWAYS_ON_TOP)->setChecked(bAlwaysOnTop);
+    findAction(WIZACTION_LIST_OPEN_NEW_WINDOW)->setEnabled(!bCollaboration);
 
     findAction(WIZACTION_LIST_SHARE_DOCUMENT_BY_LINK)->setVisible(true);
     // disable note history if selection is not only one
     if (m_rightButtonFocusedItems.count() != 1)
     {
         findAction(WIZACTION_LIST_DOCUMENT_HISTORY)->setEnabled(false);
-        //
+
         int num = numOfEncryptedDocuments(arrayDocument);
         if (num == arrayDocument.size())
         {
@@ -1029,7 +1035,7 @@ void WizDocumentListView::mousePressEvent(QMouseEvent* event)
     else if (event->button() == Qt::RightButton)
     {
         m_rightButtonFocusedItems.clear();
-        //
+
         WizDocumentListViewDocumentItem* pItem = dynamic_cast<WizDocumentListViewDocumentItem*>(itemAt(event->pos()));
         if (!pItem)
             return;
@@ -1053,7 +1059,7 @@ void WizDocumentListView::mousePressEvent(QMouseEvent* event)
             m_rightButtonFocusedItems.append(pItem);
             pItem->setSpecialFocused(true);
         }
-        //
+
         resetPermission();
         m_menuDocument->popup(event->globalPos());
     }
@@ -1134,63 +1140,66 @@ bool mime2Notes(const QString& mime, WizDatabaseManager& dbMgr, CWizDocumentData
     }
     return !arrayDocument.empty();
 }
+
 QPixmap CreateDocumentDragBadget(const CWizDocumentDataArray& arrayDocument)
 {
     const int nImageWidth = 150;
     const int nItemHeight = 22;
 
-
     int nItemCount = arrayDocument.size() > 10 ? 10 : arrayDocument.size();
 
-    QPixmap pix(nImageWidth, nItemHeight* (nItemCount + 2) + 8);
-    pix.fill(Qt::transparent);
+    int width = nImageWidth;
+    int height = nItemHeight * (nItemCount + 2) + 8;
 
+    auto pr = qApp->devicePixelRatio();
+    QPixmap pix(width * pr, height * pr);
+    pix.setDevicePixelRatio(pr);
+    pix.fill(Qt::transparent);
 
     QPainter pt(&pix);
     QRect rc = pix.rect();
-    //draw number
-    QRect rcNumber(rc.x() + 12, rc.y(), 18, 18);
+
+    // draw number (height = 14 + 2 + 2 + 4)
+    QRect rcNumber(rc.x() + 12, rc.y() + 2, 18, 14);
     QFont font = pt.font();
     font.setPixelSize(12);
     QFontMetrics fm(font);
-    int textWidth = fm.width(QString::number(arrayDocument.size()));
+    int textWidth = fm.horizontalAdvance(QString::number(arrayDocument.size()));
     if (rcNumber.width() < (textWidth + 8))
-    {
         rcNumber.setWidth(textWidth + 8);
-    }
-    pt.setPen(QColor("#FF6052"));
-    pt.setBrush(QColor("#FF6052"));
+    pt.setPen(QColor(0xFF, 0x60, 0x52));
+    pt.setBrush(QColor(0xFF, 0x60, 0x52));
     pt.setRenderHint(QPainter::Antialiasing);
-    pt.drawEllipse(rcNumber);
-
-    pt.setPen(QColor("#FFFFFF"));
+    pt.drawRoundedRect(rcNumber, 8, 6);
+    pt.setPen(QColor(0xFF, 0xFF, 0xFF));
     pt.drawText(rcNumber, Qt::AlignCenter, QString::number(arrayDocument.size()));
 
-    QRect rcItem(rc.left(), rcNumber.bottom() + 4, rc.width(), nItemHeight - 4);
-    //draw doc item
-    const int nIconHeight = 14;
+    //draw doc item (height = 18 + 4)
+    QRect rcItem(rc.left(), rcNumber.bottom() + 6, rc.width(), nItemHeight - 4);
+    const int nIconHeight = 16;
     for (int i = 0; i < nItemCount; i++)
     {
         const WIZDOCUMENTDATAEX& doc = arrayDocument.at(i);
 
+        // draw doc icon
         QRect rcIcon(rcItem.left(), rcItem.top() + (rcItem.height() - nIconHeight)/2,
                      nIconHeight, nIconHeight);
-        QPixmap pixIcon(Utils::WizStyleHelper::skinResourceFileName(
-                            doc.nProtected == 1 ? "document_badge_encrypted" : "document_badge", true));
-        pt.drawPixmap(rcIcon, pixIcon);
+        QIcon pixIcon = WizLoadSkinIcon(Utils::WizStyleHelper::themeName(),
+                            doc.nProtected == 1 ? "document_badge_encrypted" : "document_badge");
+        pt.drawPixmap(rcIcon, pixIcon.pixmap(nIconHeight, nIconHeight));
 
-        //
+        // draw doc title
         QRect rcTitle(rcIcon.right() + 4, rcItem.top(), rcItem.right() - rcIcon.right() - 4, rcItem.height());
-        QString text = fm.elidedText(doc.strTitle, Qt::ElideMiddle, rcTitle.width() - 14);
-        rcTitle.setWidth(fm.width(text) + 14);
+        QString text = fm.elidedText(doc.strTitle, Qt::ElideMiddle, rcTitle.width() / pr - 14);
+        rcTitle.setWidth(fm.horizontalAdvance(text) + 14);
         int leftSpace = nImageWidth - rcIcon.width() - 4;
         rcTitle.setWidth(rcTitle.width() > leftSpace ? leftSpace : rcTitle.width());
-        pt.setPen(QColor("#3177EE"));
-        pt.setBrush(QColor("#3177EE"));
+        pt.setPen(QColor(0x31, 0x77, 0xEE));
+        pt.setBrush(QColor(0x31, 0x77, 0xEE));
         pt.drawRoundedRect(rcTitle, 8, 6);
 
         rcTitle.adjust(4, 0, -4, 0);
-        pt.setPen(QColor("#FFFFFF"));
+        pt.setPen(QColor(0xFF, 0xFF, 0xFF));
         pt.drawText(rcTitle, Qt::AlignVCenter | Qt::AlignLeft, text);
         rcItem = QRect(rc.left(), rcItem.bottom() + 4, rc.width(), nItemHeight - 4);
     }
@@ -1199,12 +1208,12 @@ QPixmap CreateDocumentDragBadget(const CWizDocumentDataArray& arrayDocument)
     if (nItemCount < arrayDocument.size())
     {
         rcItem.adjust(0, -nItemHeight / 2, 0, -nItemHeight / 2);
-        QPen pen(QColor("#3177EE"));
+        QPen pen(QColor(0x31, 0x77, 0xEE));
         pen.setWidth(2);
         pt.setPen(pen);
         font.setPixelSize(20);
         pt.setFont(font);
-        pt.drawText(rcItem, Qt::AlignLeft | Qt::AlignTop, "......");
+        pt.drawText(rcItem, Qt::AlignVCenter | Qt::AlignLeft, "......");
     }
 
     return pix;

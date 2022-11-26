@@ -29,6 +29,7 @@ public:
     static bool systemAvatar(const QString& avatarName, QPixmap* pixmap);
     static bool deleteAvatar(const QString& strUserID);
     static QPixmap orgAvatar(const QString& strUserID);
+    static QString avatarFileName(const QString& strUserID);
     static QString keyFromUserID(const QString& strUserID);
     static QString defaultKey();
     static bool customSizeAvatar(const QString& strUserID, int width, int height, QString& strFileName);
@@ -40,7 +41,7 @@ Q_SIGNALS:
 
 public:
     static QPixmap corpImage(const QPixmap& org);
-    static QPixmap circleImage(const QPixmap& org, int width, int height);
+    static QPixmap circleImage(const QString& fileName, int width, int height);
 };
 
 

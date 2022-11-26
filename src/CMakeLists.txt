@@ -611,6 +611,7 @@ else()
     # Windows
     add_definitions(-DUNICODE=TRUE)
     add_definitions(-D_UNICODE=TRUE)
+    add_definitions(-DNOMINMAX)
     #add_compile_options("/utf-8") # UNICODE or _UNICODE may not work
     add_executable(WizNotePlus WIN32 ${wiznote_SOURCES} ${wiznote_HEADERS} 
         ${wiznote_FORM_HEADERS} ${wiznote_QM} ${wiznote_RC} 

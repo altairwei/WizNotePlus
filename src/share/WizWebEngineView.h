@@ -60,6 +60,9 @@ protected:
     virtual void javaScriptConsoleMessage(JavaScriptConsoleMessageLevel level, const QString& message, int lineNumber, const QString& sourceID);
     virtual bool acceptNavigationRequest(const QUrl &url, QWebEnginePage::NavigationType type, bool isMainFrame);
     virtual void triggerAction(WebAction action, bool checked = false);
+    virtual void javaScriptAlert(const QUrl &securityOrigin, const QString& msg);
+    virtual bool javaScriptConfirm(const QUrl &securityOrigin, const QString& msg);
+    virtual bool javaScriptPrompt(const QUrl &securityOrigin, const QString& msg, const QString& defaultValue, QString* result);
 
 Q_SIGNALS:
     void linkClicked(QUrl url, QWebEnginePage::NavigationType type, bool isMainFrame, WizWebEnginePage* page);
@@ -134,7 +137,7 @@ protected:
     QWebEngineView *createWindow(QWebEnginePage::WebWindowType type) override;
     virtual void setupPage(WizWebEnginePage *page);
     virtual void setupWebActions();
-    void contextMenuEvent(QContextMenuEvent *event);
+    void contextMenuEvent(QContextMenuEvent *event) override;
     void childEvent(QChildEvent *event) override;
     bool eventFilter(QObject *obj, QEvent *ev) override;
     void hideEvent(QHideEvent *event) override;
@@ -187,7 +190,11 @@ class WebPageZoomWidget : public ShadowWidget
     Q_OBJECT
 
 public:
-    explicit WebPageZoomWidget(QWidget *parent = nullptr);
+    explicit WebPageZoomWidget(QWidget *parent = nullptr)
+        : WebPageZoomWidget(1, parent) { }
+    WebPageZoomWidget(qreal factor, QWidget *parent = nullptr);
+
+    void setZoomFactor(qreal factor);
 
 Q_SIGNALS:
     void zoomFinished();

@@ -88,6 +88,7 @@ Q_SIGNALS:
     void noteCreated(const QString &docGuid, const QString &title);
     void titleChanged(const QString &docGuid, const QString &title);
     void abstractChanged(const QString &docGuid, const QString &abstract);
+    void modifiedStatusChanged(bool isModified, bool isSaved);
 
 private:
     WizExplorerApp& m_app;

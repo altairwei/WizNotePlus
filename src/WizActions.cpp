@@ -112,6 +112,7 @@ WIZACTION* WizActions::actionsData()
         {"actionViewMinimize",                  QObject::tr("Minimize"),                    QObject::tr(""),                        QKeySequence("Ctrl+M")},
         {"actionZoom",                          QObject::tr("Zoom"),                        QObject::tr(""),                        QKeySequence()},
         {"actionBringFront",                    QObject::tr("Bring All to Front"),          QObject::tr(""),                        QKeySequence()},
+        {"actionOpenWelcomePage",               QObject::tr("Open Welcome Page"),           QObject::tr(""),                        QKeySequence()},
 
         //view
         {WIZCATEGORY_OPTION_MESSAGECENTER,      QObject::tr("Message Center"),              QObject::tr(""),                        QKeySequence()},

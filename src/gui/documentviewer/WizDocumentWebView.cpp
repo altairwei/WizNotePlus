@@ -236,8 +236,23 @@ bool WizDocumentWebView::onPasteCommand()
 
     if (isEditing())
     {
-        if (!clip->image().isNull())
-        {
+        const QMimeData *mimeData = clip->mimeData();
+        qDebug() << "Clipboard MIME Data has formats: " << mimeData->formats();
+        // On MacOS: copying files will result in "text/uri-list", "text/plain", "application/x-qt-image" formats.
+        // So, we should test `hasUrls()` before `hasImage()`.
+        if (mimeData->hasUrls()) {
+            int nAccepted = 0;
+
+            QList<QUrl> urls = mimeData->urls();
+            QList<QUrl>::const_iterator it;
+            for (it = urls.constBegin(); it != urls.constEnd(); it++) {
+                QUrl url = *it;
+                if (acceptUrlAsAttachment(url))
+                    nAccepted++;
+            }
+
+            return nAccepted > 0;
+        } else if (mimeData->hasImage()) {
             // save clipboard image to
             QString strImagePath = noteResourcesPath();
             CString strFileName = strImagePath + WizIntToStr(WizGetTickCount()) + ".png";
@@ -249,14 +264,14 @@ bool WizDocumentWebView::onPasteCommand()
             QString strHtml;
             if (!WizImage2Html(strFileName, strHtml, strImagePath))
                 return false;
-            //
+
             editorCommandExecuteInsertHtml(strHtml, true);
-            //
+
             return true;
         }
-        //
+
     }
-    //
+
     return false;
 }
 
@@ -564,6 +579,54 @@ void WizDocumentWebView::tryResetTitle()
     });
 }
 
+bool WizDocumentWebView::acceptUrlAsAttachment(const QUrl &url)
+{
+    //paste image file as images, add attachment for other file
+    QString strFileName = url.toLocalFile();
+
+#ifdef Q_OS_MAC
+    if (wizIsYosemiteFilePath(strFileName))
+    {
+        strFileName = wizConvertYosemiteFilePathToNormalPath(strFileName);
+    }
+#endif
+
+    QFileInfo info(strFileName);
+
+    //FIXME: //TODO: should merged with add attachment in attachment list
+    if (info.size() == 0) {
+        WizMessageBox::warning(nullptr, tr("Info"),
+            tr("Can not add a 0 bit size file as attachment! File name : ' %1 '").arg(strFileName));
+        return false;
+    } else if (info.isBundle()) {
+        WizMessageBox::warning(nullptr, tr("Info"),
+            tr("Can not add a bundle file as attachment! File name : ' %1 '").arg(strFileName));
+        return false;
+    }
+
+    QList<QByteArray> imageFormats = QImageReader::supportedImageFormats();
+    if (imageFormats.contains(info.suffix().toLower().toUtf8())) {
+        QString strHtml;
+        if (WizImage2Html(strFileName, strHtml, noteResourcesPath())) {
+            editorCommandExecuteInsertHtml(strHtml, true);
+            return true;
+        }
+    }
+    else {
+        WIZDOCUMENTDATA doc = view()->note();
+        WizDatabase& db = m_dbMgr.db(doc.strKbGUID);
+        WIZDOCUMENTATTACHMENTDATA data;
+        data.strKbGUID = doc.strKbGUID; // needed by under layer
+        if (!db.addAttachment(doc, strFileName, data))
+        {
+            TOLOG1("[drop] add attachment failed %1", strFileName);
+            return false;
+        }
+        addAttachmentThumbnail(strFileName, data.strGUID);
+        return true;
+    }
+}
+
 void WizDocumentWebView::dropEvent(QDropEvent* event)
 {
     const QMimeData* mimeData = event->mimeData();
@@ -573,56 +636,10 @@ void WizDocumentWebView::dropEvent(QDropEvent* event)
     {
         QList<QUrl> li = mimeData->urls();
         QList<QUrl>::const_iterator it;
-        for (it = li.begin(); it != li.end(); it++) {
+        for (it = li.constBegin(); it != li.constEnd(); it++) {
             QUrl url = *it;
-            url.setScheme(0);
-
-            //paste image file as images, add attachment for other file
-            QString strFileName = url.toString();
-#ifdef Q_OS_MAC
-            if (wizIsYosemiteFilePath(strFileName))
-            {
-                strFileName = wizConvertYosemiteFilePathToNormalPath(strFileName);
-            }
-#endif
-//            QImageReader reader(strFileName);
-            QFileInfo info(strFileName);
-
-            //FIXME: //TODO: should merged with add attachment in attachment list
-            if (info.size() == 0)
-            {
-                WizMessageBox::warning(nullptr , tr("Info"), tr("Can not add a 0 bit size file as attachment! File name : ' %1 '").arg(strFileName));
-                continue;
-            }
-            else if (info.isBundle())
-            {
-                WizMessageBox::warning(nullptr, tr("Info"), tr("Can not add a bundle file as attachment! File name : ' %1 '").arg(strFileName));
-                continue;
-            }
-
-            QList<QByteArray> imageFormats = QImageReader::supportedImageFormats();
-            if (imageFormats.contains(info.suffix().toUtf8()))
-            {
-                QString strHtml;
-                if (WizImage2Html(strFileName, strHtml, noteResourcesPath())) {
-                    editorCommandExecuteInsertHtml(strHtml, true);
-                    nAccepted++;
-                }
-            }
-            else
-            {
-                WIZDOCUMENTDATA doc = view()->note();
-                WizDatabase& db = m_dbMgr.db(doc.strKbGUID);
-                WIZDOCUMENTATTACHMENTDATA data;
-                data.strKbGUID = doc.strKbGUID; // needed by under layer
-                if (!db.addAttachment(doc, strFileName, data))
-                {
-                    TOLOG1("[drop] add attachment failed %1", strFileName);
-                    continue;
-                }
-                addAttachmentThumbnail(strFileName, data.strGUID);
-                nAccepted ++;
-            }
+            if (acceptUrlAsAttachment(url))
+                nAccepted++;
         }
     }
     else if (mimeData->hasFormat(WIZNOTE_MIMEFORMAT_DOCUMENTS))
@@ -985,16 +1002,13 @@ void WizDocumentWebView::insertImage(const QString& strFileName)
 void WizDocumentWebView::addAttachmentThumbnail(const QString strFile, const QString& strGuid)
 {
     QImage img;
-    ::WizCreateThumbnailForAttachment(img, strFile, QSize(32, 32));
-    QString strDestFile =Utils::WizPathResolve::tempPath() + WizGenGUIDLowerCaseLetterOnly() + ".png";
+    qreal scale = 2;
+    ::WizCreateThumbnailForAttachment(img, strFile, QSize(32, 32), scale);
+    QString strDestFile = Utils::WizPathResolve::tempPath() + WizGenGUIDLowerCaseLetterOnly() + ".png";
     img.save(strDestFile, "PNG");
     QString strLink = QString("wiz://open_attachment?guid=%1").arg(strGuid);
     QSize szImg = img.size();
-    if (WizIsHighPixel())
-    {
-        szImg.scale(szImg.width() / 2, szImg.height() / 2, Qt::IgnoreAspectRatio);
-    }
-    QString strHtml = WizGetImageHtmlLabelWithLink(strDestFile, szImg, strLink);
+    QString strHtml = WizGetImageHtmlLabelWithLink(strDestFile, szImg / scale, strLink);
     editorCommandExecuteInsertHtml(strHtml, true);
 }
 

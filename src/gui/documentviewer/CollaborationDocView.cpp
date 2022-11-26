@@ -312,15 +312,24 @@ void CollaborationEditor::Execute(const QString &method,
     if (method == "GetToken")
         GetToken(arg1.toString());
     else if (method == "ChangeCommandStatus")
-        OnCommandStatusChanged(arg1.toString(), arg2.toJsonObject());
+    {
+        auto arg2json = QJsonDocument::fromJson(arg2.toByteArray());
+        OnCommandStatusChanged(arg1.toString(), arg2json.object());
+    }
     else if (method == "CreateNote")
         OnCreateNote(arg1.toString(), arg2.toString());
     else if (method == "OnEditorLoad")
         OnEditorLoad(arg1.toString());
     else if (method == "ChangeModifiedStatus")
-        OnModifiedStatusChanged(arg1.toString(), arg2.toJsonObject());
+    {
+        auto arg2json = QJsonDocument::fromJson(arg2.toByteArray());
+        OnModifiedStatusChanged(arg1.toString(), arg2json.object());
+    }
     else if (method == "ChangeRemoteUser")
-        OnRemoteUserChanged(arg1.toString(), arg2.toJsonObject());
+    {
+        auto arg2json = QJsonDocument::fromJson(arg2.toByteArray());
+        OnRemoteUserChanged(arg1.toString(), arg2json.object());
+    }
     else if (method == "ChangeTitle")
         OnTitleChanged(arg1.toString(), arg2.toString());
     else if (method == "ChangeAbstract")
@@ -392,7 +401,10 @@ void CollaborationEditor::OnEditorLoad(const QString &docGuid)
 
 void CollaborationEditor::OnModifiedStatusChanged(const QString &docGuid, const QJsonObject &modifiedStatus)
 {
-
+    QJsonDocument doc(modifiedStatus);
+    Q_EMIT modifiedStatusChanged(
+                modifiedStatus["isModified"].toBool(),
+                modifiedStatus["isSaved"].toBool());
 }
 
 void CollaborationEditor::OnRemoteUserChanged(const QString &docGuid, const QJsonObject &users)
