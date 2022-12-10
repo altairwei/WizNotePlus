@@ -157,10 +157,6 @@ class WizNotePlusConan(ConanFile):
             # else:
             #     raise ConanInvalidConfiguration("Qt library is required!")
 
-        # QuaZIP should depend on the same Qt library with WizNotePlus
-        if self.options.qtdir:
-            self.options["quazip"].qtdir = self.options.qtdir
-
 
     def imports(self):
         self.copy("*.dll", dst="bin", src="bin")

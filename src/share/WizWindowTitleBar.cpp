@@ -10,7 +10,7 @@
 #include <QStyleOption>
 #include <QPainter>
 
-#include "libs/3rdparty/framelesshelper/src/core/framelesshelper.h"
+#include "framelesshelper/src/core/framelesshelper.h"
 
 #include "utils/WizStyleHelper.h"
 #include "WizMisc.h"

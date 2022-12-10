@@ -511,7 +511,8 @@ include_directories(
     ${ZLIB_INCLUDE_DIRS}
     ${cryptopp_INCLUDE_DIRS}
     ${OpenSSL_INCLUDE_DIRS}
-    ${Gumbo_INCLUDE_DIRS}
+    libs/3rdparty
+    libs/3rdparty/quzip
 )
 
 #============================================================================
@@ -656,6 +657,7 @@ if(UNIX)
                 ${Gumbo_LIBRARIES}
                 FramelessHelper
                 QuaZip
+                gumbo
             )
         else(APPSTORE_BUILD)
             target_link_libraries(${PROJECT_NAME}
@@ -665,6 +667,7 @@ if(UNIX)
                 ${Gumbo_LIBRARIES}
                 FramelessHelper
                 QuaZip
+                gumbo
             )
         endif(APPSTORE_BUILD)
     else(APPLE)
@@ -679,6 +682,7 @@ if(UNIX)
             ${Gumbo_LIBRARIES}
             wangwenx190::FramelessHelper
             QuaZip
+            gumbo
         )
     endif(APPLE)
 else(NOT UNIX)
@@ -691,5 +695,6 @@ else(NOT UNIX)
         FramelessHelper
         QuaZip
         dwmapi
+        gumbo
     )
 endif()

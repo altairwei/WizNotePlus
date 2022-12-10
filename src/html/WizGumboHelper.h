@@ -6,7 +6,7 @@
 
 #include <QString>
 
-#include "gumbo-parser/gumbo.h"
+#include "gumbo-parser/src/gumbo.h"
 
 namespace Utils {
 namespace Gumbo {
