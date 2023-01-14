@@ -7,6 +7,7 @@ import re
 import json
 import contextlib
 import warnings
+from six import StringIO
 from conans import ConanFile, CMake, tools, __version__ as conan_version
 from conans.tools import Version
 from conans.errors import ConanInvalidConfiguration
@@ -65,8 +66,7 @@ class WizNotePlusConan(ConanFile):
     generators = "cmake_find_package", "cmake_paths", "cmake"
     requires = (
         "cryptopp/8.5.0",
-        "zlib/1.2.11",
-        "Gumbo/0.10.1@altairwei/testing"
+        "zlib/1.2.11"
     )
     keep_imports = True
     options = {
@@ -105,9 +105,6 @@ class WizNotePlusConan(ConanFile):
     )
 
     def requirements(self):
-        if self.settings.os == "Linux":
-            self.requires("fcitx-qt5/1.2.4@altairwei/testing")
-            #self.requires("fcitx5-qt/0.0.0@altairwei/testing")
         if self.options.qtdir:
             qt_version = get_qt_version(os.path.join(str(self.options.qtdir), "bin"))
         else:
@@ -166,14 +163,6 @@ class WizNotePlusConan(ConanFile):
             "*libfcitx*",
             "*libFcitx*",
         ])
-        self.copy("libfcitxplatforminputcontextplugin.so", 
-            src="lib/x86_64-linux-gnu/qt5/plugins/platforminputcontexts",
-            dst="plugins/platforminputcontexts",
-            root_package="fcitx-qt5", keep_path=False)
-        # self.copy("libfcitx5platforminputcontextplugin.so", 
-        #     src="lib/qt/plugins/platforminputcontexts",
-        #     dst="plugins/platforminputcontexts",
-        #     root_package="fcitx5-qt", keep_path=False)
 
     def build(self):
         cmake = self._configure_cmake()
@@ -216,6 +205,20 @@ class WizNotePlusConan(ConanFile):
         # Other files
         self.copy("*.bdic", src=os.path.join("share", "wiznote", "qtwebengine_dictionaries"),
                   dst=os.path.join("bin", "qtwebengine_dictionaries"), keep_path=False)
+        if tools.os_info.is_linux:
+            try:
+                mybuf = StringIO()
+                self.run("fcitx-diagnose | grep -o '/.*/libfcitxplatforminputcontextplugin.so'", output=mybuf)
+                fcitx_qt5_lib = mybuf.getvalue().strip()
+                if fcitx_qt5_lib.endswith("libfcitxplatforminputcontextplugin.so"):
+                    dest_folder = os.path.join(self.package_folder, "plugins", "platforminputcontexts")
+                    if not os.path.exists(dest_folder):
+                        os.makedirs(dest_folder)
+                    shutil.copy(fcitx_qt5_lib, dest_folder)
+                    self.output.success("Copied libfcitxplatforminputcontextplugin.so")
+            except:
+                self.output.warn("Failed to copy libfcitxplatforminputcontextplugin.so")
+
         # Deploy
         self._deploy()
 
