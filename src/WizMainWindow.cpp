@@ -275,6 +275,9 @@ WizMainWindow::WizMainWindow(WizDatabaseManager& dbMgr, QWidget *parent)
     insertScrollbarStyleSheet(QWebEngineProfile::defaultProfile());
     connect(QWebEngineProfile::defaultProfile(), &QWebEngineProfile::downloadRequested,
             &DownloadManagerWidget::instance(), &DownloadManagerWidget::downloadRequested);
+
+    auto &jsmgr = JSPluginManager::instance();
+    jsmgr.setMainWindow(this);
 }
 
 

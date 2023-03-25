@@ -49,6 +49,7 @@ private:
     int m_moduleCount;
     int m_realModuleCount;
     int m_manifestVersion;
+    QString m_apiMinimumRequired;
     QVector<JSPluginModuleSpec *> m_modules;
 
 public:

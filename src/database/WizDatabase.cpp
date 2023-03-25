@@ -4966,6 +4966,16 @@ QObject *WizDatabase::AttachmentFromGUID(const QString &attachmentGUID)
     return pAttachment;
 }
 
+bool WizDatabase::SetMeta(const QString &section, const QString &key, const QString & value)
+{
+    return setMeta(section, key, value);
+}
+
+QString WizDatabase::GetMeta(const QString &section, const QString &key)
+{
+    return meta(section, key);
+}
+
 /**
  * @brief Get recent modified documents.
  * 
