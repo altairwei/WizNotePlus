@@ -13,8 +13,8 @@
 #include "WizWindowTitleBar.h"
 #include "WizShadowEffect.h"
 
-#include "libs/3rdparty/framelesshelper/src/core/framelesshelper.h"
-#include "libs/3rdparty/framelesshelper/src/core/utilities.h"
+#include "framelesshelper/src/core/framelesshelper.h"
+#include "framelesshelper/src/core/utilities.h"
 
 template <class Base>
 class WizFramelessWindow : public Base

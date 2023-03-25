@@ -7,7 +7,7 @@
 #include <QString>
 #include <QDebug>
 
-#include "gumbo-parser/gumbo.h"
+#include "gumbo-parser/src/gumbo.h"
 
 
 /** serialize functions were copied from gumbo-parser examples. */

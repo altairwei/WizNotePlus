@@ -98,9 +98,7 @@ set(CMAKE_MODULE_PATH ${CMAKE_BINARY_DIR} ${CMAKE_MODULE_PATH})
 
 # setup 3rd-party package
 find_package(cryptopp REQUIRED)
-find_package(quazip REQUIRED)
 find_package(ZLIB REQUIRED)
-find_package(Gumbo REQUIRED)
 find_package(OpenSSL)
 
 # install 3rd-party package
@@ -117,22 +115,24 @@ include(${CMAKE_BINARY_DIR}/conanbuildinfo.cmake)
 conan_output_dirs_setup()
 
 find_package(Git QUIET)
-if(GIT_FOUND AND EXISTS "${PROJECT_SOURCE_DIR}/.git")
-    # Update submodules as needed
-    option(GIT_SUBMODULE "Check submodules during build" ON)
-    if(GIT_SUBMODULE)
-        message(STATUS "Submodule update")
-        execute_process(COMMAND ${GIT_EXECUTABLE} submodule update --init --recursive
+
+macro(git_submodule)
+    foreach(_module ${ARGV})
+        message(STATUS "Submodule updating ${_module}")
+        execute_process(COMMAND ${GIT_EXECUTABLE} submodule update --init ${_module}
                         WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
                         RESULT_VARIABLE GIT_SUBMOD_RESULT)
         if(NOT GIT_SUBMOD_RESULT EQUAL "0")
-            message(FATAL_ERROR "git submodule update --init --recursive failed with ${GIT_SUBMOD_RESULT}, please checkout submodules")
+            message(FATAL_ERROR "Updating ${_module} failed with ${GIT_SUBMOD_RESULT}.")
         endif()
-    endif()
-endif()
+    endforeach()
+endmacro()
 
-if(NOT EXISTS "${PROJECT_SOURCE_DIR}/src/libs/3rdparty/framelesshelper/CMakeLists.txt")
-    message(FATAL_ERROR "The submodules 'framelesshelper' were not downloaded! GIT_SUBMODULE was turned off or failed. Please update submodules and try again."
+if(GIT_FOUND AND EXISTS "${PROJECT_SOURCE_DIR}/.git")
+    git_submodule(
+        src/libs/3rdparty/framelesshelper
+        src/libs/3rdparty/quazip
+        src/libs/3rdparty/gumbo-parser
     )
 endif()
 
@@ -173,12 +173,6 @@ if(APPLE)
     endif(PLCrashReporter)
     add_definitions(-DUSECOCOATOOLBAR=TRUE)
 endif(APPLE)
-
-# when including QuaZip sources directly into a project, QUAZIP_STATIC should
-# be defined explicitly to avoid possible troubles with unnecessary importing/exporting.
-if (WIN32)
-    add_definitions(-DQUAZIP_STATIC)
-endif()
 
 if (USE_CUSTOM_SCROLLBAR)
     add_definitions(-DWIZNOTE_CUSTOM_SCROLLBAR)

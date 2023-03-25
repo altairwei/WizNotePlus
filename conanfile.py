@@ -7,6 +7,7 @@ import re
 import json
 import contextlib
 import warnings
+from six import StringIO
 from conans import ConanFile, CMake, tools, __version__ as conan_version
 from conans.tools import Version
 from conans.errors import ConanInvalidConfiguration
@@ -65,9 +66,7 @@ class WizNotePlusConan(ConanFile):
     generators = "cmake_find_package", "cmake_paths", "cmake"
     requires = (
         "cryptopp/8.5.0",
-        "zlib/1.2.11",
-        "quazip/0.7.6@altairwei/testing",
-        "Gumbo/0.10.1@altairwei/testing"
+        "zlib/1.2.11"
     )
     keep_imports = True
     options = {
@@ -78,7 +77,10 @@ class WizNotePlusConan(ConanFile):
         "openssl:shared": True,
         "cryptopp:shared": True,
         "zlib:shared": True,
+        "qt:shared": True,
+        "qt:gui": True,
         "qt:qtsvg": True,
+        "qt:qtlocation": True,
         "qt:qtwebsockets": True,
         "qt:qtwebchannel": True,
         "qt:qtdeclarative": True,
@@ -88,10 +90,6 @@ class WizNotePlusConan(ConanFile):
         "qt:qttranslations": True,
         "qt:qtimageformats": True,
         "qt:qtgraphicaleffects": True,
-        "qt:qtx11extras": True,
-        "qt:qtmacextras": True,
-        "qt:qtwinextras": True,
-
     }
     exports_sources = (
         "CMakeLists.txt",
@@ -107,19 +105,17 @@ class WizNotePlusConan(ConanFile):
     )
 
     def requirements(self):
-        if self.settings.os == "Linux":
-            self.requires("fcitx-qt5/1.2.4@altairwei/testing")
-            #self.requires("fcitx5-qt/0.0.0@altairwei/testing")
         if self.options.qtdir:
             qt_version = get_qt_version(os.path.join(str(self.options.qtdir), "bin"))
         else:
             #TODO: Current conan-qt was not ready for building QtWebEngine module
             # QtWebEngine requires python >= 2.7.5 & < 3.0.0
-            #self.requires("qt/5.14.1@bincrafters/stable")
-            if tools.which("qmake"):
-                qt_version = get_qt_version()
-            else:
-                raise ConanInvalidConfiguration("Qt library is required!")
+            self.requires("qt/5.15.6")
+            qt_version = "5.15.6"
+            # if tools.which("qmake"):
+            #     qt_version = get_qt_version()
+            # else:
+            #     raise ConanInvalidConfiguration("Qt library is required!")
         # Different Qt was built against different OpenSSL
         if qt_version < Version("5.12"):
             self.requires("openssl/1.0.2u")
@@ -138,21 +134,25 @@ class WizNotePlusConan(ConanFile):
             
 
     def config_options(self):
-        # This is a workaround of solving Error LNK2001: 
-        #   WizEnc.obj : error LNK2001: unresolved external symbol 
-        #   "class CryptoPP::NameValuePairs const & const CryptoPP::g_nullNameValuePairs"
+
         if self.settings.os == "Windows":
+            # This is a workaround of solving Error LNK2001: 
+            #   WizEnc.obj : error LNK2001: unresolved external symbol 
+            #   "class CryptoPP::NameValuePairs const & const CryptoPP::g_nullNameValuePairs"
             self.options["cryptopp"].shared = False
+            self.options["qt"].qtwinextras = True
+        elif self.settings.os == "Linux":
+            self.options["qt"].qtx11extras = True
+        elif self.settings.os == "Macos":
+            self.options["qt"].qtmacextras = True
+
         if not self.options.qtdir:
             if "QTDIR" in os.environ and os.environ["QTDIR"]:
                 self.options.qtdir = os.environ["QTDIR"]
             elif tools.which("qmake"):
                 self.options.qtdir = get_qt_dir()
-            else:
-                raise ConanInvalidConfiguration("Qt library is required!")
-        # QuaZIP should depend on the same Qt library with WizNotePlus
-        if self.options.qtdir:
-            self.options["quazip"].qtdir = self.options.qtdir
+            # else:
+            #     raise ConanInvalidConfiguration("Qt library is required!")
 
 
     def imports(self):
@@ -163,14 +163,6 @@ class WizNotePlusConan(ConanFile):
             "*libfcitx*",
             "*libFcitx*",
         ])
-        self.copy("libfcitxplatforminputcontextplugin.so", 
-            src="lib/x86_64-linux-gnu/qt5/plugins/platforminputcontexts",
-            dst="plugins/platforminputcontexts",
-            root_package="fcitx-qt5", keep_path=False)
-        # self.copy("libfcitx5platforminputcontextplugin.so", 
-        #     src="lib/qt/plugins/platforminputcontexts",
-        #     dst="plugins/platforminputcontexts",
-        #     root_package="fcitx5-qt", keep_path=False)
 
     def build(self):
         cmake = self._configure_cmake()
@@ -213,6 +205,20 @@ class WizNotePlusConan(ConanFile):
         # Other files
         self.copy("*.bdic", src=os.path.join("share", "wiznote", "qtwebengine_dictionaries"),
                   dst=os.path.join("bin", "qtwebengine_dictionaries"), keep_path=False)
+        if tools.os_info.is_linux:
+            try:
+                mybuf = StringIO()
+                self.run("fcitx-diagnose | grep -o '/.*/libfcitxplatforminputcontextplugin.so'", output=mybuf)
+                fcitx_qt5_lib = mybuf.getvalue().strip()
+                if fcitx_qt5_lib.endswith("libfcitxplatforminputcontextplugin.so"):
+                    dest_folder = os.path.join(self.package_folder, "plugins", "platforminputcontexts")
+                    if not os.path.exists(dest_folder):
+                        os.makedirs(dest_folder)
+                    shutil.copy(fcitx_qt5_lib, dest_folder)
+                    self.output.success("Copied libfcitxplatforminputcontextplugin.so")
+            except:
+                self.output.warn("Failed to copy libfcitxplatforminputcontextplugin.so")
+
         # Deploy
         self._deploy()
 
