@@ -158,9 +158,7 @@ static std::string build_attributes(GumboAttribute *at, bool no_entities)
 static std::string serialize(GumboNode*);
 
 
-// serialize children of a node
-// may be invoked recursively
-
+/** serialize children of a node may be invoked recursively */
 static std::string serialize_contents(GumboNode* node) {
     std::string contents        = "";
     std::string tagname         = get_tag_name(node);
@@ -206,9 +204,7 @@ static std::string serialize_contents(GumboNode* node) {
 }
 
 
-// serialize a GumboNode back to html/xhtml
-// may be invoked recursively
-
+/** serialize a GumboNode back to html/xhtml may be invoked recursively */
 static std::string serialize(GumboNode* node) {
     // special case the document node
     if (node->type == GUMBO_NODE_DOCUMENT)
@@ -485,6 +481,23 @@ void filterTagsByAttribute(
     }), tags.end());
 }
 
+GumboParser::GumboParser(const QString &html)
+{
+    html_ = html.toStdString();
+    const char *buf = html_.data();
+    size_t bufLen = html_.length();
+    // If you used contents.c_str(), it'd be harder to match up original
+    // positions, because c_str() creates a copy of the string and you can't do
+    // pointer arithmetic betweent contents.data() and the original_* pointers.
+    output_ = gumbo_parse_with_options(
+        &kGumboDefaultOptions, buf, bufLen);
+
+}
+
+GumboParser::~GumboParser()
+{
+    Utils::Gumbo::destroyGumboOutput(output_);
+}
 
 } // namespace Gumbo
 

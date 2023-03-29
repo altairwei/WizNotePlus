@@ -26,6 +26,18 @@ QString getAttribute(GumboNode *node, const QString &attrName);
 void filterTagsByAttribute(std::vector<GumboNode *> &tags, const QString &attrName, const QString &attrValue);
 void insertAdjacentText(GumboNode *node, const QString &position, const QString &text, std::string &originalHtml);
 
+class GumboParser {
+public:
+    explicit GumboParser(const QString &html);
+    ~GumboParser();
+    GumboOutput* get() { return output_; }
+    std::string html() { return html_; }
+
+private:
+    std::string html_;
+    GumboOutput* output_;
+};
+
 } // namespace Gumbo
 } // namespace Utils
 

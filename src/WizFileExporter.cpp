@@ -16,12 +16,19 @@
 #include "share/WizMisc.h"
 #include "share/jsoncpp/json/json.h"
 #include "share/WizObject.h"
+#include "html/WizHtmlTool.h"
 
 #define GUIDLEN 38
 
 WizFileExporter::WizFileExporter(WizDatabaseManager& dbMgr, QObject *parent)
     : QObject(parent)
     , m_dbMgr(dbMgr)
+    , m_errMsg("Unknown error")
+    , m_compress(false)
+    , m_exportMetaInfo(true)
+    , m_noTitleFolderIfPossible(false)
+    , m_handleRichTextInMarkdown(false)
+    , m_convertRichTextToMarkdown(false)
 {
 
 }
@@ -29,16 +36,11 @@ WizFileExporter::WizFileExporter(WizDatabaseManager& dbMgr, QObject *parent)
 bool WizFileExporter::exportNote(
     const WIZDOCUMENTDATA &doc,
     const QString &destFolder,
-    const ExportFormat format,
-    bool compress /*= false*/,
-    bool exportMetaInfo /*= true*/,
-    bool noTitleFolderIfPossible /*= false*/,
-    QString *errorMsg /*= nullptr*/)
+    const ExportFormat format)
 {
     WizDatabase& db = m_dbMgr.db(doc.strKbGUID);
     if (!WizMakeSureDocumentExistAndBlockWidthEventloop(db, doc)) {
-        if (errorMsg)
-            *errorMsg = "Can't download document: " + doc.strTitle;
+        m_errMsg = "Can't download document: " + doc.strTitle;
         return false;
     }
 
@@ -47,18 +49,15 @@ bool WizFileExporter::exportNote(
 
     QDir docFolder(destFolder);
     if (!docFolder.mkpath(folder)) {
-        if (errorMsg)
-            *errorMsg = "Can't make directory: " +
-                docFolder.filePath(folder);
+        m_errMsg = "Can't make directory: " + docFolder.filePath(folder);
         return false;
     }
     docFolder.cd(folder);
 
     // Write meta info
-    if (exportMetaInfo) {
+    if (m_exportMetaInfo) {
         if (!writeDocumentInfoToJsonFile(doc, docFolder.filePath("metainfo.json"))) {
-            if (errorMsg)
-                *errorMsg =  "Can't save meta info to json file: " +
+            m_errMsg = "Can't save meta info to json file: " +
                     docFolder.filePath("metainfo.json");
             return false;
         }
@@ -71,9 +70,7 @@ bool WizFileExporter::exportNote(
         docFolder.mkpath("attachments");
     for (auto &att : arrayAttachment) {
         if (!exportAttachment(att, docFolder.filePath("attachments"))) {
-            if (errorMsg)
-                *errorMsg = "Can't export attachment: " +
-                    att.strName.remove(0, GUIDLEN);
+            m_errMsg = "Can't export attachment: " + att.strName.remove(0, GUIDLEN);
             return false;
         }
     }
@@ -103,19 +100,19 @@ bool WizFileExporter::exportNote(
         }
 
     } else {
-        if (errorMsg)
-            *errorMsg = "Can't unzip document to " +
-                docFolder.absolutePath();
+        m_errMsg = "Can't unzip document to " + docFolder.absolutePath();
         return false;
     }
 
-    if (compress) {
+    if (m_compress) {
         if (!compressDocumentFolder(docFolder.absolutePath())) {
-            if (errorMsg) *errorMsg = "Can't remove folder after compress";
+            m_errMsg = "Can't remove folder after compress";
+            return false;
         }
     }
 
-    if (!compress && noTitleFolderIfPossible) {
+    // Output compressing requires the title folder
+    if (!m_compress && m_noTitleFolderIfPossible) {
         QFileInfoList entries = docFolder.entryInfoList(QDir::AllEntries | QDir::NoDotAndDotDot);
         if (entries.length() != 1)
             return true;
@@ -127,7 +124,7 @@ bool WizFileExporter::exportNote(
         QString suffix = indexFile.suffix();
         QString destFileName = folder.endsWith(suffix) ? folder : folder + "." + suffix;
 
-        if (errorMsg) *errorMsg = "Error for noTitleFolderIfPossible";
+        m_errMsg = "Error for noTitleFolderIfPossible";
         if (!QFile::rename(indexFile.absoluteFilePath(),
                            dest.absoluteFilePath(indexFile.fileName())))
             return false;
@@ -135,7 +132,7 @@ bool WizFileExporter::exportNote(
             return false;
         if (!dest.rename(indexFile.fileName(), destFileName))
             return false;
-        if (errorMsg) errorMsg->clear();
+        m_errMsg.clear();
     }
 
     return true;
@@ -164,8 +161,13 @@ bool WizFileExporter::exportAttachment(
 }
 
 bool WizFileExporter::extractMarkdownToFile(const QString &htmlContent, const QString &outputFile) {
+    QString rawHtml = htmlContent;
+    if (m_handleRichTextInMarkdown) {
+        rawHtml = wizImageToMarkdown(rawHtml);
+    }
+
     QTextDocument doc;
-    doc.setHtml(htmlContent);
+    doc.setHtml(rawHtml);
     QString strText = doc.toPlainText();
     strText = strText.replace("&nbsp", " ");
 
@@ -199,7 +201,8 @@ bool WizFileExporter::writeDocumentInfoToJsonFile(const WIZDOCUMENTDATA &doc, co
     return true;
 }
 
-bool WizFileExporter::compressDocumentFolder(const QString &folder, bool removeSource) {
+bool WizFileExporter::compressDocumentFolder(const QString &folder, bool removeSource)
+{
     if (!JlCompress::compressDir(folder + ".zip", folder, true))
         return false;
 
@@ -208,3 +211,27 @@ bool WizFileExporter::compressDocumentFolder(const QString &folder, bool removeS
 
     return true;
 }
+
+QString WizFileExporter::wizImageToMarkdown(const QString &html)
+{
+    auto convImg = [](
+            const QMap<QString, QString> &attrs,
+            const QString &) -> QString {
+        QString imgStr = "![";
+        if (attrs.contains("alt"))
+            imgStr.append(attrs["alt"]);
+        imgStr.append("](");
+        if (attrs.contains("src"))
+            imgStr.append(attrs["src"]);
+        if (attrs.contains("title")) {
+            imgStr.append(" \"");
+            imgStr.append(attrs["src"]);
+            imgStr.append("\"");
+        }
+        imgStr.append(")");
+        return imgStr;
+    };
+
+    return Utils::WizReplaceTagsWithText(html, convImg, "img");
+}
+

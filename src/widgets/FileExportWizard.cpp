@@ -460,11 +460,28 @@ FileExportPageOptions::FileExportPageOptions(QWidget *parent)
     m_noTitleFolderIfPossible = new QCheckBox;
     m_noTitleFolderIfPossible->setText(tr("Don't create title folder if possible"));
     m_noTitleFolderIfPossible->setToolTip(tr(
-        "Generally, notes are associated with many resource files, such "
-        "as images, CSS files, and attachments, which are referenced in "
-        "the text of the note. So it is necessary to create a title folder "
+        "Generally, notes are associated with many resource files, such \n"
+        "as images, CSS files, and attachments, which are referenced in \n"
+        "the text of the note. So it is necessary to create a title folder \n"
         "to place these closely related files together."));
     registerField("noTitleFolderIfPossible", m_noTitleFolderIfPossible);
+
+    m_handleRichTextInMarkdown = new QCheckBox;
+    m_handleRichTextInMarkdown->setText(tr("Handle rich-text in Markdown"));
+    m_handleRichTextInMarkdown->setToolTip(tr(
+        "The internal editor of WizNotePlus allows users to insert rich text\n"
+        "images and tables inside Markdown notes. Turning this option on \n"
+        "will cause the exporter to attempt to convert the rich text content\n"
+        "mixed in the note into Markdown markup."));
+    registerField("handleRichTextInMarkdown", m_handleRichTextInMarkdown);
+
+    m_convertRichTextToMarkdown = new QCheckBox;
+    m_convertRichTextToMarkdown->setText(tr("Convert rich-text notes into Markdown"));
+    m_convertRichTextToMarkdown->setToolTip(tr(
+        "Default notes created by WizNotePlus are in rich-text format, \n"
+        "check this option to convert these HTML notes to Markdown format \n"
+        "during export."));
+    registerField("convertRichTextToMarkdown", m_convertRichTextToMarkdown);
 
     QVBoxLayout *layout = new QVBoxLayout;
     layout->addWidget(m_outputFolder);
@@ -472,6 +489,8 @@ FileExportPageOptions::FileExportPageOptions(QWidget *parent)
     layout->addWidget(m_compress);
     layout->addWidget(m_exportMetainfo);
     layout->addWidget(m_noTitleFolderIfPossible);
+    layout->addWidget(m_handleRichTextInMarkdown);
+    layout->addWidget(m_convertRichTextToMarkdown);
     setLayout(layout);
 }
 
@@ -534,9 +553,12 @@ void FileExportPageExport::handleExportFile()
     QStringList notes = field("documents").toStringList();
     QString outputFolder = field("outputFolder").toString();
     bool keepFolder = field("keepFolder").toBool();
-    bool compress = field("compress").toBool();
-    bool metainfo = field("metainformation").toBool();
-    bool noTitleFolderIfPossible = field("noTitleFolderIfPossible").toBool();
+
+    m_exporter->setCompress(field("compress").toBool());
+    m_exporter->setExportMetaInfo(field("metainformation").toBool());
+    m_exporter->setNoTitleFolderIfPossible(field("noTitleFolderIfPossible").toBool());
+    m_exporter->setHandleRichTextInMarkdown(field("handleRichTextInMarkdown").toBool());
+    m_exporter->setConvertRichTextToMarkdown(field("convertRichTextToMarkdown").toBool());
 
     if (notes.size() > 1) {
         m_progress->setRange(1, notes.size());
@@ -596,19 +618,16 @@ void FileExportPageExport::handleExportFile()
         if (keepFolder)
             destFolder = outputFolder + data.strLocation;
 
-        QString error = "Unknown error";
-
         auto format = WizFileExporter::HTML;
         if (WizIsMarkdownNote(data))
             format = WizFileExporter::Markdown;
 
         bool ok = m_exporter->exportNote(
-            data, destFolder, format, compress, metainfo,
-            noTitleFolderIfPossible, &error);
+            data, destFolder, format);
         if (!ok) {
             ASKCONTINUE(
                 tr("Do you want to continue?"),
-                error
+                m_exporter->errorMessage()
             );
         }
     }

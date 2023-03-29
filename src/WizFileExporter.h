@@ -27,22 +27,32 @@ public:
 
     bool exportNote(const WIZDOCUMENTDATA &doc,
                     const QString &destFolder,
-                    const ExportFormat format,
-                    bool compress = false,
-                    bool exportMetaInfo = true,
-                    bool noTitleFolderIfPossible = false,
-                    QString *errorMsg = nullptr);
+                    const ExportFormat format);
 
     bool exportAttachment(const WIZDOCUMENTATTACHMENTDATAEX &att,
                           const QString &destFolder);
+
+    QString errorMessage() { return m_errMsg; }
+    void setCompress(bool b) { m_compress = b; }
+    void setExportMetaInfo(bool b) { m_exportMetaInfo = b; }
+    void setNoTitleFolderIfPossible(bool b) { m_noTitleFolderIfPossible = b; }
+    void setHandleRichTextInMarkdown(bool b) { m_handleRichTextInMarkdown = b; }
+    void setConvertRichTextToMarkdown(bool b) { m_convertRichTextToMarkdown = b; }
 
 private:
     bool extractMarkdownToFile(const QString &htmlContent, const QString &outputFile);
     bool writeDocumentInfoToJsonFile(const WIZDOCUMENTDATA &doc, const QString &outputFIle);
     bool compressDocumentFolder(const QString &folder, bool removeSource = true);
+    QString wizImageToMarkdown(const QString &html);
 
 private:
     WizDatabaseManager& m_dbMgr;
+    QString m_errMsg;
+    bool m_compress;
+    bool m_exportMetaInfo;
+    bool m_noTitleFolderIfPossible;
+    bool m_handleRichTextInMarkdown;
+    bool m_convertRichTextToMarkdown;
 };
 
 

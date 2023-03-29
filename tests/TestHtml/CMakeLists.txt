@@ -4,8 +4,7 @@ include_directories(
     ${CMAKE_SOURCE_DIR}
     ${CMAKE_CURRENT_SOURCE_DIR}
     ${CMAKE_CURRENT_BINARY_DIR}
-    ${Gumbo_INCLUDE_DIRS}
-    ${GumboQuery_INCLUDE_DIRS}
+    ${CMAKE_SOURCE_DIR}/src/libs/3rdparty
 )
 
 set(test_Html_headers
@@ -25,9 +24,6 @@ find_package( Qt5Widgets CONFIG REQUIRED )
 add_executable(test-html ${test_Html_headers} ${test_Html_sources})
 qt_use_modules(test-html)
 
-target_link_libraries(test-html
-    ${GumboQuery_LIBRARIES}
-    ${Gumbo_LIBRARIES}
-)
+target_link_libraries(test-html gumbo)
 
 add_test(test-Html ${CMAKE_BINARY_DIR}/bin/test-html)

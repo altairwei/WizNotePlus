@@ -22,6 +22,15 @@ namespace Utils {
 
     QString WizHtmlGetContent(const QString &htmlText);
     QString WizHtmlGetPureText(const QString &htmlText);
+
+    QString WizReplaceTagsWithText(
+        const QString &htmlText,
+        std::function<QString(
+            const QMap<QString, QString>&,
+            const QString&)> callback,
+        const QString &tagName,
+        const QString &tagAttributeName = "",
+        const QString &tagAttributeValue = "");
 }
 
 #endif // HTML_WIZHTMLTOOL_H

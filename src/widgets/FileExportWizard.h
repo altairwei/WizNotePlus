@@ -97,6 +97,8 @@ private:
     QCheckBox *m_compress;
     QCheckBox *m_exportMetainfo;
     QCheckBox *m_noTitleFolderIfPossible;
+    QCheckBox *m_handleRichTextInMarkdown;
+    QCheckBox *m_convertRichTextToMarkdown;
 };
 
 class FileExportPageExport : public QWizardPage
