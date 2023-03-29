@@ -328,3 +328,165 @@ void TestWizHtmlTool::check_WizReplaceTagsWithText_data()
                 </div>
             </body>)";
 }
+
+void TestWizHtmlTool::check_WizHtmlToMarkdown()
+{
+    QFETCH(QString, htmlText);
+    QFETCH(QString, mdText);
+
+    QString text = Utils::WizHtmlToMarkdown(htmlText);
+
+    QCOMPARE(text, mdText);
+}
+
+void TestWizHtmlTool::check_WizHtmlToMarkdown_data()
+{
+    QTest::addColumn<QString>("htmlText");
+    QTest::addColumn<QString>("mdText");
+
+    // Test Empty String
+    QTest::newRow("Test Empty String") << "" << "";
+    QTest::newRow("Test Plain String") << "Hello World!" << "Hello World!";
+    // TODO: add more tests
+    QTest::newRow("Strip whitespace")
+        << wrapHTML("\n\t   \n<p>Hello World!</p>")
+        << "Hello World!\n\n";
+
+    // Test Headings
+    QTest::newRow("Test H1 heading")
+        << wrapHTML("<h1>Heading level 1</h1>") << "# Heading level 1\n";
+    QTest::newRow("Test H2 heading")
+        << wrapHTML("<h2>Heading level 2</h2>") << "## Heading level 2\n";
+    QTest::newRow("Test H3 heading")
+        << wrapHTML("<h3>Heading level 3</h3>") << "### Heading level 3\n";
+    QTest::newRow("Test H4 heading")
+        << wrapHTML("<h4>Heading level 4</h4>") << "#### Heading level 4\n";
+    QTest::newRow("Test H5 heading")
+        << wrapHTML("<h5>Heading level 5</h5>") << "##### Heading level 5\n";
+    QTest::newRow("Test H6 heading")
+        << wrapHTML("<h6>Heading level 6</h6>") << "###### Heading level 6\n";
+
+    // Test Paragraphs
+    QTest::newRow("Normal paragraphs")
+        << wrapHTML("<p>I really like using Markdown.</p>")
+        << "I really like using Markdown.\n\n";
+    QTest::newRow("Line breaks")
+        << wrapHTML("<p>This is the first line.<br>And this is the second line.</p>")
+        << "This is the first line.  \nAnd this is the second line.\n\n";
+
+    // Test Emphasis
+    QTest::newRow("Bold")
+        << wrapHTML("I just love <strong>bold text</strong>.")
+        << "I just love **bold text**.";
+    QTest::newRow("Bold without space")
+        << wrapHTML("Love<strong>is</strong>bold")
+        << "Love**is**bold";
+    QTest::newRow("Italic")
+        << wrapHTML("Italicized text is the <em>cat's meow</em>.")
+        << "Italicized text is the *cat's meow*.";
+    QTest::newRow("Italic without space")
+        << wrapHTML("A<em>cat</em>meow")
+        << "A*cat*meow";
+    QTest::newRow("Bold and Italic")
+        << wrapHTML("This text is <em><strong>really important</strong></em>.")
+        << "This text is ***really important***.";
+    QTest::newRow("Bold and Italic without space")
+        << wrapHTML("This is really<em><strong>very</strong></em>important text.")
+        << "This is really***very***important text.";
+
+    // Test Blockquotes
+//    QTest::newRow("Simple blockquotes")
+//        << wrapHTML(R"(
+//            <blockquote>
+//                <p>Dorothy followed her through many of the beautiful rooms in her castle.</p>
+//            </blockquote>
+//        )")
+//        << "> Dorothy followed her through many of the beautiful rooms in her castle.\n\n";
+
+    // Test Lists
+    QTest::newRow("Test ordered lists")
+        << wrapHTML(R"(
+            <ol>
+              <li>First item</li>
+              <li>Second item</li>
+              <li>Third item</li>
+              <li>Fourth item</li>
+            </ol>
+        )")
+        << "\n"
+           "\n1. First item"
+           "\n2. Second item"
+           "\n3. Third item"
+           "\n4. Fourth item"
+           "\n\n";
+    QTest::newRow("Test nested ordered lists")
+        << wrapHTML(R"(
+            <ol>
+              <li>First item</li>
+              <li>Second item</li>
+              <li>Third item
+                <ol>
+                  <li>Indented item</li>
+                  <li>Indented item</li>
+                </ol>
+              </li>
+              <li>Fourth item</li>
+            </ol>
+        )")
+        << "\n"
+           "\n1. First item"
+           "\n2. Second item"
+           "\n3. Third item " // FIXME: white space
+           "\n\t1. Indented item"
+           "\n\t2. Indented item"
+           "\n4. Fourth item"
+           "\n\n";
+    QTest::newRow("Test unordered lists")
+        << wrapHTML(R"(
+            <ul>
+              <li>First item</li>
+              <li>Second item</li>
+              <li>Third item</li>
+              <li>Fourth item</li>
+            </ul>
+        )")
+        << "\n"
+           "\n* First item"
+           "\n* Second item"
+           "\n* Third item"
+           "\n* Fourth item"
+           "\n\n";
+    QTest::newRow("Test nested unordered lists")
+        << wrapHTML(R"(
+            <ul>
+              <li>First item</li>
+              <li>Second item</li>
+              <li>Third item
+                <ul>
+                  <li>Indented item</li>
+                  <li>Indented item</li>
+                </ul>
+              </li>
+              <li>Fourth item</li>
+            </ul>
+        )")
+        << "\n"
+           "\n* First item"
+           "\n* Second item"
+           "\n* Third item " // FIXME: white space
+           "\n\t* Indented item"
+           "\n\t* Indented item"
+           "\n* Fourth item"
+           "\n\n";
+    QTest::newRow("Do not escape number with dot, too complex")
+        << wrapHTML(R"(
+            <ul>
+              <li>1968. A great year!</li>
+              <li>I think 1969 was second best.</li>
+            </ul>
+        )")
+        << "\n"
+           "\n* 1968. A great year!"
+           "\n* I think 1969 was second best."
+           "\n\n";
+}

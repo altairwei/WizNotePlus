@@ -24,6 +24,9 @@ private slots:
 
     void check_WizReplaceTagsWithText();
     void check_WizReplaceTagsWithText_data();
+
+    void check_WizHtmlToMarkdown();
+    void check_WizHtmlToMarkdown_data();
 };
 
 #endif // TEST_WIZHTMLTOOL_H
