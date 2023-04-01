@@ -162,9 +162,10 @@ bool WizFileExporter::exportAttachment(
 
 bool WizFileExporter::extractMarkdownToFile(const QString &htmlContent, const QString &outputFile) {
     QString rawHtml = htmlContent;
+    rawHtml = removeHiddenImageTags(rawHtml);
     if (m_handleRichTextInMarkdown) {
-        rawHtml = wizImageToMarkdown(rawHtml);
-        rawHtml = wizTableToMarkdown(rawHtml);
+        rawHtml = mixedImageToMarkdown(rawHtml);
+        rawHtml = mixedTableToMarkdown(rawHtml);
     }
 
     QTextDocument doc;
@@ -213,7 +214,7 @@ bool WizFileExporter::compressDocumentFolder(const QString &folder, bool removeS
     return true;
 }
 
-QString WizFileExporter::wizImageToMarkdown(const QString &html)
+QString WizFileExporter::mixedImageToMarkdown(const QString &html)
 {
     auto convImg = [](
             const QMap<QString, QString> &attrs,
@@ -236,7 +237,7 @@ QString WizFileExporter::wizImageToMarkdown(const QString &html)
     return Utils::WizReplaceTagsWithText(html, convImg, "img");
 }
 
-QString WizFileExporter::wizTableToMarkdown(const QString &html)
+QString WizFileExporter::mixedTableToMarkdown(const QString &html)
 {
     auto convTable = [](
             const QMap<QString, QString> &attrs,
@@ -246,4 +247,18 @@ QString WizFileExporter::wizTableToMarkdown(const QString &html)
     };
 
     return Utils::WizReplaceTagsWithText(html, convTable, "table");
+}
+
+QString WizFileExporter::removeHiddenImageTags(const QString &html)
+{
+    auto fun = [](
+            const QMap<QString, QString> &,
+            const QString &) -> QString {
+        return "";
+    };
+
+    // This tag was introduced by Wiz.Editor.md plugin for
+    // compatibility to WizNote Windows-specific client.
+    return Utils::WizReplaceTagsWithText(
+                html, fun, "ed_tag", "name", "markdownimage");
 }
