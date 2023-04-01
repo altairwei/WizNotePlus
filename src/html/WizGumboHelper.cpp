@@ -9,6 +9,9 @@
 
 #include "gumbo-parser/src/gumbo.h"
 
+namespace Utils {
+
+namespace Gumbo {
 
 /** serialize functions were copied from gumbo-parser examples. */
 
@@ -264,10 +267,6 @@ static std::string serialize(GumboNode* node) {
     return results;
 }
 
-namespace Utils {
-
-namespace Gumbo {
-
 
 /** Parse html string to Gumbo node tree, results must be destroyed. */
 GumboOutput* parseFromString(const std::string &html)
@@ -347,7 +346,7 @@ QString outerHtml(GumboNode *node)
 
 
 /** Extract substring of raw html text. */
-QString outerRawHtml(GumboNode *node, std::string originHtml)
+QString outerRawHtml(GumboNode *node, const std::string &originHtml)
 {
     if (node->type != GUMBO_NODE_ELEMENT) {
         return QString();

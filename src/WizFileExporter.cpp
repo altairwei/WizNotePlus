@@ -164,6 +164,7 @@ bool WizFileExporter::extractMarkdownToFile(const QString &htmlContent, const QS
     QString rawHtml = htmlContent;
     if (m_handleRichTextInMarkdown) {
         rawHtml = wizImageToMarkdown(rawHtml);
+        rawHtml = wizTableToMarkdown(rawHtml);
     }
 
     QTextDocument doc;
@@ -235,3 +236,14 @@ QString WizFileExporter::wizImageToMarkdown(const QString &html)
     return Utils::WizReplaceTagsWithText(html, convImg, "img");
 }
 
+QString WizFileExporter::wizTableToMarkdown(const QString &html)
+{
+    auto convTable = [](
+            const QMap<QString, QString> &attrs,
+            const QString &tagHtml) -> QString {
+        // TODO: format html string
+        return tagHtml.toHtmlEscaped();
+    };
+
+    return Utils::WizReplaceTagsWithText(html, convTable, "table");
+}

@@ -129,7 +129,7 @@ QString WizReplaceTagsWithText(const QString &htmlText,
 {
     Gumbo::GumboParser parser(htmlText);
     std::string rawHtmlString = parser.html();
-    GumboOutput* output = parser.get();
+    GumboOutput* output = parser.output();
 
     // Find all matched tags
     std::vector<GumboNode *> tags;

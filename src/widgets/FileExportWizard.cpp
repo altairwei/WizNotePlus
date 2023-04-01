@@ -419,6 +419,7 @@ QStringList FileExportPageDocList::findSelectedNotes(BaseItem* item)
 
 void FileExportPageDocList::updateSelection()
 {
+    // FIXME: [WARNING]: QWizard::setField: Couldn't write to property '' ((null):0, (null))
     if (isComplete())
         setField("documents", findSelectedNotes(m_rootItem));
 }
@@ -560,11 +561,8 @@ void FileExportPageExport::handleExportFile()
     m_exporter->setHandleRichTextInMarkdown(field("handleRichTextInMarkdown").toBool());
     m_exporter->setConvertRichTextToMarkdown(field("convertRichTextToMarkdown").toBool());
 
-    if (notes.size() > 1) {
-        m_progress->setRange(1, notes.size());
-    } else {
-        m_progress->setRange(1, 1);
-    }
+    m_progress->setRange(0, notes.size());
+    m_progress->setValue(0);
 
     // TODO: add databse option
     WizDatabase& db = m_dbMgr.db();

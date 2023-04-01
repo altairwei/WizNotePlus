@@ -17,7 +17,7 @@ void destroyGumboOutput(GumboOutput*);
 
 QString innerText(GumboNode *node);
 QString outerHtml(GumboNode *node);
-QString outerRawHtml(GumboNode *node, std::string originHtml);
+QString outerRawHtml(GumboNode *node, const std::string &originHtml);
 
 void getElementsByTagName(GumboNode *node, const QString &tagName, std::vector<GumboNode *> &tags);
 void getElementsByTagAttr(GumboNode *node, const QString &tagName,
@@ -30,7 +30,7 @@ class GumboParser {
 public:
     explicit GumboParser(const QString &html);
     ~GumboParser();
-    GumboOutput* get() { return output_; }
+    GumboOutput* output() { return output_; }
     std::string html() { return html_; }
 
 private:

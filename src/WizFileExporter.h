@@ -44,6 +44,7 @@ private:
     bool writeDocumentInfoToJsonFile(const WIZDOCUMENTDATA &doc, const QString &outputFIle);
     bool compressDocumentFolder(const QString &folder, bool removeSource = true);
     QString wizImageToMarkdown(const QString &html);
+    QString wizTableToMarkdown(const QString &html);
 
 private:
     WizDatabaseManager& m_dbMgr;
