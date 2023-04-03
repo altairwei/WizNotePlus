@@ -30,8 +30,9 @@ class GumboParser {
 public:
     explicit GumboParser(const QString &html);
     ~GumboParser();
-    GumboOutput* output() { return output_; }
-    std::string html() { return html_; }
+
+    GumboOutput* output() const { return output_; }
+    const std::string& html() const { return html_; }
 
 private:
     std::string html_;

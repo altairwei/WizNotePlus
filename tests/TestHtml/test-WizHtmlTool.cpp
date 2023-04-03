@@ -1,4 +1,4 @@
-#include "test-WizHtmlTool.h"
+﻿#include "test-WizHtmlTool.h"
 
 #include <QString>
 #include <QStringList>
@@ -231,6 +231,10 @@ void TestWizHtmlTool::check_WizReplaceTagsWithText_data()
         << "strong" << "" << ""
         << "<p>Hello, <strong>world</strong>!</p>"
         << "<p>Hello, Found 0 attribute(s)!</p>";
+    QTest::newRow("Simple tag replacement without whitespace")
+        << "strong" << "" << ""
+        << "<p>Hello, all<strong>world</strong>!all</p>"
+        << "<p>Hello, allFound 0 attribute(s)!all</p>";
     QTest::newRow("Multiple tag replacement")
         << "span" << "class" << "highlight"
         << "<p><span>One</span> <span class=\"highlight\">Two</span> <span>Three</span></p>"
@@ -327,6 +331,32 @@ void TestWizHtmlTool::check_WizReplaceTagsWithText_data()
                     <div class="wiz-image-title">This is a title</div>
                 </div>
             </body>)";
+
+    /*!
+        Offset of gumbo-parser is based on bytes, not characters. This file
+        should be saved with UTF-8 with BOM, otherwise following tests will
+        fail on Windows.
+    */
+    QTest::newRow("Even Chinese characters")
+        << "strong" << "" << ""
+        << "<p>你好, <strong>世界</strong>! 你好吗？</p>"
+        << "<p>你好, Found 0 attribute(s)! 你好吗？</p>";
+    QTest::newRow("Odd Chinese characters")
+        << "strong" << "" << ""
+        << "<p>你好, 世界! 你 <strong>好</strong>吗？</p>"
+        << "<p>你好, 世界! 你 Found 0 attribute(s)吗？</p>";
+    QTest::newRow("Odd Chinese characters without whitespace")
+        << "strong" << "" << ""
+        << "<p>你好, 世界! 你<strong>好</strong>吗？</p>"
+        << "<p>你好, 世界! 你Found 0 attribute(s)吗？</p>";
+    QTest::newRow("Even Chinese characters inside replacement")
+        << "span" << "class" << "highlight"
+        << "<p><span>One</span> <span class=\"highlight\">二两</span> <span>Three</span></p>"
+        << "<p><span>One</span> Found 1 attribute(s) <span>Three</span></p>";
+    QTest::newRow("Odd Chinese characters inside replacement")
+        << "span" << "class" << "highlight"
+        << "<p><span>One</span> <span class=\"highlight\">二</span>查 <span>Three</span></p>"
+        << "<p><span>One</span> Found 1 attribute(s)查 <span>Three</span></p>";
 }
 
 void TestWizHtmlTool::check_WizHtmlToMarkdown()
@@ -436,7 +466,9 @@ void TestWizHtmlTool::check_WizHtmlToMarkdown_data()
         << "\n"
            "\n1. First item"
            "\n2. Second item"
-           "\n3. Third item " // FIXME: white space
+           // FIXME: white space? It's also seen in some examples,
+           // such as https://en.wikipedia.org/wiki/Markdown#Examples
+           "\n3. Third item "
            "\n\t1. Indented item"
            "\n\t2. Indented item"
            "\n4. Fourth item"

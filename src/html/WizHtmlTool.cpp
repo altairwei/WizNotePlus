@@ -128,7 +128,7 @@ QString WizReplaceTagsWithText(const QString &htmlText,
     const QString &tagAttributeValue)
 {
     Gumbo::GumboParser parser(htmlText);
-    std::string rawHtmlString = parser.html();
+    const std::string &rawHtmlString = parser.html();
     GumboOutput* output = parser.output();
 
     // Find all matched tags
@@ -150,12 +150,13 @@ QString WizReplaceTagsWithText(const QString &htmlText,
         QString tagSource = Gumbo::outerRawHtml(tag, rawHtmlString);
         unsigned int start_pos = element->start_pos.offset;
         unsigned int end_pos = element->end_pos.offset;
+        bool isSelfclosing = element->original_end_tag.length == 0;
         replacements.append({
             start_pos,
             // Handle self-closing tags
-            start_pos == end_pos ?
-                start_pos + element->original_tag.length :
-                end_pos + element->original_end_tag.length,
+            isSelfclosing ?
+                start_pos + element->original_tag.length - 1:
+                end_pos + element->original_end_tag.length - 1,
             callback(attrs, tagSource).toStdString()
         });
     }
@@ -169,18 +170,20 @@ QString WizReplaceTagsWithText(const QString &htmlText,
                 return s1.start < s2.start;
         });
 
-    std::string outputHtml = rawHtmlString;
-    std::ostringstream oss;
+    const char * strptr = rawHtmlString.c_str();
+    std::string outputHtml;
     size_t pos = 0;
     foreach (const Replacement& rep, replacements) {
-        oss << rawHtmlString.substr(pos, rep.start - pos) << rep.text;
-        pos = rep.end;
+        // Gumbo offset is based on bytes.
+        outputHtml.append(std::string(strptr + pos, rep.start - pos));
+        outputHtml.append(rep.text);
+        pos = rep.end + 1;
     }
 
     // Concatenate the tail
-    oss << rawHtmlString.substr(pos);
+    outputHtml.append(std::string(strptr + pos, rawHtmlString.size() - pos));
 
-    return QString::fromStdString(oss.str());
+    return QString::fromStdString(outputHtml);
 }
 
 std::string escape_special_chars(const std::string& str) {

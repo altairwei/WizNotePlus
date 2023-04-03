@@ -171,6 +171,7 @@ bool WizFileExporter::extractMarkdownToFile(const QString &htmlContent, const QS
     QTextDocument doc;
     doc.setHtml(rawHtml);
     QString strText = doc.toPlainText();
+    // This is a remedy of a long-term BUG which escapes empties erroneously.
     strText = strText.replace("&nbsp", " ");
 
     // write text to file
