@@ -76,6 +76,7 @@ set(wiznote_SOURCES
     html/WizHtmlReader.cpp
     html/WizHtmlCollector.cpp
     html/WizHtmlTool.cpp
+    html/WizHtmlConverter.cpp
     html/WizGumboHelper.cpp
     share/WizSearch.cpp
     widgets/WizScrollBar.cpp
@@ -283,6 +284,7 @@ set(wiznote_HEADERS
     html/WizHtmlReader.h
     html/WizHtmlCollector.h
     html/WizHtmlTool.h
+    html/WizHtmlConverter.h
     html/WizGumboHelper.h
     sync/WizKMServer.h
     sync/WizKMSync.h

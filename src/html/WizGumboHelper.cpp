@@ -15,11 +15,12 @@ namespace Gumbo {
 
 /** serialize functions were copied from gumbo-parser examples. */
 
-static std::string nonbreaking_inline  = "|a|abbr|acronym|b|bdo|big|cite|code|dfn|em|font|i|img|kbd|nobr|s|small|span|strike|strong|sub|sup|tt|";
-static std::string empty_tags          = "|area|base|basefont|bgsound|br|command|col|embed|event-source|frame|hr|image|img|input|keygen|link|menuitem|meta|param|source|spacer|track|wbr|";
-static std::string preserve_whitespace = "|pre|textarea|script|style|";
-static std::string special_handling    = "|html|body|";
-static std::string no_entity_sub       = "|script|style|";
+const std::string kTagsNonBreakingInline   = "|a|abbr|acronym|b|bdo|big|cite|code|dfn|em|font|i|img|kbd|nobr|s|small|span|strike|strong|sub|sup|tt|";
+const std::string kTagsBlockLevel          = "|address|article|aside|blockquote|details|dialog|dd|div|dl|dt|fieldset|figcaption|figure|footer|form|h1|h2|h3|h4|h5|h6|header|hgroup|hr|li|main|nav|ol|p|section|table|ul";
+const std::string kTagsEmpty               = "|area|base|basefont|bgsound|br|command|col|embed|event-source|frame|hr|image|img|input|keygen|link|menuitem|meta|param|source|spacer|track|wbr|";
+const std::string kTagsPreserveWhitespace  = "|pre|textarea|script|style|";
+const std::string kTagsSpecialHandling     = "|html|body|";
+const std::string kTagsNoEntitySub         = "|script|style|";
 
 static inline void rtrim(std::string &s)
 {
@@ -82,7 +83,7 @@ static std::string handle_unknown_tag(GumboStringPiece *text)
     return tagname;
 }
 
-static std::string get_tag_name(GumboNode *node)
+std::string getTagName(GumboNode *node)
 {
     std::string tagname;
     // work around lack of proper name for document node
@@ -164,11 +165,11 @@ static std::string serialize(GumboNode*);
 /** serialize children of a node may be invoked recursively */
 static std::string serialize_contents(GumboNode* node) {
     std::string contents        = "";
-    std::string tagname         = get_tag_name(node);
+    std::string tagname         = getTagName(node);
     std::string key             = "|" + tagname + "|";
-    bool no_entity_substitution = no_entity_sub.find(key) != std::string::npos;
-    bool keep_whitespace        = preserve_whitespace.find(key) != std::string::npos;
-    bool is_inline              = nonbreaking_inline.find(key) != std::string::npos;
+    bool no_entity_substitution = kTagsNoEntitySub.find(key) != std::string::npos;
+    bool keep_whitespace        = kTagsPreserveWhitespace.find(key) != std::string::npos;
+    bool is_inline              = kTagsNonBreakingInline.find(key) != std::string::npos;
 
     // build up result for each child, recursively if need be
     GumboVector *children = &node->v.element.children;
@@ -220,12 +221,12 @@ static std::string serialize(GumboNode* node) {
     std::string close = "";
     std::string closeTag = "";
     std::string atts = "";
-    std::string tagname = get_tag_name(node);
+    std::string tagname = getTagName(node);
     std::string key = "|" + tagname + "|";
-    bool need_special_handling = special_handling.find(key) != std::string::npos;
-    bool is_empty_tag = empty_tags.find(key) != std::string::npos;
-    bool no_entity_substitution = no_entity_sub.find(key) != std::string::npos;
-    bool is_inline = nonbreaking_inline.find(key) != std::string::npos;
+    bool need_special_handling = kTagsSpecialHandling.find(key) != std::string::npos;
+    bool is_empty_tag = kTagsEmpty.find(key) != std::string::npos;
+    bool no_entity_substitution = kTagsNoEntitySub.find(key) != std::string::npos;
+    bool is_inline = kTagsNonBreakingInline.find(key) != std::string::npos;
 
     // build attr string
     const GumboVector *attribs = &node->v.element.attributes;
@@ -312,9 +313,9 @@ QString innerText(GumboNode *node)
         GumboVector *children = &node->v.element.children;
         for (unsigned int i = 0; i < children->length; ++i) {
             GumboNode * pNode = (GumboNode *)children->data[i];
-            std::string pTagName = get_tag_name(pNode);
-            bool is_inline = nonbreaking_inline.find("|" + pTagName + "|") != std::string::npos;
-            bool is_special_handling = special_handling.find("|" + pTagName + "|") != std::string::npos;
+            std::string pTagName = getTagName(pNode);
+            bool is_inline = kTagsNonBreakingInline.find("|" + pTagName + "|") != std::string::npos;
+            bool is_special_handling = kTagsSpecialHandling.find("|" + pTagName + "|") != std::string::npos;
             const QString text = innerText(pNode);
             if (i != 0 && !text.isEmpty()) {
                 if (!is_inline && !is_special_handling) {

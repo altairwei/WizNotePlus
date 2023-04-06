@@ -380,7 +380,7 @@ void TestWizHtmlTool::check_WizHtmlToMarkdown_data()
     // TODO: add more tests
     QTest::newRow("Strip whitespace")
         << wrapHTML("\n\t   \n<p>Hello World!</p>")
-        << "Hello World!\n\n";
+        << "Hello World!\n";
 
     // Test Headings
     QTest::newRow("Test H1 heading")
@@ -399,10 +399,10 @@ void TestWizHtmlTool::check_WizHtmlToMarkdown_data()
     // Test Paragraphs
     QTest::newRow("Normal paragraphs")
         << wrapHTML("<p>I really like using Markdown.</p>")
-        << "I really like using Markdown.\n\n";
+        << "I really like using Markdown.\n";
     QTest::newRow("Line breaks")
         << wrapHTML("<p>This is the first line.<br>And this is the second line.</p>")
-        << "This is the first line.  \nAnd this is the second line.\n\n";
+        << "This is the first line.  \nAnd this is the second line.\n";
 
     // Test Emphasis
     QTest::newRow("Bold")
@@ -425,13 +425,72 @@ void TestWizHtmlTool::check_WizHtmlToMarkdown_data()
         << "This is really***very***important text.";
 
     // Test Blockquotes
-//    QTest::newRow("Simple blockquotes")
-//        << wrapHTML(R"(
-//            <blockquote>
-//                <p>Dorothy followed her through many of the beautiful rooms in her castle.</p>
-//            </blockquote>
-//        )")
-//        << "> Dorothy followed her through many of the beautiful rooms in her castle.\n\n";
+    QTest::newRow("Simple blockquotes")
+        << R"(
+            <blockquote>
+                <p>Dorothy followed her through many of the beautiful rooms in her castle.</p>
+            </blockquote>
+        )"
+        << "> Dorothy followed her through many of the beautiful rooms in her castle.\n";
+    QTest::newRow("Blockquotes with Multiple Paragraphs")
+        << R"(
+            <blockquote>
+              <p>Dorothy followed her through many of the beautiful rooms in her castle.</p>
+
+              <p>The Witch bade her clean the pots and kettles and sweep the floor and keep the fire fed with wood.</p>
+            </blockquote>)"
+        << "> Dorothy followed her through many of the beautiful rooms in her castle.\n"
+           ">\n"
+           "> The Witch bade her clean the pots and kettles and sweep the floor and keep the fire fed with wood.\n";
+    QTest::newRow("Nested Blockquotes")
+        << R"(
+            <blockquote>
+              <p>Dorothy followed her through many of the beautiful rooms in her castle.</p>
+
+              <blockquote>
+                <p>The Witch bade her clean the pots and kettles and sweep the floor and keep the fire fed with wood.</p>
+              </blockquote>
+            </blockquote>
+        )"
+        << "> Dorothy followed her through many of the beautiful rooms in her castle.\n"
+           ">\n"
+           "> > The Witch bade her clean the pots and kettles and sweep the floor and keep the fire fed with wood.\n";
+    QTest::newRow("Blockquotes with Other Elements")
+        << R"(
+            <blockquote>
+              <h4 class="no-anchor" id="the-quarterly-results-look-great">The quarterly results look great!</h4>
+
+              <ul>
+                <li>Revenue was off the chart.</li>
+                <li>Profits were higher than ever.</li>
+              </ul>
+
+              <p><em>Everything</em> is going according to <strong>plan</strong>.</p>
+            </blockquote>
+        )"
+        << "> #### The quarterly results look great!\n"
+           ">\n"
+           "> * Revenue was off the chart.\n"
+           "> * Profits were higher than ever.\n"
+           ">\n"
+           "> *Everything* is going according to **plan**.\n";
+    QTest::newRow("Nested Blockquotes with list")
+        << R"(
+            <blockquote>
+              <p>Dorothy followed her through many of the beautiful rooms in her castle.</p>
+
+              <blockquote>
+                <ul>
+                  <li>Revenue was off the chart.</li>
+                  <li>Profits were higher than ever.</li>
+                </ul>
+              </blockquote>
+            </blockquote>
+        )"
+        << "> Dorothy followed her through many of the beautiful rooms in her castle.\n"
+           ">\n"
+           "> > * Revenue was off the chart.\n"
+           "> > * Profits were higher than ever.\n";
 
     // Test Lists
     QTest::newRow("Test ordered lists")
@@ -443,12 +502,10 @@ void TestWizHtmlTool::check_WizHtmlToMarkdown_data()
               <li>Fourth item</li>
             </ol>
         )")
-        << "\n"
-           "\n1. First item"
-           "\n2. Second item"
-           "\n3. Third item"
-           "\n4. Fourth item"
-           "\n\n";
+        << "1. First item\n"
+           "2. Second item\n"
+           "3. Third item\n"
+           "4. Fourth item\n";
     QTest::newRow("Test nested ordered lists")
         << wrapHTML(R"(
             <ol>
@@ -463,16 +520,14 @@ void TestWizHtmlTool::check_WizHtmlToMarkdown_data()
               <li>Fourth item</li>
             </ol>
         )")
-        << "\n"
-           "\n1. First item"
-           "\n2. Second item"
+        << "1. First item\n"
+           "2. Second item\n"
            // FIXME: white space? It's also seen in some examples,
            // such as https://en.wikipedia.org/wiki/Markdown#Examples
-           "\n3. Third item "
-           "\n\t1. Indented item"
-           "\n\t2. Indented item"
-           "\n4. Fourth item"
-           "\n\n";
+           "3. Third item \n"
+           "\t1. Indented item\n"
+           "\t2. Indented item\n"
+           "4. Fourth item\n";
     QTest::newRow("Test unordered lists")
         << wrapHTML(R"(
             <ul>
@@ -482,12 +537,10 @@ void TestWizHtmlTool::check_WizHtmlToMarkdown_data()
               <li>Fourth item</li>
             </ul>
         )")
-        << "\n"
-           "\n* First item"
-           "\n* Second item"
-           "\n* Third item"
-           "\n* Fourth item"
-           "\n\n";
+        << "* First item\n"
+           "* Second item\n"
+           "* Third item\n"
+           "* Fourth item\n";
     QTest::newRow("Test nested unordered lists")
         << wrapHTML(R"(
             <ul>
@@ -502,14 +555,12 @@ void TestWizHtmlTool::check_WizHtmlToMarkdown_data()
               <li>Fourth item</li>
             </ul>
         )")
-        << "\n"
-           "\n* First item"
-           "\n* Second item"
-           "\n* Third item " // FIXME: white space
-           "\n\t* Indented item"
-           "\n\t* Indented item"
-           "\n* Fourth item"
-           "\n\n";
+        << "* First item\n"
+           "* Second item\n"
+           "* Third item \n"
+           "\t* Indented item\n"
+           "\t* Indented item\n"
+           "* Fourth item\n";
     QTest::newRow("Do not escape number with dot, too complex")
         << wrapHTML(R"(
             <ul>
@@ -517,8 +568,8 @@ void TestWizHtmlTool::check_WizHtmlToMarkdown_data()
               <li>I think 1969 was second best.</li>
             </ul>
         )")
-        << "\n"
-           "\n* 1968. A great year!"
-           "\n* I think 1969 was second best."
-           "\n\n";
+        << "* 1968. A great year!\n"
+           "* I think 1969 was second best.\n";
+
+    // TODO: test structure controlling, such as line breaks
 }

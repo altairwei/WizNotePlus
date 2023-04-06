@@ -11,6 +11,15 @@
 namespace Utils {
 namespace Gumbo {
 
+extern const std::string kTagsNonBreakingInline;
+extern const std::string kTagsBlockLevel;
+extern const std::string kTagsEmpty;
+extern const std::string kTagsPreserveWhitespace;
+extern const std::string kTagsSpecialHandling;
+extern const std::string kTagsNoEntitySub;
+
+std::string getTagName(GumboNode *node);
+
 GumboOutput* parseFromString(const std::string &html);
 GumboOutput* parseFromString(const QString &html);
 void destroyGumboOutput(GumboOutput*);
