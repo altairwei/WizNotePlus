@@ -374,5 +374,12 @@ void JSPluginManager::executeModuleScript(JSPluginModule *moduleData)
         ++i;
     }
 
-    jsEngine.evaluate(scriptContent, scriptFile);
+    QJSValue result = jsEngine.evaluate(scriptContent, scriptFile);
+
+    if (result.isError())
+        QMessageBox::critical(
+            nullptr, "QJSEngine Error",
+            QString("Uncaught exception at line %1:\n%2")
+              .arg(result.property("lineNumber").toInt())
+              .arg(result.toString()));
 }

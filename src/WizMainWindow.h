@@ -278,6 +278,7 @@ public:
 signals:
     void documentsViewTypeChanged(int);
     void documentsSortTypeChanged(int);
+    void pluginPopupRequest(QAction *ac, const QPoint &pos);
 
 public Q_SLOTS:
     void on_actionExit_triggered();

@@ -1963,6 +1963,37 @@ void WizMainWindow::initToolBar()
 void WizMainWindow::initToolBarPluginButtons()
 {
     JSPluginManager &jsPluginMgr = JSPluginManager::instance();
+
+    auto menus = jsPluginMgr.modulesByModuleType("Menu");
+    foreach (auto menuData, menus) {
+        if (menuData->spec()->buttonLocation() != "Main")
+            continue;
+        auto btn = new WizToolButton(this, WizToolButton::ImageOnly | WizToolButton::WithMenu);
+        btn->setPopupMode(QToolButton::MenuButtonPopup);
+        QMenu *m = new QMenu(btn);
+        foreach (int i, menuData->spec()->actionIndexes()) {
+            auto parent = menuData->parentPlugin();
+            auto acm = parent->module(i);
+            QAction *ac = jsPluginMgr.createPluginAction(btn, acm);
+            m->addAction(ac);
+            connect(ac, &QAction::triggered, this,
+                    [this, btn, ac] (bool checked) {
+                        QRect rc = btn->rect();
+                        QPoint pt = btn->mapToGlobal(QPoint(rc.width()/2, rc.height()));
+                        Q_EMIT pluginPopupRequest(ac, pt);
+                    }
+            );
+        }
+
+        btn->setMenu(m);
+        auto acs = m->actions();
+        if (!acs.isEmpty()) {
+            btn->setDefaultAction(acs.first());
+            m_toolBar->addWidget(btn);
+            setHitTestVisible(btn);
+        }
+    }
+
     QList<JSPluginModule *> modules = jsPluginMgr.modulesByKeyValue("ModuleType", "Action");
     for (auto moduleData : modules) {
         if (moduleData->spec()->buttonLocation() != "Main")
@@ -1975,6 +2006,9 @@ void WizMainWindow::initToolBarPluginButtons()
 
         setHitTestVisible(m_toolBar->widgetForAction(ac));
     }
+
+    connect(this, &WizMainWindow::pluginPopupRequest,
+            &jsPluginMgr, &JSPluginManager::handlePluginPopupRequest);
 }
 
 /**
