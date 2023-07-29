@@ -26,7 +26,8 @@ public:
     Q_INVOKABLE QString GetValueFromIni(const QString &fileName, const QString &section, const QString &key);
     Q_INVOKABLE void SetValueToIni(const QString &fileName, const QString &section, const QString &key, const QString &value);
     Q_INVOKABLE QString RunExe(const QString &exeFileName, const QStringList &params);
-    Q_INVOKABLE QObject* RunProc(const QString &exeFileName, const QStringList &params, bool logging = false);
+    Q_INVOKABLE QObject* RunProc(const QString &exeFileName, const QStringList &params,
+                                 bool wait = false, bool logging = false);
     Q_INVOKABLE QObject* CreateQObject(const QString &className);
 
 private:

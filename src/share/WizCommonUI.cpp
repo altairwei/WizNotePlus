@@ -197,7 +197,8 @@ QString WizCommonUI::RunExe(const QString &exeFileName, const QStringList &param
     return exitCode == 0 ? QString(output) : QString(error);
 }
 
-QObject* WizCommonUI::RunProc(const QString &exeFileName, const QStringList &params, bool logging)
+QObject* WizCommonUI::RunProc(const QString &exeFileName, const QStringList &params,
+                              bool wait, bool logging)
 {
     QProcess *process = new QProcess(this);
 
@@ -222,6 +223,13 @@ QObject* WizCommonUI::RunProc(const QString &exeFileName, const QStringList &par
     }
 
     process->start(exeFileName, params);
+
+    if (wait) {
+        process->waitForStarted();
+        while(process->state() != QProcess::NotRunning)
+            QApplication::processEvents();
+    }
+
     return process;
 }
 
