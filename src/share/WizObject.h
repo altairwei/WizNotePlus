@@ -126,11 +126,6 @@ struct WIZUSERINFO : public WIZUSERINFOBASE
 
 Q_DECLARE_METATYPE(WIZUSERINFO)
 
-//struct WIZKMUSERINFO : public WIZUSERINFO
-//{
-//};
-
-
 struct WIZUSERCERT
 {
     WIZUSERCERT();
@@ -152,9 +147,9 @@ struct WIZKBVALUEVERSIONS : public WIZOBJECTBASE
 struct WIZKBINFO : public WIZOBJECTBASE
 {
     WIZKBINFO();
-    //
+
     bool fromJson(const Json::Value& value);
-    //
+
     __int64 nDocumentVersion;
     __int64 nTagVersion;
     __int64 nStyleVersion;
@@ -162,23 +157,22 @@ struct WIZKBINFO : public WIZOBJECTBASE
     __int64 nDeletedGUIDVersion;
     __int64 nParamVersion;
     __int64 nUserVersion;
-    //
+
     qint64 nStorageLimit;
     qint64 nStorageUsage;
-    //
+
     qint64 nTrafficLimit;
     qint64 nTrafficUsage;
-    //
+
     qint64 nUploadSizeLimit;
-    //
+
     qint64 nNotesCount;
     qint64 nNotesCountLimit;
-    //
+
     int getMaxFileSize() const
     {
         return nUploadSizeLimit;
     }
-    //
 };
 
 enum WizObjectType
@@ -344,7 +338,10 @@ struct WIZDOCUMENTDATA : public WIZOBJECTBASE
     bool isAlwaysOnTop() const { return nFlags & wizDocumentAlwaysOnTop; }
 };
 
+Q_DECLARE_METATYPE(WIZDOCUMENTDATA)
 Q_DECLARE_METATYPE(WIZDOCUMENTDATA*)
+Q_DECLARE_METATYPE(const WIZDOCUMENTDATA*)
+
 
 struct WIZDOCUMENTDATAEX : public WIZDOCUMENTDATA
 {

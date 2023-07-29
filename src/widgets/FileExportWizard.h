@@ -15,6 +15,7 @@ class NoteItem;
 class DirLineEdit;
 
 class QTreeWidget;
+class QTableWidget;
 class QProgressBar;
 class QLabel;
 class QPushButton;
@@ -28,41 +29,42 @@ class FileExportWizard : public QWizard
     Q_OBJECT
 
 public:
-    FileExportWizard(WizExplorerApp& app, QWidget *parent = nullptr);
+    FileExportWizard(WizExplorerApp& app, QWidget *parent = nullptr)
+        : FileExportWizard("", app, parent) {}
     FileExportWizard(const QString &location, WizExplorerApp& app, QWidget *parent = nullptr);
 };
 
-class FileExportPageIntro : public QWizardPage
+class FEPageIntro : public QWizardPage
 {
     Q_OBJECT
 
 public:
-    FileExportPageIntro(QWidget *parent = nullptr);
+    FEPageIntro(QWidget *parent = nullptr);
 };
 
-class FileExportPageDocList : public QWizardPage
+class FEPageDocList : public QWizardPage
 {
     Q_OBJECT
 
 public:
-    FileExportPageDocList(WizExplorerApp& app, QWidget *parent = nullptr)
-        : FileExportPageDocList("", app, parent) {}
-    FileExportPageDocList(const QString &location, WizExplorerApp& app, QWidget *parent = nullptr);
+    FEPageDocList(WizExplorerApp& app, QWidget *parent = nullptr)
+        : FEPageDocList("", app, parent) {}
+    FEPageDocList(const QString &location, WizExplorerApp& app, QWidget *parent = nullptr);
     void initializePage() override;
-    bool isComplete() const override;
-    int nextId() const override;
+    void cleanupPage() override;
+
+    Q_PROPERTY(QList<QVariant> documents MEMBER m_documents NOTIFY documentsChanged)
 
 public Q_SLOTS:
     void handleCancelBtnClicked() { m_cancel = true; };
     void initFolders();
-    void initFoldersFromLocation(const QString &location);
     void handleItemChanged(QTreeWidgetItem *item, int column);
     void handleItemDoubleClicked(QTreeWidgetItem *item, int column);
     void updateSelection();
 
 Q_SIGNALS:
-    void initialized();
-    void willLeave() const;
+    void firstInitialized();
+    void documentsChanged(const QList<QVariant>&);
 
 private:
     void initFolderItem(QTreeWidgetItem* pParent,
@@ -70,7 +72,7 @@ private:
                      const CWizStdStringArray& arrayAllLocation);
     void updateParentItemStatus(QTreeWidgetItem* item);
     void updateChildItemStatus(QTreeWidgetItem* item);
-    QStringList findSelectedNotes(BaseItem* item);
+    QList<QVariant> findSelectedNotes(BaseItem* item);
 
 private:
     WizExplorerApp &m_app;
@@ -80,16 +82,30 @@ private:
     QLabel *m_statusText;
     BaseItem* m_rootItem;
     bool m_cancel;
-    bool m_isUpdateItemStatus;
+    bool m_firstInitialized;
     QString m_rootLocation;
+    QList<QVariant> m_documents;
 };
 
-class FileExportPageOptions : public QWizardPage
+class FEPageFormatSelect : public QWizardPage
 {
     Q_OBJECT
 
 public:
-    FileExportPageOptions(QWidget *parent = nullptr);
+    FEPageFormatSelect(QWidget *parent = nullptr);
+    void initializePage() override;
+    void cleanupPage() override;
+
+private:
+    QTableWidget *m_table;
+};
+
+class FEPageOptions : public QWizardPage
+{
+    Q_OBJECT
+
+public:
+    FEPageOptions(QWidget *parent = nullptr);
 
 private:
     DirLineEdit *m_outputFolder;
@@ -101,12 +117,12 @@ private:
     QCheckBox *m_convertRichTextToMarkdown;
 };
 
-class FileExportPageExport : public QWizardPage
+class FEPageExport : public QWizardPage
 {
     Q_OBJECT
 
 public:
-    FileExportPageExport(WizExplorerApp& app, QWidget *parent = nullptr);
+    FEPageExport(WizExplorerApp& app, QWidget *parent = nullptr);
 
     void initializePage() override;
     bool isComplete() const override;

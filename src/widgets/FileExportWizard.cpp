@@ -1,4 +1,4 @@
-#include "FileExportWizard.h"
+﻿#include "FileExportWizard.h"
 
 #include <QLabel>
 #include <QVBoxLayout>
@@ -16,6 +16,9 @@
 #include <QDebug>
 #include <QLineEdit>
 #include <QInputDialog>
+#include <QTimer>
+#include <QTableWidget>
+#include <QTableWidgetItem>
 
 #include "WizDef.h"
 #include "database/WizDatabase.h"
@@ -23,20 +26,6 @@
 #include "share/WizSettings.h"
 #include "WizFileExporter.h"
 #include "widgets/FileLineEdit.h"
-
-FileExportWizard::FileExportWizard(WizExplorerApp& app, QWidget *parent)
-    : QWizard(parent)
-{
-    setWindowTitle(tr("Export Wizard"));
-#ifndef Q_OS_MAC
-    setWizardStyle(ModernStyle);
-#endif
-
-    addPage(new FileExportPageIntro);
-    addPage(new FileExportPageDocList(app));
-    addPage(new FileExportPageOptions);
-    addPage(new FileExportPageExport(app));
-}
 
 FileExportWizard::FileExportWizard(const QString &location, WizExplorerApp& app, QWidget *parent)
     : QWizard(parent)
@@ -46,12 +35,14 @@ FileExportWizard::FileExportWizard(const QString &location, WizExplorerApp& app,
     setWizardStyle(ModernStyle);
 #endif
 
-    addPage(new FileExportPageDocList(location, app));
-    addPage(new FileExportPageOptions);
-    addPage(new FileExportPageExport(app));
+    addPage(new FEPageIntro);
+    addPage(new FEPageDocList(location, app));
+    addPage(new FEPageFormatSelect);
+    addPage(new FEPageOptions);
+    addPage(new FEPageExport(app));
 }
 
-FileExportPageIntro::FileExportPageIntro(QWidget *parent)
+FEPageIntro::FEPageIntro(QWidget *parent)
     : QWizardPage(parent)
 {
     setTitle(tr("Introduction"));
@@ -120,13 +111,14 @@ class NoteItem : public BaseItem
 {
 
 public:
-    NoteItem(WizExplorerApp& app, QString strName, QString kbGUID, QString docGUID, QString docType)
-        : BaseItem(app, strName, kbGUID)
-        , m_docGUID(docGUID)
-        , m_docType(docType)
+    NoteItem(WizExplorerApp& app, QString kbGUID, const WIZDOCUMENTDATAEX &data)
+        : BaseItem(app, data.strTitle, kbGUID)
+        , m_docGUID(data.strGUID)
+        , m_docType(data.strType)
+        , m_docData(data)
     {
-        // TODO: display icon for encrypted notes
-        QString iconKey = "document_badge";
+        QString iconKey = data.nProtected == 1 ?
+                    "document_badge_encrypted" : "document_badge";
         QIcon icon = WizLoadSkinIcon(app.userSettings().skin(), iconKey);
         setIcon(0, icon);
     }
@@ -134,19 +126,21 @@ public:
     bool isFolder() const override { return false; }
     QString docGUID() const { return m_docGUID; }
     QString docType() const { return m_docType; }
+    const WIZDOCUMENTDATA *docData() const { return &m_docData; }
 
 private:
     QString m_docGUID;
     QString m_docType;
+    WIZDOCUMENTDATA m_docData;
 };
 
 
-FileExportPageDocList::FileExportPageDocList(const QString &location, WizExplorerApp& app, QWidget *parent)
+FEPageDocList::FEPageDocList(const QString &location, WizExplorerApp& app, QWidget *parent)
     : QWizardPage(parent)
     , m_app(app)
     , m_dbMgr(app.databaseManager())
     , m_cancel(false)
-    , m_isUpdateItemStatus(false)
+    , m_firstInitialized(false)
     , m_rootLocation(location)
 {
     setTitle(tr("Select Documents"));
@@ -154,7 +148,6 @@ FileExportPageDocList::FileExportPageDocList(const QString &location, WizExplore
         tr("Please select documents you want to export.") +
         " " + tr("Collaboration notes are not supported now!")
     );
-    //setCommitPage(true);
 
     m_statusText = new QLabel;
 
@@ -162,7 +155,6 @@ FileExportPageDocList::FileExportPageDocList(const QString &location, WizExplore
     m_treeWidget->hide();
     m_treeWidget->header()->setSectionResizeMode(QHeaderView::ResizeToContents);
     m_treeWidget->setHeaderHidden(true);
-    registerField("documents", m_treeWidget);
 
     m_progress = new QProgressBar(this);
 
@@ -174,81 +166,79 @@ FileExportPageDocList::FileExportPageDocList(const QString &location, WizExplore
     layout->addWidget(m_treeWidget);
     setLayout(layout);
 
-    auto init = [this]() {
-        if (m_rootLocation.isEmpty()) {
-            initFolders();
-        } else {
-            initFoldersFromLocation(m_rootLocation);
-        }
-    };
-
-    connect(this, &FileExportPageDocList::initialized,
-            this, init, Qt::QueuedConnection);
     connect(m_treeWidget, &QTreeWidget::itemChanged,
-            this, &FileExportPageDocList::handleItemChanged);
+            this, &FEPageDocList::handleItemChanged);
     connect(m_treeWidget, &QTreeWidget::itemDoubleClicked,
-            this, &FileExportPageDocList::handleItemDoubleClicked);
-    connect(this, &FileExportPageDocList::willLeave,
-            this, &FileExportPageDocList::updateSelection, Qt::DirectConnection);
+            this, &FEPageDocList::handleItemDoubleClicked);
+
+    registerField("documents*", this, "documents", SIGNAL(documentsChanged(const QList<QVariant>&)));
 }
 
-void FileExportPageDocList::initializePage()
+void FEPageDocList::initializePage()
 {
-    connect(wizard(), &QWizard::finished,
-            this, &FileExportPageDocList::handleCancelBtnClicked);
-    Q_EMIT initialized();
-}
-
-bool FileExportPageDocList::isComplete() const
-{
-    if (m_progress->value() != m_progress->maximum()) {
-        return false;
-    } else {
-        return true;
+    if (!m_firstInitialized) {
+        // wizard() will be available after initialization
+        connect(wizard(), &QWizard::finished,
+                this, &FEPageDocList::handleCancelBtnClicked);
+        m_firstInitialized = true;
+        // Push initFolders to event loop
+        QTimer::singleShot(0, this, SLOT(initFolders()));
+        Q_EMIT firstInitialized();
     }
 }
 
-int FileExportPageDocList::nextId() const
+void FEPageDocList::cleanupPage()
 {
-    Q_EMIT willLeave();
-    return QWizardPage::nextId();
+    {
+        const QSignalBlocker blocker(m_treeWidget);
+        m_rootItem->setCheckState(0, Qt::Unchecked);
+        updateChildItemStatus(m_rootItem);
+    }
+
+    QWizardPage::cleanupPage();
 }
 
-void FileExportPageDocList::initFolders()
+void FEPageDocList::initFolders()
 {
-    auto pAllFoldersItem = new FolderItem(m_app, tr("Personal Notes"), m_dbMgr.db().kbGUID());
-    pAllFoldersItem->setIcon(0, WizLoadSkinIcon(m_app.userSettings().skin(), "category_folders"));
-    pAllFoldersItem->setCheckState(0, Qt::Unchecked);
-    m_treeWidget->addTopLevelItem(pAllFoldersItem);
-    m_rootItem = pAllFoldersItem;
+    const QSignalBlocker blocker(m_treeWidget);
+    QString rootLabel = m_rootLocation.isEmpty() ? tr("Personal Notes") : m_rootLocation;
+    auto rootFoldersItem = new FolderItem(m_app, rootLabel, m_dbMgr.db().kbGUID());
+    rootFoldersItem->setIcon(0, WizLoadSkinIcon(m_app.userSettings().skin(), "category_folders"));
+    rootFoldersItem->setCheckState(0, Qt::Unchecked);
+    m_treeWidget->addTopLevelItem(rootFoldersItem);
+    m_rootItem = rootFoldersItem;
 
-    CWizStdStringArray arrayAllLocation;
-    m_dbMgr.db().getAllLocations(arrayAllLocation);
+    CWizStdStringArray locationsToSearch;
 
-    // folder cache
-    CWizStdStringArray arrayExtLocation;
-    m_dbMgr.db().getExtraFolder(arrayExtLocation);
+    if (m_rootLocation.isEmpty()) {
+        m_dbMgr.db().getAllLocations(locationsToSearch);
 
-    if (!arrayExtLocation.empty()) {
-        for (CWizStdStringArray::const_iterator it = arrayExtLocation.begin();
-             it != arrayExtLocation.end();
-             it++) {
-            if (-1 == ::WizFindInArray(arrayAllLocation, *it)) {
-                arrayAllLocation.push_back(*it);
+        CWizStdStringArray arrayExtLocation;
+        m_dbMgr.db().getExtraFolder(arrayExtLocation);
+
+        if (!arrayExtLocation.empty()) {
+            for (CWizStdStringArray::const_iterator it = arrayExtLocation.begin();
+                 it != arrayExtLocation.end();
+                 it++) {
+                if (-1 == ::WizFindInArray(locationsToSearch, *it)) {
+                    locationsToSearch.push_back(*it);
+                }
             }
         }
-    }
 
-    if (arrayAllLocation.empty()) {
-        arrayAllLocation.push_back(m_dbMgr.db().getDefaultNoteLocation());
+        if (locationsToSearch.empty())
+            locationsToSearch.push_back(m_dbMgr.db().getDefaultNoteLocation());
+
+    } else {
+        m_dbMgr.db().getAllChildLocations(m_rootLocation, locationsToSearch);
     }
 
     m_statusText->setText(tr("<i>Scanning Database...</i>"));
-    m_progress->setRange(1, (int)arrayAllLocation.size());
+    m_progress->setRange(1, (int)locationsToSearch.size());
 
-    initFolderItem(pAllFoldersItem, "", arrayAllLocation);
+    initFolderItem(rootFoldersItem, m_rootLocation, locationsToSearch);
 
-    pAllFoldersItem->setExpanded(true);
+    rootFoldersItem->setExpanded(true);
     //pAllFoldersItem->sortChildren(0, Qt::AscendingOrder);
 
     m_treeWidget->show();
@@ -258,37 +248,8 @@ void FileExportPageDocList::initFolders()
     Q_EMIT completeChanged();
 }
 
-void FileExportPageDocList::initFoldersFromLocation(const QString &location)
-{
-    auto pAllFoldersItem = new FolderItem(m_app, location, m_dbMgr.db().kbGUID());
-    pAllFoldersItem->setIcon(0, WizLoadSkinIcon(m_app.userSettings().skin(), "category_folder"));
-    pAllFoldersItem->setCheckState(0, Qt::Unchecked);
-    m_treeWidget->addTopLevelItem(pAllFoldersItem);
-    m_rootItem = pAllFoldersItem;
-
-    CWizStdStringArray childLocations;
-    m_dbMgr.db().getAllChildLocations(location, childLocations);
-
-    if (childLocations.size() > 1) {
-        m_statusText->setText(tr("<i>Scanning Database...</i>"));
-        m_progress->setRange(1, (int)childLocations.size());
-    } else {
-        m_progress->setRange(1, 1);
-    }
-
-    initFolderItem(pAllFoldersItem, location, childLocations);
-
-    pAllFoldersItem->setExpanded(true);
-    //pAllFoldersItem->sortChildren(0, Qt::AscendingOrder);
-
-    m_treeWidget->show();
-    m_progress->hide();
-
-    m_statusText->setText(tr("Choose documents:"));
-    Q_EMIT completeChanged();
-}
-
-void FileExportPageDocList::initFolderItem(QTreeWidgetItem *pParent, const QString &strParentLocation,
+// TODO: 优化 IO，减少 SQL 查询次数。
+void FEPageDocList::initFolderItem(QTreeWidgetItem *pParent, const QString &strParentLocation,
                                       const CWizStdStringArray &arrayAllLocation)
 {
     m_progress->setValue(m_progress->value() + 1);
@@ -325,23 +286,23 @@ void FileExportPageDocList::initFolderItem(QTreeWidgetItem *pParent, const QStri
         if (doc.strType == "collaboration")
             continue;
 
-        auto pNoteItem = new NoteItem(m_app, doc.strTitle, m_dbMgr.db().kbGUID(), doc.strGUID, doc.strType);
+        auto pNoteItem = new NoteItem(m_app, m_dbMgr.db().kbGUID(), doc);
         pNoteItem->setCheckState(0, Qt::Unchecked);
         pParent->addChild(pNoteItem);
     }
 
 }
 
-void FileExportPageDocList::handleItemChanged(QTreeWidgetItem *item, int column)
+void FEPageDocList::handleItemChanged(QTreeWidgetItem *item, int column)
 {
-    if (m_isUpdateItemStatus) return;
-    m_isUpdateItemStatus = true;
+    // Block signals emitted by updateChild/ParentItemStatus
+    const QSignalBlocker blocker(m_treeWidget);
     updateChildItemStatus(item);
     updateParentItemStatus(item);
-    m_isUpdateItemStatus = false;
+    updateSelection();
 }
 
-void FileExportPageDocList::updateParentItemStatus(QTreeWidgetItem* item)
+void FEPageDocList::updateParentItemStatus(QTreeWidgetItem* item)
 {
     auto parent = item->parent();
     if (Q_NULLPTR == parent)
@@ -364,7 +325,7 @@ void FileExportPageDocList::updateParentItemStatus(QTreeWidgetItem* item)
     updateParentItemStatus(parent);
 }
 
-void FileExportPageDocList::updateChildItemStatus(QTreeWidgetItem* item)
+void FEPageDocList::updateChildItemStatus(QTreeWidgetItem* item)
 {
     int nCount = item->childCount();
     for (int nIndex = 0; nIndex < nCount; ++nIndex)
@@ -378,7 +339,7 @@ void FileExportPageDocList::updateChildItemStatus(QTreeWidgetItem* item)
     }
 }
 
-void FileExportPageDocList::handleItemDoubleClicked(QTreeWidgetItem *item, int column)
+void FEPageDocList::handleItemDoubleClicked(QTreeWidgetItem *item, int column)
 {
     auto _item = static_cast<BaseItem*>(item);
     if (_item->isFolder()) {
@@ -392,10 +353,9 @@ void FileExportPageDocList::handleItemDoubleClicked(QTreeWidgetItem *item, int c
     }
 }
 
-QStringList FileExportPageDocList::findSelectedNotes(BaseItem* item)
+QList<QVariant> FEPageDocList::findSelectedNotes(BaseItem* item)
 {
-    QStringList notes;
-    //QList<NoteItem*> notes;
+    QList<QVariant> notes;
     if (item->checkState(0) == Qt::Unchecked)
         return notes;
 
@@ -409,7 +369,8 @@ QStringList FileExportPageDocList::findSelectedNotes(BaseItem* item)
             notes.append(findSelectedNotes(child));
         } else {
             if (child->checkState(0) == Qt::Checked) {
-                notes << static_cast<NoteItem*>(child)->docGUID();
+                notes.append(QVariant::fromValue(
+                    static_cast<NoteItem*>(child)->docData()));
             }
         }
     }
@@ -417,18 +378,81 @@ QStringList FileExportPageDocList::findSelectedNotes(BaseItem* item)
     return notes;
 }
 
-void FileExportPageDocList::updateSelection()
+void FEPageDocList::updateSelection()
 {
-    // FIXME: [WARNING]: QWizard::setField: Couldn't write to property '' ((null):0, (null))
-    if (isComplete())
-        setField("documents", findSelectedNotes(m_rootItem));
+    m_documents = findSelectedNotes(m_rootItem);
+    emit documentsChanged(m_documents);
+}
+
+/////////////////////////////////////////////////////////////////////
+/// Output Format Page
+/////////////////////////////////////////////////////////////////////
+
+FEPageFormatSelect::FEPageFormatSelect(QWidget *parent)
+    : QWizardPage(parent)
+{
+    setTitle(tr("Output Format Selection"));
+    setSubTitle(tr("Please select what format you want "
+                   "to export each type of document in."));
+
+    m_table = new QTableWidget;
+    m_table->setColumnCount(3);
+    m_table->setEditTriggers(QAbstractItemView::NoEditTriggers);
+
+    m_table->verticalHeader()->setHidden(true);
+    m_table->setHorizontalHeaderLabels(
+        QStringList() << tr("Doc Type") << tr("Count") << tr("Output Format"));
+    m_table->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
+
+    QVBoxLayout *layout = new QVBoxLayout;
+    layout->addWidget(m_table);
+    setLayout(layout);
+}
+
+void FEPageFormatSelect::initializePage()
+{
+    QMap<QString, size_t> noteTypeNo;
+    auto notes = field("documents").toList();
+    foreach (const QVariant &no, notes) {
+        if (!no.canConvert<const WIZDOCUMENTDATA*>())
+            continue;
+        auto doc = no.value<const WIZDOCUMENTDATA*>();
+        if (WizIsMarkdownNote(*doc)) {
+            noteTypeNo["Markdown"]++;
+        } else if (doc->strType == "outline") {
+            noteTypeNo["Outline"]++;
+        } else if (doc->strType == "collaboration") {
+            noteTypeNo["Collaboration"]++;
+        } else if (doc->strType == "svgpainter") {
+            noteTypeNo["Handwriting"]++;
+        } else {
+            noteTypeNo["Common"]++;
+        }
+    }
+
+    m_table->setRowCount(noteTypeNo.size());
+    unsigned int row = 0;
+    QMap<QString, size_t>::const_iterator i = noteTypeNo.constBegin();
+    while (i != noteTypeNo.constEnd()) {
+        m_table->setItem(row, 0, new QTableWidgetItem(i.key()));
+        m_table->setItem(row, 1, new QTableWidgetItem(QString::number(i.value())));
+        m_table->setItem(row, 2, new QTableWidgetItem(""));
+        ++row;
+        ++i;
+    }
+
+}
+
+void FEPageFormatSelect::cleanupPage()
+{
+    m_table->clearContents();
 }
 
 /////////////////////////////////////////////////////////////////////
 /// Options Page
 /////////////////////////////////////////////////////////////////////
 
-FileExportPageOptions::FileExportPageOptions(QWidget *parent)
+FEPageOptions::FEPageOptions(QWidget *parent)
     : QWizardPage(parent)
 {
     setTitle(tr("Options"));
@@ -499,7 +523,7 @@ FileExportPageOptions::FileExportPageOptions(QWidget *parent)
 /// Export Page
 /////////////////////////////////////////////////////////////////////
 
-FileExportPageExport::FileExportPageExport(WizExplorerApp& app, QWidget *parent)
+FEPageExport::FEPageExport(WizExplorerApp& app, QWidget *parent)
     : QWizardPage(parent)
     , m_app(app)
     , m_dbMgr(app.databaseManager())
@@ -518,19 +542,19 @@ FileExportPageExport::FileExportPageExport(WizExplorerApp& app, QWidget *parent)
     layout->addWidget(m_details);
     setLayout(layout);
 
-    connect(this, &FileExportPageExport::initialized,
-            this, &FileExportPageExport::handleExportFile,
+    connect(this, &FEPageExport::initialized,
+            this, &FEPageExport::handleExportFile,
             Qt::QueuedConnection);
 }
 
-void FileExportPageExport::initializePage()
+void FEPageExport::initializePage()
 {
     connect(wizard(), &QWizard::finished,
-            this, &FileExportPageExport::handleCancelBtnClicked);
+            this, &FEPageExport::handleCancelBtnClicked);
     Q_EMIT initialized();
 }
 
-void FileExportPageExport::insertLog(const QString& text)
+void FEPageExport::insertLog(const QString& text)
 {
     QTextCursor cursor = m_details->textCursor();
     cursor.movePosition(QTextCursor::End);
@@ -549,9 +573,9 @@ void FileExportPageExport::insertLog(const QString& text)
     else                                                        \
         continue                                               \
 
-void FileExportPageExport::handleExportFile()
+void FEPageExport::handleExportFile()
 {
-    QStringList notes = field("documents").toStringList();
+    QStringList notes = field("documents*").toStringList();
     QString outputFolder = field("outputFolder").toString();
     bool keepFolder = field("keepFolder").toBool();
 
@@ -634,7 +658,7 @@ void FileExportPageExport::handleExportFile()
     QDesktopServices::openUrl(QUrl(outputFolder));
 }
 
-bool FileExportPageExport::isComplete() const
+bool FEPageExport::isComplete() const
 {
     if (m_progress->value() != m_progress->maximum()) {
         return false;

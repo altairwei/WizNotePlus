@@ -82,7 +82,7 @@ void disableWebengineSandboxIfNeeded()
 
 int mainCore(int argc, char *argv[])
 {
-    // 设置高分屏支持
+    // HiDPI support
     //-------------------------------------------------------------------
 
 #if (QT_VERSION < QT_VERSION_CHECK(6, 0, 0))

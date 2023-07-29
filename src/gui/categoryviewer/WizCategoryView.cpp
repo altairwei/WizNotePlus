@@ -2046,7 +2046,7 @@ void WizCategoryView::on_action_exportFiles()
     ::WizGetAnalyzer().logAction("categoryMenuExportFiles");
     auto item = currentCategoryItem<WizCategoryViewFolderItem>();
     if (item) {
-        FileExportWizard wizard(item->location(), m_app, this);
+        FileExportWizard wizard(item->location(), m_app, m_app.mainWindow());
         wizard.exec();
     }
 }
