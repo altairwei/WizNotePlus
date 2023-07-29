@@ -10,6 +10,7 @@
 #include <QDesktopServices>
 #include <QUrl>
 #include <QFileDialog>
+#include <QProcess>
 
 #include "WizMisc.h"
 #include "utils/WizPathResolve.h"
@@ -93,6 +94,8 @@ QString WizCommonUI::GetSpecialFolder(const QString &bstrFolderName)
         return Utils::WizPathResolve::tempPath();
     } else if (bstrFolderName == "AppPath") {
         return Utils::WizPathResolve::appPath();
+    } else if (bstrFolderName == "DataPath") {
+        return Utils::WizPathResolve::dataStorePath();
     } else {
         return "";
     }
@@ -178,4 +181,32 @@ void WizCommonUI::SetValueToIni(const QString &fileName, const QString &section,
 {
     WizSettings setting(fileName);
     setting.setString(section, key, value);
+}
+
+QString WizCommonUI::RunExe(const QString &exeFileName, const QStringList &params)
+{
+    // FIXME: 在另一个进程中启动
+    QProcess *process = new QProcess(this);
+    process->start(exeFileName, params);
+    process->waitForFinished();
+    QByteArray output = process->readAllStandardOutput();
+    QByteArray error = process->readAllStandardError();
+    int exitCode = process->exitCode();
+    process->deleteLater();
+
+    return exitCode == 0 ? QString(output) : QString(error);
+}
+
+QObject* WizCommonUI::RunProc(const QString &exeFileName, const QStringList &params)
+{
+    QProcess *process = new QProcess(this);
+    process->start(exeFileName, params);
+    return process;
+}
+
+QObject* WizCommonUI::CreateQObject(const QString &className)
+{
+    if (className == "QProcess")
+        return new QProcess(this);
+    return nullptr;
 }
