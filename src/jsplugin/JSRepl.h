@@ -59,9 +59,11 @@ public:
     JSPrintFunction(QTextEdit *textEdit, QObject *parent = nullptr);
 
 public slots:
-    void print(QVariantList args);
+    void print(QJSValue args);
 
 private:
+    void appendLog(const QString &message);
+
     QTextEdit *m_textEdit;
 };
 

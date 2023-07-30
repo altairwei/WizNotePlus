@@ -18,6 +18,7 @@ JSRepl::JSRepl(QHash<QString, QObject *> objects, QWidget *parent)
 
     QVBoxLayout *layout = new QVBoxLayout(this);
     m_textEdit = new QTextEdit(this);
+    m_textEdit->setReadOnly(true);
     layout->addWidget(m_textEdit);
 
     QHBoxLayout *hLayout = new QHBoxLayout();
@@ -139,18 +140,29 @@ JSPrintFunction::JSPrintFunction(QTextEdit *textEdit, QObject *parent)
 {
 }
 
-void JSPrintFunction::print(QVariantList args)
+void JSPrintFunction::appendLog(const QString &message)
 {
-    QString message;
-    for (const QVariant &arg : args) {
-        if (!message.isEmpty())
-            message += " ";
-        message += arg.toString();
-    }
-
     m_textEdit->append(message);
     QTextCursor cursor = m_textEdit->textCursor();
     cursor.movePosition(QTextCursor::End);
     m_textEdit->setTextCursor(cursor);
     m_textEdit->ensureCursorVisible();
+}
+
+void JSPrintFunction::print(QJSValue args)
+{
+    if (!args.isArray()) {
+        appendLog(args.toString());
+        return;
+    }
+
+    QString message;
+    const int length = args.property("length").toInt();
+    for (int i = 0; i < length; ++i) {
+        if (!message.isEmpty())
+            message += " ";
+        message += args.property(i).toString();
+    }
+
+    appendLog(message);
 }
