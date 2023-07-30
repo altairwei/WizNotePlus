@@ -23,6 +23,9 @@ public slots:
     void execute();
 
 private:
+    void appendLog(const QString &message);
+
+private:
     QJSEngine *m_engine;
     QTextEdit *m_textEdit;
     JSLineEdit *m_lineEdit;
@@ -43,6 +46,20 @@ private slots:
 private:
     QStringList history;
     int currentIndex;
+};
+
+class JSConsole : public QObject
+{
+    Q_OBJECT
+
+public:
+    JSConsole(QTextEdit *textEdit, QObject *parent = nullptr);
+
+public slots:
+    void log(QString message);
+
+private:
+    QTextEdit *m_textEdit;
 };
 
 #endif // JSREPL_H

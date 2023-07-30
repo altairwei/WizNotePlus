@@ -21,7 +21,11 @@ JSRepl::JSRepl(QHash<QString, QObject *> objects, QWidget *parent)
     layout->addWidget(m_lineEdit);
 
     m_engine = new QJSEngine(this);
-    m_engine->installExtensions(QJSEngine::AllExtensions);
+    m_engine->installExtensions(QJSEngine::TranslationExtension | QJSEngine::GarbageCollectionExtension);
+
+    JSConsole *console = new JSConsole(m_textEdit, this);
+    QJSValue consoleObject = m_engine->newQObject(console);
+    m_engine->globalObject().setProperty("console", consoleObject);
 
     auto i = objects.constBegin();
     while (i != objects.constEnd()) {
@@ -43,10 +47,19 @@ QSize JSRepl::sizeHint() const
 void JSRepl::execute()
 {
     QString code = m_lineEdit->text();
+    appendLog(">> " + code);
     QJSValue result = m_engine->evaluate(code);
-    m_textEdit->append(">> " + code);
-    m_textEdit->append(result.toString());
+    appendLog(result.toString());
     m_lineEdit->clear();
+}
+
+void JSRepl::appendLog(const QString &message)
+{
+    m_textEdit->append(message);
+    QTextCursor cursor = m_textEdit->textCursor();
+    cursor.movePosition(QTextCursor::End);
+    m_textEdit->setTextCursor(cursor);
+    m_textEdit->ensureCursorVisible();
 }
 
 JSLineEdit::JSLineEdit(QWidget *parent)
@@ -80,4 +93,15 @@ void JSLineEdit::onReturnPressed()
 {
     history.append(text());
     currentIndex = history.size();
+}
+
+JSConsole::JSConsole(QTextEdit *textEdit, QObject *parent)
+    : QObject(parent)
+    , m_textEdit(textEdit)
+{
+}
+
+void JSConsole::log(QString message)
+{
+    m_textEdit->append(message);
 }
