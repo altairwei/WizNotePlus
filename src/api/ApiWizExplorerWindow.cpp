@@ -49,3 +49,8 @@ void ApiWizExplorerWindow::ViewAttachment(QObject *pWizDocumentAttachment)
         m_mainWindow->viewAttachment(att->data());
     }
 }
+
+void ApiWizExplorerWindow::OpenMessageConsole()
+{
+    m_mainWindow->on_actionConsole_triggered();
+}

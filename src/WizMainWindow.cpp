@@ -1968,7 +1968,7 @@ void WizMainWindow::initToolBarPluginButtons()
     foreach (auto menuData, menus) {
         if (menuData->spec()->buttonLocation() != "Main")
             continue;
-        auto btn = new WizToolButton(this, WizToolButton::ImageOnly | WizToolButton::WithMenu);
+        auto btn = new QToolButton(this);
         btn->setPopupMode(QToolButton::MenuButtonPopup);
         QMenu *m = new QMenu(btn);
         foreach (int i, menuData->spec()->actionIndexes()) {

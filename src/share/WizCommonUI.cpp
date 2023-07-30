@@ -11,6 +11,8 @@
 #include <QUrl>
 #include <QFileDialog>
 #include <QProcess>
+#include <QInputDialog>
+#include <QMessageBox>
 
 #include "WizMisc.h"
 #include "utils/WizPathResolve.h"
@@ -233,9 +235,53 @@ QObject* WizCommonUI::RunProc(const QString &exeFileName, const QStringList &par
     return process;
 }
 
-QObject* WizCommonUI::CreateQObject(const QString &className)
+void WizCommonUI::ShowMessage(const QString &title, const QString &text, unsigned int type)
 {
-    if (className == "QProcess")
-        return new QProcess(this);
-    return nullptr;
+    switch(type) {
+    case 1:
+        QMessageBox::warning(nullptr, title, text);
+        break;
+    case 2:
+        QMessageBox::critical(nullptr, title, text);
+        break;
+    case 0:
+    default:
+        QMessageBox::information(nullptr, title, text);
+        break;
+    }
+}
+
+bool WizCommonUI::Confirm(const QString &title, const QString &text)
+{
+    auto ret = QMessageBox::question(nullptr, title, text);
+    return ret == QMessageBox::Yes;
+}
+
+int WizCommonUI::GetIntValue(const QString &title, const QString &description,
+                                         int value, int min, int max, int step)
+{
+    return QInputDialog::getInt(nullptr, title, description, value, min, max, step);
+}
+
+double WizCommonUI::GetDoubleValue(const QString &title, const QString &description,
+                                double value, double min, double max, double step, double decimals)
+{
+    return QInputDialog::getDouble(nullptr, title, description, value, min, max, decimals, nullptr,
+                                   Qt::WindowFlags(), step);
+}
+
+QString WizCommonUI::InputBox(const QString &title, const QString &description, const QString &value)
+{
+    return QInputDialog::getText(nullptr, title, description, QLineEdit::Normal, value);
+}
+
+QString WizCommonUI::InputMultiLineText(const QString &title, const QString &description, const QString &value)
+{
+    return QInputDialog::getMultiLineText(nullptr, title, description, value);
+}
+
+QString WizCommonUI::SelectItem(const QString &title, const QString &description, const QStringList &items,
+                                   int current, bool editable)
+{
+    return QInputDialog::getItem(nullptr, title, description, items, current, editable);
 }
