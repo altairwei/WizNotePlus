@@ -103,10 +103,11 @@
 #include "WizFileImporter.h"
 
 #include "api/ApiWizExplorerApp.h"
+#include "api/PublicAPIsServer.h"
 #include "jsplugin/JSPluginManager.h"
 #include "jsplugin/JSPluginSpec.h"
 #include "jsplugin/JSPlugin.h"
-#include "api/PublicAPIsServer.h"
+#include "jsplugin/JSRepl.h"
 
 #include "gui/tabbrowser/WizWebsiteView.h"
 #include "gui/tabbrowser/WizMainTabBrowser.h"
@@ -3212,6 +3213,12 @@ void WizMainWindow::resetSearchStatus()
 void WizMainWindow::on_actionDownloadManager_triggered()
 {
     DownloadManagerWidget::instance().show();
+}
+
+void WizMainWindow::on_actionJSConsole_triggered()
+{
+    auto repl = new JSRepl({{"WizExplorerApp", publicAPIsObject()}});
+    repl->show();
 }
 
 void WizMainWindow::on_actionResetSearch_triggered()
