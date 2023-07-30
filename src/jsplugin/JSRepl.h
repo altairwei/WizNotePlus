@@ -3,6 +3,7 @@
 
 #include <QWidget>
 #include <QLineEdit>
+#include <QJSValueList>
 
 class QTextEdit;
 class QLineEdit;
@@ -21,9 +22,11 @@ public:
 
 public slots:
     void execute();
+    void loadScript();
 
 private:
     void appendLog(const QString &message);
+    void printResult(const QJSValue &value);
 
 private:
     QJSEngine *m_engine;
@@ -48,15 +51,15 @@ private:
     int currentIndex;
 };
 
-class JSConsole : public QObject
+class JSPrintFunction : public QObject
 {
     Q_OBJECT
 
 public:
-    JSConsole(QTextEdit *textEdit, QObject *parent = nullptr);
+    JSPrintFunction(QTextEdit *textEdit, QObject *parent = nullptr);
 
 public slots:
-    void log(QString message);
+    void print(QVariantList args);
 
 private:
     QTextEdit *m_textEdit;
