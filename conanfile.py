@@ -404,9 +404,9 @@ class WizNotePlusConan(ConanFile):
         self._fix_dependencies_name(
             os.path.join(app_dir, "Contents", "MacOS", "WizNotePlus"), 
             ["libcryptopp.8.3.dylib"])
-        self._fix_dependencies_name(
-            os.path.join(fram_dir, "libquazip5.1.dylib"), 
-            ["libz.1.dylib"])
+        #self._fix_dependencies_name(
+        #    os.path.join(fram_dir, "libquazip5.1.dylib"), 
+        #    ["libz.1.dylib"])
 
     def _configure_deployqt(self, dist_folder, appdir):
         # TODO: use conan-qt instead of checking system installed qmake.
