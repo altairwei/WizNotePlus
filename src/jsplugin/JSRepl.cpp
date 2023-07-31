@@ -9,6 +9,8 @@
 #include <QPushButton>
 #include <QFileDialog>
 #include <QTextStream>
+#include <QShortcut>
+#include <QTextFrame>
 
 JSRepl::JSRepl(QHash<QString, QObject *> objects, QWidget *parent)
     : QWidget{parent}
@@ -19,7 +21,11 @@ JSRepl::JSRepl(QHash<QString, QObject *> objects, QWidget *parent)
     QVBoxLayout *layout = new QVBoxLayout(this);
     m_textEdit = new QTextEdit(this);
     m_textEdit->setReadOnly(true);
+    //m_textEdit->document()->setDocumentMargin(0);
     layout->addWidget(m_textEdit);
+
+    m_searchBox = new JSReplSearchBox(m_textEdit, this);
+    layout->addWidget(m_searchBox);
 
     QHBoxLayout *hLayout = new QHBoxLayout();
     m_lineEdit = new JSLineEdit(this);
@@ -45,8 +51,12 @@ JSRepl::JSRepl(QHash<QString, QObject *> objects, QWidget *parent)
 
     connect(m_lineEdit, &QLineEdit::returnPressed, this, &JSRepl::execute);
     connect(addButton, &QPushButton::clicked, this, &JSRepl::loadScript);
-
     addButton->setToolTip(tr("Select a JavaScript file to execute."));
+
+    QShortcut *findShortcut = new QShortcut(QKeySequence::Find, this);
+    connect(findShortcut, &QShortcut::activated, this, &JSRepl::toggleSearchBox);
+
+    connect(printFunction, &JSPrintFunction::printRequested, this, &JSRepl::appendLog);
 
     m_lineEdit->setFocus();
 }
@@ -70,7 +80,7 @@ void JSRepl::printResult(const QJSValue &value)
 void JSRepl::execute()
 {
     QString code = m_lineEdit->text();
-    appendLog(">> " + code);
+    appendLog(">> " + code, true);
     QJSValue result = m_engine->evaluate(code);
     printResult(result);
     m_lineEdit->clear();
@@ -85,20 +95,41 @@ void JSRepl::loadScript()
         if (file.open(QFile::ReadOnly | QFile::Text)) {
             QTextStream in(&file);
             QString code = in.readAll();
-            appendLog(">> Execute " + fileName);
+            appendLog(">> Execute " + fileName, true);
             QJSValue result = m_engine->evaluate(code);
             printResult(result);
         }
     }
 }
 
-void JSRepl::appendLog(const QString &message)
+void JSRepl::appendLog(const QString &message, bool addBackground)
 {
-    m_textEdit->append(message);
     QTextCursor cursor = m_textEdit->textCursor();
     cursor.movePosition(QTextCursor::End);
+
+    QTextBlockFormat blockFormat;
+    if (addBackground) {
+        blockFormat.setBackground(QColor(240, 240, 240));
+        cursor.setBlockFormat(blockFormat);
+    } else {
+        cursor.setBlockFormat(blockFormat);
+    }
+
+    cursor.insertText(message);
+    cursor.insertBlock();
+
     m_textEdit->setTextCursor(cursor);
     m_textEdit->ensureCursorVisible();
+}
+
+void JSRepl::toggleSearchBox()
+{
+    if (m_searchBox->isVisible()) {
+        m_searchBox->hide();
+    } else {
+        m_searchBox->show();
+        m_searchBox->setFocusOnLineEdit();
+    }
 }
 
 JSLineEdit::JSLineEdit(QWidget *parent)
@@ -140,19 +171,10 @@ JSPrintFunction::JSPrintFunction(QTextEdit *textEdit, QObject *parent)
 {
 }
 
-void JSPrintFunction::appendLog(const QString &message)
-{
-    m_textEdit->append(message);
-    QTextCursor cursor = m_textEdit->textCursor();
-    cursor.movePosition(QTextCursor::End);
-    m_textEdit->setTextCursor(cursor);
-    m_textEdit->ensureCursorVisible();
-}
-
 void JSPrintFunction::print(QJSValue args)
 {
     if (!args.isArray()) {
-        appendLog(args.toString());
+        Q_EMIT printRequested(args.toString());
         return;
     }
 
@@ -164,5 +186,65 @@ void JSPrintFunction::print(QJSValue args)
         message += args.property(i).toString();
     }
 
-    appendLog(message);
+    Q_EMIT printRequested(message);
+}
+
+JSReplSearchBox::JSReplSearchBox(QTextEdit *parentTextEdit, QWidget *parent)
+    : QWidget(parent), textEdit(parentTextEdit)
+{
+    QHBoxLayout *layout = new QHBoxLayout(this);
+    lineEdit = new QLineEdit(this);
+    QPushButton *findNextButton = new QPushButton(tr("Find Next"), this);
+    QPushButton *findPreviousButton = new QPushButton(tr("Find Previous"), this);
+    QPushButton *closeButton = new QPushButton(tr("Close"), this);
+    layout->addWidget(lineEdit);
+    layout->addWidget(findNextButton);
+    layout->addWidget(findPreviousButton);
+    layout->addWidget(closeButton);
+
+    layout->setContentsMargins(0, 0, 0, 0);
+
+    connect(lineEdit, &QLineEdit::returnPressed, this, &JSReplSearchBox::findNext);
+    connect(findNextButton, &QPushButton::clicked, this, &JSReplSearchBox::findNext);
+    connect(findPreviousButton, &QPushButton::clicked, this, &JSReplSearchBox::findPrevious);
+    connect(closeButton, &QPushButton::clicked, this, &JSReplSearchBox::hide);
+
+    QShortcut *findPreviousShortcut = new QShortcut(QKeySequence("Shift+Return"), this);
+    connect(findPreviousShortcut, &QShortcut::activated, this, &JSReplSearchBox::findPrevious);
+
+    QShortcut *closeShortcut = new QShortcut(QKeySequence("Escape"), this);
+    connect(closeShortcut, &QShortcut::activated, this, &JSReplSearchBox::hide);
+
+    hide();
+}
+
+void JSReplSearchBox::findNext()
+{
+    QString text = lineEdit->text();
+    bool found = textEdit->find(text);
+    if (!found) {
+        // If not found, move the cursor to the start of the document and try again
+        QTextCursor cursor = textEdit->textCursor();
+        cursor.movePosition(QTextCursor::Start);
+        textEdit->setTextCursor(cursor);
+        textEdit->find(text);
+    }
+}
+
+void JSReplSearchBox::findPrevious()
+{
+    QString text = lineEdit->text();
+    bool found = textEdit->find(text, QTextDocument::FindBackward);
+    if (!found) {
+        // If not found, move the cursor to the end of the document and try again
+        QTextCursor cursor = textEdit->textCursor();
+        cursor.movePosition(QTextCursor::End);
+        textEdit->setTextCursor(cursor);
+        textEdit->find(text, QTextDocument::FindBackward);
+    }
+}
+
+void JSReplSearchBox::setFocusOnLineEdit()
+{
+    lineEdit->setFocus();
 }
