@@ -36,6 +36,7 @@ JSRepl::JSRepl(QHash<QString, QObject *> objects, QWidget *parent)
 
     m_engine = new QJSEngine(this);
     m_engine->installExtensions(QJSEngine::AllExtensions);
+    m_engine->globalObject().setProperty("global", m_engine->globalObject());
 
     JSPrintFunction *printFunction = new JSPrintFunction(m_textEdit, this);
     QJSValue printObject = m_engine->newQObject(printFunction);

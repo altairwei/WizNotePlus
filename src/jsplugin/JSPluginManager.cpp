@@ -360,6 +360,7 @@ void JSPluginManager::executeModuleScript(JSPluginModule *moduleData)
 
     QJSEngine jsEngine;
     jsEngine.installExtensions(QJSEngine::AllExtensions);
+    jsEngine.globalObject().setProperty("global", jsEngine.globalObject());
 
     WizWebEngineInjectObjectCollection objects = {
         {"JSPlugin", moduleData->parentPlugin()},
