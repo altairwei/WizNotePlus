@@ -87,6 +87,8 @@ public slots:
     void findPrevious();
 
 private:
+    void highlight(const QTextCursor &cursor);
+
     QTextEdit *textEdit;
     QLineEdit *lineEdit;
 };

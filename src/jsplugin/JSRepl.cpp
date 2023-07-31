@@ -228,7 +228,11 @@ void JSReplSearchBox::findNext()
         QTextCursor cursor = textEdit->textCursor();
         cursor.movePosition(QTextCursor::Start);
         textEdit->setTextCursor(cursor);
-        textEdit->find(text);
+        found = textEdit->find(text);
+    }
+
+    if (found) {
+        highlight(textEdit->textCursor());
     }
 }
 
@@ -241,11 +245,31 @@ void JSReplSearchBox::findPrevious()
         QTextCursor cursor = textEdit->textCursor();
         cursor.movePosition(QTextCursor::End);
         textEdit->setTextCursor(cursor);
-        textEdit->find(text, QTextDocument::FindBackward);
+        found = textEdit->find(text, QTextDocument::FindBackward);
+    }
+
+    if (found) {
+        highlight(textEdit->textCursor());
     }
 }
 
 void JSReplSearchBox::setFocusOnLineEdit()
 {
     lineEdit->setFocus();
+}
+
+void JSReplSearchBox::highlight(const QTextCursor &cursor)
+{
+    QList<QTextEdit::ExtraSelection> extraSelections;
+
+    QTextEdit::ExtraSelection selection;
+    QColor lineColor = QColor(Qt::yellow).lighter(160);
+
+    selection.format.setBackground(lineColor);
+    selection.format.setProperty(QTextFormat::FullWidthSelection, true);
+    selection.cursor = cursor;
+    selection.cursor.clearSelection();
+    extraSelections.append(selection);
+
+    textEdit->setExtraSelections(extraSelections);
 }
