@@ -26,10 +26,10 @@ const zh_CN = {
 const zh_TW = {
     "labelOverview": "近期概況",
     "labelNews": "為知動態",
-    "labelRecentDocuments": "近期文檔",
+    "labelRecentDocuments": "近期筆記",
     "labelRecentAccessedDocuments": "近期閲讀",
-    "labelUnreadDocuments": "未讀文檔",
-    "labelTodo": "待辦事宜",
+    "labelUnreadDocuments": "未讀筆記",
+    "labelTodo": "待辦事項",
     "Title": "歡迎使用為知筆記"
 }
 
