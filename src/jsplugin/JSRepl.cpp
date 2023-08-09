@@ -11,6 +11,7 @@
 #include <QTextStream>
 #include <QShortcut>
 #include <QTextFrame>
+#include <QDebug>
 
 JSRepl::JSRepl(QHash<QString, QObject *> objects, QWidget *parent)
     : QWidget{parent}
@@ -23,6 +24,9 @@ JSRepl::JSRepl(QHash<QString, QObject *> objects, QWidget *parent)
     m_textEdit->setReadOnly(true);
     //m_textEdit->document()->setDocumentMargin(0);
     layout->addWidget(m_textEdit);
+    m_textEdit->append(QString("QJSEngine (Qt v%1)").arg(QT_VERSION_STR));
+    m_textEdit->append("Type 'help()' for to show available APIs. "
+                       "Press 'Ctrl+F' to search in history.\n");
 
     m_searchBox = new JSReplSearchBox(m_textEdit, this);
     layout->addWidget(m_searchBox);
@@ -38,10 +42,11 @@ JSRepl::JSRepl(QHash<QString, QObject *> objects, QWidget *parent)
     m_engine->installExtensions(QJSEngine::AllExtensions);
     m_engine->globalObject().setProperty("global", m_engine->globalObject());
 
-    JSPrintFunction *printFunction = new JSPrintFunction(m_textEdit, this);
-    QJSValue printObject = m_engine->newQObject(printFunction);
-    m_engine->globalObject().setProperty("_printObject", printObject);
-    m_engine->evaluate("function print(...args) { _printObject.print(args); }");
+    JSGlobalFunction *funcObject = new JSGlobalFunction(m_textEdit, this);
+    QJSValue printObject = m_engine->newQObject(funcObject);
+    m_engine->globalObject().setProperty("_globalFunctionObject", printObject);
+    m_engine->evaluate("function print(...args) { _globalFunctionObject.print(args); }");
+    m_engine->evaluate("function help() { _globalFunctionObject.help(); }");
 
     auto i = objects.constBegin();
     while (i != objects.constEnd()) {
@@ -57,7 +62,11 @@ JSRepl::JSRepl(QHash<QString, QObject *> objects, QWidget *parent)
     QShortcut *findShortcut = new QShortcut(QKeySequence::Find, this);
     connect(findShortcut, &QShortcut::activated, this, &JSRepl::toggleSearchBox);
 
-    connect(printFunction, &JSPrintFunction::printRequested, this, &JSRepl::appendLog);
+    connect(funcObject, qOverload<const QJSValue &>(&JSGlobalFunction::printRequested),
+            this, qOverload<const QJSValue &>(&JSRepl::printResult));
+    connect(funcObject, qOverload<const QJSValueList &>(&JSGlobalFunction::printRequested),
+            this, qOverload<const QJSValueList &>(&JSRepl::printResult));
+    connect(funcObject, &JSGlobalFunction::logRequested, this, &JSRepl::appendLog);
 
     m_lineEdit->setFocus();
 }
@@ -67,6 +76,28 @@ QSize JSRepl::sizeHint() const
     return QSize(600, 400);
 }
 
+QString JSRepl::stringify(const QJSValue &value)
+{
+    if (value.isArray()) {
+        QStringList items;
+        const int length = value.property("length").toInt();
+        for (int i = 0; i < length; ++i) {
+            QJSValue v = value.property(i);
+            if (v.isArray()) {
+                items << QString("Array(%1)").arg(v.property("length").toInt());
+            } else {
+                items << stringify(v);
+            }
+        }
+        return QString("(%1) [%2]").arg(
+            QString::number(length), items.join(", "));
+    } else if (value.isString()) {
+        return "'" + value.toString() + "'";
+    } else {
+        return value.toString();
+    }
+}
+
 void JSRepl::printResult(const QJSValue &value)
 {
     if (value.isError()) {
@@ -74,8 +105,17 @@ void JSRepl::printResult(const QJSValue &value)
                   value.property("lineNumber").toString() + ":\n" +
                   value.toString());
     } else {
-        appendLog(value.toString());
+        appendLog(stringify(value));
     }
+}
+
+void JSRepl::printResult(const QJSValueList &vlist)
+{
+    QStringList text;
+    foreach (const QJSValue &v, vlist)
+        text << stringify(v);
+
+    appendLog(text.join(" "));
 }
 
 void JSRepl::execute()
@@ -166,28 +206,35 @@ void JSLineEdit::onReturnPressed()
     currentIndex = history.size();
 }
 
-JSPrintFunction::JSPrintFunction(QTextEdit *textEdit, QObject *parent)
+JSGlobalFunction::JSGlobalFunction(QTextEdit *textEdit, QObject *parent)
     : QObject(parent)
     , m_textEdit(textEdit)
 {
 }
 
-void JSPrintFunction::print(QJSValue args)
+void JSGlobalFunction::print(QJSValue args)
 {
-    if (!args.isArray()) {
-        Q_EMIT printRequested(args.toString());
-        return;
-    }
+    if (args.isArray()) {
+        const int length = args.property("length").toInt();
+        if (length == 1) {
+            Q_EMIT printRequested(args.property(0));
+            return;
+        }
 
-    QString message;
-    const int length = args.property("length").toInt();
-    for (int i = 0; i < length; ++i) {
-        if (!message.isEmpty())
-            message += " ";
-        message += args.property(i).toString();
-    }
+        QJSValueList jvlist;
+        for (int i = 0; i < length; ++i)
+            jvlist.append(args.property(i));
 
-    Q_EMIT printRequested(message);
+        Q_EMIT printRequested(jvlist);
+    }
+}
+
+void JSGlobalFunction::help()
+{
+    QStringList messages;
+    messages << "Available API Objects:"
+             << "global, WizExplorerApp, print(), help()";
+    Q_EMIT logRequested(messages.join("\n"), false);
 }
 
 JSReplSearchBox::JSReplSearchBox(QTextEdit *parentTextEdit, QWidget *parent)

@@ -21,17 +21,18 @@ public:
 
     QSize sizeHint() const override;
 
+private:
+    QString stringify(const QJSValue &value);
+
 public slots:
     void execute();
     void loadScript();
     void appendLog(const QString &message, bool addBackground = false);
 
-private:
-
-    void printResult(const QJSValue &value);
-
 private slots:
     void toggleSearchBox();
+    void printResult(const QJSValue &value);
+    void printResult(const QJSValueList &vlist);
 
 private:
     QJSEngine *m_engine;
@@ -57,18 +58,21 @@ private:
     int currentIndex;
 };
 
-class JSPrintFunction : public QObject
+class JSGlobalFunction : public QObject
 {
     Q_OBJECT
 
 public:
-    JSPrintFunction(QTextEdit *textEdit, QObject *parent = nullptr);
+    JSGlobalFunction(QTextEdit *textEdit, QObject *parent = nullptr);
 
 public slots:
     void print(QJSValue args);
+    void help();
 
 signals:
-    void printRequested(const QString &message, bool background = false);
+    void printRequested(const QJSValue &value);
+    void printRequested(const QJSValueList &vlist);
+    void logRequested(const QString &msg, bool add);
 
 private:
     QTextEdit *m_textEdit;
