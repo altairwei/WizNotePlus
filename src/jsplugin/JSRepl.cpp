@@ -62,10 +62,10 @@ JSRepl::JSRepl(QHash<QString, QObject *> objects, QWidget *parent)
     QShortcut *findShortcut = new QShortcut(QKeySequence::Find, this);
     connect(findShortcut, &QShortcut::activated, this, &JSRepl::toggleSearchBox);
 
-    connect(funcObject, qOverload<const QJSValue &>(&JSGlobalFunction::printRequested),
-            this, qOverload<const QJSValue &>(&JSRepl::printResult));
-    connect(funcObject, qOverload<const QJSValueList &>(&JSGlobalFunction::printRequested),
-            this, qOverload<const QJSValueList &>(&JSRepl::printResult));
+    connect(funcObject, QOverload<const QJSValue &>::of(&JSGlobalFunction::printRequested),
+            this, QOverload<const QJSValue &>::of(&JSRepl::printResult));
+    connect(funcObject, QOverload<const QJSValueList &>::of(&JSGlobalFunction::printRequested),
+            this, QOverload<const QJSValueList &>::of(&JSRepl::printResult));
     connect(funcObject, &JSGlobalFunction::logRequested, this, &JSRepl::appendLog);
 
     m_lineEdit->setFocus();
