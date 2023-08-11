@@ -55,6 +55,7 @@ WIZACTION* WizActions::actionsData()
         {"actionLink", QObject::tr("Link")},
         {"actionStyle", QObject::tr("Style")},
         {"actionInsert", QObject::tr("Insert")},
+        {"actionLayout", QObject::tr("Layout")},
         {"actionCategoryOption", QObject::tr("Category Option")},
         {"actionSortBy", QObject::tr("Sort By")},
         {"actionSkin", QObject::tr("Skin")}
@@ -103,7 +104,7 @@ WIZACTION* WizActions::actionsData()
 
         // view
         {WIZACTION_GLOBAL_TOGGLE_CATEGORY,      QObject::tr("Hide Sidebar"),                QObject::tr("Show Sidebar"),            QKeySequence("F3")},
-        {WIZACTION_GLOBAL_SHOW_SUB_FOLDER_DOCUMENTS,      QObject::tr("Show sub folder documents"),   QObject::tr(""),    QKeySequence("")},
+        {WIZACTION_GLOBAL_SHOW_SUBFOLDER_DOC,   QObject::tr("Show sub folder documents"),   QObject::tr(""),    QKeySequence("")},
 #ifdef Q_OS_MAC
         {WIZACTION_GLOBAL_CLIENT_FULLSCREEN,    QObject::tr("Enter Client Fullscreen"),     QObject::tr("Leave Client Fullscreen"), QKeySequence("Ctrl+Meta+F")},
         {WIZACTION_GLOBAL_TOGGLE_FULLSCREEN,    QObject::tr("Enter Fullscreen"),            QObject::tr("Leave Fullscreen"),        QKeySequence("Shift+Meta+F")},
@@ -132,6 +133,9 @@ WIZACTION* WizActions::actionsData()
         {WIZDOCUMENT_SORTBY_TITLE,              QObject::tr("Sort by Title"),               QObject::tr(""),                        QKeySequence()},
         {WIZDOCUMENT_SORTBY_FOLDER,             QObject::tr("Sort by Folder"),              QObject::tr(""),                        QKeySequence()},
         {WIZDOCUMENT_SORTBY_SIZE,               QObject::tr("Sort by Size"),                QObject::tr(""),                        QKeySequence()},
+        {WIZLAYOUT_CATEGORY_VIEW,               QObject::tr("Category View"),               QObject::tr(""),                        QKeySequence()},
+        {WIZLAYOUT_DOCUMENTLIST_VIEW,           QObject::tr("Document List View"),          QObject::tr(""),                        QKeySequence()},
+        {WIZLAYOUT_TAB_BROWSER,                 QObject::tr("Tab Browser"),                 QObject::tr(""),                        QKeySequence()},
 
         // skin
         {WIZSKIN_RELOAD_STYLESHEET,             QObject::tr("Reload stylesheet"),           QObject::tr(""),                        QKeySequence("Ctrl+F5")},

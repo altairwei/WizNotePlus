@@ -173,8 +173,9 @@ private:
     WizMessageListTitleBar* m_msgListTitleBar;
 
     WizDocumentSelectionView* m_documentSelection;
-    WizDocumentView* m_doc; /**< 用于储存多标签浏览器里当前活动笔记文档视图。 */
-    WizMainTabBrowser* m_mainTabBrowser; /**< 主标签部件，笔记文档视图储存在内部 */
+    WizDocumentView* m_doc;
+    WizMainTabBrowser* m_mainTabBrowser;
+    QWidget* m_documentPanel;
     std::shared_ptr<WizSplitter> m_splitter;
     QWidget* m_docListContainer;
     WizSingleDocumentViewManager* m_singleViewMgr;
@@ -319,6 +320,9 @@ public Q_SLOTS:
 
     // menu view
     void on_actionViewToggleCategory_triggered();
+    void on_actionLayoutCategoryView_triggered();
+    void on_actionLayoutDocumentListView_triggered();
+    void on_actionLayoutTabBrowser_triggered();
     void on_actionViewShowSubFolderDocuments_triggered();
     void on_actionViewToggleFullscreen_triggered();
 #ifdef Q_OS_MAC

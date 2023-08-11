@@ -156,7 +156,8 @@ WizMainWindow::WizMainWindow(WizDatabaseManager& dbMgr, QWidget *parent)
     , m_msgList(new WizMessageListView(dbMgr, this))
     , m_documentSelection(new WizDocumentSelectionView(*this, this))
     //, m_doc(new WizDocumentView(*this)) // 初始化文档视图，就把这个成员当成活动文档视图，QTabWidget说不要指定parent
-    , m_mainTabBrowser(new WizMainTabBrowser(*this, this)) // 初始化主标签栏
+    , m_mainTabBrowser(new WizMainTabBrowser(*this, this))
+    , m_documentPanel(nullptr)
     , m_history(new WizDocumentViewHistory())
     , m_animateSync(new WizAnimateAction(this))
     , m_singleViewMgr(new WizSingleDocumentViewManager(*this, this))
@@ -1091,7 +1092,10 @@ void WizMainWindow::initMenuActionState()
     m_actions->actionFromName(WIZCATEGORY_OPTION_TAGS)->setCheckable(true);
     m_actions->actionFromName(WIZCATEGORY_OPTION_BIZGROUPS)->setCheckable(true);
     m_actions->actionFromName(WIZCATEGORY_OPTION_PERSONALGROUPS)->setCheckable(true);
-    m_actions->actionFromName(WIZACTION_GLOBAL_SHOW_SUB_FOLDER_DOCUMENTS)->setCheckable(true);
+    m_actions->actionFromName(WIZACTION_GLOBAL_SHOW_SUBFOLDER_DOC)->setCheckable(true);
+    m_actions->actionFromName(WIZLAYOUT_CATEGORY_VIEW)->setCheckable(true);
+    m_actions->actionFromName(WIZLAYOUT_DOCUMENTLIST_VIEW)->setCheckable(true);
+    m_actions->actionFromName(WIZLAYOUT_TAB_BROWSER)->setCheckable(true);
 
     bool checked = m_category->isSectionVisible(Section_MessageCenter);
     m_actions->actionFromName(WIZCATEGORY_OPTION_MESSAGECENTER)->setChecked(checked);
@@ -1108,8 +1112,16 @@ void WizMainWindow::initMenuActionState()
     m_actions->actionFromName(WIZCATEGORY_OPTION_BIZGROUPS)->setChecked(checked);
     checked = m_category->isSectionVisible(Section_PersonalGroups);
     m_actions->actionFromName(WIZCATEGORY_OPTION_PERSONALGROUPS)->setChecked(checked);
-    checked = userSettings().showSubFolderDocuments();
-    m_actions->actionFromName(WIZACTION_GLOBAL_SHOW_SUB_FOLDER_DOCUMENTS)->setChecked(checked);
+    checked = m_settings->showSubFolderDocuments();
+    m_actions->actionFromName(WIZACTION_GLOBAL_SHOW_SUBFOLDER_DOC)->setChecked(checked);
+
+    // GUI Layout
+    checked = m_settings->showLayoutCategoryView();
+    m_actions->actionFromName(WIZLAYOUT_CATEGORY_VIEW)->setChecked(checked);
+    checked = m_settings->showLayoutDocumentListView();
+    m_actions->actionFromName(WIZLAYOUT_DOCUMENTLIST_VIEW)->setChecked(checked);
+    checked = m_settings->showLayoutTabBrowser();
+    m_actions->actionFromName(WIZLAYOUT_TAB_BROWSER)->setChecked(checked);
 
     initViewTypeActionGroup();
     initSortTypeActionGroup();
@@ -2049,14 +2061,14 @@ void WizMainWindow::initClient()
     // 绘制笔记浏览页面
     pal.setColor(QPalette::Window, QColor(Qt::white));
     pal.setColor(QPalette::Base, QColor(Qt::white));
-    QWidget* documentPanel = new QWidget(this); // 整个文档浏览界面板
-    documentPanel->setObjectName("document-panel");
-    documentPanel->setPalette(pal);
-    documentPanel->setAutoFillBackground(true);
+    m_documentPanel = new QWidget(this); // 整个文档浏览界面板
+    m_documentPanel->setObjectName("document-panel");
+    m_documentPanel->setPalette(pal);
+    m_documentPanel->setAutoFillBackground(true);
     QVBoxLayout* layoutDocument = new QVBoxLayout();
     layoutDocument->setContentsMargins(0, 0, 0, 0);
     layoutDocument->setSpacing(0);
-    documentPanel->setLayout(layoutDocument);
+    m_documentPanel->setLayout(layoutDocument);
     // WizMainTab
     layoutDocument->addWidget(m_mainTabBrowser); // 将主标签栏放在文档板布局上
     connect(m_mainTabBrowser, SIGNAL(currentChanged(int)), SLOT(on_mainTabWidget_currentChanged(int)));
@@ -2079,20 +2091,21 @@ void WizMainWindow::initClient()
     layoutList->addWidget(createMessageListView());
     m_docListContainer->setLayout(layoutList);
     m_splitter->addWidget(m_docListContainer);
-    m_splitter->addWidget(documentPanel);
+    m_splitter->addWidget(m_documentPanel);
     m_splitter->setStretchFactor(0, 0);
     m_splitter->setStretchFactor(1, 0);
     m_splitter->setStretchFactor(2, 1);
 
-    // set minimum width
-    bool isHighPix = WizIsHighPixel();
-    //setMinimumWidth(isHighPix ? 785 : 985);
-    //m_category->setMinimumWidth(isHighPix ? 76 : 165);
-    //m_docListContainer->setMinimumWidth(isHighPix ? 113 : 244);
-    //
     m_msgListWidget->hide();
-    //
+
     connect(m_splitter.get(), SIGNAL(splitterMoved(int, int)), SLOT(on_client_splitterMoved(int, int)));
+
+    bool show = m_settings->showLayoutCategoryView();
+    m_category->setVisible(show);
+    show = m_settings->showLayoutDocumentListView();
+    m_docListContainer->setVisible(show);
+    show = m_settings->showLayoutTabBrowser();
+    m_documentPanel->setVisible(show);
 }
 
 /* Document list view with additional toolbar. **/
@@ -2681,18 +2694,49 @@ void WizMainWindow::on_actionEditingDelete_triggered()
 
 void WizMainWindow::on_actionViewToggleCategory_triggered()
 {
-    WizGetAnalyzer().logAction("MenuBarToggleCategory");
+    static bool off = true;
 
-    QWidget* category = m_splitter->widget(0);
-    if (category->isVisible()) {
-        category->hide();
-        m_docListContainer->hide();
+    if (off) {
+        if (userSettings().showLayoutCategoryView())
+            on_actionLayoutCategoryView_triggered();
+        if (userSettings().showLayoutDocumentListView())
+            on_actionLayoutDocumentListView_triggered();
     } else {
-        category->show();
-        m_docListContainer->show();
+        if (!userSettings().showLayoutCategoryView())
+            on_actionLayoutCategoryView_triggered();
+        if (!userSettings().showLayoutDocumentListView())
+            on_actionLayoutDocumentListView_triggered();
     }
 
     m_actions->toggleActionText(WIZACTION_GLOBAL_TOGGLE_CATEGORY);
+    off = !off;
+}
+
+void WizMainWindow::on_actionLayoutCategoryView_triggered()
+{
+    bool show = !userSettings().showLayoutCategoryView();
+    userSettings().setShowLayoutCategoryView(show);
+
+    m_category->setVisible(show);
+    m_actions->actionFromName(WIZLAYOUT_CATEGORY_VIEW)->setChecked(show);
+}
+
+void WizMainWindow::on_actionLayoutDocumentListView_triggered()
+{
+    bool show = !userSettings().showLayoutDocumentListView();
+    userSettings().setShowLayoutDocumentListView(show);
+
+    m_docListContainer->setVisible(show);
+    m_actions->actionFromName(WIZLAYOUT_DOCUMENTLIST_VIEW)->setChecked(show);
+}
+
+void WizMainWindow::on_actionLayoutTabBrowser_triggered()
+{
+    bool show = !userSettings().showLayoutTabBrowser();
+    userSettings().setShowLayoutTabBrowser(show);
+
+    m_documentPanel->setVisible(show);
+    m_actions->actionFromName(WIZLAYOUT_TAB_BROWSER)->setChecked(show);
 }
 
 void WizMainWindow::on_actionViewShowSubFolderDocuments_triggered()
@@ -2700,9 +2744,8 @@ void WizMainWindow::on_actionViewShowSubFolderDocuments_triggered()
     bool show = !userSettings().showSubFolderDocuments();
     userSettings().setShowSubFolderDocuments(show);
     on_category_itemSelectionChanged();
-    //
-    actions()->actionFromName(WIZACTION_GLOBAL_SHOW_SUB_FOLDER_DOCUMENTS)->setChecked(show);
-    //
+
+    actions()->actionFromName(WIZACTION_GLOBAL_SHOW_SUBFOLDER_DOC)->setChecked(show);
 }
 
 #ifdef Q_OS_MAC
@@ -4441,6 +4484,9 @@ WizDocumentWebView* WizMainWindow::getActiveEditor()
 
 void WizMainWindow::showDocumentList()
 {
+    if (!m_settings->showLayoutDocumentListView())
+        return;
+
     if (!m_noteListWidget->isVisible())
     {
         m_docListContainer->show();
@@ -4496,6 +4542,9 @@ void WizMainWindow::showDocumentList(WizCategoryBaseView* category)
 
 void WizMainWindow::showMessageList(WizCategoryViewMessageItem* pItem)
 {
+    if (!m_settings->showLayoutDocumentListView())
+        return;
+
     if (!m_msgListWidget->isVisible())
     {
         m_docListContainer->show();

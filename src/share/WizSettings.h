@@ -40,7 +40,7 @@ public:
     BOOL getBool(const QString& strSection, const QString& strKey, bool def = false);
     BOOL setBool(const QString& strSection, const QString& strKey, bool def);
 
-    QColor getColor(const QString& strSection, const QString& strKey, QColor defColor = "#FFFFFF");
+    QColor getColor(const QString& strSection, const QString& strKey, QColor defColor = QColor(0xFF, 0xFF, 0xFF));
 
     QString getEncryptedString(const QString& strSection, const QString& strKey, const QString& strDef = "");
     BOOL setEncryptedString(const QString& strSection, const QString& strKey, const QString& str);
@@ -233,9 +233,21 @@ public:
     void setLastAttachmentPath(const QString& path);
     QString lastAttachmentPath() const;
 
-    //
     bool showSubFolderDocuments();
     void setShowSubFolderDocuments(bool b);
+
+    bool showLayoutCategoryView();
+    void setShowLayoutCategoryView(bool b);
+
+    bool showLayoutDocumentListView();
+    void setShowLayoutDocumentListView(bool b);
+
+    bool showLayoutTabBrowser();
+    void setShowLayoutTabBrowser(bool b);
+
+private:
+    bool showLayout(const QString &view);
+    void setShowLayout(const QString &view, bool b);
 };
 
 #endif // WIZSETTINGS_H
