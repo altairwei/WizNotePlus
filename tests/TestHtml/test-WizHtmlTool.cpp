@@ -403,8 +403,22 @@ void TestWizHtmlTool::check_WizHtmlToMarkdown_data()
     QTest::newRow("Line breaks")
         << wrapHTML("<p>This is the first line.<br>And this is the second line.</p>")
         << "This is the first line.  \nAnd this is the second line.\n";
+    QTest::newRow("Breaks in paragraphs")
+        << wrapHTML(R"(
+            <h2 id="foo">foo</h2>
+            <p>bar</p>
+            <p><br></p>
+            <p>Above is a break!</p>
+        )")
+        << "## foo\n"
+           "\n"
+           "bar\n"
+           "\n"
+           "  \n\n" // <p> will add a more linebreak.
+           "\n"
+           "Above is a break!\n";
 
-    // Test Emphasis
+    // Test Formating
     QTest::newRow("Bold")
         << wrapHTML("I just love <strong>bold text</strong>.")
         << "I just love **bold text**.";
@@ -423,12 +437,45 @@ void TestWizHtmlTool::check_WizHtmlToMarkdown_data()
     QTest::newRow("Bold and Italic without space")
         << wrapHTML("This is really<em><strong>very</strong></em>important text.")
         << "This is really***very***important text.";
+    QTest::newRow("Mutiple complex inline formating")
+        << wrapHTML(R"(
+            <p>
+              <strong>Bold</strong><br />
+              <em>Italic</em><br />
+              <em><strong>Bola and italic</strong></em><br />
+              <del>Strikethrought</del><br />
+              <u>Underline</u><br />
+              <ins>Underline2</ins>
+            </p>
+        )")
+        << "**Bold**  \n"
+           "*Italic*  \n"
+           "***Bola and italic***  \n"
+           "~~Strikethrought~~  \n"
+           "<u>Underline</u>  \n"
+           "<ins>Underline2</ins>\n";
+
+    // Test links
+    QTest::newRow("Normal link with a title")
+        << R"(<p><a href="https://example.com" title="Example website">Example</a></p>)"
+        << "[Example](https://example.com \"Example website\")\n";
+    QTest::newRow("Image within link")
+        << R"(
+            <p>
+              <a href="https://software-made-easy.github.io/MarkdownEdit/markdownedit.html">
+                <img src="/home/tim/qtprojegt/MarkdownEdit/doc/images/Example.png"
+                  alt="Example" />Klick the image for the preview</a>
+            </p>
+        )"
+        << "[![Example](/home/tim/qtprojegt/MarkdownEdit/doc/images/Example.png)"
+           "Klick the image for the preview](https://software-made-easy.github.io"
+           "/MarkdownEdit/markdownedit.html)\n";
 
     // Test Blockquotes
     QTest::newRow("Simple blockquotes")
         << R"(
             <blockquote>
-                <p>Dorothy followed her through many of the beautiful rooms in her castle.</p>
+              <p>Dorothy followed her through many of the beautiful rooms in her castle.</p>
             </blockquote>
         )"
         << "> Dorothy followed her through many of the beautiful rooms in her castle.\n";
@@ -440,7 +487,7 @@ void TestWizHtmlTool::check_WizHtmlToMarkdown_data()
               <p>The Witch bade her clean the pots and kettles and sweep the floor and keep the fire fed with wood.</p>
             </blockquote>)"
         << "> Dorothy followed her through many of the beautiful rooms in her castle.\n"
-           ">\n"
+           "> \n"
            "> The Witch bade her clean the pots and kettles and sweep the floor and keep the fire fed with wood.\n";
     QTest::newRow("Nested Blockquotes")
         << R"(
@@ -453,8 +500,44 @@ void TestWizHtmlTool::check_WizHtmlToMarkdown_data()
             </blockquote>
         )"
         << "> Dorothy followed her through many of the beautiful rooms in her castle.\n"
-           ">\n"
+           "> \n"
            "> > The Witch bade her clean the pots and kettles and sweep the floor and keep the fire fed with wood.\n";
+    QTest::newRow("Multiple level of nested blockquotes")
+        << R"(
+            <blockquote>
+              <blockquote><p>1</p></blockquote>
+              <blockquote>
+                <blockquote><p>1.2</p></blockquote>
+              </blockquote>
+              <blockquote>
+                <blockquote>
+                  <blockquote><p>1.3</p></blockquote>
+                </blockquote>
+              </blockquote>
+            </blockquote>
+        )"
+        << "> > 1\n"
+           "> \n"
+           "> > > 1.2\n"
+           "> \n"
+           "> > > > 1.3\n";
+    QTest::newRow("Multiple level of nested blockquotes 2")
+        << R"(
+            <blockquote>
+              <blockquote>
+                <p>1</p>
+                <blockquote>
+                  <p>1.2</p>
+                  <blockquote><p>1.3</p></blockquote>
+                </blockquote>
+              </blockquote>
+            </blockquote>
+        )"
+        << "> > 1\n"
+           "> > \n"
+           "> > > 1.2\n"
+           "> > > \n"
+           "> > > > 1.3\n";
     QTest::newRow("Blockquotes with Other Elements")
         << R"(
             <blockquote>
@@ -469,10 +552,10 @@ void TestWizHtmlTool::check_WizHtmlToMarkdown_data()
             </blockquote>
         )"
         << "> #### The quarterly results look great!\n"
-           ">\n"
+           "> \n"
            "> * Revenue was off the chart.\n"
            "> * Profits were higher than ever.\n"
-           ">\n"
+           "> \n"
            "> *Everything* is going according to **plan**.\n";
     QTest::newRow("Nested Blockquotes with list")
         << R"(
@@ -488,9 +571,55 @@ void TestWizHtmlTool::check_WizHtmlToMarkdown_data()
             </blockquote>
         )"
         << "> Dorothy followed her through many of the beautiful rooms in her castle.\n"
-           ">\n"
+           "> \n"
            "> > * Revenue was off the chart.\n"
            "> > * Profits were higher than ever.\n";
+    QTest::newRow("Complex Nested Blockquotes with list")
+        << R"(
+            <blockquote>
+              <p>1</p>
+              <blockquote>
+                <p>2</p>
+                <blockquote>
+                  <p>3</p>
+                </blockquote>
+              </blockquote>
+              <p>1 again</p>
+            </blockquote>
+            <ul>
+              <li>
+                <blockquote>
+                  <p>in list</p>
+                </blockquote>
+              </li>
+            </ul>
+        )"
+        << "> 1\n"
+           "> \n"
+           "> > 2\n"
+           "> > \n"
+           "> > > 3\n"
+           "> \n"
+           "> 1 again\n"
+           "\n"
+           "* > in list\n";
+    QTest::newRow("Blockquotes within list")
+        << R"(
+            <ul>
+              <li>
+                <blockquote>
+                  <p>in list 1</p>
+                </blockquote>
+              </li>
+              <li>
+                <blockquote>
+                  <p>in list 2</p>
+                </blockquote>
+              </li>
+            </ul>
+        )"
+        << "* > in list 1\n"
+           "* > in list 2\n";
 
     // Test Lists
     QTest::newRow("Test ordered lists")
@@ -570,6 +699,61 @@ void TestWizHtmlTool::check_WizHtmlToMarkdown_data()
         )")
         << "* 1968. A great year!\n"
            "* I think 1969 was second best.\n";
+    QTest::newRow("Multiple lines in same list element")
+        << wrapHTML(R"(
+            <ul>
+              <li>
+                <p>A paragraph</p>
+                <p>Same paragraph</p>
+              </li>
+              <li>
+                <p>A paragraph</p>
+                <p>Same paragraph</p>
+              </li>
+            </ul>
+        )")
+        << "* A paragraph\n"
+           "  \n"
+           "  Same paragraph\n"
+           "* A paragraph\n"
+           "  \n"
+           "  Same paragraph\n";
+    QTest::newRow("Simple nested list")
+        << R"(
+            <ul>
+              <li>foo</li>
+              <li>
+                <ul>
+                  <li>bar</li>
+                  <li>foo</li>
+                </ul>
+              </li>
+            </ul>
+         )"
+        << "* foo\n"
+           "* \n" // FIXME: blank line?
+           "\t* bar\n"
+           "\t* foo\n";
+    QTest::newRow("List entry with break")
+        << R"(
+            <ul>
+              <li>list entry with<br />break</li>
+              <li>
+                <ul>
+                  <li>Another<br />break<br />foo<br />bar</li>
+                </ul>
+              </li>
+              <li>Hello World</li>
+            </ul>
+        )"
+        << "* list entry with  \n"
+           "\tbreak\n"
+           "* \n"
+           "\t*   Another  \n"
+           "\tbreak  \n"
+           "\tfoo  \n"
+           "\tbar\n"
+           "* Hello World\n";
 
     // TODO: test structure controlling, such as line breaks
 }

@@ -3,6 +3,7 @@
 #include <sstream>
 #include <algorithm>
 #include <cctype>
+#include <QDebug>
 
 using namespace Utils::Gumbo;
 
@@ -26,8 +27,9 @@ QString WizHtmlConverter::toMarkdown()
         return "";
 
     convert_to_markdown(m_parser->output()->root);
+    flush();
 
-    return QString::fromStdString(output);
+    return m_lines.join("");
 }
 
 std::string escape_special_chars(const std::string& str) {
@@ -72,7 +74,32 @@ std::string escape_special_chars(const std::string& str) {
   return oss.str();
 }
 
-void convert_structure(GumboNode* node, std::string& output)
+std::string WizHtmlConverter::processTextNode(GumboNode* node)
+{
+    std::string puretext = escape_special_chars(node->v.text.text);
+
+    // Collapse leading whitespace into one space
+    std::size_t start_pos = puretext.find_first_not_of(" \t\r\n");
+    if (start_pos != std::string::npos && start_pos > 0) {
+        puretext.replace(0, start_pos, " ");
+    }
+
+    // Collapse trailing whitespace into one space
+    std::size_t end_pos = puretext.find_last_not_of(" \t\r\n");
+    if (end_pos != std::string::npos && end_pos < puretext.length() - 1) {
+        puretext.replace(end_pos + 1, puretext.length() - end_pos - 1, " ");
+    }
+
+    // Replace consecutive whitespace with a single space
+    auto end = std::unique(puretext.begin(), puretext.end(), [](char a, char b) {
+      return std::isspace(a) && std::isspace(b);
+    });
+    puretext.erase(end, puretext.end());
+
+    return puretext;
+}
+
+void WizHtmlConverter::processBlockStructure(GumboNode* node)
 {
     if (node->type == GUMBO_NODE_TEXT
             || node->type == GUMBO_NODE_ELEMENT) {
@@ -103,10 +130,7 @@ void convert_structure(GumboNode* node, std::string& output)
                     case GUMBO_TAG_OL:
                     case GUMBO_TAG_UL:
                     {
-                        if (node->parent->v.element.tag == GUMBO_TAG_BLOCKQUOTE)
-                            output.append(">\n");
-                        else
-                            output.append("\n");
+                        linebreak();
                         break;
                     }
                     default:
@@ -114,40 +138,90 @@ void convert_structure(GumboNode* node, std::string& output)
                     }
                 }
             }
+        }
+    }
+}
 
-            if (node->parent->v.element.tag == GUMBO_TAG_BLOCKQUOTE)
-                output.append("> ");
+void WizHtmlConverter::append(const std::string &str)
+{
+    m_current.append(str);
+}
+
+void WizHtmlConverter::linebreak(size_t n)
+{
+    m_current.append(std::string(n, '\n'));
+
+    if (!m_nestedBlock.isEmpty()) {
+        std::string prefix;
+        auto e = m_nestedBlock.constBegin();
+        while (e != m_nestedBlock.constEnd()) {
+            switch (*e) {
+            case GUMBO_TAG_BLOCKQUOTE:
+            {
+                prefix.append("> ");
+                ++e;
+                break;
+            }
+            case GUMBO_TAG_OL:
+            case GUMBO_TAG_UL:
+            {
+                // Skip first list level
+                GumboTag last = *e;
+                while (++e != m_nestedBlock.constEnd() &&
+                       (*e == GUMBO_TAG_OL || *e == GUMBO_TAG_UL)) {
+                    last = *e;
+                    prefix.append("\t");
+                }
+
+                if (m_listElemPrefixed.last()) {
+                    prefix.append(last == GUMBO_TAG_UL ? "  " :
+                                      std::string(std::to_string(m_listElemNo.last()).size(), ' ') + "  ");
+                } else {
+                    prefix.append(last == GUMBO_TAG_UL ? "* " :
+                                      std::to_string(m_listElemNo.last()) + ". ");
+                    m_listElemPrefixed.last() = true;
+                }
+
+                break;
+            }
+            default:
+                ++e;
+                break;
+            }
         }
 
+        flush(prefix);
+    } else {
+        flush();
+    }
+}
+
+void WizHtmlConverter::flush()
+{
+    m_lines << QString::fromStdString(m_current);
+    m_current.clear();
+}
+
+void WizHtmlConverter::flush(const std::string &prefix)
+{
+    m_lines << QString::fromStdString(prefix + m_current);
+    m_current.clear();
+}
+
+void WizHtmlConverter::processChildren(GumboNode* node)
+{
+    GumboVector* children = &node->v.element.children;
+    for (unsigned int i = 0; i < children->length; ++i) {
+        convert_to_markdown(static_cast<GumboNode*>(children->data[i]));
     }
 }
 
 // Recursive function to convert an HTML element into Markdown syntax
 void WizHtmlConverter::convert_to_markdown(GumboNode* node) {
-    convert_structure(node, output);
+    processBlockStructure(node);
 
     if (node->type == GUMBO_NODE_TEXT) {
-        std::string puretext = escape_special_chars(node->v.text.text);
-
-        // Collapse leading whitespace into one space
-        std::size_t start_pos = puretext.find_first_not_of(" \t\r\n");
-        if (start_pos != std::string::npos && start_pos > 0) {
-            puretext.replace(0, start_pos, " ");
-        }
-
-        // Collapse trailing whitespace into one space
-        std::size_t end_pos = puretext.find_last_not_of(" \t\r\n");
-        if (end_pos != std::string::npos && end_pos < puretext.length() - 1) {
-            puretext.replace(end_pos + 1, puretext.length() - end_pos - 1, " ");
-        }
-
-        // Replace consecutive whitespace with a single space
-        auto end = std::unique(puretext.begin(), puretext.end(), [](char a, char b) {
-            return std::isspace(a) && std::isspace(b);
-        });
-        puretext.erase(end, puretext.end());
-
-        output.append(puretext);
+        append(processTextNode(node));
     } else if (node->type == GUMBO_NODE_ELEMENT) {
         // Markdown syntax: https://www.markdownguide.org/basic-syntax/
         switch (node->v.element.tag) {
@@ -159,29 +233,24 @@ void WizHtmlConverter::convert_to_markdown(GumboNode* node) {
         case GUMBO_TAG_H5:
         case GUMBO_TAG_H6:
         {
-            output.append(std::string(node->v.element.tag - GUMBO_TAG_H1 + 1, '#'));
-            output.append(" ");
-            GumboVector* heading_children = &node->v.element.children;
-            for (unsigned int i = 0; i < heading_children->length; ++i) {
-                convert_to_markdown(static_cast<GumboNode*>(heading_children->data[i]));
-            }
-            output.append("\n");
+            append(std::string(node->v.element.tag - GUMBO_TAG_H1 + 1, '#'));
+            append(" ");
+            processChildren(node);
+            linebreak();
             break;
         }
         // Paragraphs
         case GUMBO_TAG_P:
         case GUMBO_TAG_DIV:
         {
-            GumboVector* paragraph_children = &node->v.element.children;
-            for (unsigned int i = 0; i < paragraph_children->length; ++i) {
-                convert_to_markdown(static_cast<GumboNode*>(paragraph_children->data[i]));
-            }
-            output.append("\n");
+            processChildren(node);
+            linebreak();
             break;
         }
         case GUMBO_TAG_BR:
         {
-            output.append("  \n");
+            append("  ");
+            linebreak();
             break;
         }
         // Emphasis
@@ -189,29 +258,40 @@ void WizHtmlConverter::convert_to_markdown(GumboNode* node) {
         case GUMBO_TAG_I:
         case GUMBO_TAG_CITE:
         {
-            output.append("*");
-            GumboVector* emphasis_children = &node->v.element.children;
-            for (unsigned int i = 0; i < emphasis_children->length; ++i) {
-                convert_to_markdown(static_cast<GumboNode*>(emphasis_children->data[i]));
-            }
-            output.append("*");
+            append("*");
+            processChildren(node);
+            append("*");
             break;
         }
         case GUMBO_TAG_STRONG:
         case GUMBO_TAG_B:
         {
-            output.append("**");
-            GumboVector* strong_children = &node->v.element.children;
-            for (unsigned int i = 0; i < strong_children->length; ++i) {
-                convert_to_markdown(static_cast<GumboNode*>(strong_children->data[i]));
-            }
-            output.append("**");
+            append("**");
+            processChildren(node);
+            append("**");
+            break;
+        }
+        case GUMBO_TAG_U:
+        case GUMBO_TAG_INS:
+        {
+            auto name = std::string(gumbo_normalized_tagname(node->v.element.tag));
+            append("<" + name + ">");
+            processChildren(node);
+            append("</" + name + ">");
+            break;
+        }
+        case GUMBO_TAG_DEL:
+        {
+            append("~~");
+            processChildren(node);
+            append("~~");
             break;
         }
         // Blockquotes
         case GUMBO_TAG_BLOCKQUOTE:
         {
             m_blockquoteLevel++;
+            m_nestedBlock.push(GUMBO_TAG_BLOCKQUOTE);
             if (node->v.element.children.length > 0) {
                 // Convert the contents of the blockquote to Markdown recursively.
                 for (unsigned int i = 0; i < node->v.element.children.length; ++i) {
@@ -220,6 +300,8 @@ void WizHtmlConverter::convert_to_markdown(GumboNode* node) {
                 }
             }
             m_blockquoteLevel--;
+            auto tag = m_nestedBlock.pop();
+            Q_ASSERT(tag == GUMBO_TAG_BLOCKQUOTE);
             break;
         }
         // Lists
@@ -228,27 +310,28 @@ void WizHtmlConverter::convert_to_markdown(GumboNode* node) {
         {
             // Enter new list block
             m_listLevel++;
+            bool ordered = node->v.element.tag == GUMBO_TAG_OL;
+            m_nestedBlock.push(ordered ? GUMBO_TAG_OL : GUMBO_TAG_UL);
             GumboVector* list_children = &node->v.element.children;
             unsigned int liNo = 0;
             for (unsigned int i = 0; i < list_children->length; ++i) {
                 GumboNode* child = static_cast<GumboNode*>(list_children->data[i]);
                 if (child->type == GUMBO_NODE_ELEMENT
                         && child->v.element.tag == GUMBO_TAG_LI) {
-                    if (++liNo > 1 && m_blockquoteLevel > 0) {
-                        int rep = m_blockquoteLevel;
-                        while(rep-- > 0)
-                            output.append("> ");
-                    }
-
-                    output.append(std::string(m_listLevel, '\t'));
-                    output.append(node->v.element.tag == GUMBO_TAG_UL ?
-                                      "* " : std::to_string(liNo) + ". ");
+                    ++liNo;
+                    m_listElemNo.push(liNo);
+                    m_listElemPrefixed.push(false);
+                    convert_to_markdown(child);
+                    m_listElemNo.pop();
+                    m_listElemPrefixed.pop();
+                } else {
+                    convert_to_markdown(child);
                 }
-
-                convert_to_markdown(child);
             }
             // Exit current list block
             m_listLevel--;
+            auto tag = m_nestedBlock.pop();
+            Q_ASSERT(ordered ? tag == GUMBO_TAG_OL : tag == GUMBO_TAG_UL);
             break;
         }
         case GUMBO_TAG_LI:
@@ -262,7 +345,7 @@ void WizHtmlConverter::convert_to_markdown(GumboNode* node) {
                 if (child->type == GUMBO_NODE_ELEMENT
                         && (child->v.element.tag == GUMBO_TAG_OL
                             || child->v.element.tag == GUMBO_TAG_UL)) {
-                    output.append("\n");
+                    linebreak();
                 }
 
                 convert_to_markdown(child);
@@ -273,9 +356,9 @@ void WizHtmlConverter::convert_to_markdown(GumboNode* node) {
                 std::string key = "|" + tagname + "|";
                 bool isInline = kTagsNonBreakingInline.find(key) != std::string::npos;
                 if (isInline)
-                    output.append("\n");
+                    linebreak();
             } else {
-                output.append("\n");
+                linebreak();
             }
 
             break;
@@ -283,73 +366,68 @@ void WizHtmlConverter::convert_to_markdown(GumboNode* node) {
         // Code
         case GUMBO_TAG_CODE:
         {
-            output.append("`");
-            GumboVector* code_children = &node->v.element.children;
-            for (unsigned int i = 0; i < code_children->length; ++i) {
-                convert_to_markdown(static_cast<GumboNode*>(code_children->data[i]));
-            }
-            output.append("`");
+            append("`");
+            processChildren(node);
+            append("`");
             break;
         }
         // Horizontal Rules
         case GUMBO_TAG_HR:
         {
-            output.append("\n\n---\n\n");
+            linebreak(2);
+            append("---");
+            linebreak(2);
             break;
         }
         case GUMBO_TAG_PRE:
         {
-            output.append("```\n");
-            GumboVector* pre_children = &node->v.element.children;
-            for (unsigned int i = 0; i < pre_children->length; ++i) {
-                convert_to_markdown(static_cast<GumboNode*>(pre_children->data[i]));
-            }
-            output.append("\n```\n");
+            append("```");
+            linebreak();
+            processChildren(node);
+            linebreak();
+            append("```");
+            linebreak();
             break;
         }
         // Links
         case GUMBO_TAG_A:
         {
-            output.append("[");
-            GumboVector* children = &node->v.element.children;
-            for (unsigned int i = 0; i < children->length; ++i) {
-                convert_to_markdown(static_cast<GumboNode*>(children->data[i]));
-            }
-            output.append("](");
+            append("[");
+            processChildren(node);
+            append("](");
             GumboAttribute* href_attr = gumbo_get_attribute(&node->v.element.attributes, "href");
-            if (href_attr) {
-                output.append(href_attr->value);
+            if (href_attr) append(href_attr->value);
+            GumboAttribute* title_attr = gumbo_get_attribute(&node->v.element.attributes, "title");
+            if (title_attr) {
+                append(" \"");
+                append(title_attr->value);
+                append("\"");
             }
-            output.append(")");
+            append(")");
             break;
         }
         // Images
         case GUMBO_TAG_IMG:
         {
-            output.append("![");
+            append("![");
             GumboAttribute* alt_attr = gumbo_get_attribute(&node->v.element.attributes, "alt");
-            if (alt_attr) output.append(alt_attr->value);
-            output.append("](");
+            if (alt_attr) append(alt_attr->value);
+            append("](");
             GumboAttribute* src_attr = gumbo_get_attribute(&node->v.element.attributes, "src");
-            if (src_attr) output.append(src_attr->value);
+            if (src_attr) append(src_attr->value);
             GumboAttribute* title_attr = gumbo_get_attribute(&node->v.element.attributes, "title");
             if (title_attr) {
-                output.append(" \"");
-                output.append(title_attr->value);
-                output.append("\"");
+                append(" \"");
+                append(title_attr->value);
+                append("\"");
             }
-            output.append(")");
+            append(")");
             break;
         }
         //TODO: Table
         default:
-        {
-            GumboVector* default_children = &node->v.element.children;
-            for (unsigned int i = 0; i < default_children->length; ++i) {
-                convert_to_markdown(static_cast<GumboNode*>(default_children->data[i]));
-            }
+            processChildren(node);
             break;
-        }
         }
     }
 }
