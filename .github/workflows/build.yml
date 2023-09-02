@@ -72,6 +72,7 @@ jobs:
           name: Linux_Dist
           path: _build/package/dist
       - name: Upload to webdav
+        if: github.repository == 'altairwei/WizNotePlus'
         run: |
           find _build/package/dist -type f -name "WizNotePlus-*" | while read x; do
             filename=$(basename $x)
@@ -129,6 +130,7 @@ jobs:
           name: Windows_Dist
           path: _build/package/dist
       - name: Upload to webdav
+        if: github.repository == 'altairwei/WizNotePlus'
         shell: powershell
         run: |
           Remove-Item alias:curl
@@ -191,6 +193,7 @@ jobs:
           name: MacOS_Dist
           path: _build/package/dist
       - name: Upload to webdav
+        if: github.repository == 'altairwei/WizNotePlus'
         run: |
           find _build/package/dist -type f -name "WizNotePlus-*" | while read x; do
             filename=$(basename $x)
@@ -247,6 +250,7 @@ jobs:
           draft: true
           prerelease: true
       - name: Upload to webdav
+        if: github.repository == 'altairwei/WizNotePlus'
         run: |
           version=$(printf '${{ github.ref }}' | sed -E 's#refs/tags/v(.*)#\1#')
           curl --basic --user "${{ secrets.WEBDAV }}" -X MKCOL "https://dav.jianguoyun.com/dav/WizNotePlus/stable/v$version"
