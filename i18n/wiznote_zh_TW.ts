@@ -394,7 +394,7 @@
     <message>
         <location filename="../src/jsplugin/JSPluginManager.cpp" line="357"/>
         <source>Can&apos;t read script file: </source>
-        <translation type="unfinished"></translation>
+        <translation>無法載入指令碼檔案： </translation>
     </message>
 </context>
 <context>
@@ -402,12 +402,12 @@
     <message>
         <location filename="../src/jsplugin/JSRepl.cpp" line="20"/>
         <source>JavaScript Console</source>
-        <translation type="unfinished"></translation>
+        <translation>JavaScript 控制臺</translation>
     </message>
     <message>
         <location filename="../src/jsplugin/JSRepl.cpp" line="60"/>
         <source>Select a JavaScript file to execute.</source>
-        <translation>選取您要執行的 Javascript 檔案</translation>
+        <translation>選取您要執行的 Javascript 檔案。</translation>
     </message>
     <message>
         <location filename="../src/jsplugin/JSRepl.cpp" line="133"/>
@@ -420,12 +420,12 @@
     <message>
         <location filename="../src/jsplugin/JSRepl.cpp" line="245"/>
         <source>Find Next</source>
-        <translation type="unfinished"></translation>
+        <translation>尋找後一個</translation>
     </message>
     <message>
         <location filename="../src/jsplugin/JSRepl.cpp" line="246"/>
         <source>Find Previous</source>
-        <translation type="unfinished"></translation>
+        <translation>尋找前一個</translation>
     </message>
     <message>
         <location filename="../src/jsplugin/JSRepl.cpp" line="247"/>
@@ -578,12 +578,12 @@
     <message>
         <location filename="../src/WizActions.cpp" line="88"/>
         <source>Download Manager...</source>
-        <translation>下載管理器</translation>
+        <translation>下載管理器...</translation>
     </message>
     <message>
         <location filename="../src/WizActions.cpp" line="89"/>
         <source>JavaScript Console...</source>
-        <translation></translation>
+        <translation>JavaScript 控制台...</translation>
     </message>
     <message>
         <location filename="../src/WizActions.cpp" line="90"/>
@@ -686,7 +686,7 @@
     <message>
         <location filename="../src/WizActions.cpp" line="58"/>
         <source>Layout</source>
-        <translation type="unfinished"></translation>
+        <translation>佈局</translation>
     </message>
     <message>
         <location filename="../src/WizActions.cpp" line="61"/>
@@ -696,7 +696,7 @@
     <message>
         <location filename="../src/WizActions.cpp" line="78"/>
         <source>Save as Markdown...</source>
-        <translation>另存為 Markdown</translation>
+        <translation>另存為 Markdown...</translation>
     </message>
     <message>
         <location filename="../src/WizActions.cpp" line="80"/>
@@ -777,17 +777,17 @@
     <message>
         <location filename="../src/WizActions.cpp" line="136"/>
         <source>Category View</source>
-        <translation type="unfinished"></translation>
+        <translation>目錄欄檢視</translation>
     </message>
     <message>
         <location filename="../src/WizActions.cpp" line="137"/>
         <source>Document List View</source>
-        <translation type="unfinished"></translation>
+        <translation>筆記列表檢視</translation>
     </message>
     <message>
         <location filename="../src/WizActions.cpp" line="138"/>
         <source>Tab Browser</source>
-        <translation type="unfinished"></translation>
+        <translation>標簽頁瀏覽器</translation>
     </message>
     <message>
         <location filename="../src/WizActions.cpp" line="141"/>
@@ -3498,7 +3498,7 @@ Password hint: %1</source>
     <message>
         <location filename="../src/ui/WizDocTemplateDialog.ui" line="65"/>
         <source>* Recommended templates updating... Upgrade to VIP, all templates can be used.</source>
-        <translation>* 推薦範本持續更新中... 升級 VIP 將可免費使用所有範本</translation>
+        <translation>* 推薦範本持續更新中... 升級 VIP 將可免費使用所有範本。</translation>
     </message>
     <message>
         <location filename="../src/ui/WizDocTemplateDialog.ui" line="89"/>
@@ -4077,7 +4077,7 @@ Go to create a note</source>
     <message>
         <location filename="../src/widgets/WizEmailShareDialog.cpp" line="153"/>
         <source>Unkown error.</source>
-        <translation>未知錯誤</translation>
+        <translation>未知錯誤。</translation>
     </message>
     <message>
         <location filename="../src/widgets/WizEmailShareDialog.cpp" line="210"/>
@@ -4553,7 +4553,7 @@ Go to create a note</source>
     <message>
         <location filename="../src/WizLoginDialog.cpp" line="621"/>
         <source>Invalid email address.</source>
-        <translation>無效的電子郵件位址</translation>
+        <translation>無效的電子郵件位址。</translation>
     </message>
     <message>
         <location filename="../src/WizLoginDialog.cpp" line="628"/>
@@ -4627,7 +4627,7 @@ Go to create a note</source>
     <message>
         <location filename="../src/WizLoginDialog.cpp" line="1043"/>
         <source>Network connection is unavailable.</source>
-        <translation>網路中斷</translation>
+        <translation>網路中斷。</translation>
     </message>
     <message>
         <location filename="../src/WizLoginDialog.cpp" line="1057"/>

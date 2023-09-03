@@ -394,7 +394,7 @@
     <message>
         <location filename="../src/jsplugin/JSPluginManager.cpp" line="357"/>
         <source>Can&apos;t read script file: </source>
-        <translation type="unfinished"></translation>
+        <translation>无法载入脚本文件： </translation>
     </message>
 </context>
 <context>
@@ -402,17 +402,17 @@
     <message>
         <location filename="../src/jsplugin/JSRepl.cpp" line="20"/>
         <source>JavaScript Console</source>
-        <translation type="unfinished"></translation>
+        <translation>JavaScript 控制台</translation>
     </message>
     <message>
         <location filename="../src/jsplugin/JSRepl.cpp" line="60"/>
         <source>Select a JavaScript file to execute.</source>
-        <translation type="unfinished"></translation>
+        <translation>选取您要执行的 JavaScript 文件。</translation>
     </message>
     <message>
         <location filename="../src/jsplugin/JSRepl.cpp" line="133"/>
         <source>Open JavaScript File</source>
-        <translation type="unfinished"></translation>
+        <translation>打开 JavaScript 文件</translation>
     </message>
 </context>
 <context>
@@ -420,17 +420,17 @@
     <message>
         <location filename="../src/jsplugin/JSRepl.cpp" line="245"/>
         <source>Find Next</source>
-        <translation type="unfinished"></translation>
+        <translation>查找下一个</translation>
     </message>
     <message>
         <location filename="../src/jsplugin/JSRepl.cpp" line="246"/>
         <source>Find Previous</source>
-        <translation type="unfinished"></translation>
+        <translation>查找前一个</translation>
     </message>
     <message>
         <location filename="../src/jsplugin/JSRepl.cpp" line="247"/>
         <source>Close</source>
-        <translation type="unfinished">关闭</translation>
+        <translation>关闭</translation>
     </message>
 </context>
 <context>
@@ -568,7 +568,7 @@
     <message>
         <location filename="../src/WizActions.cpp" line="58"/>
         <source>Layout</source>
-        <translation type="unfinished"></translation>
+        <translation>布局</translation>
     </message>
     <message>
         <location filename="../src/WizActions.cpp" line="86"/>
@@ -583,12 +583,12 @@
     <message>
         <location filename="../src/WizActions.cpp" line="88"/>
         <source>Download Manager...</source>
-        <translation type="unfinished"></translation>
+        <translation>下载管理器...</translation>
     </message>
     <message>
         <location filename="../src/WizActions.cpp" line="89"/>
         <source>JavaScript Console...</source>
-        <translation type="unfinished"></translation>
+        <translation>JavaScript 控制台...</translation>
     </message>
     <message>
         <location filename="../src/WizActions.cpp" line="90"/>
@@ -777,17 +777,17 @@
     <message>
         <location filename="../src/WizActions.cpp" line="136"/>
         <source>Category View</source>
-        <translation type="unfinished"></translation>
+        <translation>目录栏视图</translation>
     </message>
     <message>
         <location filename="../src/WizActions.cpp" line="137"/>
         <source>Document List View</source>
-        <translation type="unfinished"></translation>
+        <translation>文档列表视图</translation>
     </message>
     <message>
         <location filename="../src/WizActions.cpp" line="138"/>
         <source>Tab Browser</source>
-        <translation type="unfinished"></translation>
+        <translation>标签页浏览器</translation>
     </message>
     <message>
         <location filename="../src/WizActions.cpp" line="141"/>
@@ -4581,7 +4581,7 @@ Go to create a note</source>
     <message>
         <location filename="../src/WizLoginDialog.cpp" line="621"/>
         <source>Invalid email address.</source>
-        <translation>无效的邮箱地址.</translation>
+        <translation>无效的邮箱地址。</translation>
     </message>
     <message>
         <location filename="../src/WizLoginDialog.cpp" line="628"/>
@@ -4631,7 +4631,7 @@ Go to create a note</source>
     <message>
         <location filename="../src/WizLoginDialog.cpp" line="1043"/>
         <source>Network connection is unavailable.</source>
-        <translation>网络连接不可用.</translation>
+        <translation>网络连接不可用。</translation>
     </message>
     <message>
         <location filename="../src/WizLoginDialog.cpp" line="1196"/>
