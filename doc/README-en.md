@@ -10,7 +10,7 @@ README [中文](../README.md) | **English**
 
 The **WizNotePlus** project is dedicated to improving the usability of cross-platform client **[WizQTClient](https://github.com/WizTeam/WizQTClient)** to meet or exceed that of the Windows platform-specific client. In order to reach the goal, we need to implement a developer-friendly plugin system and promote the establishment of a third-party developer community with good atmosphere. This project is initiated and maintained by third-party developers in compliance with the GPLv3 agreement. Any developer or user who wishes to participate in the project is welcome to contact `altair_wei@outlook.com` .
 
-[![release](https://img.shields.io/badge/release-v2.11.3-green.svg)](https://github.com/altairwei/WizNotePlus/releases) [![license](https://img.shields.io/badge/license-GPLv3-green.svg)](https://github.com/altairwei/WizNotePlus/blob/master/LICENSE) [![build](https://github.com/altairwei/WizNotePlus/actions/workflows/build.yml/badge.svg)](https://github.com/altairwei/WizNotePlus/actions/workflows/build.yml)
+[![release](https://img.shields.io/badge/release-v2.12.0-green.svg)](https://github.com/altairwei/WizNotePlus/releases) [![license](https://img.shields.io/badge/license-GPLv3-green.svg)](https://github.com/altairwei/WizNotePlus/blob/master/LICENSE) [![build](https://github.com/altairwei/WizNotePlus/actions/workflows/build.yml/badge.svg)](https://github.com/altairwei/WizNotePlus/actions/workflows/build.yml)
 
 ## Features
 

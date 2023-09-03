@@ -10,7 +10,7 @@ README **中文** | [English](doc/README-en.md)
 
 **为知笔记 Plus** 项目致力于提高 [为知笔记跨平台客户端](https://github.com/WizTeam/WizQTClient) 的可用性，以达到或者超越 Windows 平台特有客户端的水平。此项目致力于实现一个对开发者友好的插件系统，促进氛围良好的第三方开发者社区的建成。本项目在遵循 GPLv3 协议的情况下由第三方开发者发起并维护，欢迎任何有意愿参与项目贡献的开发者或用户联系 altair_wei@outlook.com 。
 
-[![release](https://img.shields.io/badge/release-v2.11.3-green.svg)](https://github.com/altairwei/WizNotePlus/releases) [![license](https://img.shields.io/badge/license-GPLv3-green.svg)](https://github.com/altairwei/WizNotePlus/blob/master/LICENSE) [![build](https://github.com/altairwei/WizNotePlus/actions/workflows/build.yml/badge.svg)](https://github.com/altairwei/WizNotePlus/actions/workflows/build.yml)
+[![release](https://img.shields.io/badge/release-v2.12.0-green.svg)](https://github.com/altairwei/WizNotePlus/releases) [![license](https://img.shields.io/badge/license-GPLv3-green.svg)](https://github.com/altairwei/WizNotePlus/blob/master/LICENSE) [![build](https://github.com/altairwei/WizNotePlus/actions/workflows/build.yml/badge.svg)](https://github.com/altairwei/WizNotePlus/actions/workflows/build.yml)
 
 ## 为知社区
 
