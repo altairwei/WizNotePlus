@@ -6,7 +6,7 @@
 class WizCommonUI : public QObject
 {
     Q_OBJECT
-    
+
 public:
     WizCommonUI(QObject* parent);
 
@@ -33,6 +33,7 @@ public:
     Q_INVOKABLE QString RunExe(const QString &exeFileName, const QStringList &params);
     Q_INVOKABLE QObject* RunProc(const QString &exeFileName, const QStringList &params,
                                  bool wait = false, bool logging = false);
+    Q_INVOKABLE QObject* CreateProcess();
 
     Q_INVOKABLE void ShowMessage(const QString &title, const QString &text, unsigned int type);
     Q_INVOKABLE bool Confirm(const QString &title, const QString &text);

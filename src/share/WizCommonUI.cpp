@@ -18,6 +18,7 @@
 #include "utils/WizPathResolve.h"
 #include "share/WizMisc.h"
 #include "share/WizSettings.h"
+#include "api/QtClassWrapper.h"
 
 
 WizCommonUI::WizCommonUI(QObject* parent)
@@ -202,7 +203,7 @@ QString WizCommonUI::RunExe(const QString &exeFileName, const QStringList &param
 QObject* WizCommonUI::RunProc(const QString &exeFileName, const QStringList &params,
                               bool wait, bool logging)
 {
-    QProcess *process = new QProcess(this);
+    auto *process = new QtWrapper::Process(this);
 
     if (logging) {
         connect(process, &QProcess::readyReadStandardOutput, [=]() {
@@ -233,6 +234,11 @@ QObject* WizCommonUI::RunProc(const QString &exeFileName, const QStringList &par
     }
 
     return process;
+}
+
+QObject* WizCommonUI::CreateProcess()
+{
+    return new QtWrapper::Process(this);
 }
 
 void WizCommonUI::ShowMessage(const QString &title, const QString &text, unsigned int type)

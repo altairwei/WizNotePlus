@@ -240,6 +240,7 @@ set(wiznote_SOURCES
     api/ApiWizDocumentListCtrl.cpp
     api/ApiWizDatabase.cpp
     api/ApiWizExplorerApp.cpp
+    api/QtClassWrapper.cpp
 
     utils/ExternalEditorLauncher.cpp
     widgets/FileLineEdit.cpp
@@ -460,6 +461,7 @@ set(wiznote_HEADERS
     api/ApiWizDocumentListCtrl.h
     api/ApiWizDatabase.h
     api/ApiWizExplorerApp.h
+    api/QtClassWrapper.h
 
     utils/ExternalEditorLauncher.h
     widgets/FileLineEdit.h
