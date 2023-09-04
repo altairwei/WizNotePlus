@@ -6,6 +6,7 @@
 #include "share/WizObject.h"
 
 class WizExplorerApp;
+class WizMainWindow;
 class JSPluginSelectorWindow;
 class JSPluginSpec;
 class WizWebsiteView;
@@ -34,6 +35,8 @@ public:
         return instance;
     }
 
+    void setMainWindow(WizMainWindow *mv) { m_mainWindow = mv; }
+
     QList<JSPluginModule *> modulesByButtonLocation(QString buttonLocation) const;
     QList<JSPluginModule *> modulesByModuleType(QString type) const;
     QList<JSPluginModule *> modulesByKeyValue(QString key, QString value) const;
@@ -49,6 +52,8 @@ public:
 
     WizWebsiteView *initPluginMainTabView(JSPluginModule *moduleData);
     void showPluginMainTabView(JSPluginModule *moduleData);
+
+    void executeModuleScript(JSPluginModule *moduleData);
 
 private:
     JSPluginManager();
@@ -67,7 +72,7 @@ public slots:
     void handlePluginPopupRequest(QAction *ac, const QPoint &pos);
 
 private:
-    WizExplorerApp &m_app;
+    WizMainWindow *m_mainWindow;
     QList<JSPlugin *> m_pluginDataCollection;
     QHash<QString, JSPluginHtmlDialog *> m_pluginHtmlDialogCollection;
     QHash<QString, QPointer<WizWebsiteView > > m_pluginMainTabViewCollection;

@@ -10,11 +10,15 @@
 #include <QDesktopServices>
 #include <QUrl>
 #include <QFileDialog>
+#include <QProcess>
+#include <QInputDialog>
+#include <QMessageBox>
 
 #include "WizMisc.h"
 #include "utils/WizPathResolve.h"
 #include "share/WizMisc.h"
 #include "share/WizSettings.h"
+#include "api/QtClassWrapper.h"
 
 
 WizCommonUI::WizCommonUI(QObject* parent)
@@ -93,6 +97,8 @@ QString WizCommonUI::GetSpecialFolder(const QString &bstrFolderName)
         return Utils::WizPathResolve::tempPath();
     } else if (bstrFolderName == "AppPath") {
         return Utils::WizPathResolve::appPath();
+    } else if (bstrFolderName == "DataPath") {
+        return Utils::WizPathResolve::dataStorePath();
     } else {
         return "";
     }
@@ -178,4 +184,110 @@ void WizCommonUI::SetValueToIni(const QString &fileName, const QString &section,
 {
     WizSettings setting(fileName);
     setting.setString(section, key, value);
+}
+
+QString WizCommonUI::RunExe(const QString &exeFileName, const QStringList &params)
+{
+    // FIXME: 在另一个进程中启动
+    QProcess *process = new QProcess(this);
+    process->start(exeFileName, params);
+    process->waitForFinished();
+    QByteArray output = process->readAllStandardOutput();
+    QByteArray error = process->readAllStandardError();
+    int exitCode = process->exitCode();
+    process->deleteLater();
+
+    return exitCode == 0 ? QString(output) : QString(error);
+}
+
+QObject* WizCommonUI::RunProc(const QString &exeFileName, const QStringList &params,
+                              bool wait, bool logging)
+{
+    auto *process = new QtWrapper::Process(this);
+
+    if (logging) {
+        connect(process, &QProcess::readyReadStandardOutput, [=]() {
+            QByteArray output = process->readAllStandardOutput();
+            QTextStream outputStream(output);
+            while (!outputStream.atEnd()) {
+                QString line = outputStream.readLine();
+                qInfo() << line;
+            }
+        });
+
+        connect(process, &QProcess::readyReadStandardError, [=]() {
+            QByteArray errorOutput = process->readAllStandardError();
+            QTextStream errorStream(errorOutput);
+            while (!errorStream.atEnd()) {
+                QString line = errorStream.readLine();
+                qDebug() << line;
+            }
+        });
+    }
+
+    process->start(exeFileName, params);
+
+    if (wait) {
+        process->waitForStarted();
+        while(process->state() != QProcess::NotRunning)
+            QApplication::processEvents();
+    }
+
+    return process;
+}
+
+QObject* WizCommonUI::CreateProcess()
+{
+    return new QtWrapper::Process(this);
+}
+
+void WizCommonUI::ShowMessage(const QString &title, const QString &text, unsigned int type)
+{
+    switch(type) {
+    case 1:
+        QMessageBox::warning(nullptr, title, text);
+        break;
+    case 2:
+        QMessageBox::critical(nullptr, title, text);
+        break;
+    case 0:
+    default:
+        QMessageBox::information(nullptr, title, text);
+        break;
+    }
+}
+
+bool WizCommonUI::Confirm(const QString &title, const QString &text)
+{
+    auto ret = QMessageBox::question(nullptr, title, text);
+    return ret == QMessageBox::Yes;
+}
+
+int WizCommonUI::GetIntValue(const QString &title, const QString &description,
+                                         int value, int min, int max, int step)
+{
+    return QInputDialog::getInt(nullptr, title, description, value, min, max, step);
+}
+
+double WizCommonUI::GetDoubleValue(const QString &title, const QString &description,
+                                double value, double min, double max, double step, double decimals)
+{
+    return QInputDialog::getDouble(nullptr, title, description, value, min, max, decimals, nullptr,
+                                   Qt::WindowFlags(), step);
+}
+
+QString WizCommonUI::InputBox(const QString &title, const QString &description, const QString &value)
+{
+    return QInputDialog::getText(nullptr, title, description, QLineEdit::Normal, value);
+}
+
+QString WizCommonUI::InputMultiLineText(const QString &title, const QString &description, const QString &value)
+{
+    return QInputDialog::getMultiLineText(nullptr, title, description, value);
+}
+
+QString WizCommonUI::SelectItem(const QString &title, const QString &description, const QStringList &items,
+                                   int current, bool editable)
+{
+    return QInputDialog::getItem(nullptr, title, description, items, current, editable);
 }

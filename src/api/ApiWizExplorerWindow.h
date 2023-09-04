@@ -18,6 +18,7 @@ public:
     Q_INVOKABLE QObject* CurrentDocumentBrowserObject();
     Q_INVOKABLE void ViewDocument(QObject *pWizDocument, bool vbOpenInNewTab = true);
     Q_INVOKABLE void ViewAttachment(QObject *pWizDocumentAttachment);
+    Q_INVOKABLE void OpenMessageConsole();
 
 };
 

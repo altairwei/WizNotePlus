@@ -20,7 +20,7 @@ jobs:
   
   build_linux:
     name: Linux
-    runs-on: ubuntu-18.04
+    runs-on: 	ubuntu-20.04
     env:
       QT_INSTALL_TARGET_ARCH: gcc_64
       QT_INSTALL_TARGET_DIR_PREFIX: /opt
@@ -56,8 +56,7 @@ jobs:
           sudo chmod a+x /usr/bin/linuxdeployqt
       - name: Install and config conan
         run: |
-          pip install conan
-          conan remote add wiznoteplus https://altairwei.jfrog.io/artifactory/api/conan/wiznoteplus-conan
+          pip install conan==1.*
           conan remote add bincrafters https://bincrafters.jfrog.io/artifactory/api/conan/public-conan
           conan config set general.revisions_enabled=1
           conan profile new default --detect
@@ -73,6 +72,7 @@ jobs:
           name: Linux_Dist
           path: _build/package/dist
       - name: Upload to webdav
+        if: github.repository == 'altairwei/WizNotePlus'
         run: |
           find _build/package/dist -type f -name "WizNotePlus-*" | while read x; do
             filename=$(basename $x)
@@ -98,8 +98,7 @@ jobs:
       - name: Install and config conan
         shell: powershell
         run: |
-          python -m pip install conan
-          conan remote add wiznoteplus https://altairwei.jfrog.io/artifactory/api/conan/wiznoteplus-conan
+          python -m pip install conan==1.*
           conan remote add bincrafters https://bincrafters.jfrog.io/artifactory/api/conan/public-conan
           conan config set general.revisions_enabled=1
           conan profile new default --detect
@@ -131,6 +130,7 @@ jobs:
           name: Windows_Dist
           path: _build/package/dist
       - name: Upload to webdav
+        if: github.repository == 'altairwei/WizNotePlus'
         shell: powershell
         run: |
           Remove-Item alias:curl
@@ -143,7 +143,7 @@ jobs:
 
   build_macos:
     name: MacOS
-    runs-on: macos-10.15
+    runs-on: macos-11
     env:
       QT_INSTALL_TARGET_ARCH: clang_64
       QT_INSTALL_TARGET_DIR_PREFIX: /Applications
@@ -162,8 +162,7 @@ jobs:
           brew install curl
       - name: Install and config conan
         run: |
-          python -m pip install conan
-          conan remote add wiznoteplus https://altairwei.jfrog.io/artifactory/api/conan/wiznoteplus-conan
+          python -m pip install conan==1.*
           conan remote add bincrafters https://bincrafters.jfrog.io/artifactory/api/conan/public-conan
           conan config set general.revisions_enabled=1
           conan profile new default --detect
@@ -194,6 +193,7 @@ jobs:
           name: MacOS_Dist
           path: _build/package/dist
       - name: Upload to webdav
+        if: github.repository == 'altairwei/WizNotePlus'
         run: |
           find _build/package/dist -type f -name "WizNotePlus-*" | while read x; do
             filename=$(basename $x)
@@ -250,6 +250,7 @@ jobs:
           draft: true
           prerelease: true
       - name: Upload to webdav
+        if: github.repository == 'altairwei/WizNotePlus'
         run: |
           version=$(printf '${{ github.ref }}' | sed -E 's#refs/tags/v(.*)#\1#')
           curl --basic --user "${{ secrets.WEBDAV }}" -X MKCOL "https://dav.jianguoyun.com/dav/WizNotePlus/stable/v$version"

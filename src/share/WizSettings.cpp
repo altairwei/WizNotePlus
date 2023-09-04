@@ -912,3 +912,47 @@ void WizUserSettings::setShowSubFolderDocuments(bool b)
 {
     set("CategoryShowSubFolderDocuments", QString::number(b ? 1 : 0));
 }
+
+bool WizUserSettings::showLayout(const QString &view)
+{
+    QString k = get(view);
+    if (k.isEmpty())
+        return true;
+
+    return k.toInt() == 1;
+}
+
+void WizUserSettings::setShowLayout(const QString &view, bool b)
+{
+    set(view, QString::number(b ? 1 : 0));
+}
+
+bool WizUserSettings::showLayoutCategoryView()
+{
+    return showLayout("LayoutShowCategoryView");
+}
+
+void WizUserSettings::setShowLayoutCategoryView(bool b)
+{
+    setShowLayout("LayoutShowCategoryView", b);
+}
+
+bool WizUserSettings::showLayoutDocumentListView()
+{
+    return showLayout("LayoutShowDocumentListView");
+}
+
+void WizUserSettings::setShowLayoutDocumentListView(bool b)
+{
+    setShowLayout("LayoutShowDocumentListView", b);
+}
+
+bool WizUserSettings::showLayoutTabBrowser()
+{
+    return showLayout("LayoutShowTabBrowser");
+}
+
+void WizUserSettings::setShowLayoutTabBrowser(bool b)
+{
+    setShowLayout("LayoutShowTabBrowser", b);
+}

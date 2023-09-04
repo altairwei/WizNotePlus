@@ -677,8 +677,8 @@ public:
     Q_INVOKABLE QVariantList DocumentsFromSQLWhere(const QString& strSQLWhere);
     Q_INVOKABLE QVariantList GetRecentDocuments(const QString &documentType, int count, int type);
     Q_INVOKABLE QObject *AttachmentFromGUID(const QString &attachmentGUID);
-    //using CWizIndexBase::DocumentFromGUID;
-    //Q_INVOKABLE QObject* DocumentFromGUID(const QString& strGUID);
+    Q_INVOKABLE bool SetMeta(const QString &section, const QString &key, const QString & value);
+    Q_INVOKABLE QString GetMeta(const QString &section, const QString &key);
 
 public slots:
     void onAttachmentModified(const QString strKbGUID, const QString& strGUID, const QString& strFileName,

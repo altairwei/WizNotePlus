@@ -15,18 +15,18 @@ class QShortcut;
 
 #define WIZACTION_GLOBAL_SYNC               "actionSync"
 #define WIZACTION_GLOBAL_NEW_DOCUMENT       "actionNewNote"
-#define WIZACTION_GLOBAL_GOFORWARD  "actionGoForward"
-#define WIZACTION_GLOBAL_GOBACK  "actionGoBack"
+#define WIZACTION_GLOBAL_GOFORWARD          "actionGoForward"
+#define WIZACTION_GLOBAL_GOBACK             "actionGoBack"
 #define WIZACTION_GLOBAL_SAVE_AS_PDF        "actionSaveAsPDF"
-#define WIZACTION_GLOBAL_SAVE_AS_HTML        "actionSaveAsHtml"
-#define WIZACTION_GLOBAL_SAVE_AS_MARKDOWN    "actionSaveAsMarkdown"
-#define WIZACTION_GLOBAL_IMPORT_FILE            "actionImportFile"
-#define WIZACTION_GLOBAL_EXPORT_FILE            "actionExportFile"
-#define WIZACTION_GLOBAL_PRINT_MARGIN        "actionPrintMargin"
+#define WIZACTION_GLOBAL_SAVE_AS_HTML       "actionSaveAsHtml"
+#define WIZACTION_GLOBAL_SAVE_AS_MARKDOWN   "actionSaveAsMarkdown"
+#define WIZACTION_GLOBAL_IMPORT_FILE        "actionImportFile"
+#define WIZACTION_GLOBAL_EXPORT_FILE        "actionExportFile"
+#define WIZACTION_GLOBAL_PRINT_MARGIN       "actionPrintMargin"
 #define WIZACTION_GLOBAL_TOGGLE_CATEGORY    "actionViewToggleCategory"
-#define WIZACTION_GLOBAL_SHOW_SUB_FOLDER_DOCUMENTS      "actionViewShowSubFolderDocuments"
+#define WIZACTION_GLOBAL_SHOW_SUBFOLDER_DOC "actionViewShowSubFolderDocuments"
 #ifdef Q_OS_MAC
-#   define WIZACTION_GLOBAL_CLIENT_FULLSCREEN  "actionViewToggleClientFullscreen"
+#define WIZACTION_GLOBAL_CLIENT_FULLSCREEN  "actionViewToggleClientFullscreen"
 #endif // Q_OS_MAC
 #define WIZACTION_GLOBAL_TOGGLE_FULLSCREEN  "actionViewToggleFullscreen"
 
@@ -82,7 +82,11 @@ class QShortcut;
 #define WIZDOCUMENT_SORTBY_FOLDER           "actionSortByFolder"
 #define WIZDOCUMENT_SORTBY_SIZE             "actionSortBySize"
 
-#define WIZSKIN_RELOAD_STYLESHEET             "actionSkinReloadStyleSheet"
+#define WIZLAYOUT_CATEGORY_VIEW             "actionLayoutCategoryView"
+#define WIZLAYOUT_DOCUMENTLIST_VIEW         "actionLayoutDocumentListView"
+#define WIZLAYOUT_TAB_BROWSER               "actionLayoutTabBrowser"
+
+#define WIZSKIN_RELOAD_STYLESHEET           "actionSkinReloadStyleSheet"
 
 /**
 //NOTE：因为Linux版本没有menubar，qaction在隐藏后快捷键无法触发，此处创建一个shortcut并与app的槽函数绑定
