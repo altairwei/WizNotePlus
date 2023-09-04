@@ -20,7 +20,7 @@ Now precompiled WizNotePlus package is built against Qt 5.14.2, and minimum syst
 
 ## Bug fixes
 
-* Fixed some localization errors in the interface.
+* Fixed some internationalization errors in the user interface.
 
 ## Known Issues
 
