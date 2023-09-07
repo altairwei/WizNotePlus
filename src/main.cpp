@@ -173,9 +173,11 @@ int mainCore(int argc, char *argv[])
     WizQueuedThreadsInit();
 
     //FIXME: 在Mac osx安全更新之后存在ssl握手问题，此处进行特殊处理
+    /*
     QSslConfiguration conf = QSslConfiguration::defaultConfiguration();
     conf.setPeerVerifyMode(QSslSocket::VerifyNone);
     QSslConfiguration::setDefaultConfiguration(conf);
+    */
 #endif
 
     // 获取默认用户设置
