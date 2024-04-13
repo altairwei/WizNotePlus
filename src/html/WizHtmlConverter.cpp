@@ -4,6 +4,10 @@
 #include <algorithm>
 #include <cctype>
 #include <QDebug>
+#include <QTemporaryFile>
+#include <QProcess>
+#include <QRegularExpression>
+#include <QVersionNumber>
 
 using namespace Utils::Gumbo;
 
@@ -430,6 +434,55 @@ void WizHtmlConverter::convert_to_markdown(GumboNode* node) {
             break;
         }
     }
+}
+
+PandocWrapper::PandocWrapper(const QString &prog)
+    : m_proc(nullptr)
+    , m_isAvailable(false)
+{
+    m_proc = std::make_unique<QProcess>();
+    if (!prog.isEmpty())
+        m_proc->setProgram(prog);
+}
+
+QString PandocWrapper::program()
+{
+    return m_proc->program();
+}
+
+void PandocWrapper::setProgram(const QString &prog)
+{
+    m_proc->setProgram(prog);
+}
+
+bool PandocWrapper::isAvailable()
+{
+    m_proc->setArguments(QStringList({"--version"}));
+    m_proc->start();
+
+    if (m_proc->waitForFinished()) {
+        QString versionInfo = QString(m_proc->readAllStandardOutput()).trimmed();
+        static QRegularExpression versionPattern("^pandoc.*\\b(\\d+\\.\\d+\\.\\d+)\\b");
+        QRegularExpressionMatch match = versionPattern.match(versionInfo);
+
+        if (match.hasMatch()) {
+            QString foundVersion = match.captured(1);
+            m_version = foundVersion;
+
+            QVersionNumber versionDetected = QVersionNumber::fromString(foundVersion);
+            QVersionNumber versionToCompare = QVersionNumber::fromString("3.0.0");
+
+            if (QVersionNumber::compare(versionDetected, versionToCompare) > 0) {
+                m_isAvailable = true;
+            }
+        }
+
+    } else {
+        m_isAvailable = false;
+        m_errorMsg = m_proc->errorString();
+    }
+
+    return m_isAvailable;
 }
 
 } // Utils

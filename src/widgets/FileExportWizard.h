@@ -4,6 +4,8 @@
 #include <QWizard>
 #include <QWizardPage>
 #include <QList>
+#include <QItemDelegate>
+#include <QMap>
 
 #include "share/WizQtHelper.h"
 
@@ -13,6 +15,7 @@ class WizFileExporter;
 class BaseItem;
 class NoteItem;
 class DirLineEdit;
+class FileLineEdit;
 
 class QTreeWidget;
 class QTableWidget;
@@ -87,6 +90,19 @@ private:
     QList<QVariant> m_documents;
 };
 
+class FEOutputFormatDelegate : public QItemDelegate
+{
+    Q_OBJECT
+
+public:
+    FEOutputFormatDelegate(QObject *parent = nullptr) : QItemDelegate(parent) {}
+    QWidget *createEditor(QWidget *parent, const QStyleOptionViewItem &,
+                          const QModelIndex &index) const override;
+    void setEditorData(QWidget *editor, const QModelIndex &index) const override;
+    void setModelData(QWidget *editor, QAbstractItemModel *model,
+                      const QModelIndex &index) const override;
+};
+
 class FEPageFormatSelect : public QWizardPage
 {
     Q_OBJECT
@@ -96,8 +112,17 @@ public:
     void initializePage() override;
     void cleanupPage() override;
 
+    Q_PROPERTY(QMap<QString, QString> formats MEMBER m_formats NOTIFY formatsChanged)
+
+Q_SIGNALS:
+    void formatsChanged(const QMap<QString, QString>&);
+
+private Q_SLOTS:
+    void updateOutputFormats(int row, int column);
+
 private:
     QTableWidget *m_table;
+    QMap<QString, QString> m_formats;
 };
 
 class FEPageOptions : public QWizardPage
@@ -106,15 +131,23 @@ class FEPageOptions : public QWizardPage
 
 public:
     FEPageOptions(QWidget *parent = nullptr);
+    void initializePage() override;
+    bool isComplete() const override;
+
+private Q_SLOTS:
+    void handlePandocExeSet(const QString &);
 
 private:
     DirLineEdit *m_outputFolder;
+    FileLineEdit *m_pandocExe;
     QCheckBox *m_keepFolder;
     QCheckBox *m_compress;
     QCheckBox *m_exportMetainfo;
     QCheckBox *m_noTitleFolderIfPossible;
     QCheckBox *m_handleRichTextInMarkdown;
     QCheckBox *m_convertRichTextToMarkdown;
+
+    bool isPandocAvailable;
 };
 
 class FEPageExport : public QWizardPage

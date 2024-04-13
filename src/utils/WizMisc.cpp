@@ -284,6 +284,4 @@ int WizMisc::getVersionCode()
     return strNum.toInt();
 }
 
-
-
 } // namespace Utils

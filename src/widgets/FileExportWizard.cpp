@@ -19,6 +19,9 @@
 #include <QTimer>
 #include <QTableWidget>
 #include <QTableWidgetItem>
+#include <QItemDelegate>
+#include <QComboBox>
+#include <QProcess>
 
 #include "WizDef.h"
 #include "database/WizDatabase.h"
@@ -26,6 +29,8 @@
 #include "share/WizSettings.h"
 #include "WizFileExporter.h"
 #include "widgets/FileLineEdit.h"
+#include "html/WizHtmlConverter.h"
+#include "utils/WizPathResolve.h"
 
 FileExportWizard::FileExportWizard(const QString &location, WizExplorerApp& app, QWidget *parent)
     : QWizard(parent)
@@ -388,6 +393,44 @@ void FEPageDocList::updateSelection()
 /// Output Format Page
 /////////////////////////////////////////////////////////////////////
 
+QWidget *FEOutputFormatDelegate::createEditor(
+    QWidget *parent, const QStyleOptionViewItem &, const QModelIndex &index) const
+{
+    QComboBox *editor = new QComboBox(parent);
+
+    // Get the value of first column
+    QModelIndex siblingIndex = index.siblingAtColumn(0);
+    QString value = index.model()->data(siblingIndex).toString();
+
+    if(value == "Common") {
+        editor->addItems({"Markdown", "HTML", "MHTML", "PDF"});
+    } else if(value == "Markdown") {
+        editor->addItems({"Markdown", "HTML", "MHTML", "PDF"});
+    } else if (value == "Outline") {
+        editor->addItems({"Markdown", "HTML", "MHTML", "PDF"});
+    } else if (value == "Handwriting") {
+        editor->addItems({"HTML"});
+    } else {
+        editor->addItems({"HTML"});
+    }
+
+    return editor;
+}
+
+void FEOutputFormatDelegate::setEditorData(QWidget *editor, const QModelIndex &index) const
+{
+    QString value = index.model()->data(index, Qt::EditRole).toString();
+    QComboBox *comboBox = static_cast<QComboBox*>(editor);
+    comboBox->setCurrentText(value);
+}
+
+void FEOutputFormatDelegate::setModelData(
+    QWidget *editor, QAbstractItemModel *model, const QModelIndex &index) const
+{
+    QComboBox *comboBox = static_cast<QComboBox*>(editor);
+    model->setData(index, comboBox->currentText(), Qt::EditRole);
+}
+
 FEPageFormatSelect::FEPageFormatSelect(QWidget *parent)
     : QWizardPage(parent)
 {
@@ -397,7 +440,8 @@ FEPageFormatSelect::FEPageFormatSelect(QWidget *parent)
 
     m_table = new QTableWidget;
     m_table->setColumnCount(3);
-    m_table->setEditTriggers(QAbstractItemView::NoEditTriggers);
+    m_table->setEditTriggers(QAbstractItemView::AllEditTriggers);
+    m_table->setItemDelegateForColumn(2, new FEOutputFormatDelegate());
 
     m_table->verticalHeader()->setHidden(true);
     m_table->setHorizontalHeaderLabels(
@@ -407,6 +451,10 @@ FEPageFormatSelect::FEPageFormatSelect(QWidget *parent)
     QVBoxLayout *layout = new QVBoxLayout;
     layout->addWidget(m_table);
     setLayout(layout);
+
+    registerField("outputFormats*", this, "formats", SIGNAL(formatsChanged(const QMap<QString, QString>&)));
+    connect(m_table, &QTableWidget::cellChanged,
+            this, &FEPageFormatSelect::updateOutputFormats);
 }
 
 void FEPageFormatSelect::initializePage()
@@ -434,9 +482,20 @@ void FEPageFormatSelect::initializePage()
     unsigned int row = 0;
     QMap<QString, size_t>::const_iterator i = noteTypeNo.constBegin();
     while (i != noteTypeNo.constEnd()) {
-        m_table->setItem(row, 0, new QTableWidgetItem(i.key()));
-        m_table->setItem(row, 1, new QTableWidgetItem(QString::number(i.value())));
-        m_table->setItem(row, 2, new QTableWidgetItem(""));
+        // First column
+        QTableWidgetItem *item = new QTableWidgetItem(i.key());
+        item->setFlags(item->flags() & ~Qt::ItemIsEditable);
+        m_table->setItem(row, 0, item);
+        // Second column
+        item = new QTableWidgetItem(QString::number(i.value()));
+        item->setFlags(item->flags() & ~Qt::ItemIsEditable);
+        m_table->setItem(row, 1, item);
+        // Third column
+        QString defaultFormat("HTML");
+        if (i.key() == "Markdown")
+            defaultFormat = "Markdown";
+        m_table->setItem(row, 2, new QTableWidgetItem(defaultFormat));
+
         ++row;
         ++i;
     }
@@ -448,12 +507,27 @@ void FEPageFormatSelect::cleanupPage()
     m_table->clearContents();
 }
 
+void FEPageFormatSelect::updateOutputFormats(int row, int column)
+{
+    if (column != 2)
+        return;
+
+    QTableWidgetItem *it = m_table->item(row, column);
+    QString output_format = it->text();
+    it = m_table->item(row, 0);
+    QString doc_format = it->text();
+
+    m_formats.insert(doc_format, output_format);
+    Q_EMIT formatsChanged(m_formats);
+}
+
 /////////////////////////////////////////////////////////////////////
 /// Options Page
 /////////////////////////////////////////////////////////////////////
 
 FEPageOptions::FEPageOptions(QWidget *parent)
     : QWizardPage(parent)
+    , isPandocAvailable(false)
 {
     setTitle(tr("Options"));
     setSubTitle(tr("Please choose exporting options."));
@@ -461,6 +535,10 @@ FEPageOptions::FEPageOptions(QWidget *parent)
     m_outputFolder = new DirLineEdit;
     m_outputFolder->setLabelText(tr("Output Folder:"));
     registerField("outputFolder*", m_outputFolder->lineEdit());
+
+    m_pandocExe = new FileLineEdit;
+    m_pandocExe->setLabelText(tr("Pandoc Program:"));
+    registerField("pandocExe", m_pandocExe->lineEdit());
 
     m_keepFolder = new QCheckBox;
     m_keepFolder->setChecked(true);
@@ -510,6 +588,7 @@ FEPageOptions::FEPageOptions(QWidget *parent)
 
     QVBoxLayout *layout = new QVBoxLayout;
     layout->addWidget(m_outputFolder);
+    layout->addWidget(m_pandocExe);
     layout->addWidget(m_keepFolder);
     layout->addWidget(m_compress);
     layout->addWidget(m_exportMetainfo);
@@ -517,6 +596,63 @@ FEPageOptions::FEPageOptions(QWidget *parent)
     layout->addWidget(m_handleRichTextInMarkdown);
     layout->addWidget(m_convertRichTextToMarkdown);
     setLayout(layout);
+}
+
+void FEPageOptions::handlePandocExeSet(const QString &location)
+{
+    if (location.isEmpty()) {
+        isPandocAvailable = false;
+        Q_EMIT QWizardPage::completeChanged();
+        return;
+    }
+
+    Utils::PandocWrapper pandoc(location);
+    m_pandocExe->lineEdit()->setPlaceholderText("");
+
+    if (pandoc.isAvailable()) {
+        isPandocAvailable = true;
+        WizSettings wizSettings(Utils::WizPathResolve::globalSettingsFile());
+        wizSettings.setString("Pandoc", "ExeLocation", location);
+    } else {
+        QMessageBox::critical(this, tr("Can't find Pandoc"), pandoc.errorMessage());
+        isPandocAvailable = false;
+    }
+
+    Q_EMIT QWizardPage::completeChanged();
+}
+
+void FEPageOptions::initializePage()
+{
+    WizSettings wizSettings(Utils::WizPathResolve::globalSettingsFile());
+    QString location = wizSettings.getString("Pandoc", "ExeLocation");
+
+    if (!location.isEmpty()) {
+        m_pandocExe->lineEdit()->setText(location);
+    } else {
+        location = "pandoc";
+    }
+
+    Utils::PandocWrapper pandoc(location);
+
+    if (pandoc.isAvailable()) {
+        m_pandocExe->lineEdit()->setPlaceholderText("Found pandoc " + pandoc.version());
+        isPandocAvailable = true;
+    } else {
+        m_pandocExe->lineEdit()->clear();
+        m_pandocExe->lineEdit()->setPlaceholderText(pandoc.errorMessage());
+        isPandocAvailable = false;
+    }
+
+    connect(m_pandocExe->lineEdit(), &QLineEdit::textChanged,
+            this, &FEPageOptions::handlePandocExeSet);
+}
+
+bool FEPageOptions::isComplete() const
+{
+    if (!isPandocAvailable)
+        return false;
+
+    return QWizardPage::isComplete();
 }
 
 /////////////////////////////////////////////////////////////////////
@@ -576,6 +712,7 @@ void FEPageExport::insertLog(const QString& text)
 void FEPageExport::handleExportFile()
 {
     QStringList notes = field("documents*").toStringList();
+    auto outputFormats = field("outputFormats*").value<QMap<QString, QString> >();
     QString outputFolder = field("outputFolder").toString();
     bool keepFolder = field("keepFolder").toBool();
 

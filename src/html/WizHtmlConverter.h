@@ -7,6 +7,7 @@
 
 #include "WizGumboHelper.h"
 
+class QProcess;
 
 namespace Utils {
 
@@ -38,6 +39,25 @@ private:
     QStack<GumboTag> m_nestedBlock;
     QStack<size_t> m_listElemNo;
     QStack<bool> m_listElemPrefixed ;
+};
+
+class PandocWrapper
+{
+public:
+    PandocWrapper(const QString &prog = "pandoc");
+
+    bool isAvailable();
+    QString version() { return m_version; }
+    QString errorMessage() { return m_errorMsg; };
+
+    QString program();
+    void setProgram(const QString &prog);
+
+private:
+    std::unique_ptr<QProcess> m_proc;
+    QString m_errorMsg;
+    QString m_version;
+    bool m_isAvailable;
 };
 
 } // Utils

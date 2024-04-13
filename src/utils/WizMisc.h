@@ -16,7 +16,6 @@ public:
     static QString time2humanReadable(const QDateTime& time, const QString& formate);
     static bool loadUnicodeTextFromFile(const QString& strFileName, QString& strText);
 
-    //
     //  location format
     static void addBackslash(QString& strPath);
     static void removeBackslash(CString& strPath);
@@ -40,15 +39,12 @@ public:
     static QString getHtmlBodyContent(QString strHtml);
     static void splitHtmlToHeadAndBody(const QString& strHtml, QString& strHead, QString& strBody);
 
-    //
     static void copyTextToClipboard(const QString& text);
 
-    //
     static bool isChinese();
     static bool isSimpChinese();
     static bool isTraditionChinese();
 
-    //
     static bool localeAwareCompare(const QString &s1, const QString &s2);
 
     static int getVersionCode();
