@@ -601,11 +601,7 @@ void WizMainWindow::resizeEvent(QResizeEvent *event)
     update();
 }
 
-/**
- * @brief Show upgrade notification.
- * 
- * @param bUpgradeAvaliable 
- */
+/** Show WizNotePlus upgrade notification dialog. */
 void WizMainWindow::on_checkUpgrade_finished(QJsonObject latestStable, QJsonObject latestTest)
 {
     if (latestStable.isEmpty() && latestTest.isEmpty())
@@ -623,7 +619,7 @@ void WizMainWindow::on_checkUpgrade_finished(QJsonObject latestStable, QJsonObje
         return;
     }
 
-    WizUpgradeNotifyDialog notifyDialog(this);
+    WizUpgradeNotifyDialog notifyDialog;
     notifyDialog.showMarkdownContent(strMarkdown);
     if (QDialog::Accepted == notifyDialog.exec()) {
         QDesktopServices::openUrl(QUrl(strUrl));

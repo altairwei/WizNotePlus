@@ -711,8 +711,9 @@ void FEPageExport::insertLog(const QString& text)
 
 void FEPageExport::handleExportFile()
 {
-    QStringList notes = field("documents*").toStringList();
-    auto outputFormats = field("outputFormats*").value<QMap<QString, QString> >();
+    auto notes = field("documents").toList();
+
+    auto outputFormats = field("outputFormats").value<QMap<QString, QString> >();
     QString outputFolder = field("outputFolder").toString();
     bool keepFolder = field("keepFolder").toBool();
 
@@ -725,24 +726,18 @@ void FEPageExport::handleExportFile()
     m_progress->setRange(0, notes.size());
     m_progress->setValue(0);
 
-    // TODO: add databse option
-    WizDatabase& db = m_dbMgr.db();
-    foreach (auto &note, notes) {
+    foreach (const QVariant &note, notes) {
         m_progress->setValue(m_progress->value() + 1);
         qApp->processEvents();
         if (m_cancel) return;
 
-        WIZDOCUMENTDATA data;
-        if (!db.documentFromGuid(note, data)) {
-            ASKCONTINUE(
-                tr("Do you want to continue?"),
-                tr("Can't find document for GUID: %1").arg(note)
-            );
-        }
+        auto data = note.value<const WIZDOCUMENTDATA*>();
+        insertLog(QString("Exporting %1\n").arg(data->strTitle));
 
-        insertLog(QString("Exporting %1\n").arg(data.strTitle));
+        // Get the corresponding databaset for a document
+        WizDatabase& db = m_dbMgr.db(data->strKbGUID);
 
-        if (data.nProtected == 1) {
+        if (data->nProtected == 1) {
             if (!db.loadUserCert()) {
                 ASKCONTINUE(
                     tr("Do you want to continue?"),
@@ -775,14 +770,14 @@ void FEPageExport::handleExportFile()
 
         QString destFolder = outputFolder;
         if (keepFolder)
-            destFolder = outputFolder + data.strLocation;
+            destFolder = outputFolder + data->strLocation;
 
         auto format = WizFileExporter::HTML;
-        if (WizIsMarkdownNote(data))
+        if (WizIsMarkdownNote(*data))
             format = WizFileExporter::Markdown;
 
         bool ok = m_exporter->exportNote(
-            data, destFolder, format);
+            *data, destFolder, format);
         if (!ok) {
             ASKCONTINUE(
                 tr("Do you want to continue?"),
