@@ -20,7 +20,6 @@ function ByteStringReader(input)
     local indexfile = indexent:contents()
     local doc = pandoc.read(indexfile, "html", PANDOC_READER_OPTIONS)
     doc = doc:walk(html.WizHtmlFilter)
-    --logging.temp(doc)
     return doc
   end
 

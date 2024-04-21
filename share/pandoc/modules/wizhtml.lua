@@ -50,25 +50,21 @@ function module.handle_wiz_nested_list(elem)
 end
 
 -- Convert WizNote TODO item
-function module.handle_wiz_checkbox_item(elem)
-  if elem.classes[1] == "wiz-todo-layer" then
-    local todo = elem.content[1]
-    todo = todo:walk {
-      Span = function(span)
-        return span.content
-      end,
-      Image = function(img)
-        if img.classes[1] == "wiz-todo-checkbox" then
-          if img.attributes["wiz-check"] == "unchecked" then
-            return {pandoc.Str("☐"), pandoc.Space()}
-          else
-            return {pandoc.Str("☒"), pandoc.Space()}
-          end
+function module.handle_wiz_checkbox_item(todo)
+  return todo:walk {
+    Span = function(span)
+      return span.content
+    end,
+    Image = function(img)
+      if img.classes[1] == "wiz-todo-checkbox" then
+        if img.attributes["wiz-check"] == "unchecked" then
+          return {pandoc.Str("☐"), pandoc.Space()}
+        else
+          return {pandoc.Str("☒"), pandoc.Space()}
         end
       end
-    }
-    return todo
-  end
+    end
+  }
 end
 
 -- Collect consecutive TODO items and convert them to a BulletList
@@ -90,7 +86,13 @@ function module.collect_wiz_todo_items(blocks)
 
     if elem.t == "Div" and elem.classes[1] == "wiz-todo-layer" then
       if not inTodoList then inTodoList = true end
-      todolist[#todolist+1] = pandoc.Blocks(module.handle_wiz_checkbox_item(elem))
+      todolist[#todolist+1] = pandoc.Blocks(
+        module.handle_wiz_checkbox_item(elem.content[1]))
+    elseif elem.t == "Para" and #elem.content > 1 and elem.content[1].t == "Span"
+        and elem.content[1].classes[1] == "wiz-todo-main" then
+      if not inTodoList then inTodoList = true end
+      todolist[#todolist+1] = pandoc.Blocks(
+        module.handle_wiz_checkbox_item(pandoc.Plain(elem.content)))
     elseif elem.t == "BlockQuote" and #todolist > 0 then
       todolist[#todolist] = util.concatArray(todolist[#todolist], elem.content)
     else
