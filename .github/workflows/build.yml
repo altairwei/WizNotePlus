@@ -212,17 +212,17 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y -qq --no-install-recommends curl
       - name: Download pre-built packages for Linux
-        uses: actions/download-artifact@v1
+        uses: actions/download-artifact@v4.1.7
         with:
           name: Linux_Dist
           path: artifacts
       - name: Download pre-built packages for Windows
-        uses: actions/download-artifact@v1
+        uses: actions/download-artifact@v4.1.7
         with:
           name: Windows_Dist
           path: artifacts
       - name: Download pre-built packages for MacOS
-        uses: actions/download-artifact@v1
+        uses: actions/download-artifact@v4.1.7
         with:
           name: MacOS_Dist
           path: artifacts
